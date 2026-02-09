@@ -1,0 +1,47 @@
+{
+    "name": "spec-driven-steroids",
+    "version": "0.1.0",
+    "description": "CLI to inject Spec Driven Steroids standards into any repository",
+    "type": "module",
+    "main": "dist/index.js",
+    "bin": {
+        "spec-driven-steroids": "dist/index.js"
+    },
+    "files": [
+        "dist",
+        "package.json",
+        "README.md",
+        "LICENSE"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/index.js",
+        "dev": "tsc -w",
+        "test": "tsc && vitest run",
+        "test:ui": "tsc && vitest --ui",
+        "test:coverage": "tsc && vitest --coverage",
+        "prepublishOnly": "pnpm build"
+    },
+    "dependencies": {
+        "commander": "^11.1.0",
+        "inquirer": "^9.2.12",
+        "chalk": "^5.3.0",
+        "fs-extra": "^11.2.0"
+    },
+    "devDependencies": {
+        "@spec-driven-steroids/test-utils": "workspace:*",
+        "@types/node": "^20.10.0",
+        "@types/fs-extra": "^11.0.4",
+        "@types/inquirer": "^9.0.7",
+        "typescript": "^5.3.3"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/lindoelio/spec-driven-steroids.git"
+    },
+    "author": "Lindoélio Lázaro <lindoelio@gmail.com>",
+    "license": "MIT",
+    "engines": {
+        "node": ">=20.0.0"
+    }
+}

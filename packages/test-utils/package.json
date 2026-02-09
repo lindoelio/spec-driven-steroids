@@ -1,0 +1,20 @@
+{
+    "name": "@spec-driven-steroids/test-utils",
+    "version": "0.1.0",
+    "description": "Shared testing utilities for Spec Driven Steroids",
+    "type": "module",
+    "main": "dist/index.js",
+    "exports": {
+        ".": "./dist/index.js",
+        "./fixtures": "./dist/fixtures/index.js"
+    },
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc -w"
+    },
+    "devDependencies": {
+        "@types/node": "^25.2.1",
+        "typescript": "^5.9.3",
+        "vitest": "^2.1.0"
+    }
+}

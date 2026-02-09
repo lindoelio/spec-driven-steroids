@@ -1,0 +1,38 @@
+{
+    "name": "spec-driven-steroids",
+    "version": "0.1.0",
+    "private": true,
+    "description": "Inject spec-driven intelligence into your favorite AI Agents. Rigorous. Simple. Frictionless.",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/lindoelio/spec-driven-steroids.git"
+    },
+    "author": "Lindoélio Lázaro <lindoelio@gmail.com>",
+    "license": "MIT",
+    "scripts": {
+        "build": "pnpm -r build",
+        "clean": "pnpm -r clean",
+        "lint": "pnpm -r lint",
+        "test": "pnpm -r test",
+        "test:ui": "vitest --ui",
+        "test:coverage": "vitest --coverage",
+        "typecheck": "pnpm -r typecheck",
+        "release": "pnpm release:prepare && pnpm release:publish",
+        "release:prepare": "pnpm build && pnpm changeset version && pnpm install",
+        "release:publish": "pnpm -r publish --access public",
+        "release:cli": "cd packages/cli && pnpm publish --access public",
+        "release:mcp": "cd packages/mcp && pnpm publish --access public",
+        "release:standards": "cd packages/standards && pnpm publish --access public"
+    },
+    "devDependencies": {
+        "@types/node": "^25.2.1",
+        "@vitest/coverage-v8": "^2.1.0",
+        "@vitest/ui": "^2.1.0",
+        "typescript": "^5.9.3",
+        "vitest": "^2.1.0"
+    },
+    "packageManager": "pnpm@10.28.2",
+    "engines": {
+        "node": ">=20.0.0"
+    }
+}

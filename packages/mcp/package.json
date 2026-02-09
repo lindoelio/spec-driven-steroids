@@ -1,0 +1,42 @@
+{
+    "name": "@spec-driven-steroids/mcp",
+    "version": "0.1.0",
+    "description": "MCP Server for Spec Driven Steroids structure enforcement",
+    "type": "module",
+    "main": "dist/index.js",
+    "bin": {
+        "spec-driven-mcp": "dist/index.js"
+    },
+    "files": [
+        "dist",
+        "package.json",
+        "README.md",
+        "LICENSE"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/index.js",
+        "dev": "tsc -w",
+        "test": "vitest",
+        "test:ui": "vitest --ui",
+        "test:coverage": "vitest --coverage",
+        "prepublishOnly": "pnpm build"
+    },
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.26.0"
+    },
+    "devDependencies": {
+        "@spec-driven-steroids/test-utils": "workspace:*",
+        "@types/node": "^25.2.1",
+        "typescript": "^5.9.3"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/lindoelio/spec-driven-steroids.git"
+    },
+    "author": "Lindoélio Lázaro <lindoelio@gmail.com>",
+    "license": "MIT",
+    "engines": {
+        "node": ">=20.0.0"
+    }
+}

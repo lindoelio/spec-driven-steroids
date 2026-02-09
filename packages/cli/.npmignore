@@ -1,0 +1,5 @@
+dist/
+*.ts
+*.js.map
+vitest.config.ts
+tsconfig.json
