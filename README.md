@@ -369,6 +369,17 @@ Spec Driven Steroids is open to contributions! Whether you want to:
 
 Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
+## Project Guidelines
+
+For repository development standards and workflows, see:
+
+- [AGENTS.md](AGENTS.md) - AI agent runtime guidance and core commands
+- [CONTRIBUTING.md](CONTRIBUTING.md) - contribution workflow and PR expectations
+- [STYLEGUIDE.md](STYLEGUIDE.md) - TypeScript/ESM code conventions and patterns
+- [TESTING.md](TESTING.md) - testing strategy, commands, and coverage notes
+- [ARCHITECTURE.md](ARCHITECTURE.md) - package roles and system architecture
+- [SECURITY.md](SECURITY.md) - security policy and secure development practices
+
 ## License
 
 MIT

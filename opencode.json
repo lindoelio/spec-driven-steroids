@@ -1,0 +1,12 @@
+{
+  "mcp": {
+    "spec-driven-steroids": {
+      "type": "local",
+      "command": [
+        "node",
+        "/Users/lindoelio/Projects/spec-driven-steroids/packages/mcp/dist/index.js"
+      ]
+    }
+  },
+  "$schema": "https://opencode.ai/config.json"
+}

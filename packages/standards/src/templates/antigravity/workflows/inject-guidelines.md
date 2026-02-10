@@ -66,6 +66,12 @@ You MUST follow these phases in order. Each phase invokes the `project-guideline
    - ARCHITECTURE.md
    - SECURITY.md
 
+4. Enforce mandatory generation rules:
+   - All 6 guideline documents are REQUIRED outputs.
+   - If a document does not exist, generate and write it without asking.
+   - Existing documents may only be skipped when the user explicitly asks to skip specific files.
+   - Never report missing guideline files as optional.
+
 ---
 
 ### Phase 4: Document Generation & Writing
@@ -116,6 +122,7 @@ For each document in the list:
 
 - **Default to all documents**: Generate all 6 guideline documents by default
 - **Ask before overwriting**: Prompt user for each existing file
+- **Mandatory outputs**: Missing guideline files must be created unless the user explicitly opts out of named files
 - **Preserve managed sections**: Update only content between markers when requested
 - **No MCP validation**: Trust the skill's output without additional validation
 - **Cross-references**: Documents reference each other to avoid duplication

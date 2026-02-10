@@ -5,10 +5,9 @@ import inquirer from 'inquirer';
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { MCP_SERVERS } from './mcp-registry.js';
 
 interface McpConfig {
-  mcpServers: Record<string, McpServerEntry>;
+  mcpServers?: Record<string, McpServerEntry>;
 }
 
 interface McpServerEntry {
@@ -16,10 +15,31 @@ interface McpServerEntry {
   args: string[];
 }
 
+interface OpenCodeConfig {
+  $schema?: string;
+  mcp?: Record<string, McpServerLocal | McpServerRemote>;
+}
+
+interface McpServerLocal {
+  type: 'local';
+  command: string[];
+  enabled?: boolean;
+}
+
+interface McpServerRemote {
+  type: 'remote';
+  url: string;
+  enabled?: boolean;
+  headers?: Record<string, string>;
+}
+
+interface McpLaunchConfig {
+  command: string;
+  args: string[];
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Use McpConfig interface to satisfy linter
 
 const program = new Command();
 
@@ -48,15 +68,6 @@ program
       }
     ]);
 
-    const { mcpServers } = await inquirer.prompt([
-      {
-        type: 'checkbox',
-        name: 'mcpServers',
-        message: 'Select MCP servers to configure (select category headers for groups):',
-        choices: getMcpChoices()
-      }
-    ]) as { mcpServers: string[] };
-
     const targetDir = process.cwd();
     const standardsDir = path.resolve(__dirname, '../../standards/src/templates');
     const universalSkillsDir = path.join(standardsDir, 'universal/skills');
@@ -69,27 +80,27 @@ program
         let skillsSubDir = 'skills';
 
         if (platform === 'github') {
-          await configureCopilotMcp(targetDir, mcpServers);
+          await configureCopilotMcp(targetDir);
           const src = path.join(standardsDir, 'github');
           platformDest = path.join(targetDir, '.github');
           await fs.copy(src, platformDest, { overwrite: true });
         }
 
         if (platform === 'antigravity') {
-          await configureAntigravityMcp(targetDir, mcpServers);
+          await configureAntigravityMcp(targetDir);
           const src = path.join(standardsDir, 'antigravity');
           platformDest = path.join(targetDir, '.agent');
           await fs.copy(src, platformDest, { overwrite: true });
         }
 
         if (platform === 'opencode') {
-          await configureOpenCodeMcp(targetDir, mcpServers);
+          await configureOpenCodeMcp(targetDir);
           const src = path.join(standardsDir, 'opencode');
           platformDest = path.join(targetDir, '.opencode');
           await fs.copy(src, platformDest, { overwrite: true });
 
           // Specifically for OpenCode, we need to update opencode.json
-          await updateOpenCodeConfig(targetDir, universalSkillsDir);
+          await updateOpenCodeConfig(targetDir);
         }
 
         // Copy universal skills to the platform's skills directory
@@ -106,11 +117,8 @@ program
     }
 
     console.log(chalk.bold.cyan('\n🚀 Injection Complete!'));
-    printMcpSummary(mcpServers);
     console.log(chalk.white('Next steps:'));
-    console.log(chalk.white('1. Configure API keys for MCP servers that require them.'));
-    console.log(chalk.white('2. Ensure your MCP servers are running.'));
-    console.log(chalk.white('3. Use @spec-driven in Copilot or /spec-driven in Antigravity.\n'));
+    console.log(chalk.white('1. Ensure the spec-driven-steroids MCP server is running.'));
   });
 
 program
@@ -141,49 +149,7 @@ program
 
 program.parse();
 
-function getMcpChoices() {
-  const mcpChoices = MCP_SERVERS.map(server => ({
-    name: `${server.name}${server.requiresApiKey ? ' (requires API key)' : ''}`,
-    value: server.id,
-    short: server.name
-  }));
-
-  return [
-    ...mcpChoices,
-    new inquirer.Separator(),
-    { name: 'Select all MCP servers', value: 'all' }
-  ];
-}
-
-async function addMcpsToConfig(
-  config: any,
-  selectedMcpIds: string[]
-): Promise<void> {
-  if (!config.mcpServers) {
-    config.mcpServers = {};
-  }
-
-  for (const serverId of selectedMcpIds) {
-    const server = MCP_SERVERS.find(s => s.id === serverId);
-    if (!server) continue;
-
-    const configKey = server.id;
-    config.mcpServers[configKey] = {
-      command: server.command,
-      args: server.args
-    };
-
-    // NO API KEY PROMPTS - just informational message
-    if (server.requiresApiKey) {
-      console.log(chalk.gray(`  ℹ️  ${server.name} added (requires API key configuration)`));
-      console.log(chalk.white(`     See docs: ${server.documentationUrl}`));
-    } else {
-      console.log(chalk.green(`  ✅ ${server.name} added`));
-    }
-  }
-}
-
-async function configureCopilotMcp(targetDir: string, selectedMcpIds: string[]) {
+async function configureCopilotMcp(targetDir: string) {
   try {
     const vscodeDir = path.join(targetDir, '.vscode');
     await fs.ensureDir(vscodeDir);
@@ -193,19 +159,19 @@ async function configureCopilotMcp(targetDir: string, selectedMcpIds: string[]) 
     if (await fs.pathExists(mcpConfigPath)) {
       try {
         config = await fs.readJson(mcpConfigPath) as McpConfig;
+        if (!config.mcpServers) config.mcpServers = {};
       } catch (e) {
         console.warn(chalk.yellow('Warning: Could not parse existing .vscode/mcp.json.'));
       }
     }
 
     // Add spec-driven-steroids (always)
+    const mcpLaunch = await resolveMcpLaunchConfig();
+    if (!config.mcpServers) config.mcpServers = {};
     config.mcpServers['spec-driven-steroids'] = {
-      command: 'pnpm',
-      args: ['dlx', '@spec-driven-steroids/mcp']
+      command: mcpLaunch.command,
+      args: mcpLaunch.args
     };
-
-    // Add selected MCP servers
-    await addMcpsToConfig(config, selectedMcpIds);
 
     await fs.writeJson(mcpConfigPath, config, { spaces: 2 });
   } catch (error) {
@@ -213,7 +179,7 @@ async function configureCopilotMcp(targetDir: string, selectedMcpIds: string[]) 
   }
 }
 
-async function configureAntigravityMcp(targetDir: string, selectedMcpIds: string[]) {
+async function configureAntigravityMcp(targetDir: string) {
   try {
     const agentDir = path.join(targetDir, '.agent');
     await fs.ensureDir(agentDir);
@@ -223,19 +189,19 @@ async function configureAntigravityMcp(targetDir: string, selectedMcpIds: string
     if (await fs.pathExists(configPath)) {
       try {
         config = await fs.readJson(configPath) as McpConfig;
+        if (!config.mcpServers) config.mcpServers = {};
       } catch (e) {
         console.warn(chalk.yellow('Warning: Could not parse existing Antigravity config.'));
       }
     }
 
     // Add spec-driven-steroids (always)
+    const mcpLaunch = await resolveMcpLaunchConfig();
+    if (!config.mcpServers) config.mcpServers = {};
     config.mcpServers['spec-driven-steroids'] = {
-      command: 'pnpm',
-      args: ['dlx', '@spec-driven-steroids/mcp']
+      command: mcpLaunch.command,
+      args: mcpLaunch.args
     };
-
-    // Add selected MCP servers
-    await addMcpsToConfig(config, selectedMcpIds);
 
     await fs.writeJson(configPath, config, { spaces: 2 });
   } catch (error) {
@@ -243,31 +209,27 @@ async function configureAntigravityMcp(targetDir: string, selectedMcpIds: string
   }
 }
 
-async function configureOpenCodeMcp(targetDir: string, selectedMcpIds: string[]) {
+async function configureOpenCodeMcp(targetDir: string) {
   try {
     const configPath = path.join(targetDir, 'opencode.json');
 
-    let config: any = { mcpServers: {} };
+    let config: OpenCodeConfig = {};
     if (await fs.pathExists(configPath)) {
       try {
         config = await fs.readJson(configPath);
       } catch (e) {
         console.warn(chalk.yellow('Warning: Could not parse existing opencode.json.'));
       }
-    } else {
-      config = { name: path.basename(targetDir), skills: [], mcpServers: {} };
     }
 
-    if (!config.mcpServers) config.mcpServers = {};
+    if (!config.mcp) config.mcp = {};
 
-    // Add spec-driven-steroids (always)
-    config.mcpServers['spec-driven-steroids'] = {
-      command: 'pnpm',
-      args: ['dlx', '@spec-driven-steroids/mcp']
+    // Add spec-driven-steroids (always) - local MCP server
+    const mcpLaunch = await resolveMcpLaunchConfig();
+    config.mcp['spec-driven-steroids'] = {
+      type: 'local',
+      command: [mcpLaunch.command, ...mcpLaunch.args]
     };
-
-    // Add selected MCP servers
-    await addMcpsToConfig(config, selectedMcpIds);
 
     await fs.writeJson(configPath, config, { spaces: 2 });
   } catch (error) {
@@ -275,42 +237,36 @@ async function configureOpenCodeMcp(targetDir: string, selectedMcpIds: string[])
   }
 }
 
-async function updateOpenCodeConfig(targetDir: string, universalSkillsDir: string) {
+async function updateOpenCodeConfig(targetDir: string) {
   const configPath = path.join(targetDir, 'opencode.json');
   if (!await fs.pathExists(configPath)) return;
 
   const config = await fs.readJson(configPath);
-  const skills = await fs.readdir(universalSkillsDir);
 
-  if (!config.skills) config.skills = [];
-
-  for (const skillName of skills) {
-    const skillPath = `.opencode/skills/${skillName}/SKILL.md`;
-    if (!config.skills.includes(skillPath)) {
-      config.skills.push(skillPath);
-    }
+  // Add $schema if not present for validation/autocomplete support
+  if (!config.$schema) {
+    config.$schema = 'https://opencode.ai/config.json';
   }
+
+  // Skills are auto-discovered by OpenCode, so we don't need to add them to the config
 
   await fs.writeJson(configPath, config, { spaces: 2 });
-  console.log(chalk.green('✅ opencode.json updated with injected skills.'));
+  console.log(chalk.green('✅ opencode.json updated with schema.'));
 }
 
-function printMcpSummary(selectedMcpIds: string[]) {
-  if (selectedMcpIds.length === 0) return;
+async function resolveMcpLaunchConfig(): Promise<McpLaunchConfig> {
+  const localMcpDistPath = path.resolve(__dirname, '../../mcp/dist/index.js');
+  const hasLocalMcpDist = await fs.pathExists(localMcpDistPath);
 
-  const configuredServers = selectedMcpIds
-    .map(id => MCP_SERVERS.find(s => s.id === id))
-    .filter((s): s is typeof MCP_SERVERS[number] => s !== undefined);
-
-  console.log(chalk.bold.cyan('\n✅ MCP Servers Configured:'));
-  for (const server of configuredServers) {
-    console.log(chalk.green(`  ✓ ${server.name}`));
+  if (hasLocalMcpDist) {
+    return {
+      command: 'node',
+      args: [localMcpDistPath]
+    };
   }
 
-  const requiresApiKey = configuredServers.some(server => server.requiresApiKey === true);
-  if (requiresApiKey) {
-    console.log(chalk.yellow('\n⚠️  Some servers require API key configuration.'));
-    console.log(chalk.white('   Check documentation for setup instructions:'));
-    console.log(chalk.gray('     https://github.com/modelcontextprotocol/servers'));
-  }
+  return {
+    command: 'pnpm',
+    args: ['dlx', '@spec-driven-steroids/mcp']
+  };
 }

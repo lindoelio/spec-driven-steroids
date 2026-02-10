@@ -7,6 +7,20 @@ description: Full Spec-Driven flow (Requirements → Design → Tasks → Code).
 
 Follow these steps strictly to ensure high-quality, traceable software engineering.
 
+## Phase Gatekeeper (Non-Bypassable)
+
+You MUST enforce this lifecycle exactly: `requirements -> design -> tasks -> implementation`.
+
+- Never skip phases, even if the user asks to "just implement" or "fix it now".
+- If there is no approved `specs/changes/<slug>/requirements.md`, always start at Phase 1.
+- Before Phase 4 is explicitly approved by the human, do not write implementation code.
+- Before Phase 4 approval, only write files under `specs/changes/<slug>/`.
+- Every phase transition requires explicit human approval.
+
+If a user asks for direct implementation before requirements, respond with:
+
+"I can implement this, but per Spec-Driven flow I must start with Phase 1 (requirements) first. I will propose a slug and draft `specs/changes/<slug>/requirements.md` for your approval."
+
 ## 0. Setup
 - Generate a short slug for the change (e.g., `auth-refactor`).
 - All artifacts will be stored in `specs/changes/<slug>/`.
@@ -36,3 +50,7 @@ Follow these steps strictly to ensure high-quality, traceable software engineeri
 - **Evaluation**: After EVERY task, run tests and static analysis to ensure quality.
 - **Review**: After EVERY task, present a summary of changes to the human for final approval.
 - **Traceability**: Reference the Requirement and Design IDs in every commit message.
+
+## Constraints
+- Do not write implementation code before explicit Phase 4 approval.
+- Do not edit files outside `specs/changes/<slug>/` before Phase 4 approval.

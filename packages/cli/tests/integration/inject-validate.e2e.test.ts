@@ -23,8 +23,6 @@ describe('CLI E2E: inject command', () => {
     it('inject command with GitHub platform creates .github directory structure', async () => {
         vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
             platforms: ['github']
-        }).mockResolvedValueOnce({
-            mcpServers: []
         });
 
         const program = (await import('../../dist/index.js')).default;
@@ -38,8 +36,6 @@ describe('CLI E2E: inject command', () => {
     it('inject command with Antigravity platform creates .agent directory structure', async () => {
         vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
             platforms: ['antigravity']
-        }).mockResolvedValueOnce({
-            mcpServers: []
         });
 
         const program = (await import('../../dist/index.js')).default;
@@ -53,8 +49,6 @@ describe('CLI E2E: inject command', () => {
     it('inject command with OpenCode platform creates .opencode directory structure', async () => {
         vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
             platforms: ['opencode']
-        }).mockResolvedValueOnce({
-            mcpServers: []
         });
 
         const program = (await import('../../dist/index.js')).default;
@@ -65,71 +59,126 @@ describe('CLI E2E: inject command', () => {
         expect(await fs.pathExists(path.join(opencodeDir, 'skills'))).toBe(true);
     });
 
-    it('inject command updates opencode.json with injected skills', async () => {
-        const opencodeConfigPath = path.join(targetDir, 'opencode.json');
-        await fs.writeJson(opencodeConfigPath, {
-            name: 'test-project',
-            skills: [],
-            mcpServers: {}
+    it('inject command includes spec-driven phase-gating guardrails and command shortcut', async () => {
+        vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
+            platforms: ['opencode']
         });
+
+        const program = (await import('../../dist/index.js')).default;
+        program.parse(['node', 'index.js', 'inject'], { from: 'user' } as any);
+
+        const agentPath = path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md');
+        const agentContent = await fs.readFile(agentPath, 'utf-8');
+
+        expect(agentContent.includes('## Phase Gatekeeper (Non-Bypassable)')).toBe(true);
+        expect(agentContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
+        expect(agentContent.includes('Before Phase 4 approval, only write files under `specs/changes/<slug>/`.')).toBe(true);
+        expect(agentContent.includes('I can implement this, but per Spec-Driven flow I must start with Phase 1 (requirements) first.')).toBe(true);
+
+        const commandPath = path.join(targetDir, '.opencode', 'commands', 'spec-driven.md');
+        const commandContent = await fs.readFile(commandPath, 'utf-8');
+
+        expect(commandContent.includes('agent: spec-driven')).toBe(true);
+        expect(commandContent.includes('Begin at Phase 1 (requirements)')).toBe(true);
+    });
+
+    it('inject command includes spec-driven phase-gating guardrails for GitHub and Antigravity', async () => {
+        vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
+            platforms: ['github', 'antigravity']
+        });
+
+        const program = (await import('../../dist/index.js')).default;
+        program.parse(['node', 'index.js', 'inject'], { from: 'user' } as any);
+
+        const githubAgentPath = path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md');
+        const githubAgentContent = await fs.readFile(githubAgentPath, 'utf-8');
+        expect(githubAgentContent.includes('## Phase Gatekeeper (Non-Bypassable)')).toBe(true);
+        expect(githubAgentContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
+        expect(githubAgentContent.includes('Before Phase 4 approval, only write files under `specs/changes/<slug>/`.')).toBe(true);
+
+        const antigravityWorkflowPath = path.join(targetDir, '.agent', 'workflows', 'spec-driven.md');
+        const antigravityWorkflowContent = await fs.readFile(antigravityWorkflowPath, 'utf-8');
+        expect(antigravityWorkflowContent.includes('## Phase Gatekeeper (Non-Bypassable)')).toBe(true);
+        expect(antigravityWorkflowContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
+        expect(antigravityWorkflowContent.includes('Before Phase 4 approval, only write files under `specs/changes/<slug>/`.')).toBe(true);
+    });
+
+    it('inject-guidelines templates require creating all six guideline files by default', async () => {
+        vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
+            platforms: ['github', 'antigravity', 'opencode']
+        });
+
+        const program = (await import('../../dist/index.js')).default;
+        program.parse(['node', 'index.js', 'inject'], { from: 'user' } as any);
+
+        const githubGuidelinesPath = path.join(targetDir, '.github', 'agents', 'inject-guidelines.agent.md');
+        const githubGuidelinesContent = await fs.readFile(githubGuidelinesPath, 'utf-8');
+        expect(githubGuidelinesContent.includes('All 6 guideline documents are REQUIRED outputs.')).toBe(true);
+        expect(githubGuidelinesContent.includes('Never report missing guideline files as optional.')).toBe(true);
+
+        const antigravityGuidelinesPath = path.join(targetDir, '.agent', 'workflows', 'inject-guidelines.md');
+        const antigravityGuidelinesContent = await fs.readFile(antigravityGuidelinesPath, 'utf-8');
+        expect(antigravityGuidelinesContent.includes('All 6 guideline documents are REQUIRED outputs.')).toBe(true);
+        expect(antigravityGuidelinesContent.includes('Never report missing guideline files as optional.')).toBe(true);
+
+        const opencodeGuidelinesPath = path.join(targetDir, '.opencode', 'agents', 'inject-guidelines.agent.md');
+        const opencodeGuidelinesContent = await fs.readFile(opencodeGuidelinesPath, 'utf-8');
+        expect(opencodeGuidelinesContent.includes('All 6 guideline documents are REQUIRED outputs.')).toBe(true);
+        expect(opencodeGuidelinesContent.includes('Never report missing guideline files as optional.')).toBe(true);
+    });
+
+    it('inject command adds spec-driven-steroids MCP to OpenCode config', async () => {
+        const opencodeConfigPath = path.join(targetDir, 'opencode.json');
+        await fs.writeJson(opencodeConfigPath, {});
 
         vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
             platforms: ['opencode']
-        }).mockResolvedValueOnce({
-            mcpServers: []
         });
 
         const program = (await import('../../dist/index.js')).default;
         program.parse(['node', 'index.js', 'inject'], { from: 'user' } as any);
 
         const config = await fs.readJson(opencodeConfigPath);
-        expect(config.skills.length).toBeGreaterThan(0);
-        expect(config.skills.some((skill: string) => skill.includes('spec-driven'))).toBe(true);
+        expect(config.$schema).toBe('https://opencode.ai/config.json');
+        expect(config.mcp).toBeDefined();
+        expect(config.mcp['spec-driven-steroids']).toBeDefined();
+        expect(config.mcp['spec-driven-steroids'].type).toBe('local');
+        expect(config.mcp['spec-driven-steroids'].command[0]).toBe('node');
+        expect(config.mcp['spec-driven-steroids'].command[1]).toMatch(/packages\/[\\/]mcp\/[\\/]dist\/[\\/]index\.js$/);
     });
 
-    it('inject command with MCP servers adds them to config', async () => {
-        vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
-            platforms: ['github']
-        }).mockResolvedValueOnce({
-            mcpServers: ['github', 'linear']
-        });
-
-        const program = (await import('../../dist/index.js')).default;
-        program.parse(['node', 'index.js', 'inject'], { from: 'user' } as any);
-
+    it('inject command adds spec-driven-steroids MCP to GitHub Copilot config', async () => {
         const mcpConfigPath = path.join(targetDir, '.vscode', 'mcp.json');
-        const config = await fs.readJson(mcpConfigPath);
-        expect(config.mcpServers['spec-driven-steroids']).toBeDefined();
-        expect(config.mcpServers.github).toBeDefined();
-        expect(config.mcpServers.linear).toBeDefined();
-    });
-
-    it('inject command merges with existing MCP config', async () => {
-        const vscodeDir = path.join(targetDir, '.vscode');
-        await fs.ensureDir(vscodeDir);
-        const mcpConfigPath = path.join(vscodeDir, 'mcp.json');
-        await fs.writeJson(mcpConfigPath, {
-            mcpServers: {
-                'existing-server': {
-                    command: 'custom',
-                    args: []
-                }
-            }
-        });
 
         vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
             platforms: ['github']
-        }).mockResolvedValueOnce({
-            mcpServers: ['github']
         });
 
         const program = (await import('../../dist/index.js')).default;
         program.parse(['node', 'index.js', 'inject'], { from: 'user' } as any);
 
         const config = await fs.readJson(mcpConfigPath);
-        expect(config.mcpServers['existing-server']).toBeDefined();
+        expect(config.mcpServers).toBeDefined();
         expect(config.mcpServers['spec-driven-steroids']).toBeDefined();
-        expect(config.mcpServers.github).toBeDefined();
+        expect(config.mcpServers['spec-driven-steroids'].command).toBe('node');
+        expect(config.mcpServers['spec-driven-steroids'].args[0]).toMatch(/packages\/[\\/]mcp\/[\\/]dist\/[\\/]index\.js$/);
+    });
+
+    it('inject command adds spec-driven-steroids MCP to Antigravity config', async () => {
+        const mcpConfigPath = path.join(targetDir, '.agent', 'mcp_config.json');
+
+        vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
+            platforms: ['antigravity']
+        });
+
+        const program = (await import('../../dist/index.js')).default;
+        program.parse(['node', 'index.js', 'inject'], { from: 'user' } as any);
+
+        const config = await fs.readJson(mcpConfigPath);
+        expect(config.mcpServers).toBeDefined();
+        expect(config.mcpServers['spec-driven-steroids']).toBeDefined();
+        expect(config.mcpServers['spec-driven-steroids'].command).toBe('node');
+        expect(config.mcpServers['spec-driven-steroids'].args[0]).toMatch(/packages\/[\\/]mcp\/[\\/]dist\/[\\/]index\.js$/);
     });
 });
 
