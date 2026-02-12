@@ -1,5 +1,5 @@
 ---
-name: spec-driven
+name: Spec Driven
 description: Full Spec-Driven flow (Requirements → Design → Tasks → Code).
 ---
 

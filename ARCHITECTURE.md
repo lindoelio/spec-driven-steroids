@@ -35,6 +35,8 @@ flowchart LR
 - **Template-first distribution**: standards are plain Markdown assets, easy to version and copy.
 - **Validator boundary in MCP**: structural and syntax enforcement lives in `packages/mcp`.
 - **Monorepo workspaces**: shared tooling and consistent release workflows across packages.
+- **No-install platform support**: JetBrains IDEs (IntelliJ IDEA, PyCharm, WebStorm, Rider, etc.)
+  use the same GitHub Copilot Chat interface with `.jetbrains/` folder templates—no plugin installation required.
 
 ## Spec-Driven Data Model
 

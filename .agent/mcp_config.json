@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "spec-driven-steroids": {
+      "command": "node",
+      "args": [
+        "/Users/lindoelio/Projects/spec-driven-steroids/packages/mcp/dist/index.js"
+      ]
+    }
+  }
+}

@@ -114,7 +114,7 @@ Configure your AI tool to connect to the MCP server using `pnpm`:
 
 ```json
 {
-  "mcpServers": {
+  "servers": {
     "spec-driven-steroids": {
       "command": "pnpm",
       "args": ["dlx", "@spec-driven-steroids/mcp"]
@@ -132,13 +132,17 @@ Configure your AI tool to connect to the MCP server using `pnpm`:
 Before using the spec-driven flow, we recommend generating project guidelines to
 ensure consistency and best practices.
 
-Use the `@inject-guidelines` command to automatically generate comprehensive
+Use the `/inject-guidelines` command to automatically generate comprehensive
 project documentation with zero configuration.
 
 **GitHub Copilot:**
 
-> `@inject-guidelines` _(Analyzes repository and generates AGENTS.md,
+> `/inject-guidelines` _(Analyzes repository and generates AGENTS.md,
 > CONTRIBUTING.md, STYLEGUIDE.md, TESTING.md, ARCHITECTURE.md, SECURITY.md)_
+
+**GitHub Copilot for JetBrains:**
+
+> `/inject-guidelines` _(Same as VS Code — no plugin installation required)_
 
 **Google Antigravity:**
 
@@ -169,6 +173,10 @@ chat.
 - **Implement**:
   > `@copilot Implement the rate limiter following the tasks in specs/changes/rate-limiter/tasks.md.`
   > _(The agent follows the validated task breakdown with proper traceability)_
+
+- **JetBrains IDEs**: The same agents work in **GitHub Copilot for JetBrains**
+  (IntelliJ IDEA, PyCharm, WebStorm, Rider, etc.) — no plugin installation
+  needed. Copilot Chat uses the `.jetbrains/` folder templates automatically.
 
 ### 3. Google Antigravity
 

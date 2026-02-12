@@ -7,6 +7,7 @@ export interface MockTargetDirOptions {
     mcpServers?: string[];
     existingConfig?: {
         mcpServers?: Record<string, unknown>;
+        servers?: Record<string, unknown>;
     };
 }
 
@@ -69,9 +70,12 @@ export class MockFileSystem {
         const vscodeDir = path.join(rootDir, '.vscode');
         await fsPromises.mkdir(vscodeDir, { recursive: true });
 
-        const config: Record<string, unknown> = options.existingConfig?.mcpServers
-            ? { mcpServers: options.existingConfig.mcpServers }
-            : { mcpServers: {} };
+        let config: Record<string, unknown> = { servers: {} };
+        if (options.existingConfig?.servers) {
+            config = { servers: options.existingConfig.servers };
+        } else if (options.existingConfig?.mcpServers) {
+            config = { mcpServers: options.existingConfig.mcpServers };
+        }
 
         await fsPromises.writeFile(
             path.join(vscodeDir, 'mcp.json'),

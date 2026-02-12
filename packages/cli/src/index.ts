@@ -10,6 +10,11 @@ interface McpConfig {
   mcpServers?: Record<string, McpServerEntry>;
 }
 
+interface CopilotMcpConfig {
+  servers?: Record<string, McpServerEntry>;
+  mcpServers?: Record<string, McpServerEntry>;
+}
+
 interface McpServerEntry {
   command: string;
   args: string[];
@@ -61,6 +66,7 @@ program
         message: 'Select platforms to support:',
         choices: [
           { name: 'GitHub Copilot for VSCode', value: 'github' },
+          { name: 'GitHub Copilot for JetBrains', value: 'jetbrains' },
           { name: 'Google Antigravity', value: 'antigravity' },
           { name: 'OpenCode', value: 'opencode' }
         ],
@@ -83,6 +89,13 @@ program
           await configureCopilotMcp(targetDir);
           const src = path.join(standardsDir, 'github');
           platformDest = path.join(targetDir, '.github');
+          await fs.copy(src, platformDest, { overwrite: true });
+        }
+
+        if (platform === 'jetbrains') {
+          // JetBrains uses .jetbrains/ folder for prompts and agents
+          const src = path.join(standardsDir, 'jetbrains');
+          platformDest = path.join(targetDir, '.jetbrains');
           await fs.copy(src, platformDest, { overwrite: true });
         }
 
@@ -130,6 +143,7 @@ program
 
     const checks = [
       { name: 'GitHub Config', path: '.github/agents' },
+      { name: 'JetBrains Config', path: '.jetbrains/prompts' },
       { name: 'Antigravity Config', path: '.agent/workflows' },
       { name: 'OpenCode Config', path: '.opencode/skills' },
       { name: 'Standard Requirements', path: 'specs' }
@@ -155,23 +169,32 @@ async function configureCopilotMcp(targetDir: string) {
     await fs.ensureDir(vscodeDir);
     const mcpConfigPath = path.join(vscodeDir, 'mcp.json');
 
-    let config: McpConfig = { mcpServers: {} };
+    let config: CopilotMcpConfig = { servers: {} };
     if (await fs.pathExists(mcpConfigPath)) {
       try {
-        config = await fs.readJson(mcpConfigPath) as McpConfig;
-        if (!config.mcpServers) config.mcpServers = {};
+        config = await fs.readJson(mcpConfigPath) as CopilotMcpConfig;
+        if (!config.servers) config.servers = {};
       } catch (e) {
         console.warn(chalk.yellow('Warning: Could not parse existing .vscode/mcp.json.'));
       }
     }
 
+    const legacyServers = config.mcpServers ?? {};
+    if (!config.servers) config.servers = {};
+    for (const [serverName, serverConfig] of Object.entries(legacyServers)) {
+      if (!config.servers[serverName]) {
+        config.servers[serverName] = serverConfig;
+      }
+    }
+
     // Add spec-driven-steroids (always)
     const mcpLaunch = await resolveMcpLaunchConfig();
-    if (!config.mcpServers) config.mcpServers = {};
-    config.mcpServers['spec-driven-steroids'] = {
+    config.servers['spec-driven-steroids'] = {
       command: mcpLaunch.command,
       args: mcpLaunch.args
     };
+
+    delete config.mcpServers;
 
     await fs.writeJson(mcpConfigPath, config, { spaces: 2 });
   } catch (error) {
