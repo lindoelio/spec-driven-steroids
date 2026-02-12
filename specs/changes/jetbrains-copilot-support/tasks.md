@@ -44,7 +44,8 @@ GitHub Copilot support to the `spec-driven-steroids` toolkit.
 - [x] 4.2 Verify template files contain managed section markers. _Implements:
       REQ-6_
 
-**Note**: CLI tests have pre-existing failures unrelated to JetBrains implementation. All JetBrains features are functional and verified manually.
+**Note**: CLI tests have pre-existing failures unrelated to JetBrains
+implementation. All JetBrains features are functional and verified manually.
 
 ### Phase 5: Final Checkpoint
 
