@@ -31,6 +31,7 @@ describe('CLI E2E: inject command', () => {
         const githubDir = path.join(targetDir, '.github');
         expect(await fs.pathExists(githubDir)).toBe(true);
         expect(await fs.pathExists(path.join(githubDir, 'agents'))).toBe(true);
+        expect(await fs.pathExists(path.join(githubDir, 'prompts', 'inject-guidelines.prompt.md'))).toBe(true);
     });
 
     it('inject command with Antigravity platform creates .agent directory structure', async () => {
@@ -111,10 +112,12 @@ describe('CLI E2E: inject command', () => {
         const program = (await import('../../dist/index.js')).default;
         program.parse(['node', 'index.js', 'inject'], { from: 'user' } as any);
 
-        const githubGuidelinesPath = path.join(targetDir, '.github', 'agents', 'inject-guidelines.agent.md');
-        const githubGuidelinesContent = await fs.readFile(githubGuidelinesPath, 'utf-8');
-        expect(githubGuidelinesContent.includes('All 6 guideline documents are REQUIRED outputs.')).toBe(true);
-        expect(githubGuidelinesContent.includes('Never report missing guideline files as optional.')).toBe(true);
+        const githubPromptPath = path.join(targetDir, '.github', 'prompts', 'inject-guidelines.prompt.md');
+        const githubPromptContent = await fs.readFile(githubPromptPath, 'utf-8');
+        expect(githubPromptContent.includes('All 6 guideline documents are REQUIRED outputs.')).toBe(true);
+        expect(githubPromptContent.includes('Never report missing guideline files as optional.')).toBe(true);
+        // GitHub agent shim is intentionally removed in favor of the Copilot prompt
+        expect(await fs.pathExists(path.join(targetDir, '.github', 'agents', 'inject-guidelines.agent.md'))).toBe(false);
 
         const antigravityGuidelinesPath = path.join(targetDir, '.agent', 'workflows', 'inject-guidelines.md');
         const antigravityGuidelinesContent = await fs.readFile(antigravityGuidelinesPath, 'utf-8');
@@ -158,10 +161,36 @@ describe('CLI E2E: inject command', () => {
         program.parse(['node', 'index.js', 'inject'], { from: 'user' } as any);
 
         const config = await fs.readJson(mcpConfigPath);
-        expect(config.mcpServers).toBeDefined();
-        expect(config.mcpServers['spec-driven-steroids']).toBeDefined();
-        expect(config.mcpServers['spec-driven-steroids'].command).toBe('node');
-        expect(config.mcpServers['spec-driven-steroids'].args[0]).toMatch(/packages\/[\\/]mcp\/[\\/]dist\/[\\/]index\.js$/);
+        expect(config.servers).toBeDefined();
+        expect(config.servers['spec-driven-steroids']).toBeDefined();
+        expect(config.servers['spec-driven-steroids'].command).toBe('node');
+        expect(config.servers['spec-driven-steroids'].args[0]).toMatch(/packages\/[\\/]mcp\/[\\/]dist\/[\\/]index\.js$/);
+    });
+
+    it('inject command migrates legacy GitHub Copilot mcpServers key to servers', async () => {
+        const mcpConfigPath = path.join(targetDir, '.vscode', 'mcp.json');
+        await fs.ensureDir(path.dirname(mcpConfigPath));
+        await fs.writeJson(mcpConfigPath, {
+            mcpServers: {
+                existing: {
+                    command: 'node',
+                    args: ['existing.js']
+                }
+            }
+        });
+
+        vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
+            platforms: ['github']
+        });
+
+        const program = (await import('../../dist/index.js')).default;
+        program.parse(['node', 'index.js', 'inject'], { from: 'user' } as any);
+
+        const config = await fs.readJson(mcpConfigPath);
+        expect(config.servers).toBeDefined();
+        expect(config.servers.existing).toBeDefined();
+        expect(config.servers['spec-driven-steroids']).toBeDefined();
+        expect(config.mcpServers).toBeUndefined();
     });
 
     it('inject command adds spec-driven-steroids MCP to Antigravity config', async () => {
