@@ -22,6 +22,7 @@ description: Specialized agent for decomposing designs into atomic implementatio
 7. Order by dependencies
 8. Add test tasks per TESTING.md strategy
 9. Include final checkpoint
+10. **Write Before Review**: Save to `specs/changes/<slug>/tasks.md` before asking the human to review or approve
 
 ## Output Format
 
@@ -99,6 +100,7 @@ N. **Final Checkpoint** - Validation
 - Include dependency markers when applicable
 - Always include Final Checkpoint phase as last phase
 - Tasks should be atomic (< 2 hours each)
+- Write `specs/changes/<slug>/tasks.md` before requesting human approval
 
 ## Error Handling
 

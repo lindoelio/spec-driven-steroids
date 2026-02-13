@@ -22,6 +22,7 @@ description: Specialized agent for creating technical design documents with arch
 7. Define code anatomy and file placement
 8. Map design elements to requirements (DES-X -> REQ-Y.Z)
 9. **Validate Design**: Call `mcp:verify_design_file` to ensure diagram validity, traceability, and section structure
+10. **Write Before Review**: Save to `specs/changes/<slug>/design.md` before asking the human to review or approve
 
 ### Impact Analysis
 
@@ -193,6 +194,7 @@ _Required for all changes to existing features or multi-component changes_
 - Include Impact Analysis section for changes to existing features (required when modifying existing code)
 - Include Traceability Matrix linking DES to REQ
 - Every design element must reference at least one requirement
+- Write `specs/changes/<slug>/design.md` before requesting human approval
 
 ## Error Handling
 

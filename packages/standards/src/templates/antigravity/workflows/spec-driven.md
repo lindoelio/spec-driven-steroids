@@ -16,10 +16,11 @@ You MUST enforce this lifecycle exactly: `requirements -> design -> tasks -> imp
 - Before Phase 4 is explicitly approved by the human, do not write implementation code.
 - Before Phase 4 approval, only write files under `specs/changes/<slug>/`.
 - Every phase transition requires explicit human approval.
+- For requirements/design/tasks artifacts, always validate and write the file first, then ask for approval to proceed.
 
 If a user asks for direct implementation before requirements, respond with:
 
-"I can implement this, but per Spec-Driven flow I must start with Phase 1 (requirements) first. I will propose a slug and draft `specs/changes/<slug>/requirements.md` for your approval."
+"I can implement this, but per Spec-Driven flow I must start with Phase 1 (requirements) first. I will propose a slug, write `specs/changes/<slug>/requirements.md`, and then ask for your approval to proceed."
 
 ## 0. Setup
 - Generate a short slug for the change (e.g., `auth-refactor`).
@@ -29,18 +30,18 @@ If a user asks for direct implementation before requirements, respond with:
 - **Action**: Invoke the `spec-driven-requirements-writer` skill.
 - **Goal**: Produce a Markdown requirement using EARS syntax in `specs/changes/<slug>/requirements.md`.
 - **Validation**: Call `mcp:verify_requirements_file` to validate sections, numbering, and EARS patterns.
-- **Review**: STOP and ask: "Human, does this requirement accurately reflect your intent?"
+- **Review**: After writing the file, STOP and ask: "Human, does this requirement accurately reflect your intent?"
 
 ## 2. Technical Design
 - **Action**: Invoke the `spec-driven-technical-designer` skill.
 - **Goal**: Create architecture diagrams (Mermaid) and code anatomy in `specs/changes/<slug>/design.md`.
 - **Validation**: Call `mcp:verify_design_file` with requirements content to validate diagrams, traceability, and structure.
-- **Review**: STOP and ask the human to review the design decisions.
+- **Review**: After writing the file, STOP and ask the human to review the design decisions.
 
 ## 3. Atomic Tasks
 - **Action**: Invoke the `spec-driven-task-decomposer` skill.
 - **Goal**: Break the design into numbered implementation tasks in `specs/changes/<slug>/tasks.md`.
-- **Review**: Confirm the task list with the human.
+- **Review**: After writing the file, confirm the task list with the human.
 
 ## 4. Implementation
 - **Action**: Invoke the `spec-driven-task-implementer` skill.

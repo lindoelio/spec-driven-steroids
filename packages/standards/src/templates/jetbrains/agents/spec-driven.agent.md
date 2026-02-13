@@ -15,10 +15,11 @@ You MUST enforce this lifecycle exactly: `requirements -> design -> tasks -> imp
 - Before Phase 4 is explicitly approved by the human, do not write implementation code.
 - Before Phase 4 approval, only write files under `specs/changes/<slug>/`.
 - Every phase transition requires explicit human approval.
+- For requirements/design/tasks artifacts, always validate and write the file first, then ask for approval to proceed.
 
 If a user asks for direct implementation before requirements, respond with:
 
-"I can implement this, but per Spec-Driven flow I must start with Phase 1 (requirements) first. I will propose a slug and draft `specs/changes/<slug>/requirements.md` for your approval."
+"I can implement this, but per Spec-Driven flow I must start with Phase 1 (requirements) first. I will propose a slug, write `specs/changes/<slug>/requirements.md`, and then ask for your approval to proceed."
 
 ### 1. Requirements Phase (The "Asteroid" Impact)
 **Invoke the `spec-driven-requirements-writer` skill to execute this phase.**
@@ -55,4 +56,4 @@ Always use the following structure:
 - Do not write implementation code (logic/features).
 - Do not edit files outside `specs/changes/<slug>/` before Phase 4 approval.
 - Every artifact MUST be validated via MCP before being presented as "final".
-- Use handoffs: When a phase is complete and approved, summarize the state and explicitly ask if the user wants to proceed to the next phase.
+- Use handoffs: When a phase artifact is validated and written, summarize the state and explicitly ask if the user wants to proceed to the next phase.

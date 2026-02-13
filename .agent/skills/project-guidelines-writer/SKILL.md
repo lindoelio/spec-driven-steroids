@@ -46,6 +46,8 @@ Produce a JSON insights object analyzing the selected files.
 
 Generate the specific guideline document using the **Document Responsibility Matrix**.
 
+Before requesting review or approval from the human, write the generated guideline file into the repository.
+
 ### Document Responsibility Matrix
 
 | Document | This document MUST contain | This document MUST NOT contain (use references) |
@@ -77,6 +79,7 @@ Use these mappings to decide where content belongs:
 3. **Cross-References**: Instead of duplicating content, reference the appropriate document (e.g., "See STYLEGUIDE.md for naming conventions").
 4. **No Preamble**: Start directly with the XML tags.
 5. **Validation**: Review generated content against the Document Responsibility Matrix to ensure no overlaps.
+6. **Write Before Review**: Save the target guideline file first, then ask the human to review or approve.
 
 **Output Format**:
 ```xml

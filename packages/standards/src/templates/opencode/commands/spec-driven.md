@@ -11,4 +11,4 @@ Enforce the phase gatekeeper strictly:
 - Begin at Phase 1 (requirements)
 - Do not implement code yet
 - Propose a slug and draft `specs/changes/<slug>/requirements.md`
-- Ask for human approval before moving to design
+- Write `specs/changes/<slug>/requirements.md` first, then ask for human approval before moving to design

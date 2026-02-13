@@ -1,7 +1,6 @@
 # Spec Driven Steroids 💪
 
-> Inject Spec-Driven intelligence into your favorite AI Agents. Rigorous.
-> Simple. Frictionless.
+> Inject Spec-Driven workflow into your favorite AI Agents. Rigorous. Simple. Frictionless.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -22,12 +21,20 @@ directly into the native environments of your favorite AI tools.
 
 **Supported Platforms:**
 
-- GitHub Copilot (VS Code)
+- GitHub Copilot (VS Code and JetBrains IDEs)
 - Google Antigravity
 - OpenCode
 
-We are actively working on expanding support and are open to contributions. If
-your favorite AI tool isn't supported yet, we'd love to hear from you!
+We are actively working on expanding support and are open to contributions. If your favorite AI tool isn't supported yet, we'd love to hear from you!
+
+---
+
+## Future Roadmap
+
+- [ ] **Codex** - Support for OpenAI's Codex integration
+- [ ] **Claude Code** - Anthropic's Claude Code integration
+- [ ] **KiloCode** - Support for KiloCode AI coding assistant
+- [ ] **Custom Templates** - User-defined spec templates
 
 ---
 
@@ -47,8 +54,8 @@ your favorite AI tool isn't supported yet, we'd love to hear from you!
 ```
 packages/
  ├── mcp/                 # Node.js MCP Server (The Enforcer)
- ├── standards/             # Markdown templates for Skills & Agents (The Brain)
- └── cli/                  # Terminal interface for injections (The Injector)
+ ├── standards/           # Markdown templates for Skills & Agents (The Brain)
+ └── cli/                 # Terminal interface for injections (The Injector)
 ```
 
 ---
@@ -66,6 +73,8 @@ npm install -g spec-driven-steroids
 This installs the CLI globally for easy access from any directory.
 
 #### Option B: Build from Source
+
+You need to have Node.js and pnpm installed (npm install -g pnpm && pnpm setup). Then run:
 
 ```bash
 # Clone the repository
@@ -91,37 +100,7 @@ Navigate to your target repository and run:
 spec-driven-steroids inject
 ```
 
-**Select your platforms** (GitHub Copilot, Antigravity, or OpenCode) to scaffold
-the necessary `.github/`, `.agent/`, or `.opencode/` configurations.
-
-**Select MCP servers** from the list:
-
-- GitHub MCP
-- Linear MCP
-- Atlassian MCP
-- Supabase MCP
-- Firebase MCP
-- Notion MCP
-- Postman MCP
-- Playwright MCP
-- Svelte MCP
-- Context7 MCP
-- TestStrike MCP
-
-### 3. Connect to Enforcer
-
-Configure your AI tool to connect to the MCP server using `pnpm`:
-
-```json
-{
-  "servers": {
-    "spec-driven-steroids": {
-      "command": "pnpm",
-      "args": ["dlx", "@spec-driven-steroids/mcp"]
-    }
-  }
-}
-```
+**Select your platforms** (GitHub Copilot, Antigravity, or OpenCode) to scaffold the necessary `.github/`, `.agent/`, or `.opencode/` configurations.
 
 ---
 
@@ -129,32 +108,26 @@ Configure your AI tool to connect to the MCP server using `pnpm`:
 
 ### 1. Generate Project Guidelines (Recommended First)
 
-Before using the spec-driven flow, we recommend generating project guidelines to
-ensure consistency and best practices.
+Before using the spec-driven flow, we recommend generating project guidelines to ensure consistency and best practices.
 
-Use the `/inject-guidelines` command to automatically generate comprehensive
-project documentation with zero configuration.
+Use the `/inject-guidelines` command to automatically generate comprehensive project documentation with zero configuration.
 
-**GitHub Copilot:**
+**GitHub Copilot for VS Code and JetBrains IDEs:**
 
 > `/inject-guidelines` _(Analyzes repository and generates AGENTS.md,
 > CONTRIBUTING.md, STYLEGUIDE.md, TESTING.md, ARCHITECTURE.md, SECURITY.md)_
 
-**GitHub Copilot for JetBrains:**
-
-> `/inject-guidelines` _(Same as VS Code — no plugin installation required)_
-
 **Google Antigravity:**
 
-> `/inject-guidelines` _(Same workflow as GitHub Copilot)_
+> `/inject-guidelines`
 
 **OpenCode:**
 
-> `@inject-guidelines` _(Same workflow as GitHub Copilot)_
+> `/inject-guidelines`
 
 **What it does:**
 
-- Analyzes 10-30 representative files to understand your project
+- Analyzes representative codebase files to understand your project
 - Generates 6 guideline documents using the Document Responsibility Matrix
 - Prompts before overwriting existing files
 - Includes managed section markers for future updates
@@ -191,7 +164,7 @@ Use native **Workflows** to orchestrate the entire process.
 Spec Driven Steroids injects a **Primary Agent** and **Skills** for OpenCode.
 
 - **Plan a Feature with Spec-Driven Agent**:
-  > Switch to the **spec-driven** agent (press Tab) and describe your feature.
+  > Switch to the **Spec Driven** agent (press Tab) and describe your feature.
   > _The agent guides you through:_ _1. **Requirements** - EARS format with MCP
   > validation_ _2. **Technical Design** - Mermaid diagrams with traceability_
   > _3. **Task Decomposition** - Atomic, numbered implementation tasks_ _4.
@@ -239,57 +212,6 @@ The MCP server provides 5 comprehensive validation tools:
 - **Folder Convention**:
   `specs/changes/<slug>/[requirements.md | design.md | tasks.md]`
 - **Traceability**: Every design and task must link back to a requirement ID
-
----
-
-## MCP Server Selection
-
-The CLI supports 11 MCP servers:
-
-- **GitHub MCP** - Repository management, file operations, GitHub API
-  integration
-- **Linear MCP** - Issue tracking, projects, and comments
-- **Atlassian MCP** - Jira and Confluence integration
-- **Supabase MCP** - Database and auth services
-- **Firebase MCP** - Firebase tools integration
-- **Notion MCP** - Notion API integration
-- **Postman MCP** - API collection and testing
-- **Playwright MCP** - Browser automation and testing
-- **Svelte MCP** - Svelte development tools
-- **Context7 MCP** - Search with Context7 API
-- **TestStrike MCP** - Test automation (research needed)
-
-**Note**: MCP servers requiring API keys (GitHub, Linear, Atlassian, Supabase,
-Notion, Postman, Context7) will display documentation links during injection.
-Configuration of API keys is left to the user.
-
----
-
-## Impact Analysis
-
-The Technical Designer skill includes a comprehensive **Impact Analysis**
-section for changes to existing features:
-
-**What's Analyzed:**
-
-- Affected modules, files, and components
-- Data flow and dependencies
-- External services or APIs
-- Existing test coverage gaps
-
-**Risk Categories:**
-
-- Breaking changes (API, schema changes)
-- Performance implications
-- Security considerations
-- Migration needs
-
-**Mitigation Planning:**
-
-- Backward compatibility requirements
-- Rollback strategies
-- Testing strategies (unit, integration, regression)
-- Gradual rollout for high-risk changes
 
 ---
 
@@ -356,21 +278,20 @@ files. For automated version bumping with release notes, consider integrating
 
 ---
 
-## Roadmap
+## Future Roadmap
 
-- [ ] **JetBrains IDEs** - IntelliJ IDEA, PyCharm, WebStorm, and other JetBrains
-      products
 - [ ] **Codex** - Support for OpenAI's Codex integration
 - [ ] **Claude Code** - Anthropic's Claude Code integration
-- [ ] **More MCP Tools** - Additional validation capabilities
+- [ ] **KiloCode** - Support for KiloCode AI coding assistant
 - [ ] **Custom Templates** - User-defined spec templates
-- [ ] **CI/CD Integration** - Automated spec validation in pipelines
+
+---
 
 ## Contributing
 
 Spec Driven Steroids is open to contributions! Whether you want to:
 
-- Add support for a new platform (JetBrains, Codex, Claude Code, etc.)
+- Add support for a new platforms
 - Improve MCP validation tools
 - Enhance documentation
 - Submit bug reports or feature requests

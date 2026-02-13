@@ -22,6 +22,7 @@ description: Specialized agent for writing EARS-format requirements documents.
 5. Define glossary terms
 6. Structure as numbered acceptance criteria
 7. **Validate Requirements**: Call `mcp:verify_requirements_file` to ensure EARS syntax compliance, proper numbering, and section structure
+8. **Write Before Review**: Save to `specs/changes/<slug>/requirements.md` before asking the human to review or approve
 
 ## EARS Patterns
 
@@ -86,6 +87,7 @@ The output **MUST** follow this exact structure:
 - Number acceptance criteria within each requirement (1.1, 1.2, etc.)
 - Include both happy path and error scenarios
 - Use EARS pattern annotations in parentheses
+- Write `specs/changes/<slug>/requirements.md` before requesting human approval
 
 ## Error Handling
 
