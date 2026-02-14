@@ -5,15 +5,25 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const fixturesDir = path.join(__dirname, 'fixtures');
+async function resolveFixturesDir(): Promise<string> {
+    const distFixturesDir = path.join(__dirname, 'fixtures');
+    try {
+        await fsPromises.access(distFixturesDir);
+        return distFixturesDir;
+    } catch {
+        return path.resolve(__dirname, '../../src/fixtures/fixtures');
+    }
+}
 
 export async function getFixtureContent(fixtureName: string, filename: string): Promise<string> {
+    const fixturesDir = await resolveFixturesDir();
     const filePath = path.join(fixturesDir, fixtureName, filename);
     return await fsPromises.readFile(filePath, 'utf-8');
 }
 
 export async function getFixtureFiles(fixtureName: string): Promise<Record<string, string>> {
     const files: Record<string, string> = {};
+    const fixturesDir = await resolveFixturesDir();
     const fixturePath = path.join(fixturesDir, fixtureName);
     const entries = await fsPromises.readdir(fixturePath);
 

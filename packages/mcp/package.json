@@ -1,6 +1,6 @@
 {
     "name": "@spec-driven-steroids/mcp",
-    "version": "0.2.0",
+    "version": "0.2.2",
     "description": "MCP Server for Spec Driven Steroids structure enforcement",
     "type": "module",
     "main": "dist/index.js",
@@ -17,7 +17,7 @@
         "build": "tsc",
         "start": "node dist/index.js",
         "dev": "tsc -w",
-        "test": "vitest",
+        "test": "vitest run",
         "test:ui": "vitest --ui",
         "test:coverage": "vitest --coverage",
         "prepublishOnly": "pnpm build"

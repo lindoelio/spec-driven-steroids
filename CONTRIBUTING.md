@@ -13,7 +13,21 @@ Thanks for contributing to `spec-driven-steroids`.
    - `pnpm lint`
    - `pnpm test`
 4. Commit using conventional commit style.
-5. Open a PR with a clear problem statement, approach, and validation notes.
+5. **Add a changeset** if your changes affect published packages:
+   ```bash
+   pnpm changeset
+   ```
+   Select affected packages and version bump type (patch/minor/major).
+6. Open a PR with a clear problem statement, approach, and validation notes.
+
+## Release Tag Policy
+
+- Every published release must have an annotated git tag in the format `vX.Y.Z`.
+- After running `pnpm changeset:version` and committing, create tags with:
+  - `pnpm release:tag`
+  - `pnpm release:push-tags`
+- Always create the tag after the release commit so it references the exact shipped state.
+- If a tag already exists, `pnpm release:tag` should fail (safe behavior; do not overwrite existing tags).
 
 ## Pull Request Expectations
 

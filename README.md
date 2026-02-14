@@ -217,42 +217,50 @@ The MCP server provides 5 comprehensive validation tools:
 
 ## Publishing
 
-The Spec-Driven Steroids monorepo publishes three packages to npm:
+The Spec-Driven Steroids monorepo publishes three packages to npm using [Changesets](https://github.com/changesets/changesets) for version management:
 
-### Publish All Packages
+- `spec-driven-steroids` - Main CLI
+- `@spec-driven-steroids/mcp` - MCP Server
+- `@spec-driven-steroids/standards` - Universal standards and templates
 
-From the repository root:
+### Release Workflow
 
-```bash
-# Build and publish all packages
-pnpm release
-```
+1. **Create a changeset** describing your change:
 
-This will:
+   ```bash
+   pnpm changeset
+   ```
 
-1. Build all packages (`pnpm build`)
-2. Bump versions using Changeset (optional setup required)
-3. Publish all packages to public npm registry
+   Select the packages affected and choose the version bump type (patch/minor/major).
 
-### Publish Individual Packages
+2. **Bump versions & update CHANGELOGs**:
 
-**CLI Package:**
+   ```bash
+   pnpm changeset:version
+   ```
 
-```bash
-pnpm release:cli
-```
+3. **Commit the version changes**:
 
-**MCP Server Package:**
+   ```bash
+   git add . && git commit -m "chore: version packages"
+   ```
 
-```bash
-pnpm release:mcp
-```
+4. **Create and push a release tag**:
 
-**Standards Package:**
+   ```bash
+   pnpm release:tag
+   pnpm release:push-tags
+   ```
 
-```bash
-pnpm release:standards
-```
+   This creates an annotated git tag in the format `vX.Y.Z` from `packages/cli/package.json`.
+   Create the tag **after** committing release/version files so the tag points to the exact released commit.
+   If the tag already exists, `pnpm release:tag` fails safely to prevent accidental tag overwrite.
+
+5. **Publish to npm**:
+
+   ```bash
+   pnpm changeset:publish
+   ```
 
 ### Prerequisites
 
@@ -260,20 +268,10 @@ Before publishing, ensure you have:
 
 1. **npm account**: Create one at [npmjs.com](https://www.npmjs.com)
 2. **Authenticated**: Run `npm login` to authenticate
-3. **Built packages**: Run `pnpm build` to create distributables
-
-### Package Access
-
-All packages are published as **public** packages:
-
-- `spec-driven-steroids` - Main CLI
-- `@spec-driven-steroids/mcp` - MCP Server
-- `@spec-driven-steroids/standards` - Universal standards and templates
 
 ### Version Management
 
-Each package has independent versions managed in their respective `package.json`
-files.
+All publishable packages use **fixed versioning** - they share the same version number and are released together. This ensures compatibility across the toolkit.
 
 ---
 

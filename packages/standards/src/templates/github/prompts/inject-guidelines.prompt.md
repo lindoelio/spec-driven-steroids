@@ -51,6 +51,8 @@ Document Responsibility Matrix (short):
 
 Output rules & constraints:
 - Always generate all six documents by default.
+- All 6 guideline documents are REQUIRED outputs.
+- Never report missing guideline files as optional.
 - Use managed section markers for generated blocks.
 - Cross-reference other guideline docs rather than duplicating content.
 - Do NOT generate implementation code or feature specs.

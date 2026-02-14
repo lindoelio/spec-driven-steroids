@@ -93,8 +93,8 @@ program
         }
 
         if (platform === 'jetbrains') {
-          // JetBrains uses .jetbrains/ folder for prompts and agents
-          const src = path.join(standardsDir, 'jetbrains');
+          // JetBrains uses the same Copilot templates as VS Code, but in .jetbrains/
+          const src = path.join(standardsDir, 'github');
           platformDest = path.join(targetDir, '.jetbrains');
           await fs.copy(src, platformDest, { overwrite: true });
         }
@@ -161,7 +161,20 @@ program
     console.log(chalk.yellow('\nTip: Make sure to connect your MCP server to enable structural validation.\n'));
   });
 
-program.parse();
+function isCliEntrypoint(): boolean {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  return path.resolve(entry) === __filename;
+}
+
+if (isCliEntrypoint()) {
+  program.parseAsync().catch((error) => {
+    console.error(chalk.red('Fatal CLI error:'), error);
+    process.exit(1);
+  });
+}
+
+export default program;
 
 async function configureCopilotMcp(targetDir: string) {
   try {

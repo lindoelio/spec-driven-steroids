@@ -22,7 +22,7 @@ interface FormattedError {
   skillDocLink?: string;
 }
 
-function formatError(error: FormattedError): string {
+export function formatError(error: FormattedError): string {
   const { errorType, context, suggestedFix, skillDocLink } = error;
   let message = `[${errorType}] → ${context} → ${suggestedFix}`;
 
@@ -33,7 +33,7 @@ function formatError(error: FormattedError): string {
   return message;
 }
 
-function findLineNumber(content: string, pattern: RegExp): number {
+export function findLineNumber(content: string, pattern: RegExp): number {
   const lines = content.split('\n');
   for (let i = 0; i < lines.length; i++) {
     if (pattern.test(lines[i])) {
@@ -43,17 +43,59 @@ function findLineNumber(content: string, pattern: RegExp): number {
   return -1;
 }
 
-function addLineInfo(error: string, line: number): string {
+export function addLineInfo(error: string, line: number): string {
   if (line > 0) {
     return `${error}\n   Line: ${line}`;
   }
   return error;
 }
 
+function unique(values: string[]): string[] {
+  return [...new Set(values)];
+}
+
+function stripInlineMarkdown(value: string): string {
+  return value.replace(/[*_`]/g, '');
+}
+
+function extractRequirementIds(content: string): string[] {
+  const fromHeadings = Array.from(content.matchAll(/^###\s+Requirement\s+(\d+)\s*:/gmi), (match) => `REQ-${match[1]}`);
+  const explicit = content.match(/REQ-\d+/g) || [];
+  return unique([...fromHeadings, ...explicit]);
+}
+
+function extractAcceptanceCriteriaRefs(content: string): string[] {
+  const refs: string[] = [];
+  const explicit = content.match(/REQ-\d+\.\d+/g) || [];
+  refs.push(...explicit);
+
+  const lines = content.split('\n');
+  let currentReq: string | null = null;
+
+  for (const line of lines) {
+    const heading = line.match(/^###\s+Requirement\s+(\d+)\s*:/i);
+    if (heading) {
+      currentReq = heading[1];
+      continue;
+    }
+
+    if (!currentReq) {
+      continue;
+    }
+
+    const criteria = line.match(/^\s*(\d+)(?:\.\d+)?(?:\.)?\s+/);
+    if (criteria) {
+      refs.push(`REQ-${currentReq}.${criteria[1]}`);
+    }
+  }
+
+  return unique(refs);
+}
+
 const server = new Server(
   {
     name: "spec-driven-steroids-mcp",
-    version: "0.1.0",
+    version: "0.2.1",
   },
   {
     capabilities: {
@@ -79,15 +121,23 @@ async function verifySpecStructure(
   const specDir = path.join(targetDir, "specs", "changes", slug);
 
   // Check if directory exists
+  let files: string[] = [];
   try {
     const stats = await fs.stat(specDir);
     if (!stats.isDirectory()) {
-      errors.push(formatError({
-        errorType: "Structure Error",
-        context: `Path is not a directory: ${specDir}`,
-        suggestedFix: "Create spec directory with: mkdir -p specs/changes/{slug}"
-      }));
-      return { valid: false, errors, warnings };
+      const fileContent = await fs.readFile(specDir, "utf-8").catch(() => "");
+      if (fileContent.trim().length === 0) {
+        files = [];
+      } else {
+        errors.push(formatError({
+          errorType: "Structure Error",
+          context: `Path is not a directory: ${specDir}`,
+          suggestedFix: "Create spec directory with: mkdir -p specs/changes/{slug}"
+        }));
+        return { valid: false, errors, warnings };
+      }
+    } else {
+      files = await fs.readdir(specDir);
     }
   } catch {
     errors.push(formatError({
@@ -100,7 +150,6 @@ async function verifySpecStructure(
 
   // Check for required files
   const requiredFiles = ["requirements.md", "design.md", "tasks.md"];
-  const files = await fs.readdir(specDir);
 
   for (const requiredFile of requiredFiles) {
     if (!files.includes(requiredFile)) {
@@ -150,8 +199,10 @@ function verifyRequirementsFile(content: string): {
   const requirementsFound: string[] = [];
   const earsPatterns: string[] = [];
 
+  const enforceDocumentSections = content.includes('# Requirements Document');
+
   // Check for required sections
-  if (!content.includes('## Introduction')) {
+  if (enforceDocumentSections && !content.includes('## Introduction')) {
     errors.push(formatError({
       errorType: "Structure Error",
       context: "Introduction section not found",
@@ -159,7 +210,7 @@ function verifyRequirementsFile(content: string): {
       skillDocLink: SKILL_DOCS.requirements
     }));
   }
-  if (!content.includes('## Glossary')) {
+  if (enforceDocumentSections && !content.includes('## Glossary')) {
     errors.push(formatError({
       errorType: "Structure Error",
       context: "Glossary section not found",
@@ -167,7 +218,7 @@ function verifyRequirementsFile(content: string): {
       skillDocLink: SKILL_DOCS.requirements
     }));
   }
-  if (!content.includes('## Requirements')) {
+  if (enforceDocumentSections && !content.includes('## Requirements')) {
     errors.push(formatError({
       errorType: "Structure Error",
       context: "Requirements section not found",
@@ -177,8 +228,8 @@ function verifyRequirementsFile(content: string): {
   }
 
   // Extract requirement IDs
-  const reqMatches = content.match(/REQ-\d+/g);
-  if (reqMatches) {
+  const reqMatches = extractRequirementIds(content);
+  if (reqMatches.length > 0) {
     requirementsFound.push(...reqMatches);
   } else {
     errors.push(formatError({
@@ -207,7 +258,7 @@ function verifyRequirementsFile(content: string): {
   }
 
   // Check for acceptance criteria numbering
-  const acceptanceCriteriaMatches = content.match(/\d+\.\d+/g);
+  const acceptanceCriteriaMatches = content.match(/^\s*\d+(?:\.\d+)?(?:\.)?\s+/gm);
   if (!acceptanceCriteriaMatches || acceptanceCriteriaMatches.length === 0) {
     errors.push(formatError({
       errorType: "Format Error",
@@ -245,8 +296,10 @@ function verifyDesignFile(content: string, requirementsContent?: string): {
   const orphaned: string[] = [];
   const invalidReqRefs: string[] = [];
 
-  // Check for required sections
-  if (!content.includes('## Overview')) {
+  const enforceDocumentSections = /##\s+(Overview|Code Anatomy|Traceability Matrix)/i.test(content) || content.includes('# Design Document');
+
+  // Check for required sections (only when validating a full design document)
+  if (enforceDocumentSections && !content.includes('## Overview')) {
     errors.push(formatError({
       errorType: "Structure Error",
       context: "Overview section not found",
@@ -254,7 +307,7 @@ function verifyDesignFile(content: string, requirementsContent?: string): {
       skillDocLink: SKILL_DOCS.design
     }));
   }
-  if (!content.includes('## System Architecture')) {
+  if (enforceDocumentSections && !content.includes('## System Architecture')) {
     errors.push(formatError({
       errorType: "Structure Error",
       context: "System Architecture section not found",
@@ -262,7 +315,7 @@ function verifyDesignFile(content: string, requirementsContent?: string): {
       skillDocLink: SKILL_DOCS.design
     }));
   }
-  if (!content.includes('## Code Anatomy')) {
+  if (enforceDocumentSections && !content.includes('## Code Anatomy')) {
     errors.push(formatError({
       errorType: "Structure Error",
       context: "Code Anatomy section not found",
@@ -282,7 +335,7 @@ function verifyDesignFile(content: string, requirementsContent?: string): {
   }
 
   // Extract design element IDs
-  const desMatches = content.match(/DES-\d+/g);
+  const desMatches = Array.from(content.matchAll(/^###\s+(DES-\d+)\b/gm), (match) => match[1]);
   if (!desMatches || desMatches.length === 0) {
     errors.push(formatError({
       errorType: "Format Error",
@@ -291,46 +344,67 @@ function verifyDesignFile(content: string, requirementsContent?: string): {
       skillDocLink: SKILL_DOCS.design
     }));
   } else {
-    const uniqueDes = [...new Set(desMatches)];
+    const uniqueDes = unique(desMatches);
+    const reqIds: string[] = requirementsContent ? extractAcceptanceCriteriaRefs(requirementsContent) : [];
+    const lines = content.split('\n');
+    const hasAnyTraceabilityTags = /_Implements:/i.test(content);
 
-    // Extract requirement IDs from requirements content
-    const reqIds: string[] = requirementsContent ? (requirementsContent.match(/REQ-\d+\.\d+/g) || []) : [];
-
-    // Check traceability
-    for (const desId of uniqueDes) {
-      // Look for DES-X → REQ-Y.Z pattern
-      const tracePattern = new RegExp(`${desId}.*→.*REQ-\\d+\\.\\d+`);
-      const hasTrace = tracePattern.test(content);
-
-      if (hasTrace) {
-        const traceMatch = content.match(new RegExp(`${desId}.*→.*REQ-\\d+\\.\\d+`));
-        if (traceMatch) {
-          linked.push(traceMatch[0]);
+    if (!hasAnyTraceabilityTags) {
+      return {
+        valid: errors.length === 0,
+        errors,
+        warnings,
+        traceabilityReport: {
+          linked,
+          orphaned,
+          invalidReqRefs
         }
-      } else {
-        const line = findLineNumber(content, new RegExp(`${desId}`));
-        orphaned.push(addLineInfo(desId, line));
-      }
+      };
     }
 
-    // Check for invalid requirement references
-    const traceMatches = content.match(/DES-\d+.*→.*REQ-\d+\.\d+/g) || [];
-    for (const trace of traceMatches) {
-      const reqRef = trace.match(/REQ-\d+\.\d+/);
-      if (reqRef && reqIds.length > 0 && !reqIds.includes(reqRef[0])) {
-        const line = findLineNumber(content, new RegExp(trace));
-        invalidReqRefs.push(addLineInfo(formatError({
+    for (let i = 0; i < uniqueDes.length; i++) {
+      const desId = uniqueDes[i];
+      const start = lines.findIndex((line) => new RegExp(`^###\\s+${desId}\\b`).test(line));
+      const end = i < uniqueDes.length - 1
+        ? lines.findIndex((line, index) => index > start && new RegExp(`^###\\s+${uniqueDes[i + 1]}\\b`).test(line))
+        : lines.length;
+
+      const section = lines.slice(start, end > -1 ? end : lines.length).join('\n');
+      const implementsLine = section.match(/_Implements:[^\n]+/i)?.[0] || '';
+      const reqRefs = implementsLine.match(/REQ-\d+(?:\.\d+)?/g) || [];
+
+      if (reqRefs.length === 0) {
+        const line = findLineNumber(content, new RegExp(`^###\\s+${desId}\\b`, 'm'));
+        const orphan = addLineInfo(desId, line);
+        orphaned.push(orphan);
+        errors.push(formatError({
           errorType: "Traceability Error",
-          context: `${trace} refers to non-existent requirement ${reqRef[0]}`,
-          suggestedFix: `Fix requirement reference or create missing ${reqRef[0]} in requirements.md`,
+          context: `${desId} has no requirement traceability link`,
+          suggestedFix: `Add _Implements: REQ-X.Y_ under ${desId}`,
           skillDocLink: SKILL_DOCS.design
-        }), line));
+        }));
+        continue;
+      }
+
+      for (const reqRef of reqRefs) {
+        linked.push(`${desId} -> ${reqRef}`);
+        if (reqIds.length > 0 && !reqIds.includes(reqRef)) {
+          const line = findLineNumber(content, new RegExp(reqRef.replace('.', '\\.'), 'm'));
+          const invalid = addLineInfo(formatError({
+            errorType: "Traceability Error",
+            context: `${desId} refers to non-existent requirement ${reqRef}`,
+            suggestedFix: `Fix requirement reference or create missing ${reqRef} in requirements.md`,
+            skillDocLink: SKILL_DOCS.design
+          }), line);
+          invalidReqRefs.push(invalid);
+          errors.push(invalid);
+        }
       }
     }
   }
 
   // Check for Traceability Matrix
-  if (!content.includes('## Traceability Matrix')) {
+  if (enforceDocumentSections && !content.includes('## Traceability Matrix')) {
     warnings.push(formatError({
       errorType: "Structure Error",
       context: "Traceability Matrix section not found",
@@ -381,12 +455,12 @@ function verifyTasksFile(content: string): {
   }
 
   // Extract phases
-  const phaseMatches = content.match(/### Phase \d+:/g);
+  const phaseMatches = content.match(/^##\s*Phase\s+\d+\s*:[^\n]*/gmi);
   if (!phaseMatches || phaseMatches.length === 0) {
     errors.push(formatError({
       errorType: "Structure Error",
       context: "No phase headers found",
-      suggestedFix: "Add phase sections using ### Phase 1:, ### Phase 2:, etc.",
+      suggestedFix: "Add phase sections using ## Phase 1:, ## Phase 2:, etc.",
       skillDocLink: SKILL_DOCS.tasks
     }));
   } else {
@@ -394,17 +468,19 @@ function verifyTasksFile(content: string): {
   }
 
   // Check for Final Checkpoint phase
-  if (!content.includes('### Phase.*Final Checkpoint') && !content.includes('Final Checkpoint')) {
+  const hasFinalCheckpoint = phases.some((phase) => /Final\s+Checkpoint/i.test(stripInlineMarkdown(phase)));
+  if (phases.length > 1 && !hasFinalCheckpoint) {
     errors.push(formatError({
       errorType: "Structure Error",
       context: "Final Checkpoint phase not found",
-      suggestedFix: "Add ### Phase X: Final Checkpoint section at end",
+      suggestedFix: "Add ## Phase X: Final Checkpoint section at end",
       skillDocLink: SKILL_DOCS.tasks
     }));
   }
 
   // Extract task IDs from checkbox format
-  const taskMatches = content.match(/- \[.\] \d+\.\d+/g);
+  const lines = content.split('\n');
+  const taskMatches = content.match(/^- \[[^\]]\]\s+.*$/gm);
   if (!taskMatches || taskMatches.length === 0) {
     errors.push(formatError({
       errorType: "Structure Error",
@@ -413,45 +489,77 @@ function verifyTasksFile(content: string): {
       skillDocLink: SKILL_DOCS.tasks
     }));
   } else {
-    const uniqueTasks = [...new Set(taskMatches)];
+    let currentPhaseHeader = "";
 
-    // Check traceability
-    for (const taskLine of uniqueTasks) {
-      const taskId = taskLine.match(/\d+\.\d+/)?.[0] || "";
-      const line = findLineNumber(content, new RegExp(taskId));
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index];
 
-      if (taskId) {
-        // Check for _Implements: DES-X, REQ-Y.Z_ pattern
-        const hasTrace = /_Implements:\s*DES-\d+.*REQ-\d+\.\d+_/.test(taskLine);
-
-        if (hasTrace) {
-          const traceMatch = taskLine.match(/_Implements:\s*DES-\d+.*REQ-\d+\.\d+/);
-          if (traceMatch) {
-            const cleanTrace = traceMatch[0]
-              .replace("_Implements: ", "")
-              .replace(/_/g, "");
-            linked.push(`${taskId} → ${cleanTrace}`);
-          }
-        } else {
-          missingTraces.push(addLineInfo(taskId, line));
-        }
+      if (/^##\s*Phase\s+\d+\s*:/i.test(line)) {
+        currentPhaseHeader = line;
       }
+
+      const taskMatch = line.match(/^- \[([^\]])\]\s+(.*)$/);
+      if (!taskMatch) {
+        continue;
+      }
+
+      const marker = taskMatch[1];
+      const taskLabel = taskMatch[2].trim();
+      const taskId = taskLabel.match(/\d+\.\d+/)?.[0] || taskLabel;
+      const lineNumber = index + 1;
+
+      if (![' ', '~', 'x'].includes(marker)) {
+        errors.push(formatError({
+          errorType: "Format Error",
+          context: "Invalid status marker detected",
+          suggestedFix: "Use only: [ ] (pending), [~] (in progress), [x] (completed)",
+          skillDocLink: SKILL_DOCS.tasks
+        }));
+      }
+
+      if (/Final\s+Checkpoint/i.test(stripInlineMarkdown(currentPhaseHeader))) {
+        continue;
+      }
+
+      const taskBlock: string[] = [line];
+      for (let j = index + 1; j < lines.length; j++) {
+        if (/^- \[[^\]]\]\s+/.test(lines[j]) || /^##\s*Phase\s+\d+\s*:/i.test(lines[j])) {
+          break;
+        }
+        taskBlock.push(lines[j]);
+      }
+
+      const taskText = taskBlock.join('\n');
+      const traceMatch = taskText.match(/_Implements:\s*([^_\n]+)_/i);
+      if (!traceMatch) {
+        missingTraces.push(addLineInfo(taskId, lineNumber));
+        continue;
+      }
+
+      linked.push(`${taskId} → ${traceMatch[1].trim()}`);
     }
   }
 
-  // Check for valid status markers
-  const invalidMarkers = content.match(/- \[[^\]] /g);
-  if (invalidMarkers && invalidMarkers.length > 0) {
+  // Determine if traceability is required based on document structure
+  // If any task has a numbered ID (like 1.1, 1.2), traceability is required
+  const hasNumberedTaskIds = /- \[[^\]]\]\s+\d+\.\d+\b/.test(content);
+  const hasAnyImplementsTags = /_Implements:/i.test(content);
+  const traceabilityRequired = (hasNumberedTaskIds && hasFinalCheckpoint) || hasAnyImplementsTags;
+
+  if (traceabilityRequired && missingTraces.length > 0) {
     errors.push(formatError({
-      errorType: "Format Error",
-      context: "Invalid status marker detected",
-      suggestedFix: "Use only: [ ] (pending), [~] (in progress), [x] (completed)",
+      errorType: "Traceability Error",
+      context: `Missing traceability links for ${missingTraces.length} task(s)`,
+      suggestedFix: "Add _Implements: DES-X_ (and optional REQ-X.Y) to each non-checkpoint task",
       skillDocLink: SKILL_DOCS.tasks
     }));
   }
 
+  // Validation passes if no errors and (either no missing traces or traceability not required)
+  const isValid = errors.length === 0 && (!traceabilityRequired || missingTraces.length === 0);
+
   return {
-    valid: errors.length === 0,
+    valid: isValid,
     errors,
     tasksFound: taskMatches?.length || 0,
     phases,
@@ -769,7 +877,7 @@ export {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("Spec Driven Steroids MCP Server running on stdio");
+  console.error("Spec-Driven Steroids MCP Server running on stdio");
 }
 
 main().catch((error) => {
