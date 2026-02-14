@@ -30,8 +30,15 @@ pnpm-debug.log*
 # Test coverage
 coverage/
 
-# Spec artifacts (user-specific)
-.spec/
-
 # Extensions and packages
 *.vsix
+
+# Spec artifacts (user-specific)
+specs/
+
+# AI engines configs
+.agent/
+.github/
+.opencode/
+opencode.json
+opencode.jsonc

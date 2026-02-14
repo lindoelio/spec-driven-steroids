@@ -1,4 +1,4 @@
-# Spec Driven Steroids 💪
+# Spec-Driven Steroids 💪
 
 > Inject Spec-Driven workflow into your favorite AI Agents. Rigorous. Simple. Frictionless.
 
@@ -8,7 +8,7 @@
 
 ## Vision
 
-**Spec Driven Steroids** is a modular toolkit designed to bring discipline to
+**Spec-Driven Steroids** is a modular toolkit designed to bring discipline to
 AI-powered software engineering. It **injects** high-standard workflows (SDD)
 directly into the native environments of your favorite AI tools.
 
@@ -161,10 +161,10 @@ Use native **Workflows** to orchestrate the entire process.
 
 ### 4. OpenCode
 
-Spec Driven Steroids injects a **Primary Agent** and **Skills** for OpenCode.
+Spec-Driven Steroids injects a **Primary Agent** and **Skills** for OpenCode.
 
 - **Plan a Feature with Spec-Driven Agent**:
-  > Switch to the **Spec Driven** agent (press Tab) and describe your feature.
+  > Switch to the **Spec-Driven** agent (press Tab) and describe your feature.
   > _The agent guides you through:_ _1. **Requirements** - EARS format with MCP
   > validation_ _2. **Technical Design** - Mermaid diagrams with traceability_
   > _3. **Task Decomposition** - Atomic, numbered implementation tasks_ _4.
@@ -217,7 +217,7 @@ The MCP server provides 5 comprehensive validation tools:
 
 ## Publishing
 
-The Spec Driven Steroids monorepo publishes three packages to npm:
+The Spec-Driven Steroids monorepo publishes three packages to npm:
 
 ### Publish All Packages
 
@@ -273,8 +273,7 @@ All packages are published as **public** packages:
 ### Version Management
 
 Each package has independent versions managed in their respective `package.json`
-files. For automated version bumping with release notes, consider integrating
-[Changeset](https://github.com/changesets/changesets).
+files.
 
 ---
 
@@ -289,7 +288,7 @@ files. For automated version bumping with release notes, consider integrating
 
 ## Contributing
 
-Spec Driven Steroids is open to contributions! Whether you want to:
+Spec-Driven Steroids is open to contributions! Whether you want to:
 
 - Add support for a new platforms
 - Improve MCP validation tools
