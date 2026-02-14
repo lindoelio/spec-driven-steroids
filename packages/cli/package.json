@@ -1,7 +1,7 @@
 {
     "name": "spec-driven-steroids",
-    "version": "0.2.2",
-    "description": "CLI to inject Spec Driven Steroids standards into any repository",
+    "version": "0.2.3",
+    "description": "CLI to inject Spec-Driven Steroids standards into any repository",
     "type": "module",
     "main": "dist/index.js",
     "bin": {

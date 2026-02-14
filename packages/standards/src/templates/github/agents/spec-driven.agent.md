@@ -1,5 +1,5 @@
 ---
-name: Spec Driven
+name: Spec-Driven
 description: End-to-end Spec-Driven planner (Requirements → Design → Tasks).
 ---
 
@@ -45,7 +45,9 @@ If a user asks for direct implementation before requirements, respond with:
 **Invoke the `spec-driven-task-decomposer` skill to execute this phase.**
 1. **Decomposition**: Break the design into small, atomic, and numbered implementation tasks.
 2. **Traceability**: Link each task to its corresponding `DES-X` and `REQ-X`.
-3. **Artifact**: Save to `specs/changes/<slug>/tasks.md`.
+3. **Validation**: Call `mcp:verify_tasks_file` with both tasks content and design content. Correct all traceability and structure errors.
+4. **Artifact**: Save to `specs/changes/<slug>/tasks.md`.
+5. **Final Planning Validation**: Call `mcp:verify_complete_spec` for `<slug>` before asking to proceed to implementation.
 
 ### 4. Implementation Phase
 **Invoke the `spec-driven-task-implementer` skill to execute this phase.**

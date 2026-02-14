@@ -45,17 +45,27 @@ interface McpLaunchConfig {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const packageJsonPath = path.resolve(__dirname, '../package.json');
+
+function getCliVersion(): string {
+  try {
+    const pkg = fs.readJsonSync(packageJsonPath) as { version?: string };
+    return pkg.version ?? '0.0.0';
+  } catch {
+    return '0.0.0';
+  }
+}
 
 const program = new Command();
 
 program
   .name('spec-driven-steroids')
-  .description('Inject Spec Driven standards into your repository')
-  .version('0.1.0');
+  .description('Inject Spec-Driven standards into your repository')
+  .version(getCliVersion());
 
 program
   .command('inject')
-  .description('Inject platform-specific Spec Driven configs')
+  .description('Inject platform-specific Spec-Driven configs')
   .action(async () => {
     console.log(chalk.bold.cyan('\n💪 Injecting steroids...\n'));
 
@@ -136,10 +146,10 @@ program
 
 program
   .command('validate')
-  .description('Check if Spec Driven standards are correctly configured')
+  .description('Check if Spec-Driven standards are correctly configured')
   .action(async () => {
     const targetDir = process.cwd();
-    console.log(chalk.cyan('\n🔍 Validating Spec Driven setup...\n'));
+    console.log(chalk.cyan('\n🔍 Validating Spec-Driven setup...\n'));
 
     const checks = [
       { name: 'GitHub Config', path: '.github/agents' },
@@ -164,7 +174,11 @@ program
 function isCliEntrypoint(): boolean {
   const entry = process.argv[1];
   if (!entry) return false;
-  return path.resolve(entry) === __filename;
+  try {
+    return fs.realpathSync(path.resolve(entry)) === fs.realpathSync(__filename);
+  } catch {
+    return false;
+  }
 }
 
 if (isCliEntrypoint()) {

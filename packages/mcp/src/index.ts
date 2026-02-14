@@ -58,6 +58,12 @@ function stripInlineMarkdown(value: string): string {
   return value.replace(/[*_`]/g, '');
 }
 
+function extractDesignElementIds(content: string): string[] {
+  const fromHeadings = Array.from(content.matchAll(/^###\s+(DES-\d+)\b/gmi), (match) => match[1]);
+  const explicit = content.match(/DES-\d+/g) || [];
+  return unique([...fromHeadings, ...explicit]);
+}
+
 function extractRequirementIds(content: string): string[] {
   const fromHeadings = Array.from(content.matchAll(/^###\s+Requirement\s+(\d+)\s*:/gmi), (match) => `REQ-${match[1]}`);
   const explicit = content.match(/REQ-\d+/g) || [];
@@ -429,7 +435,7 @@ function verifyDesignFile(content: string, requirementsContent?: string): {
  * Tool: verify_tasks_file
  * Validates a tasks.md file has all required content and proper structure
  */
-function verifyTasksFile(content: string): {
+function verifyTasksFile(content: string, designContent?: string): {
   valid: boolean;
   errors: string[];
   tasksFound: number;
@@ -555,6 +561,26 @@ function verifyTasksFile(content: string): {
     }));
   }
 
+  if (designContent) {
+    const desIds = extractDesignElementIds(designContent);
+    const implementedDesIds = unique(Array.from(content.matchAll(/_Implements:\s*([^_\n]+)_/gi), (match) => {
+      const desRefs = match[1].match(/DES-\d+/g);
+      return desRefs || [];
+    }).flat());
+
+    for (const implementedDesId of implementedDesIds) {
+      if (!desIds.includes(implementedDesId)) {
+        const line = findLineNumber(content, new RegExp(implementedDesId.replace('.', '\\.'), 'm'));
+        errors.push(addLineInfo(formatError({
+          errorType: "Traceability Error",
+          context: `${implementedDesId} is referenced in tasks but not defined in design.md`,
+          suggestedFix: `Fix task traceability reference or add ${implementedDesId} to design.md`,
+          skillDocLink: SKILL_DOCS.tasks
+        }), line));
+      }
+    }
+  }
+
   // Validation passes if no errors and (either no missing traces or traceability not required)
   const isValid = errors.length === 0 && (!traceabilityRequired || missingTraces.length === 0);
 
@@ -659,7 +685,7 @@ async function verifyCompleteSpec(
   }
 
   if (tasksContent) {
-    const taskResult = verifyTasksFile(tasksContent);
+    const taskResult = verifyTasksFile(tasksContent, designContent);
     if (!taskResult.valid) {
       tasksErrors.push(...taskResult.errors);
     }
@@ -700,106 +726,96 @@ async function verifyCompleteSpec(
   };
 }
 
-server.setRequestHandler(ListToolsRequestSchema, async () => {
-  return {
-    tools: [
-      {
-        name: "verify_spec_structure",
-        description: "Validates spec folder structure and file existence (requires: requirements.md, design.md, tasks.md in specs/changes/<slug>/).",
-        inputSchema: {
-          type: "object",
-          properties: {
-            slug: {
-              type: "string",
-              description: "Short identifier for the spec (e.g., 'rate-limiter-impl')."
-            },
-            targetDir: {
-              type: "string",
-              description: "Base directory to check (default: current working directory)."
-            }
-          },
-          required: ["slug"]
+const TOOL_DEFINITIONS = [
+  {
+    name: "verify_spec_structure",
+    description: "Validates spec folder structure and file existence (requires: requirements.md, design.md, tasks.md in specs/changes/<slug>/).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        slug: {
+          type: "string",
+          description: "Short identifier for the spec (e.g., 'rate-limiter-impl')."
+        },
+        targetDir: {
+          type: "string",
+          description: "Base directory to check (default: current working directory)."
         }
       },
-      {
-        name: "verify_requirements_file",
-        description: "Validates a requirements.md file has all required sections, EARS patterns, and proper numbering.",
-        inputSchema: {
-          type: "object",
-          properties: {
-            content: {
-              type: "string",
-              description: "The Markdown content of requirements.md file."
-            }
-          },
-          required: ["content"]
+      required: ["slug"]
+    }
+  },
+  {
+    name: "verify_requirements_file",
+    description: "Validates a requirements.md file has all required sections, EARS patterns, and proper numbering.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        content: {
+          type: "string",
+          description: "The Markdown content of requirements.md file."
         }
       },
-      {
-        name: "verify_design_file",
-        description: "Validates a design.md file has all required sections, Mermaid diagrams, design element numbering, and traceability links.",
-        inputSchema: {
-          type: "object",
-          properties: {
-            content: {
-              type: "string",
-              description: "The Markdown content of design.md file."
-            },
-            requirementsContent: {
-              type: "string",
-              description: "The content from requirements.md for traceability verification (optional but recommended)."
-            }
-          },
-          required: ["content"]
+      required: ["content"]
+    }
+  },
+  {
+    name: "verify_design_file",
+    description: "Validates a design.md file has all required sections, Mermaid diagrams, design element numbering, and traceability links.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        content: {
+          type: "string",
+          description: "The Markdown content of design.md file."
+        },
+        requirementsContent: {
+          type: "string",
+          description: "The content from requirements.md for traceability verification (optional but recommended)."
         }
       },
-      {
-        name: "verify_tasks_file",
-        description: "Validates a tasks.md file has proper structure, numbering, traceability, and includes Final Checkpoint phase.",
-        inputSchema: {
-          type: "object",
-          properties: {
-            content: {
-              type: "string",
-              description: "The Markdown content of tasks.md file."
-            },
-            designContent: {
-              type: "string",
-              description: "The content from design.md for traceability verification (optional but recommended)."
-            }
-          },
-          required: ["content"]
+      required: ["content"]
+    }
+  },
+  {
+    name: "verify_tasks_file",
+    description: "Validates a tasks.md file has proper structure, numbering, traceability, and includes Final Checkpoint phase.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        content: {
+          type: "string",
+          description: "The Markdown content of tasks.md file."
+        },
+        designContent: {
+          type: "string",
+          description: "The content from design.md for traceability verification (optional but recommended)."
         }
       },
-      {
-        name: "verify_complete_spec",
-        description: "Validates all three spec files (requirements.md, design.md, tasks.md) together for complete workflow validation and cross-file traceability.",
-        inputSchema: {
-          type: "object",
-          properties: {
-            slug: {
-              type: "string",
-              description: "Short identifier for the spec (e.g., 'rate-limiter-impl')."
-            },
-            targetDir: {
-              type: "string",
-              description: "Base directory to check (default: current working directory)."
-            }
-          },
-          required: ["slug"]
+      required: ["content"]
+    }
+  },
+  {
+    name: "verify_complete_spec",
+    description: "Validates all three spec files (requirements.md, design.md, tasks.md) together for complete workflow validation and cross-file traceability.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        slug: {
+          type: "string",
+          description: "Short identifier for the spec (e.g., 'rate-limiter-impl')."
+        },
+        targetDir: {
+          type: "string",
+          description: "Base directory to check (default: current working directory)."
         }
-      }
-    ]
-  };
-});
-
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  const { name, arguments: args } = request.params;
-
-  if (!args) {
-    throw new Error(`No arguments provided for tool: ${name}`);
+      },
+      required: ["slug"]
+    }
   }
+] as const;
 
+async function executeTool(name: string, args: Record<string, unknown>) {
   switch (name) {
     case "verify_spec_structure": {
       const result = await verifySpecStructure(args.slug as string, args.targetDir as string | undefined);
@@ -838,7 +854,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
     case "verify_tasks_file": {
-      const result = verifyTasksFile(args.content as string);
+      const result = verifyTasksFile(args.content as string, args.designContent as string | undefined);
       return {
         content: [
           {
@@ -864,9 +880,27 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
+}
+
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  return {
+    tools: TOOL_DEFINITIONS
+  };
+});
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  const { name, arguments: args } = request.params;
+
+  if (!args) {
+    throw new Error(`No arguments provided for tool: ${name}`);
+  }
+
+  return executeTool(name, args as Record<string, unknown>);
 });
 
 export {
+  TOOL_DEFINITIONS,
+  executeTool,
   verifySpecStructure,
   verifyRequirementsFile,
   verifyDesignFile,

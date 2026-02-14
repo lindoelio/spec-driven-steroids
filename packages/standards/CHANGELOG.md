@@ -12,4 +12,4 @@
 
 ### Minor Changes
 
-- First stable release of Spec Driven Steroids toolkit
+- First stable release of Spec-Driven Steroids toolkit

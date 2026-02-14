@@ -1,5 +1,5 @@
 ---
-name: Spec Driven
+name: Spec-Driven
 description: Primary agent for Spec-Driven flow (Requirements → Design → Tasks → Build Agent Handoff)
 mode: primary
 tools:
@@ -64,7 +64,9 @@ If a user asks for direct implementation before requirements, respond with:
 
 1. **Decomposition**: Break the design into small, atomic, and numbered implementation tasks.
 2. **Traceability**: Link each task to its corresponding `DES-X` and `REQ-X`.
-3. **Artifact**: Save to `specs/changes/<slug>/tasks.md`.
+3. **Validation**: Call `mcp:verify_tasks_file` with both tasks content and design content. Correct all traceability and structure errors.
+4. **Artifact**: Save to `specs/changes/<slug>/tasks.md`.
+5. **Final Planning Validation**: Call `mcp:verify_complete_spec` for `<slug>` before requesting implementation approval.
 
 **After saving the file, STOP and ask**: "Human, confirm the task list. Ready for implementation?"
 

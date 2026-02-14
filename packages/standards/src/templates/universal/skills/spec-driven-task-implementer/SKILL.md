@@ -68,6 +68,7 @@ specs/changes/<feature-id>/
     - `specs/changes/<feature-id>/requirements.md` - What to build
     - `specs/changes/<feature-id>/design.md` - How to build it
     - `specs/changes/<feature-id>/tasks.md` - Task breakdown
+    - Call `mcp:verify_complete_spec` for `<feature-id>` and resolve any blocking errors before starting implementation
 
 3. **Discover Context** (use agent engine tools):
     - Use `Glob` to find relevant files mentioned in design
@@ -85,7 +86,7 @@ Use the checkbox state to track progress:
 Example:
 
 ```markdown
-### Phase 1
+## Phase 1: Implementation
 
 - [ ] 1.1 Add JSON-RPC dispatcher
 - [ ] 1.2 Add health.check method

@@ -1,5 +1,5 @@
 ---
-name: Spec Driven
+name: Spec-Driven
 description: Full Spec-Driven flow (Requirements → Design → Tasks → Code).
 ---
 
@@ -41,6 +41,8 @@ If a user asks for direct implementation before requirements, respond with:
 ## 3. Atomic Tasks
 - **Action**: Invoke the `spec-driven-task-decomposer` skill.
 - **Goal**: Break the design into numbered implementation tasks in `specs/changes/<slug>/tasks.md`.
+- **Validation**: Call `mcp:verify_tasks_file` with tasks content and design content to validate phase format, checkbox structure, and traceability.
+- **Validation**: Call `mcp:verify_complete_spec` for `<slug>` to confirm the full requirements/design/tasks workflow before implementation.
 - **Review**: After writing the file, confirm the task list with the human.
 
 ## 4. Implementation

@@ -61,7 +61,7 @@ pnpm --filter spec-driven-steroids build
 ## 3. Project Structure
 
 - **`packages/mcp`**: The Model Context Protocol server.
-  - Implements `verify_ears_syntax` and `verify_mermaid_syntax` tools.
+  - Implements `verify_spec_structure`, `verify_requirements_file`, `verify_design_file`, `verify_tasks_file`, and `verify_complete_spec` tools.
   - Uses `@modelcontextprotocol/sdk`.
 - **`packages/cli`**: The command-line interface (`spec-driven-steroids`).
   - Handles the `inject` command to set up environments.

@@ -279,6 +279,33 @@ Test.
             expect(result.traceabilityReport.linked.length).toBe(2);
             expect(result.traceabilityReport.missingTraces.length).toBe(1);
         });
+
+        it('validates DES references against design content when provided', () => {
+            const tasks = `## Overview
+
+Test.
+
+## Phase 1: Build
+
+- [ ] 1.1 Task
+  - _Implements: DES-99, REQ-1.1_
+
+## Phase 2: Final Checkpoint
+
+- [ ] 2.1 Verify
+`;
+
+            const design = `# Design Document
+
+## System Architecture
+
+### DES-1: Real component
+`;
+
+            const result = verifyTasksFile(tasks, design);
+            expect(result.valid).toBe(false);
+            expect(result.errors.some(e => e.includes('DES-99'))).toBe(true);
+        });
     });
 
     describe('dependency markers', () => {

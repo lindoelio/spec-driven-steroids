@@ -22,7 +22,9 @@ description: Specialized agent for decomposing designs into atomic implementatio
 7. Order by dependencies
 8. Add test tasks per TESTING.md strategy
 9. Include final checkpoint
-10. **Write Before Review**: Save to `specs/changes/<slug>/tasks.md` before asking the human to review or approve
+10. **Validate Tasks**: Call `mcp:verify_tasks_file` using tasks content and design content; resolve all errors
+11. **Validate Full Spec**: Call `mcp:verify_complete_spec` for `<slug>` to ensure cross-file traceability is complete
+12. **Write Before Review**: Save to `specs/changes/<slug>/tasks.md` before asking the human to review or approve
 
 ## Output Format
 
