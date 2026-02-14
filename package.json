@@ -1,6 +1,6 @@
 {
     "name": "spec-driven-steroids",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "private": true,
     "description": "Inject spec-driven intelligence into your favorite AI Agents. Rigorous. Simple. Frictionless.",
     "repository": {
@@ -19,7 +19,7 @@
         "test:coverage": "vitest --coverage",
         "typecheck": "pnpm -r typecheck",
         "changeset": "changeset",
-        "changeset:version": "changeset version",
+        "changeset:version": "changeset version && node scripts/sync-root-version.mjs",
         "changeset:publish": "changeset publish",
         "release:tag": "git tag -a $(node scripts/create-release-tag.mjs) -m \"release $(node scripts/create-release-tag.mjs)\"",
         "release:push-tags": "git push --follow-tags",
