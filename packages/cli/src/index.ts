@@ -172,13 +172,21 @@ program
   });
 
 function isCliEntrypoint(): boolean {
+  if (process.env.VITEST) return false;
+
   const entry = process.argv[1];
   if (!entry) return false;
+
   try {
-    return fs.realpathSync(path.resolve(entry)) === fs.realpathSync(__filename);
+    if (fs.realpathSync(path.resolve(entry)) === fs.realpathSync(__filename)) {
+      return true;
+    }
   } catch {
-    return false;
+    // Fall through to path heuristics used by package-manager wrappers.
   }
+
+  const normalizedEntry = entry.replace(/\\/g, '/');
+  return normalizedEntry.includes('spec-driven-steroids') && normalizedEntry.endsWith('/dist/index.js');
 }
 
 if (isCliEntrypoint()) {
