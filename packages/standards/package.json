@@ -1,6 +1,6 @@
 {
     "name": "@spec-driven-steroids/standards",
-    "version": "0.2.2",
+    "version": "0.2.4",
     "description": "Universal prompt standards and platform templates for Spec-Driven Steroids",
     "type": "module",
     "files": [

@@ -1,5 +1,11 @@
 # @spec-driven-steroids/standards
 
+## 0.2.4
+
+### Patch Changes
+
+- Release 0.2.4 to unify package versions across the fixed release group and include the latest CLI command-entrypoint robustness fix.
+
 ## 0.2.2
 
 ### Patch Changes
