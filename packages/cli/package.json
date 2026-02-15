@@ -23,6 +23,7 @@
         "prepublishOnly": "pnpm build"
     },
     "dependencies": {
+        "@spec-driven-steroids/standards": "workspace:*",
         "commander": "^11.1.0",
         "inquirer": "^9.2.12",
         "chalk": "^5.3.0",

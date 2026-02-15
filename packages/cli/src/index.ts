@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import fs from 'fs-extra';
 import path from 'path';
+import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 
 interface McpConfig {
@@ -46,6 +47,7 @@ interface McpLaunchConfig {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const packageJsonPath = path.resolve(__dirname, '../package.json');
+const require = createRequire(import.meta.url);
 
 function getCliVersion(): string {
   try {
@@ -85,7 +87,7 @@ program
     ]);
 
     const targetDir = process.cwd();
-    const standardsDir = path.resolve(__dirname, '../../standards/src/templates');
+    const standardsDir = await resolveStandardsTemplatesDir();
     const universalSkillsDir = path.join(standardsDir, 'universal/skills');
 
     for (const platform of platforms) {
@@ -327,4 +329,25 @@ async function resolveMcpLaunchConfig(): Promise<McpLaunchConfig> {
     command: 'pnpm',
     args: ['dlx', '@spec-driven-steroids/mcp']
   };
+}
+
+async function resolveStandardsTemplatesDir(): Promise<string> {
+  const candidates: string[] = [];
+
+  try {
+    const standardsPackageJsonPath = require.resolve('@spec-driven-steroids/standards/package.json');
+    candidates.push(path.join(path.dirname(standardsPackageJsonPath), 'src', 'templates'));
+  } catch {
+    // Fall back to local monorepo paths.
+  }
+
+  candidates.push(path.resolve(__dirname, '../../standards/src/templates'));
+
+  for (const candidate of candidates) {
+    if (await fs.pathExists(candidate)) {
+      return candidate;
+    }
+  }
+
+  throw new Error(`Could not locate standards templates directory. Tried: ${candidates.join(', ')}`);
 }
