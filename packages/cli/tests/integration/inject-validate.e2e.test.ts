@@ -25,7 +25,7 @@ describe('CLI E2E: inject command', () => {
             platforms: ['github']
         });
 
-        const program = (await import('../../dist/index.js')).default;
+        const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const githubDir = path.join(targetDir, '.github');
@@ -39,7 +39,7 @@ describe('CLI E2E: inject command', () => {
             platforms: ['jetbrains']
         });
 
-        const program = (await import('../../dist/index.js')).default;
+        const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const jetbrainsDir = path.join(targetDir, '.jetbrains');
@@ -58,7 +58,7 @@ describe('CLI E2E: inject command', () => {
             platforms: ['antigravity']
         });
 
-        const program = (await import('../../dist/index.js')).default;
+        const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const agentDir = path.join(targetDir, '.agent');
@@ -71,7 +71,7 @@ describe('CLI E2E: inject command', () => {
             platforms: ['opencode']
         });
 
-        const program = (await import('../../dist/index.js')).default;
+        const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const opencodeDir = path.join(targetDir, '.opencode');
@@ -84,7 +84,7 @@ describe('CLI E2E: inject command', () => {
             platforms: ['opencode']
         });
 
-        const program = (await import('../../dist/index.js')).default;
+        const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const agentPath = path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md');
@@ -107,7 +107,7 @@ describe('CLI E2E: inject command', () => {
             platforms: ['github', 'antigravity']
         });
 
-        const program = (await import('../../dist/index.js')).default;
+        const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const githubAgentPath = path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md');
@@ -128,7 +128,7 @@ describe('CLI E2E: inject command', () => {
             platforms: ['github', 'antigravity', 'opencode']
         });
 
-        const program = (await import('../../dist/index.js')).default;
+        const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const githubPromptPath = path.join(targetDir, '.github', 'prompts', 'inject-guidelines.prompt.md');
@@ -157,7 +157,7 @@ describe('CLI E2E: inject command', () => {
             platforms: ['opencode']
         });
 
-        const program = (await import('../../dist/index.js')).default;
+        const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const config = await fs.readJson(opencodeConfigPath);
@@ -166,7 +166,7 @@ describe('CLI E2E: inject command', () => {
         expect(config.mcp['spec-driven-steroids']).toBeDefined();
         expect(config.mcp['spec-driven-steroids'].type).toBe('local');
         expect(config.mcp['spec-driven-steroids'].command[0]).toBe('node');
-        expect(config.mcp['spec-driven-steroids'].command[1]).toMatch(/packages[\\/]mcp[\\/]dist[\\/]index\.js$/);
+        expect(config.mcp['spec-driven-steroids'].command[1]).toMatch(/dist[\\/]mcp[\\/]index\.js$/);
     });
 
     it('inject command adds spec-driven-steroids MCP to GitHub Copilot config', async () => {
@@ -176,14 +176,14 @@ describe('CLI E2E: inject command', () => {
             platforms: ['github']
         });
 
-        const program = (await import('../../dist/index.js')).default;
+        const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const config = await fs.readJson(mcpConfigPath);
         expect(config.servers).toBeDefined();
         expect(config.servers['spec-driven-steroids']).toBeDefined();
         expect(config.servers['spec-driven-steroids'].command).toBe('node');
-        expect(config.servers['spec-driven-steroids'].args[0]).toMatch(/packages[\\/]mcp[\\/]dist[\\/]index\.js$/);
+        expect(config.servers['spec-driven-steroids'].args[0]).toMatch(/dist[\\/]mcp[\\/]index\.js$/);
     });
 
     it('inject command migrates legacy GitHub Copilot mcpServers key to servers', async () => {
@@ -202,7 +202,7 @@ describe('CLI E2E: inject command', () => {
             platforms: ['github']
         });
 
-        const program = (await import('../../dist/index.js')).default;
+        const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const config = await fs.readJson(mcpConfigPath);
@@ -219,14 +219,14 @@ describe('CLI E2E: inject command', () => {
             platforms: ['antigravity']
         });
 
-        const program = (await import('../../dist/index.js')).default;
+        const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const config = await fs.readJson(mcpConfigPath);
         expect(config.mcpServers).toBeDefined();
         expect(config.mcpServers['spec-driven-steroids']).toBeDefined();
         expect(config.mcpServers['spec-driven-steroids'].command).toBe('node');
-        expect(config.mcpServers['spec-driven-steroids'].args[0]).toMatch(/packages[\\/]mcp[\\/]dist[\\/]index\.js$/);
+        expect(config.mcpServers['spec-driven-steroids'].args[0]).toMatch(/dist[\\/]mcp[\\/]index\.js$/);
     });
 });
 
@@ -250,7 +250,7 @@ describe('CLI E2E: validate command', () => {
         const githubDir = path.join(targetDir, '.github');
         await fs.ensureDir(path.join(githubDir, 'agents'));
 
-        const program = (await import('../../dist/index.js')).default;
+        const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['validate'], { from: 'user' } as any);
 
         const githubDirExists = await fs.pathExists(githubDir);
@@ -261,7 +261,7 @@ describe('CLI E2E: validate command', () => {
         const agentDir = path.join(targetDir, '.agent');
         await fs.ensureDir(path.join(agentDir, 'workflows'));
 
-        const program = (await import('../../dist/index.js')).default;
+        const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['validate'], { from: 'user' } as any);
 
         const agentDirExists = await fs.pathExists(agentDir);
@@ -272,7 +272,7 @@ describe('CLI E2E: validate command', () => {
         const opencodeDir = path.join(targetDir, '.opencode');
         await fs.ensureDir(path.join(opencodeDir, 'skills'));
 
-        const program = (await import('../../dist/index.js')).default;
+        const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['validate'], { from: 'user' } as any);
 
         const opencodeDirExists = await fs.pathExists(opencodeDir);
@@ -283,7 +283,7 @@ describe('CLI E2E: validate command', () => {
         const specsDir = path.join(targetDir, 'specs');
         await fs.ensureDir(specsDir);
 
-        const program = (await import('../../dist/index.js')).default;
+        const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['validate'], { from: 'user' } as any);
 
         const specsDirExists = await fs.pathExists(specsDir);
@@ -291,7 +291,7 @@ describe('CLI E2E: validate command', () => {
     });
 
     it('validate command shows correct status for missing configs', async () => {
-        const program = (await import('../../dist/index.js')).default;
+        const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['validate'], { from: 'user' } as any);
 
         const githubDir = path.join(targetDir, '.github');

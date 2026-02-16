@@ -1,6 +1,6 @@
 {
     "name": "spec-driven-steroids",
-    "version": "0.2.4",
+    "version": "0.3.0",
     "private": true,
     "description": "Inject spec-driven intelligence into your favorite AI Agents. Rigorous. Simple. Frictionless.",
     "repository": {
@@ -23,9 +23,7 @@
         "changeset:publish": "changeset publish",
         "release:tag": "git tag -a $(node scripts/create-release-tag.mjs) -m \"release $(node scripts/create-release-tag.mjs)\"",
         "release:push-tags": "git push --follow-tags",
-        "release:cli": "cd packages/cli && pnpm publish --access public",
-        "release:mcp": "cd packages/mcp && pnpm publish --access public",
-        "release:standards": "cd packages/standards && pnpm publish --access public"
+        "release": "cd packages/cli && pnpm publish --access public"
     },
     "devDependencies": {
         "@changesets/cli": "^2.29.8",

@@ -1,6 +1,4 @@
 packages:
-  - "packages/mcp"
-  - "packages/standards"
   - "packages/cli"
   - "packages/test-utils"
   - "packages/landing-page"

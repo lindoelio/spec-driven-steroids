@@ -2,39 +2,40 @@
 
 <!-- SpecDriven:managed:start -->
 
-`spec-driven-steroids` is a pnpm monorepo with four workspaces that deliver standards, injection, and validation.
+`spec-driven-steroids` is a pnpm monorepo. The core toolkit is published as a single npm package.
 
 ## Workspace Roles
 
-- `packages/cli`: injects templates and MCP config into target repositories.
-- `packages/mcp`: exposes validation tools for spec structure and content checks.
-- `packages/standards`: stores reusable agent/skill/workflow templates.
+- `packages/cli`: the unified package containing CLI, MCP server, and templates.
+  - `src/cli/`: injects templates and MCP config into target repositories.
+  - `src/mcp/`: exposes validation tools for spec structure and content checks.
+  - `templates/`: stores reusable agent/skill/workflow templates.
 - `packages/test-utils`: shared mocks and fixtures for tests.
 
 ## System Diagram
 
 ```mermaid
 flowchart LR
-  User[Developer] --> CLI[CLI package]
-  CLI --> Standards[Standards templates]
+  User[Developer] --> CLI[CLI - src/cli]
+  CLI --> Templates[Templates]
   CLI --> Target[Target repository]
-  Agent[AI Agent] --> MCP[MCP server]
+  Agent[AI Agent] --> MCP[MCP server - src/mcp]
   MCP --> Specs[specs/changes/<slug>]
-  MCP --> Standards
+  MCP --> Templates
 ```
 
 ## Runtime Flow
 
 1. User runs `spec-driven-steroids inject` in a target repository.
-2. CLI copies platform templates and universal skills from `packages/standards`.
+2. CLI copies platform templates and universal skills from `templates/`.
 3. CLI configures MCP entries for selected platforms.
 4. AI tools call MCP validators to enforce EARS, Mermaid, and traceability rules.
 
 ## Key Design Decisions
 
+- **Single package distribution**: CLI, MCP server, and templates are co-located for simpler resolution and publishing.
 - **Template-first distribution**: standards are plain Markdown assets, easy to version and copy.
-- **Validator boundary in MCP**: structural and syntax enforcement lives in `packages/mcp`.
-- **Monorepo workspaces**: shared tooling and consistent release workflows across packages.
+- **Validator boundary in MCP**: structural and syntax enforcement lives in `src/mcp/`.
 - **No-install platform support**: JetBrains IDEs (IntelliJ IDEA, PyCharm, WebStorm, Rider, etc.)
   use the same GitHub Copilot Chat interface with `.jetbrains/` folder templates—no plugin installation required.
 

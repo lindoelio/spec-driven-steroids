@@ -44,9 +44,7 @@ Thanks for contributing to `spec-driven-steroids`.
 
 ## Repository Layout
 
-- `packages/cli`: CLI injector and project setup commands.
-- `packages/mcp`: MCP server and validation tools.
-- `packages/standards`: reusable template content for agents/skills/workflows.
+- `packages/cli`: unified package — CLI injector, MCP server, and templates.
 - `packages/test-utils`: shared fixtures and test helpers.
 
 ## Documentation Rules

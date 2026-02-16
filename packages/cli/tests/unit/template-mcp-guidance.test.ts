@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const standardsTemplatesRoot = path.resolve(__dirname, '../../../standards/src/templates');
+const standardsTemplatesRoot = path.resolve(__dirname, '../../templates');
 
 async function readTemplate(relativePath: string): Promise<string> {
     const absolutePath = path.join(standardsTemplatesRoot, relativePath);

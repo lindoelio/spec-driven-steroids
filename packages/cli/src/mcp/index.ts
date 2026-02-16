@@ -9,10 +9,10 @@ import fs from "fs/promises";
 import path from "path";
 
 const SKILL_DOCS = {
-  requirements: "packages/standards/src/templates/universal/skills/spec-driven-requirements-writer/SKILL.md",
-  design: "packages/standards/src/templates/universal/skills/spec-driven-technical-designer/SKILL.md",
-  tasks: "packages/standards/src/templates/universal/skills/spec-driven-task-decomposer/SKILL.md",
-  implementation: "packages/standards/src/templates/universal/skills/spec-driven-task-implementer/SKILL.md"
+  requirements: "skills/spec-driven-requirements-writer/SKILL.md",
+  design: "skills/spec-driven-technical-designer/SKILL.md",
+  tasks: "skills/spec-driven-task-decomposer/SKILL.md",
+  implementation: "skills/spec-driven-task-implementer/SKILL.md"
 } as const;
 
 interface FormattedError {

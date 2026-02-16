@@ -53,9 +53,10 @@ We are actively working on expanding support and are open to contributions. If y
 
 ```
 packages/
- ├── mcp/                 # Node.js MCP Server (The Enforcer)
- ├── standards/           # Markdown templates for Skills & Agents (The Brain)
- └── cli/                 # Terminal interface for injections (The Injector)
+ └── cli/                  # Unified package (CLI + MCP + Templates)
+     ├── src/cli/          # Terminal interface for injections (The Injector)
+     ├── src/mcp/          # Node.js MCP Server (The Enforcer)
+     └── templates/        # Markdown templates for Skills & Agents (The Brain)
 ```
 
 ---
@@ -100,7 +101,7 @@ Navigate to your target repository and run:
 spec-driven-steroids inject
 ```
 
-**Select your platforms** (GitHub Copilot, Antigravity, or OpenCode) to scaffold the necessary `.github/`, `.agent/`, or `.opencode/` configurations.
+**Select your platforms** (GitHub Copilot, Antigravity, or OpenCode) to scaffold the necessary `.github/`, `.jetbrains/`, `.agent/`, or `.opencode/` configurations.
 
 ---
 
@@ -110,20 +111,7 @@ spec-driven-steroids inject
 
 Before using the spec-driven flow, we recommend generating project guidelines to ensure consistency and best practices.
 
-Use the `/inject-guidelines` command to automatically generate comprehensive project documentation with zero configuration.
-
-**GitHub Copilot for VS Code and JetBrains IDEs:**
-
-> `/inject-guidelines` _(Analyzes repository and generates AGENTS.md,
-> CONTRIBUTING.md, STYLEGUIDE.md, TESTING.md, ARCHITECTURE.md, SECURITY.md)_
-
-**Google Antigravity:**
-
-> `/inject-guidelines`
-
-**OpenCode:**
-
-> `/inject-guidelines`
+Use the `/inject-guidelines` command to automatically generate comprehensive project documentation with zero configuration. It analyzes repository and generates AGENTS.md, CONTRIBUTING.md, STYLEGUIDE.md, TESTING.md, ARCHITECTURE.md, SECURITY.md.
 
 **What it does:**
 
@@ -184,7 +172,7 @@ Spec-Driven Steroids injects a **Primary Agent** and **Skills** for OpenCode.
 
 ## MCP Validation Tools
 
-The MCP server provides 5 comprehensive validation tools:
+The internal MCP server provides 5 comprehensive validation tools:
 
 | Tool                       | Purpose              | Validates                                                            |
 | -------------------------- | -------------------- | -------------------------------------------------------------------- |
@@ -198,7 +186,7 @@ The MCP server provides 5 comprehensive validation tools:
 
 ```
 [Error Type] → Context → Suggested Fix
-   See: packages/standards/src/templates/universal/skills/[relevant-skill]/SKILL.md
+   See: skills/[relevant-skill]/SKILL.md
    Line: 42
 ```
 
@@ -217,11 +205,9 @@ The MCP server provides 5 comprehensive validation tools:
 
 ## Publishing
 
-The Spec-Driven Steroids monorepo publishes three packages to npm using [Changesets](https://github.com/changesets/changesets) for version management:
+Spec-Driven Steroids publishes a single package to npm using [Changesets](https://github.com/changesets/changesets) for version management:
 
-- `spec-driven-steroids` - Main CLI
-- `@spec-driven-steroids/mcp` - MCP Server
-- `@spec-driven-steroids/standards` - Universal standards and templates
+- `spec-driven-steroids` - CLI, MCP Server, and Templates
 
 ### Release Workflow
 
@@ -231,7 +217,7 @@ The Spec-Driven Steroids monorepo publishes three packages to npm using [Changes
    pnpm changeset
    ```
 
-   Select the packages affected and choose the version bump type (patch/minor/major).
+   Select the package and choose the version bump type (patch/minor/major).
 
 2. **Bump versions & update CHANGELOGs**:
 
@@ -252,10 +238,6 @@ The Spec-Driven Steroids monorepo publishes three packages to npm using [Changes
    pnpm release:push-tags
    ```
 
-   This creates an annotated git tag in the format `vX.Y.Z` from `packages/cli/package.json`.
-   Create the tag **after** committing release/version files so the tag points to the exact released commit.
-   If the tag already exists, `pnpm release:tag` fails safely to prevent accidental tag overwrite.
-
 5. **Publish to npm**:
 
    ```bash
@@ -268,10 +250,6 @@ Before publishing, ensure you have:
 
 1. **npm account**: Create one at [npmjs.com](https://www.npmjs.com)
 2. **Authenticated**: Run `npm login` to authenticate
-
-### Version Management
-
-All publishable packages use **fixed versioning** - they share the same version number and are released together. This ensures compatibility across the toolkit.
 
 ---
 

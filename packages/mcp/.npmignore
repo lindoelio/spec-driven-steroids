@@ -1,6 +1,0 @@
-dist/
-*.ts
-*.js.map
-tests/
-vitest.config.ts
-tsconfig.json

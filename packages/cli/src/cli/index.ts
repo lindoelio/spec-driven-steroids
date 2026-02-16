@@ -4,7 +4,6 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import fs from 'fs-extra';
 import path from 'path';
-import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 
 interface McpConfig {
@@ -46,8 +45,7 @@ interface McpLaunchConfig {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const packageJsonPath = path.resolve(__dirname, '../package.json');
-const require = createRequire(import.meta.url);
+const packageJsonPath = path.resolve(__dirname, '../../package.json');
 
 function getCliVersion(): string {
   try {
@@ -87,7 +85,7 @@ program
     ]);
 
     const targetDir = process.cwd();
-    const standardsDir = await resolveStandardsTemplatesDir();
+    const standardsDir = path.resolve(__dirname, '../../templates');
     const universalSkillsDir = path.join(standardsDir, 'universal/skills');
 
     for (const platform of platforms) {
@@ -188,7 +186,7 @@ function isCliEntrypoint(): boolean {
   }
 
   const normalizedEntry = entry.replace(/\\/g, '/');
-  return normalizedEntry.includes('spec-driven-steroids') && normalizedEntry.endsWith('/dist/index.js');
+  return normalizedEntry.includes('spec-driven-steroids') && (normalizedEntry.endsWith('/dist/cli/index.js') || normalizedEntry.endsWith('/dist/index.js'));
 }
 
 if (isCliEntrypoint()) {
@@ -225,7 +223,7 @@ async function configureCopilotMcp(targetDir: string) {
     }
 
     // Add spec-driven-steroids (always)
-    const mcpLaunch = await resolveMcpLaunchConfig();
+    const mcpLaunch = resolveMcpLaunchConfig();
     config.servers['spec-driven-steroids'] = {
       command: mcpLaunch.command,
       args: mcpLaunch.args
@@ -256,7 +254,7 @@ async function configureAntigravityMcp(targetDir: string) {
     }
 
     // Add spec-driven-steroids (always)
-    const mcpLaunch = await resolveMcpLaunchConfig();
+    const mcpLaunch = resolveMcpLaunchConfig();
     if (!config.mcpServers) config.mcpServers = {};
     config.mcpServers['spec-driven-steroids'] = {
       command: mcpLaunch.command,
@@ -285,7 +283,7 @@ async function configureOpenCodeMcp(targetDir: string) {
     if (!config.mcp) config.mcp = {};
 
     // Add spec-driven-steroids (always) - local MCP server
-    const mcpLaunch = await resolveMcpLaunchConfig();
+    const mcpLaunch = resolveMcpLaunchConfig();
     config.mcp['spec-driven-steroids'] = {
       type: 'local',
       command: [mcpLaunch.command, ...mcpLaunch.args]
@@ -314,40 +312,9 @@ async function updateOpenCodeConfig(targetDir: string) {
   console.log(chalk.green('✅ opencode.json updated with schema.'));
 }
 
-async function resolveMcpLaunchConfig(): Promise<McpLaunchConfig> {
-  const localMcpDistPath = path.resolve(__dirname, '../../mcp/dist/index.js');
-  const hasLocalMcpDist = await fs.pathExists(localMcpDistPath);
-
-  if (hasLocalMcpDist) {
-    return {
-      command: 'node',
-      args: [localMcpDistPath]
-    };
-  }
-
+function resolveMcpLaunchConfig(): McpLaunchConfig {
   return {
-    command: 'pnpm',
-    args: ['dlx', '@spec-driven-steroids/mcp']
+    command: 'node',
+    args: [path.resolve(__dirname, '../mcp/index.js')]
   };
-}
-
-async function resolveStandardsTemplatesDir(): Promise<string> {
-  const candidates: string[] = [];
-
-  try {
-    const standardsPackageJsonPath = require.resolve('@spec-driven-steroids/standards/package.json');
-    candidates.push(path.join(path.dirname(standardsPackageJsonPath), 'src', 'templates'));
-  } catch {
-    // Fall back to local monorepo paths.
-  }
-
-  candidates.push(path.resolve(__dirname, '../../standards/src/templates'));
-
-  for (const candidate of candidates) {
-    if (await fs.pathExists(candidate)) {
-      return candidate;
-    }
-  }
-
-  throw new Error(`Could not locate standards templates directory. Tried: ${candidates.join(', ')}`);
 }

@@ -27,7 +27,6 @@ export default defineConfig({
         include: ['**/__tests__/**/*.test.ts'],
         workspace: [
             'packages/cli',
-            'packages/mcp',
             'packages/test-utils'
         ]
     },
