@@ -92,7 +92,7 @@ Example:
 - [ ] 1.2 Add health.check method
 ```
 
-## Implementation Process
+## Implementation Process (Do NOT skip steps or batch updates)
 
 ### CRITICAL: Update tasks.md After EVERY Task
 
@@ -118,9 +118,16 @@ Update the task in tasks.md:
 
 ### Step 4: Implement
 Create or modify the files following:
-- The design document for architecture
+- The change specification design document for technical details
 - STYLEGUIDE.md for code conventions
-- TESTING.md for test patterns
+- Existing code in the repository for consistency
+
+**For test tasks** (tasks prefixed with "Test REQ-"):
+- Follow TESTING.md for test file location, naming conventions, and patterns
+- Implement the test to verify the specific acceptance criterion behavior described in the task
+- Use the test type specified in the task (unit, integration, or e2e)
+- Run the test to confirm it passes against the already-implemented feature code
+- If the test reveals a defect in the implementation, fix the implementation before marking the test task as done
 
 ### Step 5: Mark Done
 Update the task in tasks.md:
@@ -181,8 +188,8 @@ When asked to implement a task that has subtasks:
 5. **Follow the design** - Don't add unspecified features
 6. **Respect conventions** - Use patterns from STYLEGUIDE.md
 7. **Check dependencies** - Don't start blocked tasks
-8. **Double-check work** - Always ensure implementation matches design and requirements before marking done
-8. **Auto-complete parents** - When all subtasks are done, mark parent as done
+8. **Double-check work** - Always ensure implementation matches design and requirements before marking done, ensuring they are fully complete and correct
+9. **Auto-complete parents** - When all subtasks are done, mark parent as done
 
 ## Documentation Maintenance
 
