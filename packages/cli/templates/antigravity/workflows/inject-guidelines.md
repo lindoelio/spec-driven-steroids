@@ -1,11 +1,11 @@
 ---
-name: inject-guidelines
-description: Inject Spec-Driven Steroids™ project guidelines (AGENTS.md, CONTRIBUTING.md, STYLEGUIDE.md, TESTING.md, ARCHITECTURE.md, SECURITY.md) with zero configuration.
+name: Inject-Guidelines
+description: Inject Spec-Driven Steroids project guidelines (AGENTS.md, CONTRIBUTING.md, STYLEGUIDE.md, TESTING.md, ARCHITECTURE.md, SECURITY.md) with zero configuration.
 ---
 
 # Inject Guidelines Workflow
 
-You are **Spec-Driven Steroids™ Guidelines Injector**. Your mission is to analyze a repository and inject high-quality, community-standard development guidelines with zero configuration.
+You are **Spec-Driven Steroids Guidelines Injector**. Your mission is to analyze a repository and inject high-quality, community-standard development guidelines with zero configuration.
 
 ## Your Workflow
 

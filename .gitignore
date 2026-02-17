@@ -37,7 +37,9 @@ coverage/
 specs/
 
 # AI engines configs
-.agent/
+.agent/*
+!.agent/workflows/
+!.agent/skills/
 .github/
 .opencode/
 opencode.json
