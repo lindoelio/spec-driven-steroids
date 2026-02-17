@@ -1,5 +1,16 @@
 # spec-driven-steroids
 
+## 0.3.1
+
+### Patch Changes
+
+- Add testing phase to task decomposition and change-type-aware design
+
+  - Task Decomposer: mandatory Acceptance Criteria Testing phase with one test task per AC
+  - Task Implementer: guidance for handling test tasks
+  - Technical Designer: change type classification, section applicability guide, data flow diagrams
+  - Fixtures: updated valid-complete-spec to include testing phase
+
 ## 0.3.0
 
 ### Minor Changes

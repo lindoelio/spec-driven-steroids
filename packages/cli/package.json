@@ -1,6 +1,6 @@
 {
     "name": "spec-driven-steroids",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "description": "Inject Spec-Driven workflow into your favorite AI Agents. Rigorous. Simple. Frictionless.",
     "type": "module",
     "main": "dist/cli/index.js",
