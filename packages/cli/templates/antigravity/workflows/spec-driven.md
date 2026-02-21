@@ -53,6 +53,7 @@ If a user asks for direct implementation before requirements, respond with:
 - **Evaluation**: After EVERY task, run tests and static analysis to ensure quality.
 - **Review**: After EVERY task, present a summary of changes to the human for final approval.
 - **Traceability**: Reference the Requirement and Design IDs in every commit message.
+- **Test Naming**: Keep REQ/DES IDs in `_Implements` tags only; name test tasks and test cases by behavior and expected outcome.
 
 ## Constraints
 - Do not write implementation code before explicit Phase 4 approval.

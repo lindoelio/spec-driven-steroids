@@ -16,6 +16,11 @@ Follow the project-guidelines-writer skill workflow:
 
 **Phase 2: Repository Insights**
 - Generate RepositoryInsights JSON (Tech Stack, Code Patterns, Existing Docs, Conflicts, Structure)
+- Evaluate whether the repository's testing strategy is consistent or unclear/mixed
+- If unclear/mixed, default generated `TESTING.md` to the **Testing Trophy** strategy:
+  - Integration tests as primary confidence layer
+  - E2E tests for critical user journeys
+  - Unit tests as secondary and selective only
 - Output a JSON RepositoryInsights object
 
 **Phase 3: Existing Files Check**

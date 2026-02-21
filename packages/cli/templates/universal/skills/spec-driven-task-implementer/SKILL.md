@@ -122,9 +122,10 @@ Create or modify the files following:
 - STYLEGUIDE.md for code conventions
 - Existing code in the repository for consistency
 
-**For test tasks** (tasks prefixed with "Test REQ-"):
+**For test tasks** (tasks in the "Acceptance Criteria Testing" phase or prefixed with `Test:`):
 - Follow TESTING.md for test file location, naming conventions, and patterns
 - Implement the test to verify the specific acceptance criterion behavior described in the task
+- Name `describe`/`test` cases using behavior and expected outcomes; never include `REQ-*` or `DES-*` IDs in test titles
 - Use the test type specified in the task (unit, integration, or e2e)
 - Run the test to confirm it passes against the already-implemented feature code
 - If the test reveals a defect in the implementation, fix the implementation before marking the test task as done

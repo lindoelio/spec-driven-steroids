@@ -26,7 +26,7 @@ description: Specialized agent for decomposing designs into atomic implementatio
    b. Read the design document's "Testing Requirements" table (if present) for test type guidance
    c. Create a dedicated **"Acceptance Criteria Testing"** phase as the **penultimate phase** (immediately before Final Checkpoint)
    d. For **EACH** acceptance criterion in `requirements.md` (e.g., REQ-1.1, REQ-1.2), create one test task that:
-      - Names the specific acceptance criterion being tested (e.g., `Test REQ-1.1: <summary>`)
+      - Uses a behavior-focused title (e.g., `Test: <behavior summary>`) and does not include `REQ-X.Y` in the task title
       - Describes what behavior to verify and the expected outcome
       - Specifies the test type (unit, integration, e2e) inferred from `TESTING.md` guidelines and the design's Testing Requirements table
       - Includes `_Implements: REQ-X.Y_` traceability
@@ -81,13 +81,13 @@ N. **Final Checkpoint** - Validation
 
 ## Phase N-1: Acceptance Criteria Testing
 
-- [ ] (N-1).1 Test REQ-1.1: <acceptance criterion summary>
+- [ ] (N-1).1 Test: <behavior summary for acceptance criterion>
   - Verify <specific behavior described in AC 1.1>
   - Test type: <unit|integration|e2e> per TESTING.md
   - _Depends: <implementation task(s) that deliver AC 1.1>_
   - _Implements: REQ-1.1_
 
-- [ ] (N-1).2 Test REQ-1.2: <acceptance criterion summary>
+- [ ] (N-1).2 Test: <behavior summary for acceptance criterion>
   - Verify <specific behavior described in AC 1.2>
   - Test type: <unit|integration|e2e> per TESTING.md
   - _Depends: <implementation task(s) that deliver AC 1.2>_
@@ -118,7 +118,7 @@ N. **Final Checkpoint** - Validation
 ### Test Task
 
 ```markdown
-- [ ] N.M Test REQ-X.Y: <acceptance criterion summary>
+- [ ] N.M Test: <behavior summary>
   - Verify <behavior to test and expected outcome>
   - Test type: <unit|integration|e2e> per TESTING.md
   - _Depends: <implementation task(s) that deliver this AC>_
@@ -132,7 +132,7 @@ The **Acceptance Criteria Testing** phase is **mandatory** and must appear as th
 ### Rules
 
 1. **One test task per acceptance criterion**: Every acceptance criterion (e.g., REQ-1.1, REQ-1.2) in `requirements.md` MUST have a corresponding test task. Do not skip any.
-2. **Naming convention**: Test tasks MUST be prefixed with `Test REQ-X.Y:` followed by a short summary of the criterion being tested.
+2. **Naming convention**: Test tasks MUST be prefixed with `Test:` and use a behavior-focused summary. Do not include `REQ-X.Y` IDs in task titles.
 3. **Test type specification**: Each test task MUST specify the test type (`unit`, `integration`, or `e2e`). Determine the appropriate type by:
    - Reading the target project's `TESTING.md` for stack and conventions
    - Consulting the design document's "Testing Requirements" table (if present)

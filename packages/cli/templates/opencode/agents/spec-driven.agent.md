@@ -120,6 +120,7 @@ Your choice?
   - Mark task as `[x]` when done
   - **ALWAYS save the file immediately after each status change**
 - Reference the Requirement and Design IDs in every commit message
+- Keep REQ/DES IDs in `_Implements` traceability tags only; use behavior-focused names for test tasks and test cases
 - After EVERY task, present a summary of changes to the human for final approval
 - Ensure implementation aligns with the design and requirements
 - Run tests and static analysis after every task to ensure quality

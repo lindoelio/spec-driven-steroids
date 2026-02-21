@@ -40,6 +40,14 @@ Produce a JSON insights object analyzing the selected files.
 4. **Conflicts**: Inconsistencies between docs or between docs and code.
 5. **Structure Summary**: High-level organization.
 
+### Testing Strategy Defaulting Rule
+
+When repository evidence shows an inconsistent, unclear, or mixed testing strategy, use the **Testing Trophy** as the default strategy in generated `TESTING.md` content:
+- Prioritize **integration tests** as the main confidence layer.
+- Add **e2e tests** for critical user journeys and cross-system flows.
+- Keep **unit tests** secondary and selective, focused on isolated, high-risk logic.
+- Avoid prescribing unit-test-first pyramids as the default.
+
 **Output**: Return a JSON object matching the `RepositoryInsights` structure.
 
 ## Step 3: Guidelines Generation
@@ -55,7 +63,7 @@ Before requesting review or approval from the human, write the generated guideli
 | **AGENTS.md** | AI persona, technology stack, build/lint/test commands, agent-specific constraints. | Detailed code conventions, testing patterns, architecture diagrams. |
 | **CONTRIBUTING.md** | Git workflow, PR process, directory structure, documentation rules. | Build commands, naming conventions, testing strategy. |
 | **STYLEGUIDE.md** | Naming conventions, code style details, language/framework patterns. | Architecture decisions, security rules, testing strategy. |
-| **TESTING.md** | Testing strategy, frameworks, testing notes, specific test patterns. | General code conventions, build commands. |
+| **TESTING.md** | Testing strategy, frameworks, testing notes, specific test patterns. When strategy is inconsistent, default to Testing Trophy with integration/e2e priority and selective unit tests. | General code conventions, build commands. |
 | **ARCHITECTURE.md** | High-level architecture, Mermaid diagrams, architecture decisions. | Individual file patterns, testing details, PR process. |
 | **SECURITY.md** | Security policy, vulnerability reporting, security rules/policies. | General architecture, git workflow. |
 
@@ -63,6 +71,7 @@ Before requesting review or approval from the human, write the generated guideli
 Use these mappings to decide where content belongs:
 - **STYLEGUIDE.md**: Detailed code conventions, naming conventions, code style.
 - **TESTING.md**: Testing patterns, testing strategy, testing notes.
+  - If strategy is unclear/mixed, use Testing Trophy with integration/e2e priority and selective unit tests.
 - **SECURITY.md**: Security rules, security policies.
 - **ARCHITECTURE.md**: Architecture diagrams, architecture decisions.
 - **CONTRIBUTING.md**: Git workflow, PR process, workflow steps, documentation rules.

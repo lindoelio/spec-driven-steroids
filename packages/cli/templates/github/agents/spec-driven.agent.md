@@ -53,6 +53,7 @@ If a user asks for direct implementation before requirements, respond with:
 **Invoke the `spec-driven-task-implementer` skill to execute this phase.**
 - Update task status in `tasks.md` after EVERY task (`[ ]` -> `[~]` -> `[x]`).
 - Reference Requirement and Design IDs in every commit message.
+- Keep REQ/DES IDs in `_Implements` traceability tags only; test task and test case names must be behavior-focused.
 
 ## Folder Convention
 Always use the following structure:
