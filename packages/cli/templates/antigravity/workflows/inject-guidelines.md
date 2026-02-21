@@ -40,8 +40,14 @@ You MUST follow these phases in order. Each phase invokes the `project-guideline
    - **Existing Documentation**: Topics covered, duplicates detected
    - **Conflicts**: Inconsistencies between docs/code
    - **Structure Summary**: High-level organization
+   - **Testing Strategy Consistency**: Determine whether testing approach is consistent or mixed/unclear
 
-3. Output: Return a JSON RepositoryInsights object.
+4. If testing strategy is inconsistent or unclear, use **Testing Trophy** as the default testing strategy for generated `TESTING.md`:
+   - Prioritize integration tests as the primary confidence layer
+   - Add e2e coverage for critical user journeys
+   - Keep unit tests secondary and selective for isolated high-risk logic
+
+5. Output: Return a JSON RepositoryInsights object.
 
 ---
 
@@ -126,6 +132,7 @@ For each document in the list:
 - **Preserve managed sections**: Update only content between markers when requested
 - **No MCP validation**: Trust the skill's output without additional validation
 - **Cross-references**: Documents reference each other to avoid duplication
+- **Testing Trophy fallback**: When testing strategy is inconsistent, generated `TESTING.md` defaults to integration/e2e-first with selective unit tests
 
 ---
 

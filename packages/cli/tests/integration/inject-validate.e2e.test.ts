@@ -135,6 +135,9 @@ describe('CLI E2E: inject command', () => {
         const githubPromptContent = await fs.readFile(githubPromptPath, 'utf-8');
         expect(githubPromptContent.includes('All 6 guideline documents are REQUIRED outputs.')).toBe(true);
         expect(githubPromptContent.includes('Never report missing guideline files as optional.')).toBe(true);
+        expect(githubPromptContent.includes('Testing Trophy')).toBe(true);
+        expect(githubPromptContent.includes('Integration tests as the primary confidence layer')).toBe(true);
+        expect(githubPromptContent.includes('Unit tests as secondary and selective only')).toBe(true);
         // GitHub agent shim is intentionally removed in favor of the Copilot prompt
         expect(await fs.pathExists(path.join(targetDir, '.github', 'agents', 'inject-guidelines.agent.md'))).toBe(false);
 
@@ -142,11 +145,17 @@ describe('CLI E2E: inject command', () => {
         const antigravityGuidelinesContent = await fs.readFile(antigravityGuidelinesPath, 'utf-8');
         expect(antigravityGuidelinesContent.includes('All 6 guideline documents are REQUIRED outputs.')).toBe(true);
         expect(antigravityGuidelinesContent.includes('Never report missing guideline files as optional.')).toBe(true);
+        expect(antigravityGuidelinesContent.includes('Testing Trophy')).toBe(true);
+        expect(antigravityGuidelinesContent.includes('integration tests as the primary confidence layer')).toBe(true);
+        expect(antigravityGuidelinesContent.includes('unit tests secondary and selective')).toBe(true);
 
         const opencodeGuidelinesPath = path.join(targetDir, '.opencode', 'commands', 'inject-guidelines.md');
         const opencodeGuidelinesContent = await fs.readFile(opencodeGuidelinesPath, 'utf-8');
         expect(opencodeGuidelinesContent.includes('All 6 guideline documents are REQUIRED outputs.')).toBe(true);
         expect(opencodeGuidelinesContent.includes('Never report missing guideline files as optional.')).toBe(true);
+        expect(opencodeGuidelinesContent.includes('Testing Trophy')).toBe(true);
+        expect(opencodeGuidelinesContent.includes('Integration tests as primary confidence layer')).toBe(true);
+        expect(opencodeGuidelinesContent.includes('Unit tests as secondary and selective only')).toBe(true);
     });
 
     it('inject command adds spec-driven-steroids MCP to OpenCode config', async () => {

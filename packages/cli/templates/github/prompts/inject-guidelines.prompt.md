@@ -26,7 +26,14 @@ Phase 2 — Repository Insights (deep analysis)
   - Code & naming conventions
   - Existing documentation coverage and conflicts
   - High-level structure summary
+  - Testing strategy consistency (consistent vs unclear/mixed)
 - Output: RepositoryInsights JSON.
+
+Testing strategy default:
+- If strategy is unclear or mixed, generated `TESTING.md` MUST default to **Testing Trophy**:
+  - Integration tests as the primary confidence layer
+  - E2E tests for critical user journeys
+  - Unit tests as secondary and selective only
 
 Phase 3 — Existing Files Check (user interaction)
 - For each existing guideline file, ask the user: Overwrite / Skip / Update managed sections only.
