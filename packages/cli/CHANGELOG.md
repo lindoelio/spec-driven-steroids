@@ -1,5 +1,11 @@
 # spec-driven-steroids
 
+## 0.4.0
+
+### Minor Changes
+
+- Improve spec-driven template guidance by making test task names behavior-focused with traceability kept in `_Implements`, and default generated `TESTING.md` strategy to Testing Trophy when repository testing conventions are inconsistent.
+
 ## 0.3.1
 
 ### Patch Changes
