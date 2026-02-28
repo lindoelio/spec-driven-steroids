@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import fs from 'fs-extra';
 import path from 'path';
+import os from 'os';
 import { fileURLToPath } from 'url';
 
 interface McpConfig {
@@ -75,8 +76,8 @@ program
         name: 'platforms',
         message: 'Select platforms to support:',
         choices: [
-          { name: 'GitHub Copilot for VSCode', value: 'github' },
-          { name: 'GitHub Copilot for JetBrains', value: 'jetbrains' },
+          { name: 'GitHub Copilot for VS Code', value: 'github-vscode' },
+          { name: 'GitHub Copilot for JetBrains', value: 'github-jetbrains' },
           { name: 'Google Antigravity', value: 'antigravity' },
           { name: 'OpenCode', value: 'opencode' }
         ],
@@ -95,17 +96,17 @@ program
         let platformDest = '';
         let skillsSubDir = 'skills';
 
-        if (platform === 'github') {
+        if (platform === 'github-vscode') {
           await configureCopilotMcp(targetDir);
           const src = path.join(standardsDir, 'github');
           platformDest = path.join(targetDir, '.github');
           await fs.copy(src, platformDest, { overwrite: true });
         }
 
-        if (platform === 'jetbrains') {
-          // JetBrains uses the same Copilot templates as VS Code, but in .jetbrains/
+        if (platform === 'github-jetbrains') {
+          await configureJetBrainsMcp();
           const src = path.join(standardsDir, 'github');
-          platformDest = path.join(targetDir, '.jetbrains');
+          platformDest = path.join(targetDir, '.github');
           await fs.copy(src, platformDest, { overwrite: true });
         }
 
@@ -140,8 +141,6 @@ program
     }
 
     console.log(chalk.bold.cyan('\n🚀 Injection Complete!'));
-    console.log(chalk.white('Next steps:'));
-    console.log(chalk.white('1. Ensure the spec-driven-steroids MCP server is running.'));
   });
 
 program
@@ -152,8 +151,8 @@ program
     console.log(chalk.cyan('\n🔍 Validating Spec-Driven setup...\n'));
 
     const checks = [
-      { name: 'GitHub Config', path: '.github/agents' },
-      { name: 'JetBrains Config', path: '.jetbrains/prompts' },
+      { name: 'GitHub Copilot Config', path: '.github/agents' },
+      { name: 'VS Code MCP Config', path: '.vscode/mcp.json' },
       { name: 'Antigravity Config', path: '.agent/workflows' },
       { name: 'OpenCode Config', path: '.opencode/skills' },
       { name: 'Standard Requirements', path: 'specs' }
@@ -310,6 +309,45 @@ async function updateOpenCodeConfig(targetDir: string) {
 
   await fs.writeJson(configPath, config, { spaces: 2 });
   console.log(chalk.green('✅ opencode.json updated with schema.'));
+}
+
+function getJetBrainsMcpPath(): string {
+  if (process.platform === 'win32') {
+    const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
+    return path.join(localAppData, 'github-copilot', 'intellij', 'mcp.json');
+  }
+  return path.join(os.homedir(), '.config', 'github-copilot', 'intellij', 'mcp.json');
+}
+
+async function configureJetBrainsMcp() {
+  try {
+    const mcpConfigPath = getJetBrainsMcpPath();
+    const configDir = path.dirname(mcpConfigPath);
+
+    await fs.ensureDir(configDir);
+
+    let config: McpConfig = { mcpServers: {} };
+    if (await fs.pathExists(mcpConfigPath)) {
+      try {
+        config = await fs.readJson(mcpConfigPath) as McpConfig;
+        if (!config.mcpServers) config.mcpServers = {};
+      } catch (e) {
+        console.warn(chalk.yellow('Warning: Could not parse existing JetBrains MCP config.'));
+      }
+    }
+
+    const mcpLaunch = resolveMcpLaunchConfig();
+    if (!config.mcpServers) config.mcpServers = {};
+    config.mcpServers['spec-driven-steroids'] = {
+      command: mcpLaunch.command,
+      args: mcpLaunch.args
+    };
+
+    await fs.writeJson(mcpConfigPath, config, { spaces: 2 });
+    console.log(chalk.green(`✅ JetBrains MCP configured at ${mcpConfigPath}`));
+  } catch (error) {
+    console.error(chalk.red('Failed to configure JetBrains MCP:'), error);
+  }
 }
 
 function resolveMcpLaunchConfig(): McpLaunchConfig {
