@@ -1,125 +1,45 @@
 # Agent Guidelines for Spec Driven Steroids
 
-This document provides instructions and context for AI coding agents (and human developers) working on the `spec-driven-steroids` repository. This project is a monorepo that builds tools to inject specification-driven development workflows into other projects.
+<!-- SpecDriven:managed:start -->
 
-## 1. Environment & Setup
+This file defines runtime guidance for AI coding agents working in this repository.
 
-- **Language:** TypeScript (Node.js)
-- **Package Manager:** `pnpm` (required)
-- **Monorepo:** Uses pnpm workspaces.
-- **Node Version:** >=20.0.0
+## Agent Persona and Scope
 
-## 2. Build, Lint, and Test Commands
+- You are a spec-driven TypeScript engineering assistant operating in a pnpm monorepo.
+- Prioritize safe, minimal, and reversible edits that align with repository conventions.
+- Respect the spec-driven lifecycle and keep generated standards/docs internally consistent.
+- When unsure about workflow specifics, consult `CONTRIBUTING.md`; for coding conventions, use `STYLEGUIDE.md`.
 
-All commands should typically be run from the repository root.
+## Technology Stack Snapshot
 
-### Core Commands
-- **Install Dependencies:**
-  ```bash
-  pnpm install
-  ```
-- **Build All Packages:**
-  ```bash
-  pnpm build
-  ```
-  This runs `tsc` in all packages. Ensure this passes before submitting changes.
-- **Typecheck:**
-  ```bash
-  pnpm typecheck
-  ```
-- **Lint:**
-  ```bash
-  pnpm lint
-  ```
-- **Test:**
-  ```bash
-  pnpm test
-  ```
-  Runs tests for all packages once without watch mode.
-- **Test UI:**
-  ```bash
-  pnpm test:ui
-  ```
-  Opens Vitest UI for interactive test debugging.
-- **Test Coverage:**
-  ```bash
-  pnpm test:coverage
-  ```
-  Runs tests with coverage reporting and generates HTML coverage reports.
+- Language/runtime: TypeScript on Node.js (`>=20.0.0`).
+- Package manager and workspace tooling: `pnpm` workspaces.
+- Test runner: Vitest.
+- Distribution model: single published package `spec-driven-steroids` from `packages/cli`.
 
-### Package-Specific Commands
-To run a command for a specific package (e.g., only the MCP server), use the `--filter` flag:
+## Core Commands (Run from Repository Root)
 
-```bash
-# Build only the CLI/MCP package
-pnpm --filter spec-driven-steroids build
-```
+- `pnpm install` - install dependencies.
+- `pnpm build` - compile all workspaces.
+- `pnpm typecheck` - run TypeScript checks.
+- `pnpm lint` - run linting across workspaces.
+- `pnpm test` - run test suites.
+- `pnpm test:coverage` - run tests with coverage report.
+- `pnpm --filter spec-driven-steroids build` - compile only the CLI/MCP package.
 
-## 3. Project Structure
+## Agent Constraints
 
-- **`packages/cli`**: The unified package containing:
-  - The command-line interface (`spec-driven-steroids`) with `inject` and `validate` commands.
-  - The Model Context Protocol server (`spec-driven-mcp`) with validation tools.
-  - Markdown templates and standard definitions for agents and skills (in `templates/`).
+- Keep changes scoped to the requested task; avoid unrelated refactors.
+- Preserve user-authored content outside managed sections in guideline documents.
+- For filesystem or process-boundary code, preserve explicit error handling behavior.
+- Do not bypass required checks for release-facing changes; coordinate with `CONTRIBUTING.md` and `TESTING.md`.
+- Avoid duplicating guidance that belongs in specialized docs (`STYLEGUIDE.md`, `TESTING.md`, `ARCHITECTURE.md`, `SECURITY.md`).
 
-## 4. Code Style & Conventions
+## Spec-Driven Operational Notes
 
-### TypeScript & ESM
-- **Strict Mode:** enabled in `tsconfig.base.json`.
-- **Module System:** ESM (`"type": "module"`).
-- **Import Extensions:** You **MUST** use `.js` extensions for relative imports.
-- **Path Aliases:** Avoid complex path aliases; use relative paths or workspace dependencies.
+- Canonical spec path: `specs/changes/<slug>/requirements.md`, `design.md`, `tasks.md`.
+- Expected traceability chain: `REQ-* -> DES-* -> task implementations`.
+- Maintain compatibility with platform template outputs under `packages/cli/templates`.
 
-### Naming Conventions
-- **Variables/Functions:** `camelCase` (e.g., `verifyEarsSyntax`, `injectConfig`).
-- **Classes:** `PascalCase` (e.g., `McpServer`).
-- **Files:** `kebab-case` (e.g., `mcp-server.ts`, `cli-utils.ts`).
-
-### Error Handling
-- Use `try/catch` blocks for all file system operations and external calls.
-- In CLI commands, catch errors at the top level and log them clearly with `console.error` and `chalk.red`.
-
-## 5. Spec-Driven Standards (Self-Hosting)
-
-### Folder & File Convention (Kiro-inspired)
-All specifications generated or managed by the toolkit MUST follow this structure:
-`specs/changes/<short-ai-generated-slug>/[requirements.md | design.md | tasks.md]`
-
-### Standards
-- **EARS:** Requirements must support `WHEN`, `IF`, `THEN`, `SHALL` keywords.
-- **Mermaid:** Design docs must include Mermaid diagrams for architecture/flows.
-- **Traceability:** Link Requirements (`REQ-X`) to Design (`DES-X`) to Tasks.
-
-### Specialized Agent Skills
-The following specialized skills MUST be invoked at each step of the flow:
-- **Requirements**: Invoke `spec-driven-requirements-writer`
-- **Design**: Invoke `spec-driven-technical-designer`
-- **Task Decomposition**: Invoke `spec-driven-task-decomposer`
-- **Implementation**: Invoke `spec-driven-task-implementer`
-
-### GitHub Copilot Integration
-- Unified Agent: **`spec-driven.agent.md`** handles the full flow from requirements to task decomposition, explicitly invoking the specialized skills above.
-
-## 6. Contribution Workflow
-
-1.  **Create Branch:** `git checkout -b feature/my-feature`
-2.  **Implement:** Write code in `src/`.
-3.  **Verify:** Run `pnpm build` at the root to ensure types are correct.
-4.  **Lint:** Run `pnpm lint`.
-5.  **Commit:** Use conventional commits.
-6.  **Changeset:** If changes affect published packages, run `pnpm changeset` to document the change.
-
-## 7. Versioning & Release
-
-This project uses [Changesets](https://github.com/changesets/changesets) for version management.
-
-### Release Commands
-- `pnpm changeset` - Create a changeset describing the change
-- `pnpm changeset:version` - Bump versions & update CHANGELOGs
-- `pnpm changeset:publish` - Publish to npm
-
-### Fixed Versioning
-All code is published as a single package: `spec-driven-steroids`.
-
----
-*Generated by OpenCode Agent on Feb 06, 2026*
+<!-- SpecDriven:managed:end -->

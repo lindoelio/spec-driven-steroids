@@ -4,9 +4,10 @@
 
 ## Language and Modules
 
-- Primary language: TypeScript on Node.js.
-- Module system: ESM (`"type": "module"`).
+- Primary language is TypeScript on Node.js.
+- Module system is ESM (`"type": "module"`).
 - Relative imports must include `.js` extensions.
+- Preserve strict TypeScript compatibility from `tsconfig.base.json`.
 
 ## Naming Conventions
 
@@ -19,6 +20,7 @@
 
 - Keep functions focused and single-purpose.
 - Prefer explicit, typed interfaces for external data.
+- Keep module boundaries clear between CLI runtime, MCP validators, and templates.
 - Avoid deep path aliasing; use relative imports or workspace dependencies.
 - Reuse shared helpers in `packages/test-utils` for tests.
 
@@ -30,10 +32,10 @@
 
 ## TypeScript Standards
 
-- Preserve strict-mode compatibility from `tsconfig.base.json`.
 - Avoid `any`; prefer precise unions/interfaces.
 - Keep exports intentional and minimal.
 - Favor small interfaces over large untyped objects.
+- Prefer pure helper functions for validation logic where practical.
 
 ## Formatting Notes
 
@@ -41,6 +43,6 @@
 - Keep changes minimal and avoid unrelated refactors.
 - Add comments only for non-obvious logic.
 
-See `TESTING.md` for test-specific conventions and `ARCHITECTURE.md` for package boundaries.
+See `TESTING.md` for test strategy, `ARCHITECTURE.md` for system design, and `SECURITY.md` for secure coding expectations.
 
 <!-- SpecDriven:managed:end -->

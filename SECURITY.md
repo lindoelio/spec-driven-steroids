@@ -33,13 +33,14 @@ Include reproduction steps, affected paths, and impact assessment.
 - Treat user-provided Markdown/spec files as untrusted content.
 - Avoid logging sensitive environment values in errors or debug output.
 - Document security-relevant behavior changes in PR descriptions.
+- Review template changes for prompt-injection amplification risk before release.
 
 ## Release Hygiene
 
-- Run `pnpm build`, `pnpm lint`, and `pnpm test` before release.
+- Run full repository checks before release.
 - Verify published artifacts only include intended files.
 - If a vulnerability is confirmed, prioritize patch release and remediation notes.
 
-See `TESTING.md` for validation workflow and `ARCHITECTURE.md` for system boundaries.
+See `TESTING.md` for security-relevant test coverage and `CONTRIBUTING.md` for disclosure-ready PR documentation.
 
 <!-- SpecDriven:managed:end -->

@@ -11,6 +11,7 @@
   - `src/mcp/`: exposes validation tools for spec structure and content checks.
   - `templates/`: stores reusable agent/skill/workflow templates.
 - `packages/test-utils`: shared mocks and fixtures for tests.
+- `packages/landing-page`: standalone Vite app workspace (non-published).
 
 ## System Diagram
 
@@ -36,6 +37,7 @@ flowchart LR
 - **Single package distribution**: CLI, MCP server, and templates are co-located for simpler resolution and publishing.
 - **Template-first distribution**: standards are plain Markdown assets, easy to version and copy.
 - **Validator boundary in MCP**: structural and syntax enforcement lives in `src/mcp/`.
+- **Workspace isolation**: test utilities and landing page are separated from published CLI surface.
 - **No-install platform support**: JetBrains IDEs (IntelliJ IDEA, PyCharm, WebStorm, Rider, etc.)
   use the same GitHub Copilot Chat interface with `.jetbrains/` folder templates—no plugin installation required.
 
@@ -49,6 +51,6 @@ The canonical artifact path is:
 
 Traceability expectation is `REQ-* -> DES-* -> task items`.
 
-See `AGENTS.md` for operational commands and `CONTRIBUTING.md` for development workflow.
+See `AGENTS.md` for command/runtime guidance and `CONTRIBUTING.md` for contribution workflow.
 
 <!-- SpecDriven:managed:end -->
