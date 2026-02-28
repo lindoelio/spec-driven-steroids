@@ -125,7 +125,11 @@ Create or modify the files following:
 **For test tasks** (tasks in the "Acceptance Criteria Testing" phase or prefixed with `Test:`):
 - Follow TESTING.md for test file location, naming conventions, and patterns
 - Implement the test to verify the specific acceptance criterion behavior described in the task
-- Name `describe`/`test` cases using behavior and expected outcomes; never include `REQ-*` or `DES-*` IDs in test titles
+- **Test naming rules** (CRITICAL):
+  - **Remove the `Test:` prefix** from task titles when creating actual test names - the prefix is only for task identification in tasks.md
+  - **Use pure behavior descriptions** - describe what behavior is being tested and the expected outcome
+  - **Never include IDs in test titles** - `REQ-*` and `DES-*` IDs belong ONLY in `_Implements` traceability tags in tasks.md
+  - **Never include IDs in code comments** - Test code comments should describe test logic and arrangement, never reference requirement or design IDs
 - Use the test type specified in the task (unit, integration, or e2e)
 - Run the test to confirm it passes against the already-implemented feature code
 - If the test reveals a defect in the implementation, fix the implementation before marking the test task as done
@@ -139,6 +143,44 @@ Update the task in tasks.md:
 ### Step 6: Check Parent Completion
 After marking a task/subtask done, check if ALL sibling subtasks are complete:
 - If all subtasks under a parent are `[x]`, mark the parent as `[x]` too
+
+## Test Naming Examples
+
+When implementing test tasks, follow these naming conventions:
+
+| Task in tasks.md | Correct Test Name | Incorrect (❌) |
+|-----------------|-------------------|----------------|
+| `Test: rejects invalid email addresses` | `it('rejects invalid email addresses', ...)` | `it('Test: rejects invalid email addresses', ...)` |
+| `Test: returns 404 when user not found` | `it('returns 404 when user not found', ...)` | `it('REQ-2.1: returns 404', ...)` |
+| `Test: calculates total with discount` | `it('applies discount to total', ...)` | `it('Test: calculates total // REQ-3.2', ...)` |
+
+**Correct test code** (pure behavior, no IDs anywhere):
+
+```typescript
+describe('User API', () => {
+  it('returns 404 when user not found', async () => {
+    // Arrange: create a request for non-existent user
+    const response = await request(app).get('/users/999');
+    
+    // Assert: should return 404
+    expect(response.status).toBe(404);
+  });
+});
+```
+
+**Incorrect test code** (IDs in title or comments - ❌ NEVER do this):
+
+```typescript
+describe('User API', () => {
+  // REQ-2.1: Test user not found scenario  ❌ ID in comment
+  it('Test: returns 404 when user not found // REQ-2.1', async () => {  // ❌ ID in title
+    const response = await request(app).get('/users/999');
+    expect(response.status).toBe(404);
+  });
+});
+```
+
+**Remember**: Traceability is handled in `tasks.md` via `_Implements: REQ-X.Y_` tags, NOT in test code.
 
 ## Implementing a Phase
 
