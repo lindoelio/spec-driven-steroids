@@ -50,7 +50,8 @@ describe('MCP Unit: template MCP guidance', () => {
         expect(decomposerContent).toContain('Do not include `REQ-X.Y` IDs in task titles');
         expect(decomposerContent).not.toContain('Test REQ-');
 
-        expect(implementerContent).toContain('never include `REQ-*` or `DES-*` IDs in test titles');
+        expect(implementerContent).toContain('Never include IDs in test titles');
+        expect(implementerContent).toContain('Never include IDs in code comments');
         expect(implementerContent).not.toContain('tasks prefixed with "Test REQ-"');
     });
 
