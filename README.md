@@ -101,7 +101,7 @@ Navigate to your target repository and run:
 spec-driven-steroids inject
 ```
 
-**Select your platforms** (GitHub Copilot, Antigravity, or OpenCode) to scaffold the necessary `.github/`, `.jetbrains/`, `.agent/`, or `.opencode/` configurations.
+**Select your platforms** (GitHub Copilot for VS Code, GitHub Copilot for JetBrains, Antigravity, or OpenCode) to scaffold the necessary `.github/`, `.agent/`, or `.opencode/` configurations.
 
 ---
 
@@ -137,7 +137,9 @@ chat.
 
 - **JetBrains IDEs**: The same agents work in **GitHub Copilot for JetBrains**
   (IntelliJ IDEA, PyCharm, WebStorm, Rider, etc.) — no plugin installation
-  needed. Copilot Chat uses the `.jetbrains/` folder templates automatically.
+  needed. Copilot Chat uses the `.github/` folder templates automatically. MCP
+  configuration is stored globally at `~/.config/github-copilot/intellij/mcp.json`
+  (or `%LOCALAPPDATA%\github-copilot\intellij\mcp.json` on Windows).
 
 ### 3. Google Antigravity
 

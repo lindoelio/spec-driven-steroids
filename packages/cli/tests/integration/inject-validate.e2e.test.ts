@@ -22,7 +22,7 @@ describe('CLI E2E: inject command', () => {
 
     it('inject command with GitHub platform creates .github directory structure', async () => {
         vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
-            platforms: ['github']
+            platforms: ['github-vscode']
         });
 
         const program = (await import('../../dist/cli/index.js')).default;
@@ -34,21 +34,21 @@ describe('CLI E2E: inject command', () => {
         expect(await fs.pathExists(path.join(githubDir, 'prompts', 'inject-guidelines.prompt.md'))).toBe(true);
     });
 
-    it('inject command with JetBrains platform creates .jetbrains directory structure from canonical Copilot templates', async () => {
+    it('inject command with JetBrains platform creates .github directory structure and configures global MCP', async () => {
         vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
-            platforms: ['jetbrains']
+            platforms: ['github-jetbrains']
         });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
-        const jetbrainsDir = path.join(targetDir, '.jetbrains');
-        expect(await fs.pathExists(jetbrainsDir)).toBe(true);
-        expect(await fs.pathExists(path.join(jetbrainsDir, 'agents', 'spec-driven.agent.md'))).toBe(true);
-        expect(await fs.pathExists(path.join(jetbrainsDir, 'prompts', 'inject-guidelines.prompt.md'))).toBe(true);
+        const githubDir = path.join(targetDir, '.github');
+        expect(await fs.pathExists(githubDir)).toBe(true);
+        expect(await fs.pathExists(path.join(githubDir, 'agents', 'spec-driven.agent.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(githubDir, 'prompts', 'inject-guidelines.prompt.md'))).toBe(true);
 
-        const jetbrainsAgentContent = await fs.readFile(path.join(jetbrainsDir, 'agents', 'spec-driven.agent.md'), 'utf-8');
-        const jetbrainsPromptContent = await fs.readFile(path.join(jetbrainsDir, 'prompts', 'inject-guidelines.prompt.md'), 'utf-8');
+        const jetbrainsAgentContent = await fs.readFile(path.join(githubDir, 'agents', 'spec-driven.agent.md'), 'utf-8');
+        const jetbrainsPromptContent = await fs.readFile(path.join(githubDir, 'prompts', 'inject-guidelines.prompt.md'), 'utf-8');
         expect(jetbrainsAgentContent.includes('## Phase Gatekeeper (Non-Bypassable)')).toBe(true);
         expect(jetbrainsPromptContent.includes('All 6 guideline documents are REQUIRED outputs.')).toBe(true);
     });
@@ -104,7 +104,7 @@ describe('CLI E2E: inject command', () => {
 
     it('inject command includes spec-driven phase-gating guardrails for GitHub and Antigravity', async () => {
         vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
-            platforms: ['github', 'antigravity']
+            platforms: ['github-vscode', 'antigravity']
         });
 
         const program = (await import('../../dist/cli/index.js')).default;
@@ -125,7 +125,7 @@ describe('CLI E2E: inject command', () => {
 
     it('inject-guidelines templates require creating all six guideline files by default', async () => {
         vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
-            platforms: ['github', 'antigravity', 'opencode']
+            platforms: ['github-vscode', 'antigravity', 'opencode']
         });
 
         const program = (await import('../../dist/cli/index.js')).default;
@@ -182,7 +182,7 @@ describe('CLI E2E: inject command', () => {
         const mcpConfigPath = path.join(targetDir, '.vscode', 'mcp.json');
 
         vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
-            platforms: ['github']
+            platforms: ['github-vscode']
         });
 
         const program = (await import('../../dist/cli/index.js')).default;
@@ -208,7 +208,7 @@ describe('CLI E2E: inject command', () => {
         });
 
         vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
-            platforms: ['github']
+            platforms: ['github-vscode']
         });
 
         const program = (await import('../../dist/cli/index.js')).default;
