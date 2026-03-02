@@ -1,5 +1,15 @@
 # spec-driven-steroids
 
+## 0.5.0
+
+### Minor Changes
+
+- feat(cli): add JetBrains global MCP configuration support
+- feat(skills): enforce behavior-focused test naming without IDs
+- feat(github-copilot): enable full implementation phase in spec-driven agent
+- feat(landing-page): improve workflow visualization and add responsive design
+- docs: update repository guidelines with Testing Trophy strategy
+
 ## 0.4.0
 
 ### Minor Changes
