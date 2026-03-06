@@ -79,7 +79,8 @@ program
           { name: 'GitHub Copilot for VS Code', value: 'github-vscode' },
           { name: 'GitHub Copilot for JetBrains', value: 'github-jetbrains' },
           { name: 'Google Antigravity', value: 'antigravity' },
-          { name: 'OpenCode', value: 'opencode' }
+          { name: 'OpenCode', value: 'opencode' },
+          {name: 'Claude Code', value: 'claudecode' }
         ],
         validate: (input: string[]) => input.length > 0 || 'Select at least one platform.'
       }
@@ -127,6 +128,13 @@ program
           await updateOpenCodeConfig(targetDir);
         }
 
+        if(platform === 'claudecode') {
+          await configureClaudeCodeMcp(targetDir);
+          const src = path.join(standardsDir, 'claudecode');
+          platformDest = path.join(targetDir, '.claude');
+          await fs.copy(src, platformDest, { overwrite: true });
+        }
+
         // Copy universal skills to the platform's skills directory
         if (platformDest) {
           const destSkillsDir = path.join(platformDest, skillsSubDir);
@@ -155,6 +163,9 @@ program
       { name: 'VS Code MCP Config', path: '.vscode/mcp.json' },
       { name: 'Antigravity Config', path: '.agent/workflows' },
       { name: 'OpenCode Config', path: '.opencode/skills' },
+      { name: 'ClaudeCode Config', path: '.claude/skills' },
+      { name: 'ClaudeCode Rules', path: '.claude/rules' },
+      { name: 'ClaudeCode', path: '.claude/CLAUDE.md' },
       { name: 'Standard Requirements', path: 'specs' }
     ];
 
@@ -291,6 +302,34 @@ async function configureOpenCodeMcp(targetDir: string) {
     await fs.writeJson(configPath, config, { spaces: 2 });
   } catch (error) {
     console.error(chalk.red('Failed to configure OpenCode MCP:'), error);
+  }
+}
+
+async function configureClaudeCodeMcp(targetDir: string) {
+  try {
+    const mcpConfigPath = path.join(targetDir, '.mcp.json');
+
+    let config: McpConfig = {};
+    if (await fs.pathExists(mcpConfigPath)) {
+      try {
+        config = await fs.readJson(mcpConfigPath) as McpConfig;
+      } catch (e) {
+        console.warn(chalk.yellow('Warning: Could not parse existing .mcp.json.'));
+      }
+    }
+
+    // Add spec-driven-steroids MCP server
+    if (!config.mcpServers) config.mcpServers = {};
+    const mcpLaunch = resolveMcpLaunchConfig();
+    config.mcpServers['spec-driven-steroids'] = {
+      command: mcpLaunch.command,
+      args: mcpLaunch.args
+    };
+
+    await fs.writeJson(mcpConfigPath, config, { spaces: 2 });
+    console.log(chalk.green('✅ Created .mcp.json in project root.'));
+  } catch (error) {
+    console.error(chalk.red('Failed to configure Claude Code MCP:'), error);
   }
 }
 
