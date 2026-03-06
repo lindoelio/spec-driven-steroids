@@ -1,5 +1,18 @@
 # spec-driven-steroids
 
+## 0.6.0
+
+### Minor Changes
+
+- Added Claude Code platform support
+    - Created `.claude/skills/spec-driven.md` orchestration skill for full Spec-Driven workflow
+    - Created `.claude/skills/inject-guidelines.md` skill for project guidelines generation
+    - Added `.claude/CLAUDE.md` main project context file (auto-loaded at startup)
+    - Added `.claude/rules/spec-driven-enforcement.md` path-specific enforcement rules
+    - Configured MCP server integration via `.mcp.json`
+    - Universal skills automatically injected to `.claude/skills/`
+
+
 ## 0.5.0
 
 ### Minor Changes

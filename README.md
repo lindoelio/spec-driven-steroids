@@ -24,6 +24,7 @@ directly into the native environments of your favorite AI tools.
 - GitHub Copilot (VS Code and JetBrains IDEs)
 - Google Antigravity
 - OpenCode
+- Claude Code
 
 We are actively working on expanding support and are open to contributions. If your favorite AI tool isn't supported yet, we'd love to hear from you!
 
@@ -32,7 +33,6 @@ We are actively working on expanding support and are open to contributions. If y
 ## Future Roadmap
 
 - [ ] **Codex** - Support for OpenAI's Codex integration
-- [ ] **Claude Code** - Anthropic's Claude Code integration
 - [ ] **KiloCode** - Support for KiloCode AI coding assistant
 - [ ] **Custom Templates** - User-defined spec templates
 
@@ -101,7 +101,7 @@ Navigate to your target repository and run:
 spec-driven-steroids inject
 ```
 
-**Select your platforms** (GitHub Copilot for VS Code, GitHub Copilot for JetBrains, Antigravity, or OpenCode) to scaffold the necessary `.github/`, `.agent/`, or `.opencode/` configurations.
+**Select your platforms** (GitHub Copilot for VS Code, GitHub Copilot for JetBrains, Antigravity, OpenCode or Claude Code) to scaffold the necessary `.github/`, `.agent/`, `.opencode/` or `.claude/` configurations.
 
 ---
 
@@ -169,6 +169,18 @@ Spec-Driven Steroids injects a **Primary Agent** and **Skills** for OpenCode.
   > - Task status workflow (update tasks.md after each task)
   > - Traceability (REQ-X, DES-X in commits)
   > - Implementation best practices
+
+### 5. Claude Code
+
+Spec-Driven Steroids provides a comprehensive **Skills** system for Claude Code.
+
+- **Start the Spec-Driven Workflow**:
+  > Type `/spec-driven` to begin the end-to-end workflow.
+  > _The skill guides you through:_
+  > _1. **Requirements** - EARS format with MCP validation_
+  > _2. **Technical Design** - Mermaid diagrams with traceability_
+  > _3. **Task Decomposition** - Atomic, numbered implementation tasks_
+  > _4. **Implementation** - Code with full traceability to requirements_
 
 ---
 
@@ -258,7 +270,6 @@ Before publishing, ensure you have:
 ## Future Roadmap
 
 - [ ] **Codex** - Support for OpenAI's Codex integration
-- [ ] **Claude Code** - Anthropic's Claude Code integration
 - [ ] **KiloCode** - Support for KiloCode AI coding assistant
 - [ ] **Custom Templates** - User-defined spec templates
 
