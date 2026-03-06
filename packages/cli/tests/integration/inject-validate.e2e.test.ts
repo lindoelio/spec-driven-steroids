@@ -102,6 +102,63 @@ describe('CLI E2E: inject command', () => {
         expect(commandContent.includes('Begin at Phase 1 (requirements)')).toBe(true);
     });
 
+    it('inject command with Claude Code platform creates .claude directory structure', async () => {
+        vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
+            platforms: ['claudecode']
+        });
+
+        const program = (await import('../../dist/cli/index.js')).default;
+        await program.parseAsync(['inject'], { from: 'user' } as any);
+
+        const claudeDir = path.join(targetDir, '.claude');
+        expect(await fs.pathExists(claudeDir)).toBe(true);
+        expect(await fs.pathExists(path.join(claudeDir, 'skills'))).toBe(true);
+        expect(await fs.pathExists(path.join(claudeDir, 'rules'))).toBe(true);
+
+
+        // MCP config should be in project root
+        const mcpConfigPath = path.join(targetDir, '.mcp.json');
+        expect(await fs.pathExists(mcpConfigPath)).toBe(true);
+
+        // Should NOT be in .claude directory
+        const wrongMcpPath = path.join(claudeDir, '.mcp.json');
+        expect(await fs.pathExists(wrongMcpPath)).toBe(false);
+
+        const claudeMdPath = path.join(claudeDir, 'CLAUDE.md');
+        expect(await fs.pathExists(claudeMdPath)).toBe(true);
+
+        const content = await fs.readFile(claudeMdPath, 'utf-8');
+        expect(content.includes('Spec-Driven Development')).toBe(true);
+        expect(content.includes('## Available Skills')).toBe(true);
+        expect(content.includes('/spec-driven')).toBe(true);
+        expect(content.includes('/inject-guidelines')).toBe(true);
+    });
+
+    it('inject command creates spec-driven and enforcement rules for Claude Code', async () => {
+        vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
+            platforms: ['claudecode']
+        });
+
+        const program = (await import('../../dist/cli/index.js')).default;
+        await program.parseAsync(['inject'], { from: 'user' } as any);
+
+        const rulesPath = path.join(targetDir, '.claude', 'rules', 'spec-driven-enforcement.md');
+        expect(await fs.pathExists(rulesPath)).toBe(true);
+
+        const content = await fs.readFile(rulesPath, 'utf-8');
+        expect(content.includes('paths:')).toBe(true);
+        expect(content.includes('Before Writing Any Implementation Code')).toBe(true);
+        expect(content.includes('Check for Requirements')).toBe(true);
+
+        const skillPath = path.join(targetDir, '.claude', 'skills','spec-driven', 'SKILL.md');
+        expect(await fs.pathExists(skillPath)).toBe(true);
+
+        const skillContent = await fs.readFile(skillPath, 'utf-8');
+        expect(skillContent.includes('# Spec-Driven Planner')).toBe(true);
+        expect(skillContent.includes('## Instructions')).toBe(true);
+        expect(skillContent.includes('Phase Gatekeeper')).toBe(true);
+    });
+
     it('inject command includes spec-driven phase-gating guardrails for GitHub and Antigravity', async () => {
         vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
             platforms: ['github-vscode', 'antigravity']
@@ -125,7 +182,7 @@ describe('CLI E2E: inject command', () => {
 
     it('inject-guidelines templates require creating all six guideline files by default', async () => {
         vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
-            platforms: ['github-vscode', 'antigravity', 'opencode']
+            platforms: ['github-vscode', 'antigravity', 'opencode', 'claudecode']
         });
 
         const program = (await import('../../dist/cli/index.js')).default;
@@ -156,6 +213,11 @@ describe('CLI E2E: inject command', () => {
         expect(opencodeGuidelinesContent.includes('Testing Trophy')).toBe(true);
         expect(opencodeGuidelinesContent.includes('Integration tests as primary confidence layer')).toBe(true);
         expect(opencodeGuidelinesContent.includes('Unit tests as secondary and selective only')).toBe(true);
+
+        const claudeCodeGuideLinesPath = path.join(targetDir, '.claude', 'skills', 'inject-guidelines', 'SKILL.md');
+        const claudeCodeGuideLinesContent = await fs.readFile(claudeCodeGuideLinesPath, 'utf-8');
+        expect(claudeCodeGuideLinesContent.includes('All 6 guideline documents are REQUIRED outputs')).toBe(true);
+        expect(claudeCodeGuideLinesContent.includes('Never report missing guideline files as optional')).toBe(true);
     });
 
     it('inject command adds spec-driven-steroids MCP to OpenCode config', async () => {
@@ -237,6 +299,50 @@ describe('CLI E2E: inject command', () => {
         expect(config.mcpServers['spec-driven-steroids'].command).toBe('node');
         expect(config.mcpServers['spec-driven-steroids'].args[0]).toMatch(/dist[\\/]mcp[\\/]index\.js$/);
     });
+
+    it('inject command adds spec-driven-steroids MCP to .mcp.json with correct structure', async () => {
+        const mcpConfigPath = path.join(targetDir, '.mcp.json');
+
+        vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
+            platforms: ['claudecode']
+        });
+
+        const program = (await import('../../dist/cli/index.js')).default;
+        await program.parseAsync(['inject'], { from: 'user' } as any);
+
+
+        const config = await fs.readJson(mcpConfigPath);
+        expect(config.mcpServers).toBeDefined();
+        expect(config.servers).toBeUndefined();
+        expect(config.mcpServers['spec-driven-steroids']).toBeDefined();
+        expect(config.mcpServers['spec-driven-steroids'].command).toBe('node');
+        expect(config.mcpServers['spec-driven-steroids'].args[0]).toMatch(/dist[\\/]mcp[\\/]index\.js$/);
+    });
+
+    it('inject command merges with existing .mcp.json without overwriting existing servers', async () => {
+        const mcpConfigPath = path.join(targetDir, '.mcp.json');
+
+        vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
+            platforms: ['claudecode']
+        });
+
+        await fs.writeJson(mcpConfigPath, {
+            mcpServers: {
+                existing: {
+                    command: 'node',
+                    args: ['existing.js']
+                }
+            }
+        });
+
+        const program = (await import('../../dist/cli/index.js')).default;
+        await program.parseAsync(['inject'], { from: 'user' } as any);
+
+        const config = await fs.readJson(mcpConfigPath);
+        expect(config.mcpServers).toBeDefined();
+        expect(config.mcpServers.existing).toBeDefined();
+        expect(config.mcpServers['spec-driven-steroids']).toBeDefined();
+    });
 });
 
 describe('CLI E2E: validate command', () => {
@@ -286,6 +392,19 @@ describe('CLI E2E: validate command', () => {
 
         const opencodeDirExists = await fs.pathExists(opencodeDir);
         expect(opencodeDirExists).toBe(true);
+    });
+
+    it('validate command detects existing Claude Code config', async () => {
+        const claudeDir = path.join(targetDir, '.claude');
+        await fs.ensureDir(path.join(claudeDir, 'skills'));
+        await fs.ensureDir(path.join(claudeDir, 'rules'));
+        await fs.ensureFile(path.join(claudeDir, 'CLAUDE.md'));
+
+        const program = (await import('../../dist/cli/index.js')).default;
+        await program.parseAsync(['validate'], { from: 'user' } as any);
+
+        const claudeDirExists = await fs.pathExists(claudeDir);
+        expect(claudeDirExists).toBe(true);
     });
 
     it('validate command detects specs directory', async () => {
