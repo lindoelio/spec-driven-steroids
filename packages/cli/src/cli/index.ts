@@ -80,7 +80,8 @@ program
           { name: 'GitHub Copilot for JetBrains', value: 'github-jetbrains' },
           { name: 'Google Antigravity', value: 'antigravity' },
           { name: 'OpenCode', value: 'opencode' },
-          {name: 'Claude Code', value: 'claudecode' }
+          { name: 'Claude Code', value: 'claudecode' },
+          { name: 'OpenAI Codex', value: 'codex' }
         ],
         validate: (input: string[]) => input.length > 0 || 'Select at least one platform.'
       }
@@ -135,6 +136,13 @@ program
           await fs.copy(src, platformDest, { overwrite: true });
         }
 
+        if(platform === 'codex') {
+          await configureCodexMcp(targetDir);
+          const src = path.join(standardsDir, 'codex');
+          platformDest = path.join(targetDir, '.codex');
+          await fs.copy(src, platformDest, { overwrite: true });
+        }
+
         // Copy universal skills to the platform's skills directory
         if (platformDest) {
           const destSkillsDir = path.join(platformDest, skillsSubDir);
@@ -168,6 +176,10 @@ program
       { name: 'ClaudeCode Commands', path: '.claude/commands' },
       { name: 'ClaudeCode Skills', path: '.claude/skills' },
       { name: 'ClaudeCode', path: '.claude/CLAUDE.md' },
+      { name: 'Codex Config', path: '.codex/agents' },
+      { name: 'Codex Commands', path: '.codex/commands' },
+      { name: 'Codex AGENTS.md', path: '.codex/AGENTS.md' },
+      { name: 'Codex MCP Config', path: '.codex/mcp.json' },
       { name: 'Standard Requirements', path: 'specs' }
     ];
 
@@ -332,6 +344,39 @@ async function configureClaudeCodeMcp(targetDir: string) {
     console.log(chalk.green('✅ Created .mcp.json in project root.'));
   } catch (error) {
     console.error(chalk.red('Failed to configure Claude Code MCP:'), error);
+  }
+}
+
+async function configureCodexMcp(targetDir: string) {
+  try {
+    // Codex uses ~/.codex/config.toml for global config, but supports project-level .codex/ directory
+    // For project-specific MCP config, we create a .codex/mcp.json file
+    const codexDir = path.join(targetDir, '.codex');
+    await fs.ensureDir(codexDir);
+    
+    const mcpConfigPath = path.join(codexDir, 'mcp.json');
+
+    let config: McpConfig = {};
+    if (await fs.pathExists(mcpConfigPath)) {
+      try {
+        config = await fs.readJson(mcpConfigPath) as McpConfig;
+      } catch (e) {
+        console.warn(chalk.yellow('Warning: Could not parse existing .codex/mcp.json.'));
+      }
+    }
+
+    // Add spec-driven-steroids MCP server
+    if (!config.mcpServers) config.mcpServers = {};
+    const mcpLaunch = resolveMcpLaunchConfig();
+    config.mcpServers['spec-driven-steroids'] = {
+      command: mcpLaunch.command,
+      args: mcpLaunch.args
+    };
+
+    await fs.writeJson(mcpConfigPath, config, { spaces: 2 });
+    console.log(chalk.green('✅ Created .codex/mcp.json in project root.'));
+  } catch (error) {
+    console.error(chalk.red('Failed to configure Codex MCP:'), error);
   }
 }
 
