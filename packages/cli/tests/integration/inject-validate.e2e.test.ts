@@ -178,6 +178,56 @@ describe('CLI E2E: inject command', () => {
         expect(config.mcp['spec-driven-steroids'].command[1]).toMatch(/dist[\\/]mcp[\\/]index\.js$/);
     });
 
+    it('inject command with Codex platform creates .codex directory structure', async () => {
+        vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
+            platforms: ['codex']
+        });
+
+        const program = (await import('../../dist/cli/index.js')).default;
+        await program.parseAsync(['inject'], { from: 'user' } as any);
+
+        const codexDir = path.join(targetDir, '.codex');
+        expect(await fs.pathExists(codexDir)).toBe(true);
+        expect(await fs.pathExists(path.join(codexDir, 'agents'))).toBe(true);
+        expect(await fs.pathExists(path.join(codexDir, 'commands'))).toBe(true);
+
+        // MCP config should be in .codex directory
+        const mcpConfigPath = path.join(codexDir, 'mcp.json');
+        expect(await fs.pathExists(mcpConfigPath)).toBe(true);
+
+        const agentsMdPath = path.join(codexDir, 'AGENTS.md');
+        expect(await fs.pathExists(agentsMdPath)).toBe(true);
+
+        const content = await fs.readFile(agentsMdPath, 'utf-8');
+        expect(content.includes('Spec-Driven Development')).toBe(true);
+        expect(content.includes('## Available Agents and Commands')).toBe(true);
+        expect(content.includes('/spec-driven')).toBe(true);
+        expect(content.includes('/inject-guidelines')).toBe(true);
+    });
+
+    it('inject command creates spec-driven agent and commands for Codex', async () => {
+        vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
+            platforms: ['codex']
+        });
+
+        const program = (await import('../../dist/cli/index.js')).default;
+        await program.parseAsync(['inject'], { from: 'user' } as any);
+
+        const agentPath = path.join(targetDir, '.codex', 'agents', 'spec-driven.agent.md');
+        expect(await fs.pathExists(agentPath)).toBe(true);
+
+        const agentContent = await fs.readFile(agentPath, 'utf-8');
+        expect(agentContent.includes('name: Spec-Driven')).toBe(true);
+        expect(agentContent.includes('## Phase Gatekeeper (Non-Bypassable)')).toBe(true);
+        expect(agentContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
+
+        const commandPath = path.join(targetDir, '.codex', 'commands', 'spec-driven.md');
+        expect(await fs.pathExists(commandPath)).toBe(true);
+
+        const commandContent = await fs.readFile(commandPath, 'utf-8');
+        expect(commandContent.includes('Begin at Phase 1 (requirements)')).toBe(true);
+    });
+
     it('inject command adds spec-driven-steroids MCP to GitHub Copilot config', async () => {
         const mcpConfigPath = path.join(targetDir, '.vscode', 'mcp.json');
 
