@@ -1,60 +1,87 @@
 ---
 name: Spec-Driven
-description: Full Spec-Driven flow (Requirements → Design → Tasks → Code).
+description: Full Spec-Driven flow (Requirements -> Design -> Tasks -> Code).
 ---
 
 # Spec-Driven Implementation
 
-Follow these steps strictly to ensure high-quality, traceable software engineering.
+Guide the user from an idea to validated requirements, validated design, validated tasks, and then implementation.
 
-## Phase Gatekeeper (Non-Bypassable)
+## Phase Gatekeeper
 
-You MUST enforce this lifecycle exactly: `requirements -> design -> tasks -> implementation`.
+You MUST enforce this lifecycle exactly:
 
-- Never skip phases, even if the user asks to "just implement" or "fix it now".
-- If there is no approved `specs/changes/<slug>/requirements.md`, always start at Phase 1.
+`requirements -> design -> tasks -> implementation`
+
+- Never skip phases, even if the user asks to implement immediately.
+- If there is no approved `specs/changes/<slug>/requirements.md`, always start with requirements.
 - Before Phase 4 is explicitly approved by the human, do not write implementation code.
 - Before Phase 4 approval, only write files under `specs/changes/<slug>/`.
 - Every phase transition requires explicit human approval.
-- For requirements/design/tasks artifacts, always validate and write the file first, then ask for approval to proceed.
+- For requirements, design, and tasks, always validate and write the artifact first, then ask whether to proceed.
 
-If a user asks for direct implementation before requirements, respond with:
+If the user asks for direct implementation before requirements, respond with:
 
 "I can implement this, but per Spec-Driven flow I must start with Phase 1 (requirements) first. I will propose a slug, write `specs/changes/<slug>/requirements.md`, and then ask for your approval to proceed."
 
-## 0. Setup
-- Generate a short slug for the change (e.g., `auth-refactor`).
-- All artifacts will be stored in `specs/changes/<slug>/`.
+## Workflow
 
-## 1. Requirements (The "Asteroid" impact)
-- **Action**: Invoke the `spec-driven-requirements-writer` skill.
-- **Goal**: Produce a Markdown requirement using EARS syntax in `specs/changes/<slug>/requirements.md`.
-- **Validation**: Call `mcp:verify_requirements_file` to validate sections, numbering, and EARS patterns.
-- **Review**: After writing the file, STOP and ask: "Human, does this requirement accurately reflect your intent?"
+### Phase 1: Requirements
 
-## 2. Technical Design
-- **Action**: Invoke the `spec-driven-technical-designer` skill.
-- **Goal**: Create architecture diagrams (Mermaid) and code anatomy in `specs/changes/<slug>/design.md`.
-- **Validation**: Call `mcp:verify_design_file` with requirements content to validate diagrams, traceability, and structure.
-- **Review**: After writing the file, STOP and ask the human to review the design decisions.
+- Invoke the `spec-driven-requirements-writer` skill.
+- Propose a short, URL-friendly slug.
+- Produce `specs/changes/<slug>/requirements.md`.
+- Validate with `mcp:verify_requirements_file`.
+- Write the file, summarize it, and ask whether to proceed to design.
 
-## 3. Atomic Tasks
-- **Action**: Invoke the `spec-driven-task-decomposer` skill.
-- **Goal**: Break the design into numbered implementation tasks in `specs/changes/<slug>/tasks.md`.
-- **Validation**: Call `mcp:verify_tasks_file` with tasks content and design content to validate phase format, checkbox structure, and traceability.
-- **Validation**: Call `mcp:verify_complete_spec` for `<slug>` to confirm the full requirements/design/tasks workflow before implementation.
-- **Review**: After writing the file, confirm the task list with the human.
+### Phase 2: Design
 
-## 4. Implementation
-- **Action**: Invoke the `spec-driven-task-implementer` skill.
-- **Goal**: Execute tasks one by one as defined in `specs/changes/<slug>/tasks.md`.
-- **Status Updates**: After EVERY task, update its status in `tasks.md` (`[ ]` -> `[~]` -> `[x]`).
-- **Double Check**: After EVERY task, ensure the implementation aligns with the design and requirements.
-- **Evaluation**: After EVERY task, run tests and static analysis to ensure quality.
-- **Review**: After EVERY task, present a summary of changes to the human for final approval.
-- **Traceability**: Reference the Requirement and Design IDs in every commit message.
-- **Test Naming**: Keep REQ/DES IDs in `_Implements` tags only; name test tasks and test cases by behavior and expected outcome.
+- Invoke the `spec-driven-technical-designer` skill.
+- Use approved `requirements.md` as the source of truth.
+- Produce `specs/changes/<slug>/design.md`.
+- Validate with `mcp:verify_design_file` using requirements content.
+- Write the file, summarize it, and ask whether to proceed to tasks.
+
+### Phase 3: Tasks
+
+- Invoke the `spec-driven-task-decomposer` skill.
+- Use approved `requirements.md` and `design.md`.
+- Produce `specs/changes/<slug>/tasks.md`.
+- Validate with `mcp:verify_tasks_file` using design content.
+- Validate the full spec with `mcp:verify_complete_spec` for `<slug>`.
+- Write the file, summarize it, and ask whether to proceed to implementation.
+
+### Phase 4: Implementation
+
+- Invoke the `spec-driven-task-implementer` skill.
+- Use `requirements.md`, `design.md`, and `tasks.md` as the source of truth.
+- Execute the requested task, requested phase, or next eligible pending task.
+- Update task status in `tasks.md` per task:
+  - mark `[~]` when starting
+  - mark `[x]` only after verification succeeds
+  - save the file immediately after each status change
+- Keep REQ and DES IDs inside `_Implements:` traceability tags in `tasks.md`; use behavior-focused names for tests and test cases.
+- Use the smallest meaningful verification for each task before marking it complete.
+- Continue implementation directly unless blocked by a real conflict, failed verification, or material ambiguity.
+
+## Traceability Rules
+
+- Preserve traceability across the full flow:
+  - requirements use `REQ-*`
+  - design uses `DES-*`
+  - tasks link work through `_Implements:` tags
+- Do not invent alternate traceability ID systems.
+
+## Key Behaviors
+
+- Always validate via MCP before presenting a planning artifact as complete.
+- Explicitly invoke the specialized skill for each phase.
+- Write planning artifacts first, then ask for approval between phases.
+- During implementation, do the work directly and ask only when blocked or when approval is required to move into Phase 4.
+- Never batch task status updates.
 
 ## Constraints
-- Do not write implementation code before explicit Phase 4 approval.
+
 - Do not edit files outside `specs/changes/<slug>/` before Phase 4 approval.
+- Do not write implementation code before explicit Phase 4 approval.
+- Keep wrapper behavior aligned with the universal skills rather than adding platform-specific process rules.

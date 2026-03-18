@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import inquirer from 'inquirer';
 import fs from 'fs-extra';
 import path from 'path';
+import os from 'os';
 import { mockFs } from '@spec-driven-steroids/test-utils';
 
 describe('CLI E2E: inject command', () => {
@@ -49,11 +50,23 @@ describe('CLI E2E: inject command', () => {
 
         const jetbrainsAgentContent = await fs.readFile(path.join(githubDir, 'agents', 'spec-driven.agent.md'), 'utf-8');
         const jetbrainsPromptContent = await fs.readFile(path.join(githubDir, 'prompts', 'inject-guidelines.prompt.md'), 'utf-8');
-        expect(jetbrainsAgentContent.includes('## Phase Gatekeeper (Non-Bypassable)')).toBe(true);
-        expect(jetbrainsPromptContent.includes('All 6 guideline documents are REQUIRED outputs.')).toBe(true);
+        expect(jetbrainsAgentContent.includes('## Phase Gatekeeper')).toBe(true);
+        expect(jetbrainsPromptContent.includes('Generate all six guideline documents by default unless the user explicitly skips named files.')).toBe(true);
+
+        // Verify JetBrains MCP config
+        const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
+        const mcpConfigPath = process.platform === 'win32' 
+            ? path.join(localAppData, 'github-copilot', 'intellij', 'mcp.json')
+            : path.join(os.homedir(), '.config', 'github-copilot', 'intellij', 'mcp.json');
+        
+        const config = await fs.readJson(mcpConfigPath);
+        expect(config.servers).toBeDefined();
+        expect(config.servers['spec-driven-steroids']).toBeDefined();
+        expect(config.servers['spec-driven-steroids'].command).toBe('node');
+        expect(config.servers['spec-driven-steroids'].args[0]).toMatch(/dist[\\/]mcp[\\/]index\.js$/);
     });
 
-    it('inject command with Antigravity platform creates .agent directory structure', async () => {
+    it('inject command with Antigravity platform creates .agents directory structure', async () => {
         vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
             platforms: ['antigravity']
         });
@@ -61,7 +74,7 @@ describe('CLI E2E: inject command', () => {
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
-        const agentDir = path.join(targetDir, '.agent');
+        const agentDir = path.join(targetDir, '.agents');
         expect(await fs.pathExists(agentDir)).toBe(true);
         expect(await fs.pathExists(path.join(agentDir, 'workflows'))).toBe(true);
     });
@@ -90,7 +103,7 @@ describe('CLI E2E: inject command', () => {
         const agentPath = path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md');
         const agentContent = await fs.readFile(agentPath, 'utf-8');
 
-        expect(agentContent.includes('## Phase Gatekeeper (Non-Bypassable)')).toBe(true);
+        expect(agentContent.includes('## Phase Gatekeeper')).toBe(true);
         expect(agentContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
         expect(agentContent.includes('Before Phase 4 approval, only write files under `specs/changes/<slug>/`.')).toBe(true);
         expect(agentContent.includes('I can implement this, but per Spec-Driven flow I must start with Phase 1 (requirements) first.')).toBe(true);
@@ -112,13 +125,13 @@ describe('CLI E2E: inject command', () => {
 
         const githubAgentPath = path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md');
         const githubAgentContent = await fs.readFile(githubAgentPath, 'utf-8');
-        expect(githubAgentContent.includes('## Phase Gatekeeper (Non-Bypassable)')).toBe(true);
+        expect(githubAgentContent.includes('## Phase Gatekeeper')).toBe(true);
         expect(githubAgentContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
         expect(githubAgentContent.includes('Before Phase 4 approval, only write files under `specs/changes/<slug>/`.')).toBe(true);
 
-        const antigravityWorkflowPath = path.join(targetDir, '.agent', 'workflows', 'spec-driven.md');
+        const antigravityWorkflowPath = path.join(targetDir, '.agents', 'workflows', 'spec-driven.md');
         const antigravityWorkflowContent = await fs.readFile(antigravityWorkflowPath, 'utf-8');
-        expect(antigravityWorkflowContent.includes('## Phase Gatekeeper (Non-Bypassable)')).toBe(true);
+        expect(antigravityWorkflowContent.includes('## Phase Gatekeeper')).toBe(true);
         expect(antigravityWorkflowContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
         expect(antigravityWorkflowContent.includes('Before Phase 4 approval, only write files under `specs/changes/<slug>/`.')).toBe(true);
     });
@@ -133,29 +146,26 @@ describe('CLI E2E: inject command', () => {
 
         const githubPromptPath = path.join(targetDir, '.github', 'prompts', 'inject-guidelines.prompt.md');
         const githubPromptContent = await fs.readFile(githubPromptPath, 'utf-8');
-        expect(githubPromptContent.includes('All 6 guideline documents are REQUIRED outputs.')).toBe(true);
-        expect(githubPromptContent.includes('Never report missing guideline files as optional.')).toBe(true);
+        expect(githubPromptContent.includes('Generate all six guideline documents by default unless the user explicitly skips named files.')).toBe(true);
+        expect(githubPromptContent.includes('Do not treat missing guideline files as optional.')).toBe(true);
         expect(githubPromptContent.includes('Testing Trophy')).toBe(true);
-        expect(githubPromptContent.includes('Integration tests as the primary confidence layer')).toBe(true);
-        expect(githubPromptContent.includes('Unit tests as secondary and selective only')).toBe(true);
+        expect(githubPromptContent.includes('default generated `TESTING.md` to Testing Trophy guidance')).toBe(true);
         // GitHub agent shim is intentionally removed in favor of the Copilot prompt
         expect(await fs.pathExists(path.join(targetDir, '.github', 'agents', 'inject-guidelines.agent.md'))).toBe(false);
 
-        const antigravityGuidelinesPath = path.join(targetDir, '.agent', 'workflows', 'inject-guidelines.md');
+        const antigravityGuidelinesPath = path.join(targetDir, '.agents', 'workflows', 'inject-guidelines.md');
         const antigravityGuidelinesContent = await fs.readFile(antigravityGuidelinesPath, 'utf-8');
-        expect(antigravityGuidelinesContent.includes('All 6 guideline documents are REQUIRED outputs.')).toBe(true);
-        expect(antigravityGuidelinesContent.includes('Never report missing guideline files as optional.')).toBe(true);
+        expect(antigravityGuidelinesContent.includes('Generate all six guideline documents by default unless the user explicitly skips named files.')).toBe(true);
+        expect(antigravityGuidelinesContent.includes('Do not treat missing guideline files as optional.')).toBe(true);
         expect(antigravityGuidelinesContent.includes('Testing Trophy')).toBe(true);
-        expect(antigravityGuidelinesContent.includes('integration tests as the primary confidence layer')).toBe(true);
-        expect(antigravityGuidelinesContent.includes('unit tests secondary and selective')).toBe(true);
+        expect(antigravityGuidelinesContent.includes('default generated `TESTING.md` to Testing Trophy guidance')).toBe(true);
 
         const opencodeGuidelinesPath = path.join(targetDir, '.opencode', 'commands', 'inject-guidelines.md');
         const opencodeGuidelinesContent = await fs.readFile(opencodeGuidelinesPath, 'utf-8');
-        expect(opencodeGuidelinesContent.includes('All 6 guideline documents are REQUIRED outputs.')).toBe(true);
-        expect(opencodeGuidelinesContent.includes('Never report missing guideline files as optional.')).toBe(true);
+        expect(opencodeGuidelinesContent.includes('Generate all six guideline documents by default unless the user explicitly skips named files.')).toBe(true);
+        expect(opencodeGuidelinesContent.includes('Do not treat missing guideline files as optional.')).toBe(true);
         expect(opencodeGuidelinesContent.includes('Testing Trophy')).toBe(true);
-        expect(opencodeGuidelinesContent.includes('Integration tests as primary confidence layer')).toBe(true);
-        expect(opencodeGuidelinesContent.includes('Unit tests as secondary and selective only')).toBe(true);
+        expect(opencodeGuidelinesContent.includes('default generated `TESTING.md` to Testing Trophy guidance')).toBe(true);
     });
 
     it('inject command adds spec-driven-steroids MCP to OpenCode config', async () => {
@@ -221,8 +231,8 @@ describe('CLI E2E: inject command', () => {
         expect(config.mcpServers).toBeUndefined();
     });
 
-    it('inject command adds spec-driven-steroids MCP to Antigravity config', async () => {
-        const mcpConfigPath = path.join(targetDir, '.agent', 'mcp_config.json');
+    it('inject command adds spec-driven-steroids MCP to global Antigravity config', async () => {
+        const mcpConfigPath = path.join(os.homedir(), '.gemini', 'antigravity', 'mcp_config.json');
 
         vi.spyOn(inquirer, 'prompt').mockResolvedValueOnce({
             platforms: ['antigravity']
@@ -267,7 +277,7 @@ describe('CLI E2E: validate command', () => {
     });
 
     it('validate command detects existing Antigravity config', async () => {
-        const agentDir = path.join(targetDir, '.agent');
+        const agentDir = path.join(targetDir, '.agents');
         await fs.ensureDir(path.join(agentDir, 'workflows'));
 
         const program = (await import('../../dist/cli/index.js')).default;

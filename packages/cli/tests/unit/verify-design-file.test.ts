@@ -355,4 +355,129 @@ _Implements: **REQ-1.1**, \`REQ-1.2\`_
             expect(result.valid).toBe(true);
         });
     });
+
+    describe('Mermaid validation integration', () => {
+        it('returns mermaidValidation field with results', () => {
+            const result = verifyDesignFile(validContent);
+            expect(result).toHaveProperty('mermaidValidation');
+            expect(result.mermaidValidation).toHaveProperty('valid');
+            expect(result.mermaidValidation).toHaveProperty('errors');
+            expect(result.mermaidValidation).toHaveProperty('warnings');
+            expect(result.mermaidValidation).toHaveProperty('diagramCount');
+            expect(result.mermaidValidation).toHaveProperty('diagramTypes');
+        });
+
+        it('validates correct Mermaid syntax', () => {
+            const result = verifyDesignFile(validContent);
+            expect(result.mermaidValidation.valid).toBe(true);
+            expect(result.mermaidValidation.errors).toHaveLength(0);
+        });
+
+        it('detects Mermaid syntax errors', () => {
+            const content = `# Design Document
+
+## Overview
+
+This is the overview.
+
+### Design Goals
+
+1. Goal one
+
+### References
+
+- **REQ-1**: Test
+
+---
+
+## System Architecture
+
+### DES-1: Component
+
+\`\`\`mermaid
+
+flowchart TD
+    A --> B
+\`\`\`
+
+_Implements: REQ-1.1, REQ-1.2_
+
+---
+
+## Code Anatomy
+
+| File Path | Purpose | Implements |
+|-----------|---------|------------|
+| src/file.ts | Test | DES-1 |
+
+---
+
+## Traceability Matrix
+
+| Design Element | Requirements |
+|----------------|--------------|
+| DES-1 | REQ-1.1, REQ-1.2 |
+`;
+            const result = verifyDesignFile(content);
+            expect(result.mermaidValidation.valid).toBe(false);
+            expect(result.mermaidValidation.errors.length).toBeGreaterThan(0);
+            expect(result.mermaidValidation.errors[0].errorType).toBe('MissingDiagramType');
+        });
+
+        it('returns warning for unsupported diagram type', () => {
+            const content = `# Design Document
+
+## Overview
+
+This is the overview.
+
+### Design Goals
+
+1. Goal one
+
+### References
+
+- **REQ-1**: Test
+
+---
+
+## System Architecture
+
+### DES-1: Component
+
+\`\`\`mermaid
+gitgraph
+    commit
+\`\`\`
+
+_Implements: REQ-1.1, REQ-1.2_
+
+---
+
+## Code Anatomy
+
+| File Path | Purpose | Implements |
+|-----------|---------|------------|
+| src/file.ts | Test | DES-1 |
+
+---
+
+## Traceability Matrix
+
+| Design Element | Requirements |
+|----------------|--------------|
+| DES-1 | REQ-1.1, REQ-1.2 |
+`;
+            const result = verifyDesignFile(content);
+            expect(result.mermaidValidation.valid).toBe(true);
+            expect(result.mermaidValidation.warnings.length).toBeGreaterThan(0);
+            expect(result.mermaidValidation.warnings[0].message).toContain('not supported');
+        });
+
+        it('counts diagrams and tracks types', () => {
+            const result = verifyDesignFile(validContent);
+            expect(result.mermaidValidation.diagramCount).toBe(1);
+            expect(result.mermaidValidation.diagramTypes).toContain('flowchart');
+        });
+    });
 });
