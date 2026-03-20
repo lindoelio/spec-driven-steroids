@@ -46,12 +46,12 @@ describe('MCP Unit: template MCP guidance', () => {
         const decomposerContent = await readTemplate('universal/skills/spec-driven-task-decomposer/SKILL.md');
         const implementerContent = await readTemplate('universal/skills/spec-driven-task-implementer/SKILL.md');
 
-        expect(decomposerContent).toContain('prefixed with `Test:`');
-        expect(decomposerContent).toContain('Do not include `REQ-X.Y` IDs in task titles');
+        expect(decomposerContent).toContain('Prefix test tasks with `Test:`');
+        expect(decomposerContent).toContain('do not include `REQ-*` IDs in the title');
         expect(decomposerContent).not.toContain('Test REQ-');
 
-        expect(implementerContent).toContain('Never include IDs in test titles');
-        expect(implementerContent).toContain('Never include IDs in code comments');
+        expect(implementerContent).toContain('Do not include `REQ-*` or `DES-*` IDs in test names');
+        expect(implementerContent).toContain('Do not include `REQ-*` or `DES-*` IDs in code comments');
         expect(implementerContent).not.toContain('tasks prefixed with "Test REQ-"');
     });
 
@@ -69,7 +69,13 @@ describe('MCP Unit: template MCP guidance', () => {
             expect(content).toMatch(/integration/i);
             expect(content).toMatch(/e2e/i);
             expect(content).toMatch(/unit tests?/i);
-            expect(content).toMatch(/secondary/i);
         }
+    });
+
+    it('requires minimal-comments guidance in project-guidelines-writer skill', async () => {
+        const content = await readTemplate('universal/skills/project-guidelines-writer/SKILL.md');
+        expect(content).toContain('code comment');
+        expect(content).toContain('highly necessary');
+        expect(content).toContain('non-obvious intent');
     });
 });

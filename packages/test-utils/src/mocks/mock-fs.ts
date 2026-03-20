@@ -87,19 +87,9 @@ export class MockFileSystem {
     /**
      * Create Antigravity config structure
      */
-    private async createAntigravityConfig(rootDir: string, options: MockTargetDirOptions): Promise<void> {
-        const agentDir = path.join(rootDir, '.agent');
+    private async createAntigravityConfig(rootDir: string, _options: MockTargetDirOptions): Promise<void> {
+        const agentDir = path.join(rootDir, '.agents');
         await fsPromises.mkdir(agentDir, { recursive: true });
-
-        const config: Record<string, unknown> = options.existingConfig?.mcpServers
-            ? { mcpServers: options.existingConfig.mcpServers }
-            : { mcpServers: {} };
-
-        await fsPromises.writeFile(
-            path.join(agentDir, 'mcp_config.json'),
-            JSON.stringify(config, null, 2),
-            'utf-8'
-        );
     }
 
     /**

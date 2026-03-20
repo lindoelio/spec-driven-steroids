@@ -7,6 +7,10 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import fs from "fs/promises";
 import path from "path";
+import {
+  extractMermaidBlocks,
+  validateMermaidDiagram
+} from "./mermaid-validator.js";
 
 const SKILL_DOCS = {
   requirements: "skills/spec-driven-requirements-writer/SKILL.md",
@@ -295,6 +299,21 @@ function verifyDesignFile(content: string, requirementsContent?: string): {
     orphaned: string[];
     invalidReqRefs: string[];
   };
+  mermaidValidation: {
+    valid: boolean;
+    errors: Array<{
+      line: number;
+      errorType: string;
+      message: string;
+      suggestedFix: string;
+    }>;
+    warnings: Array<{
+      line: number;
+      message: string;
+    }>;
+    diagramCount: number;
+    diagramTypes: string[];
+  };
 } {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -356,6 +375,7 @@ function verifyDesignFile(content: string, requirementsContent?: string): {
     const hasAnyTraceabilityTags = /_Implements:/i.test(content);
 
     if (!hasAnyTraceabilityTags) {
+      const mermaidBlocks = extractMermaidBlocks(content);
       return {
         valid: errors.length === 0,
         errors,
@@ -364,6 +384,13 @@ function verifyDesignFile(content: string, requirementsContent?: string): {
           linked,
           orphaned,
           invalidReqRefs
+        },
+        mermaidValidation: {
+          valid: true,
+          errors: [],
+          warnings: [],
+          diagramCount: mermaidBlocks.length,
+          diagramTypes: []
         }
       };
     }
@@ -419,6 +446,55 @@ function verifyDesignFile(content: string, requirementsContent?: string): {
     }));
   }
 
+  // Validate Mermaid diagrams
+  const mermaidBlocks = extractMermaidBlocks(content);
+  const mermaidErrors: Array<{ line: number; errorType: string; message: string; suggestedFix: string }> = [];
+  const mermaidWarnings: Array<{ line: number; message: string }> = [];
+  const diagramTypes: string[] = [];
+
+  for (const block of mermaidBlocks) {
+    const result = validateMermaidDiagram(block.content, block.startLine);
+    if (!result.valid) {
+      for (const error of result.errors) {
+        mermaidErrors.push({
+          line: error.line,
+          errorType: error.errorType,
+          message: error.message,
+          suggestedFix: error.suggestedFix
+        });
+        errors.push(formatError({
+          errorType: `Mermaid ${error.errorType}`,
+          context: `Line ${error.line}: ${error.message}`,
+          suggestedFix: error.suggestedFix,
+          skillDocLink: SKILL_DOCS.design
+        }));
+      }
+    }
+    for (const warning of result.warnings) {
+      mermaidWarnings.push({
+        line: warning.line,
+        message: warning.message
+      });
+      warnings.push(formatError({
+        errorType: "Mermaid Warning",
+        context: `Line ${warning.line}: ${warning.message}`,
+        suggestedFix: "Consider using a supported diagram type for full validation",
+        skillDocLink: SKILL_DOCS.design
+      }));
+    }
+    if (result.diagramType) {
+      diagramTypes.push(result.diagramType);
+    }
+  }
+
+  const mermaidValidation = {
+    valid: mermaidErrors.length === 0,
+    errors: mermaidErrors,
+    warnings: mermaidWarnings,
+    diagramCount: mermaidBlocks.length,
+    diagramTypes
+  };
+
   return {
     valid: errors.length === 0,
     errors,
@@ -427,7 +503,8 @@ function verifyDesignFile(content: string, requirementsContent?: string): {
       linked,
       orphaned,
       invalidReqRefs
-    }
+    },
+    mermaidValidation
   };
 }
 
