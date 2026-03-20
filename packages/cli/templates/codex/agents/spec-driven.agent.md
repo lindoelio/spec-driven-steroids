@@ -85,7 +85,7 @@ Your implementation plan is ready at: `specs/changes/<slug>/tasks.md`
 2. Tell the Build agent to read the spec-driven skill file:
    ```
    Please read the spec-driven-task-implementer skill at:
-   .opencode/skills/spec-driven-task-implementer/SKILL.md
+   .codex/skills/spec-driven-task-implementer/SKILL.md
 
    Then implement the tasks in: specs/changes/<slug>/tasks.md
    ```
