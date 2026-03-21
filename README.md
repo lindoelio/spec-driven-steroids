@@ -113,7 +113,7 @@ Useful commands:
 
 ## Release flow
 
-This repo publishes the `spec-driven-steroids` npm package with Changesets.
+This repo publishes the `spec-driven-steroids` npm package with Changesets and GitHub Actions trusted publishing.
 
 Typical release steps:
 
@@ -122,8 +122,12 @@ pnpm changeset
 pnpm changeset:version
 pnpm test
 pnpm build
-pnpm changeset:publish
+git push origin main
+git tag -a v<version> -m "release v<version>"
+git push origin v<version>
 ```
+
+The publish workflow runs from `.github/workflows/publish.yml` and uses npm trusted publishing through GitHub Actions OIDC, so no long-lived npm token is required in the repository.
 
 ## Repository docs
 
