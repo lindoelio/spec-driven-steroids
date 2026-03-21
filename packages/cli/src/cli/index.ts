@@ -165,7 +165,6 @@ program
       { name: 'OpenCode Config', path: '.opencode/skills' },
       { name: 'Codex Config', path: '.codex/agents' },
       { name: 'Codex Commands', path: '.codex/commands' },
-      { name: 'Codex AGENTS.md', path: '.codex/AGENTS.md' },
       { name: 'Codex MCP Config', path: '.codex/mcp.json' },
       { name: 'Standard Requirements', path: 'specs' }
     ];

@@ -17,7 +17,8 @@ describe('MCP Unit: template MCP guidance', () => {
         const targets = [
             'github/agents/spec-driven.agent.md',
             'opencode/agents/spec-driven.agent.md',
-            'antigravity/workflows/spec-driven.md'
+            'antigravity/workflows/spec-driven.md',
+            'codex/agents/spec-driven.toml'
         ];
 
         for (const target of targets) {
@@ -60,7 +61,8 @@ describe('MCP Unit: template MCP guidance', () => {
             'universal/skills/project-guidelines-writer/SKILL.md',
             'github/prompts/inject-guidelines.prompt.md',
             'opencode/commands/inject-guidelines.md',
-            'antigravity/workflows/inject-guidelines.md'
+            'antigravity/workflows/inject-guidelines.md',
+            'codex/commands/inject-guidelines.md'
         ];
 
         for (const target of targets) {

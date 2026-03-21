@@ -7,8 +7,11 @@ Start Spec-Driven planning for this request:
 
 $ARGUMENTS
 
-Enforce the phase gatekeeper strictly:
-- Begin at Phase 1 (requirements)
-- Do not implement code yet
-- Propose a slug and draft `specs/changes/<slug>/requirements.md`
-- Write `specs/changes/<slug>/requirements.md` first, then ask for human approval before moving to design
+Use the `spec-driven` agent for this request.
+
+Command behavior:
+- Begin at Phase 1 (requirements).
+- Enforce the full lifecycle: `requirements -> design -> tasks -> implementation`.
+- Do not implement code yet.
+- Propose a slug and draft `specs/changes/<slug>/requirements.md`.
+- Write `specs/changes/<slug>/requirements.md` first, validate it, then ask for human approval before moving to design.
