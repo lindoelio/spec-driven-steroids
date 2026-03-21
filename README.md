@@ -1,301 +1,143 @@
-# Spec-Driven Steroids 💪
+# Spec-Driven Steroids
 
-> Inject Spec-Driven workflow into your favorite AI Agents. Rigorous. Simple. Frictionless.
+Inject Spec-Driven Development into AI coding tools without building a new UI.
 
+[![npm version](https://img.shields.io/npm/v/spec-driven-steroids.svg)](https://www.npmjs.com/package/spec-driven-steroids)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
----
+## What it is
 
-## Vision
+`spec-driven-steroids` is a CLI plus MCP server plus template bundle for running a strict workflow inside AI coding tools:
 
-**Spec-Driven Steroids** is a modular toolkit designed to bring discipline to
-AI-powered software engineering. It **injects** high-standard workflows (SDD)
-directly into the native environments of your favorite AI tools.
+`requirements -> design -> tasks -> implementation`
 
-- **Platform Native**: No new UI to learn. Work entirely within your existing AI
-  chat.
-- **Strict Enforcement**: Uses **Model Context Protocol (MCP)** to
-  programmatically validate AI-generated specs.
-- **Rigorous Flow**: Requirements (EARS) → Technical Design (Mermaid) → Atomic
-  Tasks → Implementation.
+It injects:
+- platform-specific agents, commands, or workflows
+- universal writing/implementation skills
+- MCP validation tools for spec structure and traceability
 
-**Supported Platforms:**
+## Supported platforms
 
-- GitHub Copilot (VS Code and JetBrains IDEs)
-- Google Antigravity
+- GitHub Copilot for VS Code
+- GitHub Copilot for JetBrains
 - OpenCode
+- Google Antigravity
+- OpenAI Codex
 - Claude Code
 
-We are actively working on expanding support and are open to contributions. If your favorite AI tool isn't supported yet, we'd love to hear from you!
+## What gets generated
 
----
+Spec-Driven planning writes artifacts to:
 
-## Future Roadmap
-
-- [ ] **Codex** - Support for OpenAI's Codex integration
-- [ ] **KiloCode** - Support for KiloCode AI coding assistant
-- [ ] **Custom Templates** - User-defined spec templates
-
----
-
-## Core Pillars
-
-1. **The Brain (Standards)**: Universal Markdown-based Skills and Agent Profiles
-   that define specialized roles like `@spec-driven`.
-2. **The Enforcer (MCP)**: A background service with 5 comprehensive validation
-   tools for EARS syntax, Mermaid diagrams, file structure, and traceability.
-3. **The Injector (CLI)**: A command-line interface with MCP server selection
-   and spec injection capabilities.
-
----
-
-## Architecture
-
-```
-packages/
- └── cli/                  # Unified package (CLI + MCP + Templates)
-     ├── src/cli/          # Terminal interface for injections (The Injector)
-     ├── src/mcp/          # Node.js MCP Server (The Enforcer)
-     └── templates/        # Markdown templates for Skills & Agents (The Brain)
+```text
+specs/changes/<slug>/
+  requirements.md
+  design.md
+  tasks.md
 ```
 
----
+The workflow is built around:
+- EARS requirements
+- Mermaid design diagrams
+- atomic implementation tasks
+- requirement/design/task traceability
 
-## Getting Started
-
-### 1. Installation
-
-#### Option A: Install from npm (Recommended)
+## Installation
 
 ```bash
 npm install -g spec-driven-steroids
 ```
 
-This installs the CLI globally for easy access from any directory.
+Requirements:
+- Node.js `>=20`
+- `pnpm` for local development
 
-#### Option B: Build from Source
+## Quick start
 
-You need to have Node.js and pnpm installed (npm install -g pnpm && pnpm setup). Then run:
-
-```bash
-# Clone the repository
-git clone https://github.com/lindoelio/spec-driven-steroids.git
-cd spec-driven-steroids
-
-# Install dependencies
-pnpm install
-
-# Build the toolkit
-pnpm build
-
-# Link the CLI globally (optional, for easier access)
-cd packages/cli
-pnpm link
-```
-
-### 2. Inject into your Project
-
-Navigate to your target repository and run:
+1. Inject platform files into a repository:
 
 ```bash
 spec-driven-steroids inject
 ```
 
-**Select your platforms** (GitHub Copilot for VS Code, GitHub Copilot for JetBrains, Antigravity, OpenCode or Claude Code) to scaffold the necessary `.github/`, `.agent/`, `.opencode/` or `.claude/` configurations.
+2. Generate project guidance first:
 
----
+- use `/inject-guidelines` in supported tools
+- this creates `AGENTS.md`, `CONTRIBUTING.md`, `STYLEGUIDE.md`, `TESTING.md`, `ARCHITECTURE.md`, and `SECURITY.md`
 
-## Usage
+3. Start the spec flow:
 
-### 1. Generate Project Guidelines (Recommended First)
+- GitHub Copilot: `@spec-driven Add a rate limiter to the API`
+- OpenCode: use the `Spec-Driven` agent
+- Antigravity: `/spec-driven`
+- Codex: `/spec-driven Add a rate limiter to the API`
 
-Before using the spec-driven flow, we recommend generating project guidelines to ensure consistency and best practices.
+4. Approve each planning phase as it completes, then move to implementation.
 
-Use the `/inject-guidelines` command to automatically generate comprehensive project documentation with zero configuration. It analyzes repository and generates AGENTS.md, CONTRIBUTING.md, STYLEGUIDE.md, TESTING.md, ARCHITECTURE.md, SECURITY.md.
+## Validation tools
 
-**What it does:**
+The bundled MCP server provides 5 tools:
 
-- Analyzes representative codebase files to understand your project
-- Generates 6 guideline documents using the Document Responsibility Matrix
-- Prompts before overwriting existing files
-- Includes managed section markers for future updates
-- Creates cross-references between documents to avoid duplication
+| Tool | Purpose |
+| --- | --- |
+| `verify_spec_structure` | Validate spec folder structure |
+| `verify_requirements_file` | Validate EARS requirements |
+| `verify_design_file` | Validate design structure and Mermaid usage |
+| `verify_tasks_file` | Validate task structure and traceability |
+| `verify_complete_spec` | Validate the full spec end to end |
 
-### 2. GitHub Copilot
+## Package layout
 
-Once injected, you have access to specialized **Custom Agents** directly in your
-chat.
-
-- **Plan a Feature**:
-  > `@spec-driven I want to add a rate limiter to my API.` _(The agent generates
-  > a slug and creates `specs/changes/rate-limiter/requirements.md`,
-  > `design.md`, `tasks.md`)_
-
-- **Implement**:
-  > `@copilot Implement the rate limiter following the tasks in specs/changes/rate-limiter/tasks.md.`
-  > _(The agent follows the validated task breakdown with proper traceability)_
-
-- **JetBrains IDEs**: The same agents work in **GitHub Copilot for JetBrains**
-  (IntelliJ IDEA, PyCharm, WebStorm, Rider, etc.) — no plugin installation
-  needed. Copilot Chat uses the `.github/` folder templates automatically. MCP
-  configuration is stored globally at `~/.config/github-copilot/intellij/mcp.json`
-  (or `%LOCALAPPDATA%\github-copilot\intellij\mcp.json` on Windows).
-
-### 3. Google Antigravity
-
-Use native **Workflows** to orchestrate the entire process.
-
-- **Run Full Loop**:
-  > `/spec-driven` _(Guides you through Requirements → Design → Tasks → Code,
-  > saving everything in `specs/changes/<slug>/`)_
-
-### 4. OpenCode
-
-Spec-Driven Steroids injects a **Primary Agent** and **Skills** for OpenCode.
-
-- **Plan a Feature with Spec-Driven Agent**:
-  > Switch to the **Spec-Driven** agent (press Tab) and describe your feature.
-  > _The agent guides you through:_ _1. **Requirements** - EARS format with MCP
-  > validation_ _2. **Technical Design** - Mermaid diagrams with traceability_
-  > _3. **Task Decomposition** - Atomic, numbered implementation tasks_ _4.
-  > **Build Agent Handoff** - Recommended switch to Build agent for
-  > implementation_
-
-- **Implement with Build Agent**:
-  > After task decomposition, the spec-driven agent recommends switching to the
-  > **Build** agent. The Build agent reads the spec-driven skill file and
-  > implements the following:
-  >
-  > - Task status workflow (update tasks.md after each task)
-  > - Traceability (REQ-X, DES-X in commits)
-  > - Implementation best practices
-
-### 5. Claude Code
-
-Spec-Driven Steroids provides a comprehensive **Skills** system for Claude Code.
-
-- **Start the Spec-Driven Workflow**:
-  > Type `/spec-driven` to begin the end-to-end workflow.
-  > _The skill guides you through:_
-  > _1. **Requirements** - EARS format with MCP validation_
-  > _2. **Technical Design** - Mermaid diagrams with traceability_
-  > _3. **Task Decomposition** - Atomic, numbered implementation tasks_
-  > _4. **Implementation** - Code with full traceability to requirements_
-
----
-
-## MCP Validation Tools
-
-The internal MCP server provides 5 comprehensive validation tools:
-
-| Tool                       | Purpose              | Validates                                                            |
-| -------------------------- | -------------------- | -------------------------------------------------------------------- |
-| `verify_spec_structure`    | Folder structure     | Directory exists, required files present                             |
-| `verify_requirements_file` | Requirements content | Sections, EARS patterns, REQ-X IDs, AC numbering                     |
-| `verify_design_file`       | Design content       | Sections, Mermaid diagrams, DES-X IDs, traceability, Impact Analysis |
-| `verify_tasks_file`        | Tasks content        | Sections, phases, checkboxes, traceability, status markers           |
-| `verify_complete_spec`     | Complete workflow    | All 3 files together, cross-file traceability                        |
-
-**Error Format**: All tools use 3-level context with SKILL.md links:
-
-```
-[Error Type] → Context → Suggested Fix
-   See: skills/[relevant-skill]/SKILL.md
-   Line: 42
+```text
+packages/
+  cli/
+    src/cli/        CLI injection and validation commands
+    src/mcp/        MCP validation server
+    templates/      Platform wrappers and universal skills
+  test-utils/       Shared fixtures and helpers
+  landing-page/     Documentation site
 ```
 
----
+## Development
 
-## Standards
+```bash
+pnpm install
+pnpm build
+pnpm test
+```
 
-- **EARS**: Easy Approach to Requirements Syntax (WHEN, IF, THEN, SHALL, WHILE,
-  WHERE)
-- **Mermaid**: Standard visualization for architecture and sequence diagrams
-- **Folder Convention**:
-  `specs/changes/<slug>/[requirements.md | design.md | tasks.md]`
-- **Traceability**: Every design and task must link back to a requirement ID
+Useful commands:
+- `pnpm typecheck`
+- `pnpm test:coverage`
+- `pnpm changeset`
+- `pnpm changeset:version`
 
----
+## Release flow
 
-## Publishing
+This repo publishes the `spec-driven-steroids` npm package with Changesets and GitHub Actions trusted publishing.
 
-Spec-Driven Steroids publishes a single package to npm using [Changesets](https://github.com/changesets/changesets) for version management:
+Typical release steps:
 
-- `spec-driven-steroids` - CLI, MCP Server, and Templates
+```bash
+pnpm changeset
+pnpm changeset:version
+pnpm test
+pnpm build
+git push origin main
+git tag -a v<version> -m "release v<version>"
+git push origin v<version>
+```
 
-### Release Workflow
+The publish workflow runs from `.github/workflows/publish.yml` and uses npm trusted publishing through GitHub Actions OIDC, so no long-lived npm token is required in the repository.
 
-1. **Create a changeset** describing your change:
+## Repository docs
 
-   ```bash
-   pnpm changeset
-   ```
-
-   Select the package and choose the version bump type (patch/minor/major).
-
-2. **Bump versions & update CHANGELOGs**:
-
-   ```bash
-   pnpm changeset:version
-   ```
-
-3. **Commit the version changes**:
-
-   ```bash
-   git add . && git commit -m "chore: version packages"
-   ```
-
-4. **Create and push a release tag**:
-
-   ```bash
-   pnpm release:tag
-   pnpm release:push-tags
-   ```
-
-5. **Publish to npm**:
-
-   ```bash
-   pnpm changeset:publish
-   ```
-
-### Prerequisites
-
-Before publishing, ensure you have:
-
-1. **npm account**: Create one at [npmjs.com](https://www.npmjs.com)
-2. **Authenticated**: Run `npm login` to authenticate
-
----
-
-## Future Roadmap
-
-- [ ] **Codex** - Support for OpenAI's Codex integration
-- [ ] **KiloCode** - Support for KiloCode AI coding assistant
-- [ ] **Custom Templates** - User-defined spec templates
-
----
-
-## Contributing
-
-Spec-Driven Steroids is open to contributions! Whether you want to:
-
-- Add support for a new platforms
-- Improve MCP validation tools
-- Enhance documentation
-- Submit bug reports or feature requests
-
-Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
-
-## Project Guidelines
-
-For repository development standards and workflows, see:
-
-- [AGENTS.md](AGENTS.md) - AI agent runtime guidance and core commands
-- [CONTRIBUTING.md](CONTRIBUTING.md) - contribution workflow and PR expectations
-- [STYLEGUIDE.md](STYLEGUIDE.md) - TypeScript/ESM code conventions and patterns
-- [TESTING.md](TESTING.md) - testing strategy, commands, and coverage notes
-- [ARCHITECTURE.md](ARCHITECTURE.md) - package roles and system architecture
-- [SECURITY.md](SECURITY.md) - security policy and secure development practices
+- `AGENTS.md`
+- `CONTRIBUTING.md`
+- `STYLEGUIDE.md`
+- `TESTING.md`
+- `ARCHITECTURE.md`
+- `SECURITY.md`
 
 ## License
 

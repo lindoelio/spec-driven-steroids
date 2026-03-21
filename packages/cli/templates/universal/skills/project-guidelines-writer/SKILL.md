@@ -5,92 +5,154 @@ description: Multi-step agent for analyzing a repository and generating focused,
 
 # Project Guidelines Writer Skill
 
-You are a senior software architect responsible for generating high-quality development guidelines. You follow a rigorous three-step process to ensure accuracy, eliminate redundancy, and maintain a clear separation of concerns between documents.
+Analyze a repository and generate or update a focused set of guideline documents without duplicating content across them.
 
-## Step 1: Repository Analysis (File Selection)
+Your job is to:
+- understand the repository from a representative sample of files
+- detect conventions, architecture, testing posture, and documentation gaps
+- generate the standard guideline set with clear document boundaries
+- preserve user-authored content outside managed sections when updating existing files
 
-Identify which files to read to understand the project. Select between 10-30 files maximum.
+## Standard Outputs
 
-### Pre-Step: Read Existing Guidelines
-First, use `Glob` to find and `Read` any existing guidelines to avoid duplication:
-- AGENTS.md, CONTRIBUTING.md, STYLEGUIDE.md, TESTING.md, ARCHITECTURE.md, SECURITY.md
+By default, generate these six documents:
 
-### Selection Criteria
-- **Configuration files**: `package.json`, `tsconfig.json`, `pyproject.toml`, `Cargo.toml`, `.eslintrc`, etc.
-- **Entry points**: `index.ts`, `main.ts`, `app.ts`.
-- **Existing documentation**: `README.md`, any `.md` files in `root` or `docs/`.
-- **Representative source files**: 1-2 examples per major directory.
-- **Test configuration**: `jest.config.js`, `vitest.config.ts`, etc.
+- `AGENTS.md`
+- `CONTRIBUTING.md`
+- `STYLEGUIDE.md`
+- `TESTING.md`
+- `ARCHITECTURE.md`
+- `SECURITY.md`
 
-### Tool Usage
-- Use `Glob` to find relevant files by pattern
-- Use `Read` to examine configuration and source files
-- Use `Grep` to search for specific patterns (e.g., naming conventions, testing patterns)
+Missing files should be created automatically. Existing files should only be skipped when the user explicitly chooses to skip them.
 
-**Output**: Return a JSON array of file paths to read.
+## Workflow
 
-## Step 2: Repository Insights (Deep Analysis)
+### Step 1: Repository Analysis
 
-Produce a JSON insights object analyzing the selected files.
+Select the files needed to understand the repository.
 
-### Categories
-1. **Technology Stack**: Languages, frameworks, tools, package managers.
-2. **Code Patterns**: Naming conventions, architectural patterns, error handling.
-3. **Existing Documentation**: Topics covered, duplicates detected.
-4. **Conflicts**: Inconsistencies between docs or between docs and code.
-5. **Structure Summary**: High-level organization.
+1. Read any existing guideline files first:
+   - `AGENTS.md`
+   - `CONTRIBUTING.md`
+   - `STYLEGUIDE.md`
+   - `TESTING.md`
+   - `ARCHITECTURE.md`
+   - `SECURITY.md`
+2. Select 10-30 representative files across:
+   - configuration
+   - entry points
+   - source code
+   - tests and test config
+   - existing docs
+3. Prefer files that reveal structure, conventions, and workflows.
+
+Use tools like:
+
+- `Glob` to find representative files
+- `Read` to inspect them
+- `Grep` to confirm naming, test, and architecture patterns
+
+**Output**: return the repository-analysis output expected by the caller.
+
+### Step 2: Repository Insights
+
+Analyze the selected files and produce a repository insights object covering:
+
+1. technology stack
+2. package manager and tooling
+3. code and naming conventions
+4. architectural patterns
+5. testing patterns and consistency
+6. existing documentation coverage
+7. conflicts between docs and code
+8. high-level project structure
 
 ### Testing Strategy Defaulting Rule
 
-When repository evidence shows an inconsistent, unclear, or mixed testing strategy, use the **Testing Trophy** as the default strategy in generated `TESTING.md` content:
-- Prioritize **integration tests** as the main confidence layer.
-- Add **e2e tests** for critical user journeys and cross-system flows.
-- Keep **unit tests** secondary and selective, focused on isolated, high-risk logic.
-- Avoid prescribing unit-test-first pyramids as the default.
+If repository evidence shows the testing strategy is inconsistent, unclear, or mixed, generated `TESTING.md` should default to **Testing Trophy** guidance:
 
-**Output**: Return a JSON object matching the `RepositoryInsights` structure.
+- integration tests as the main confidence layer
+- e2e tests for critical user journeys and cross-system flows
+- unit tests as secondary and selective for isolated, high-risk logic
 
-## Step 3: Guidelines Generation
+**Output**: return the repository-insights output expected by the caller.
 
-Generate the specific guideline document using the **Document Responsibility Matrix**.
+### Step 3: Existing Files Decision
 
-Before requesting review or approval from the human, write the generated guideline file into the repository.
+Before writing guideline files, determine how to handle existing ones.
 
-### Document Responsibility Matrix
+For each existing guideline file, ask the user whether to:
 
-| Document | This document MUST contain | This document MUST NOT contain (use references) |
-|----------|----------------------------|--------------------------------------------------|
-| **AGENTS.md** | AI persona, technology stack, build/lint/test commands, agent-specific constraints. | Detailed code conventions, testing patterns, architecture diagrams. |
-| **CONTRIBUTING.md** | Git workflow, PR process, directory structure, documentation rules. | Build commands, naming conventions, testing strategy. |
-| **STYLEGUIDE.md** | Naming conventions, code style details, language/framework patterns. | Architecture decisions, security rules, testing strategy. |
-| **TESTING.md** | Testing strategy, frameworks, testing notes, specific test patterns. When strategy is inconsistent, default to Testing Trophy with integration/e2e priority and selective unit tests. | General code conventions, build commands. |
-| **ARCHITECTURE.md** | High-level architecture, Mermaid diagrams, architecture decisions. | Individual file patterns, testing details, PR process. |
-| **SECURITY.md** | Security policy, vulnerability reporting, security rules/policies. | General architecture, git workflow. |
+- overwrite the whole file
+- skip it
+- update managed sections only
 
-### Document Mapping Reference
-Use these mappings to decide where content belongs:
-- **STYLEGUIDE.md**: Detailed code conventions, naming conventions, code style.
-- **TESTING.md**: Testing patterns, testing strategy, testing notes.
-  - If strategy is unclear/mixed, use Testing Trophy with integration/e2e priority and selective unit tests.
-- **SECURITY.md**: Security rules, security policies.
-- **ARCHITECTURE.md**: Architecture diagrams, architecture decisions.
-- **CONTRIBUTING.md**: Git workflow, PR process, workflow steps, documentation rules.
-- **AGENTS.md**: Build commands, AI persona, tech stack summary.
+Rules:
 
-### Output Rules
-1. **XML Wrapper**: Use `<summary>` and `<document>` tags.
-2. **Managed Sections**: Use markers to protect generated content:
-    ```markdown
-    <!-- SpecDriven:managed:start -->
-    ... content ...
-    <!-- SpecDriven:managed:end -->
-    ```
-3. **Cross-References**: Instead of duplicating content, reference the appropriate document (e.g., "See STYLEGUIDE.md for naming conventions").
-4. **No Preamble**: Start directly with the XML tags.
-5. **Validation**: Review generated content against the Document Responsibility Matrix to ensure no overlaps.
-6. **Write Before Review**: Save the target guideline file first, then ask the human to review or approve.
+- missing guideline files must be created automatically
+- do not treat missing guideline files as optional
+- preserve user-authored content outside managed sections when updating
 
-**Output Format**:
+### Step 4: Document Generation And Writing
+
+Generate and write each target document before asking the user to review the result.
+
+For each document:
+
+1. use the repository insights and existing-file decision
+2. apply the Document Responsibility Matrix
+3. keep content focused on that document's responsibility
+4. cross-reference other guideline files instead of duplicating content
+5. wrap generated content in managed section markers when applicable
+6. write the file to the repository
+
+## Managed Sections
+
+Use these markers for generated content:
+
+```markdown
+<!-- SpecDriven:managed:start -->
+... generated content ...
+<!-- SpecDriven:managed:end -->
+```
+
+When updating existing files:
+
+- preserve user-authored content outside managed sections
+- update only the managed section when the user chooses managed-section updates
+- if managed markers do not exist and a managed update is requested, add a managed section without deleting user content outside it
+
+## Document Responsibility Matrix
+
+| Document | Must Contain | Must Not Contain |
+|----------|--------------|------------------|
+| `AGENTS.md` | AI persona, technology stack summary, build/lint/test commands, agent constraints, code comment policy | detailed code conventions, testing patterns, architecture diagrams |
+| `CONTRIBUTING.md` | git workflow, PR process, repo structure, documentation workflow | build commands, naming conventions, testing strategy |
+| `STYLEGUIDE.md` | naming conventions, code style, language/framework patterns | architecture decisions, security rules, testing strategy |
+| `TESTING.md` | testing strategy, frameworks, test organization, project-specific testing notes | general code conventions, build commands |
+| `ARCHITECTURE.md` | high-level architecture, system boundaries, Mermaid diagrams, architecture decisions | detailed file-level coding rules, testing details, PR process |
+| `SECURITY.md` | security policy, reporting process, security constraints and practices | general architecture, git workflow |
+
+## Document Mapping Rules
+
+Use these defaults when deciding where content belongs:
+
+- detailed naming and code style -> `STYLEGUIDE.md`
+- testing strategy and examples -> `TESTING.md`
+- security requirements and policies -> `SECURITY.md`
+- system structure and diagrams -> `ARCHITECTURE.md`
+- workflow and review process -> `CONTRIBUTING.md`
+- agent behavior, commands, and high-level repo context -> `AGENTS.md`
+
+When generating `AGENTS.md`, always include this constraint under agent guidance:
+
+- add code comments only when they are highly necessary to explain non-obvious intent, workarounds, or critical constraints
+
+## Output Format
+
+When the caller expects generated document output, use:
+
 ```xml
 <summary>
 Brief summary of generated content.
@@ -101,9 +163,56 @@ Brief summary of generated content.
 </document>
 ```
 
-## Error Handling
+Start directly with the XML wrapper when XML output is required.
 
-- If unable to find sufficient representative files (minimum 5), flag the limitation and proceed with available files
-- If existing guidelines conflict with discovered patterns, document the conflict and suggest resolution
-- If project uses unconventional structure not covered by standard templates, document the structure and adapt accordingly
-- If unclear which document should contain specific content, reference the Document Responsibility Matrix and explain the decision
+## Quality Bar
+
+Before considering the work complete, verify:
+
+- [ ] all required target documents were handled
+- [ ] missing guideline files were created unless explicitly skipped by the user
+- [ ] document boundaries follow the Responsibility Matrix
+- [ ] overlapping guidance was moved or cross-referenced instead of duplicated
+- [ ] managed section markers are correct where used
+- [ ] user-authored content outside managed sections was preserved
+- [ ] Testing Trophy fallback was applied when testing strategy evidence was mixed or unclear
+- [ ] generated guidance reflects the actual repository rather than generic boilerplate
+
+## Recovery Rules
+
+### Limited Repository Evidence
+
+If there are too few representative files or the repository is sparse:
+
+1. proceed with the best available evidence
+2. use conservative defaults
+3. keep the generated guidance minimal and explicit
+4. note important limitations in the generated content or summary using ordinary prose, not HTML comments
+
+### Conflicts Between Docs And Code
+
+If existing docs conflict with repository reality:
+
+1. prefer current repository evidence over stale documentation
+2. surface the conflict clearly
+3. update the affected document when the intended correction is reasonably clear
+4. ask the user only if the conflict materially changes repository policy or workflow
+
+### Responsibility Violations
+
+If content belongs in a different guideline file:
+
+1. move it to the correct document
+2. replace duplication with a short cross-reference
+3. keep each file focused on its responsibility
+
+## Response Behavior
+
+Do not ask for confirmation between internal analysis steps.
+
+Ask the user only when:
+
+- an existing guideline file needs an overwrite/skip/managed-update decision
+- a material repository-policy conflict cannot be safely resolved from repository evidence
+
+Otherwise, proceed through analysis, insights, and document generation directly.

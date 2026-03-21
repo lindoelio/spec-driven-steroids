@@ -80,6 +80,7 @@ program
           { name: 'GitHub Copilot for JetBrains', value: 'github-jetbrains' },
           { name: 'Google Antigravity', value: 'antigravity' },
           { name: 'OpenCode', value: 'opencode' },
+          { name: 'OpenAI Codex', value: 'codex' },
           {name: 'Claude Code', value: 'claudecode' }
         ],
         validate: (input: string[]) => input.length > 0 || 'Select at least one platform.'
@@ -112,9 +113,9 @@ program
         }
 
         if (platform === 'antigravity') {
-          await configureAntigravityMcp(targetDir);
+          await configureAntigravityMcp();
           const src = path.join(standardsDir, 'antigravity');
-          platformDest = path.join(targetDir, '.agent');
+          platformDest = path.join(targetDir, '.agents');
           await fs.copy(src, platformDest, { overwrite: true });
         }
 
@@ -126,6 +127,13 @@ program
 
           // Specifically for OpenCode, we need to update opencode.json
           await updateOpenCodeConfig(targetDir);
+        }
+
+        if (platform === 'codex') {
+          await configureCodexMcp(targetDir);
+          const src = path.join(standardsDir, 'codex');
+          platformDest = path.join(targetDir, '.codex');
+          await fs.copy(src, platformDest, { overwrite: true });
         }
 
         if(platform === 'claudecode') {
@@ -161,8 +169,11 @@ program
     const checks = [
       { name: 'GitHub Copilot Config', path: '.github/agents' },
       { name: 'VS Code MCP Config', path: '.vscode/mcp.json' },
-      { name: 'Antigravity Config', path: '.agent/workflows' },
+      { name: 'Antigravity Config', path: '.agents/workflows' },
       { name: 'OpenCode Config', path: '.opencode/skills' },
+      { name: 'Codex Config', path: '.codex/agents' },
+      { name: 'Codex Commands', path: '.codex/commands' },
+      { name: 'Codex MCP Config', path: '.codex/config.toml' },
       { name: 'ClaudeCode Config', path: '.claude/skills' },
       { name: 'ClaudeCode Rules', path: '.claude/rules' },
       { name: 'ClaudeCode', path: '.claude/CLAUDE.md' },
@@ -247,23 +258,27 @@ async function configureCopilotMcp(targetDir: string) {
   }
 }
 
-async function configureAntigravityMcp(targetDir: string) {
+function getAntigravityMcpPath(): string {
+  return path.join(os.homedir(), '.gemini', 'antigravity', 'mcp_config.json');
+}
+
+async function configureAntigravityMcp() {
   try {
-    const agentDir = path.join(targetDir, '.agent');
-    await fs.ensureDir(agentDir);
-    const configPath = path.join(agentDir, 'mcp_config.json');
+    const mcpConfigPath = getAntigravityMcpPath();
+    const configDir = path.dirname(mcpConfigPath);
+
+    await fs.ensureDir(configDir);
 
     let config: McpConfig = { mcpServers: {} };
-    if (await fs.pathExists(configPath)) {
+    if (await fs.pathExists(mcpConfigPath)) {
       try {
-        config = await fs.readJson(configPath) as McpConfig;
+        config = await fs.readJson(mcpConfigPath) as McpConfig;
         if (!config.mcpServers) config.mcpServers = {};
       } catch (e) {
-        console.warn(chalk.yellow('Warning: Could not parse existing Antigravity config.'));
+        console.warn(chalk.yellow('Warning: Could not parse existing Antigravity MCP config.'));
       }
     }
 
-    // Add spec-driven-steroids (always)
     const mcpLaunch = resolveMcpLaunchConfig();
     if (!config.mcpServers) config.mcpServers = {};
     config.mcpServers['spec-driven-steroids'] = {
@@ -271,7 +286,8 @@ async function configureAntigravityMcp(targetDir: string) {
       args: mcpLaunch.args
     };
 
-    await fs.writeJson(configPath, config, { spaces: 2 });
+    await fs.writeJson(mcpConfigPath, config, { spaces: 2 });
+    console.log(chalk.green(`✅ Antigravity MCP configured at ${mcpConfigPath}`));
   } catch (error) {
     console.error(chalk.red('Failed to configure Antigravity MCP:'), error);
   }
@@ -302,34 +318,6 @@ async function configureOpenCodeMcp(targetDir: string) {
     await fs.writeJson(configPath, config, { spaces: 2 });
   } catch (error) {
     console.error(chalk.red('Failed to configure OpenCode MCP:'), error);
-  }
-}
-
-async function configureClaudeCodeMcp(targetDir: string) {
-  try {
-    const mcpConfigPath = path.join(targetDir, '.mcp.json');
-
-    let config: McpConfig = {};
-    if (await fs.pathExists(mcpConfigPath)) {
-      try {
-        config = await fs.readJson(mcpConfigPath) as McpConfig;
-      } catch (e) {
-        console.warn(chalk.yellow('Warning: Could not parse existing .mcp.json.'));
-      }
-    }
-
-    // Add spec-driven-steroids MCP server
-    if (!config.mcpServers) config.mcpServers = {};
-    const mcpLaunch = resolveMcpLaunchConfig();
-    config.mcpServers['spec-driven-steroids'] = {
-      command: mcpLaunch.command,
-      args: mcpLaunch.args
-    };
-
-    await fs.writeJson(mcpConfigPath, config, { spaces: 2 });
-    console.log(chalk.green('✅ Created .mcp.json in project root.'));
-  } catch (error) {
-    console.error(chalk.red('Failed to configure Claude Code MCP:'), error);
   }
 }
 
@@ -365,28 +353,116 @@ async function configureJetBrainsMcp() {
 
     await fs.ensureDir(configDir);
 
-    let config: McpConfig = { mcpServers: {} };
+    let config: CopilotMcpConfig = { servers: {} };
     if (await fs.pathExists(mcpConfigPath)) {
       try {
-        config = await fs.readJson(mcpConfigPath) as McpConfig;
-        if (!config.mcpServers) config.mcpServers = {};
+        config = await fs.readJson(mcpConfigPath) as CopilotMcpConfig;
+        if (!config.servers) config.servers = {};
       } catch (e) {
         console.warn(chalk.yellow('Warning: Could not parse existing JetBrains MCP config.'));
       }
     }
 
+    const legacyServers = config.mcpServers ?? {};
+    if (!config.servers) config.servers = {};
+    for (const [serverName, serverConfig] of Object.entries(legacyServers)) {
+      if (!config.servers[serverName]) {
+        config.servers[serverName] = serverConfig;
+      }
+    }
+
     const mcpLaunch = resolveMcpLaunchConfig();
-    if (!config.mcpServers) config.mcpServers = {};
-    config.mcpServers['spec-driven-steroids'] = {
+    config.servers['spec-driven-steroids'] = {
       command: mcpLaunch.command,
       args: mcpLaunch.args
     };
+
+    delete config.mcpServers;
 
     await fs.writeJson(mcpConfigPath, config, { spaces: 2 });
     console.log(chalk.green(`✅ JetBrains MCP configured at ${mcpConfigPath}`));
   } catch (error) {
     console.error(chalk.red('Failed to configure JetBrains MCP:'), error);
   }
+}
+
+async function configureCodexMcp(targetDir: string) {
+  try {
+    const codexDir = path.join(targetDir, '.codex');
+    await fs.ensureDir(codexDir);
+    const mcpConfigPath = path.join(codexDir, 'config.toml');
+    const mcpLaunch = resolveMcpLaunchConfig();
+    const serverBlock = renderCodexMcpServerBlock('spec-driven-steroids', mcpLaunch);
+
+    let configContent = '';
+    if (await fs.pathExists(mcpConfigPath)) {
+      configContent = await fs.readFile(mcpConfigPath, 'utf-8');
+    }
+
+    const updatedContent = upsertCodexMcpServerBlock(configContent, 'spec-driven-steroids', serverBlock);
+    await fs.writeFile(mcpConfigPath, updatedContent, 'utf-8');
+    console.log(chalk.green('✅ Created .codex/config.toml in project root.'));
+  } catch (error) {
+    console.error(chalk.red('Failed to configure Codex MCP:'), error);
+  }
+}
+
+function renderCodexMcpServerBlock(serverName: string, launch: McpLaunchConfig): string {
+  const quotedArgs = launch.args.map((arg) => `"${escapeTomlString(arg)}"`).join(', ');
+
+  return [
+    `[mcp_servers.${serverName}]`,
+    `command = "${escapeTomlString(launch.command)}"`,
+    `args = [${quotedArgs}]`
+  ].join('\n');
+}
+
+function upsertCodexMcpServerBlock(existingContent: string, serverName: string, block: string): string {
+  const trimmed = existingContent.trim();
+  const normalized = trimmed ? `${trimmed}\n` : '';
+  const pattern = new RegExp(`\\[mcp_servers\\.${escapeRegExp(serverName)}\\][\\s\\S]*?(?=\\n\\[|$)`, 'm');
+
+  if (pattern.test(normalized)) {
+    return normalized.replace(pattern, block).replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
+  }
+
+  return `${normalized}${normalized ? '\n' : ''}${block}\n`;
+}
+
+function escapeTomlString(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+async function configureClaudeCodeMcp(targetDir: string) {
+    try {
+        const mcpConfigPath = path.join(targetDir, '.mcp.json');
+
+        let config: McpConfig = {};
+        if (await fs.pathExists(mcpConfigPath)) {
+            try {
+                config = await fs.readJson(mcpConfigPath) as McpConfig;
+            } catch (e) {
+                console.warn(chalk.yellow('Warning: Could not parse existing .mcp.json.'));
+            }
+        }
+
+        // Add spec-driven-steroids MCP server
+        if (!config.mcpServers) config.mcpServers = {};
+        const mcpLaunch = resolveMcpLaunchConfig();
+        config.mcpServers['spec-driven-steroids'] = {
+            command: mcpLaunch.command,
+            args: mcpLaunch.args
+        };
+
+        await fs.writeJson(mcpConfigPath, config, { spaces: 2 });
+        console.log(chalk.green('✅ Created .mcp.json in project root.'));
+    } catch (error) {
+        console.error(chalk.red('Failed to configure Claude Code MCP:'), error);
+    }
 }
 
 function resolveMcpLaunchConfig(): McpLaunchConfig {
