@@ -41,6 +41,9 @@ specs/
 !.agent/workflows/
 !.agent/skills/
 .github/
+!.github/workflows/
+!.github/workflows/*.yml
+!.github/workflows/*.yaml
 .opencode/
 opencode.json
 opencode.jsonc

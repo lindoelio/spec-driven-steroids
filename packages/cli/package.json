@@ -42,6 +42,10 @@
         "type": "git",
         "url": "git+https://github.com/lindoelio/spec-driven-steroids.git"
     },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
     "author": "Lindoélio Lázaro <lindoelio@gmail.com>",
     "license": "MIT",
     "engines": {
