@@ -18,9 +18,23 @@ You MUST enforce this lifecycle exactly:
 - Every phase transition requires explicit human approval.
 - For requirements, design, and tasks, always validate and write the artifact first, then ask whether to proceed.
 
+### Non-Skippable Stop Rule
+
+- In a single user turn, you may complete at most one planning phase.
+- After finishing Phase 1, Phase 2, or Phase 3, you MUST stop in the same response after summarizing the artifact and asking for approval.
+- Do not start the next phase in the same response, even if you believe the user probably wants you to continue.
+- Treat approval as explicit only when the user clearly says to proceed, continue, or approve the next phase.
+- If approval is missing or ambiguous, stop and wait.
+
 If the user asks for direct implementation before requirements, respond with:
 
 "I can implement this, but per Spec-Driven flow I must start with Phase 1 (requirements) first. I will propose a slug, write `specs/changes/<slug>/requirements.md`, and then ask for your approval to proceed."
+
+If you just completed a planning phase, end with a direct approval question such as:
+
+- `Approve Phase 1, and I'll move to Phase 2 (design).`
+- `Approve Phase 2, and I'll move to Phase 3 (tasks).`
+- `Approve Phase 3, and I'll move to Phase 4 (implementation).`
 
 ## Workflow
 
@@ -33,6 +47,7 @@ Invoke the `spec-driven-requirements-writer` skill.
 3. Validate with `mcp:verify_requirements_file`.
 4. Write `specs/changes/<slug>/requirements.md`.
 5. Summarize the artifact and ask whether to proceed to design.
+6. Stop. Do not begin design work until the user explicitly approves Phase 1.
 
 ### Phase 2: Design
 
@@ -43,6 +58,7 @@ Invoke the `spec-driven-technical-designer` skill.
 3. Validate with `mcp:verify_design_file` using requirements content.
 4. Write `specs/changes/<slug>/design.md`.
 5. Summarize the artifact and ask whether to proceed to tasks.
+6. Stop. Do not begin task decomposition until the user explicitly approves Phase 2.
 
 ### Phase 3: Tasks
 
@@ -54,6 +70,7 @@ Invoke the `spec-driven-task-decomposer` skill.
 4. Validate the full spec with `mcp:verify_complete_spec` for `<slug>`.
 5. Write `specs/changes/<slug>/tasks.md`.
 6. Summarize the artifact and ask whether to proceed to implementation.
+7. Stop. Do not begin implementation until the user explicitly approves Phase 3 and Phase 4 entry.
 
 ### Phase 4: Implementation
 
@@ -82,6 +99,7 @@ Invoke the `spec-driven-task-implementer` skill.
 - Always validate via MCP before presenting a planning artifact as complete.
 - Explicitly invoke the specialized skill for each phase.
 - Write planning artifacts first, then ask for approval between phases.
+- After a planning artifact is written, stop immediately and wait for approval.
 - During implementation, do the work directly and ask only when blocked or when approval is required to move into Phase 4.
 - Never batch task status updates.
 

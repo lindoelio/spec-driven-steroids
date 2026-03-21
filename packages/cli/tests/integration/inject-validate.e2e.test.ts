@@ -107,6 +107,7 @@ describe('CLI E2E: inject command', () => {
         expect(agentContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
         expect(agentContent.includes('Before Phase 4 approval, only write files under `specs/changes/<slug>/`.')).toBe(true);
         expect(agentContent.includes('I can implement this, but per Spec-Driven flow I must start with Phase 1 (requirements) first.')).toBe(true);
+        expect(agentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
 
         const commandPath = path.join(targetDir, '.opencode', 'commands', 'spec-driven.md');
         const commandContent = await fs.readFile(commandPath, 'utf-8');
@@ -128,12 +129,14 @@ describe('CLI E2E: inject command', () => {
         expect(githubAgentContent.includes('## Phase Gatekeeper')).toBe(true);
         expect(githubAgentContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
         expect(githubAgentContent.includes('Before Phase 4 approval, only write files under `specs/changes/<slug>/`.')).toBe(true);
+        expect(githubAgentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
 
         const antigravityWorkflowPath = path.join(targetDir, '.agents', 'workflows', 'spec-driven.md');
         const antigravityWorkflowContent = await fs.readFile(antigravityWorkflowPath, 'utf-8');
         expect(antigravityWorkflowContent.includes('## Phase Gatekeeper')).toBe(true);
         expect(antigravityWorkflowContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
         expect(antigravityWorkflowContent.includes('Before Phase 4 approval, only write files under `specs/changes/<slug>/`.')).toBe(true);
+        expect(antigravityWorkflowContent.includes('### Non-Skippable Stop Rule')).toBe(true);
     });
 
     it('inject-guidelines templates require creating all six guideline files by default', async () => {
@@ -201,9 +204,14 @@ describe('CLI E2E: inject command', () => {
         expect(await fs.pathExists(path.join(codexDir, 'agents'))).toBe(true);
         expect(await fs.pathExists(path.join(codexDir, 'commands'))).toBe(true);
 
-        // MCP config should be in .codex directory
-        const mcpConfigPath = path.join(codexDir, 'mcp.json');
+        // MCP config should be in Codex's project-scoped config.toml
+        const mcpConfigPath = path.join(codexDir, 'config.toml');
         expect(await fs.pathExists(mcpConfigPath)).toBe(true);
+
+        const mcpConfigContent = await fs.readFile(mcpConfigPath, 'utf-8');
+        expect(mcpConfigContent.includes('[mcp_servers.spec-driven-steroids]')).toBe(true);
+        expect(mcpConfigContent.includes('command = "node"')).toBe(true);
+        expect(mcpConfigContent).toMatch(/args = \[[^\]]*dist[\\/]mcp[\\/]index\.js/);
     });
 
     it('inject command creates spec-driven agent and commands for Codex', async () => {
@@ -221,12 +229,14 @@ describe('CLI E2E: inject command', () => {
         expect(agentContent.includes('name = "spec-driven"')).toBe(true);
         expect(agentContent.includes('## Phase Gatekeeper')).toBe(true);
         expect(agentContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
+        expect(agentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
 
         const commandPath = path.join(targetDir, '.codex', 'commands', 'spec-driven.md');
         expect(await fs.pathExists(commandPath)).toBe(true);
 
         const commandContent = await fs.readFile(commandPath, 'utf-8');
         expect(commandContent.includes('Begin at Phase 1 (requirements)')).toBe(true);
+        expect(commandContent.includes('After Phase 1 is written, stop immediately.')).toBe(true);
 
         const injectGuidelinesPath = path.join(targetDir, '.codex', 'commands', 'inject-guidelines.md');
         expect(await fs.pathExists(injectGuidelinesPath)).toBe(true);

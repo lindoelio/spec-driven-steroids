@@ -15,3 +15,6 @@ Command behavior:
 - Do not implement code yet.
 - Propose a slug and draft `specs/changes/<slug>/requirements.md`.
 - Write `specs/changes/<slug>/requirements.md` first, validate it, then ask for human approval before moving to design.
+- After Phase 1 is written, stop immediately.
+- Do not start Phase 2, Phase 3, or Phase 4 in the same turn.
+- Wait for explicit approval before continuing to the next phase.

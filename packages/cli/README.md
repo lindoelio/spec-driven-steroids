@@ -1,29 +1,28 @@
-# Spec-Driven Steroids 💪
+# Spec-Driven Steroids
 
-> Inject Spec-Driven workflow into your favorite AI Agents. Rigorous. Simple. Frictionless.
+Inject Spec-Driven Development into AI coding tools without building a new UI.
 
 [![npm version](https://img.shields.io/npm/v/spec-driven-steroids.svg)](https://www.npmjs.com/package/spec-driven-steroids)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
----
+## What it is
 
-## Overview
+`spec-driven-steroids` is the published CLI package for:
+- injecting platform-specific agents, commands, and workflows
+- installing universal Spec-Driven skills
+- exposing an MCP server for spec validation
 
-**Spec-Driven Steroids** brings discipline to AI-powered software engineering by injecting high-standard workflows (Spec-Driven Development) directly into your AI tools.
+It supports a strict workflow:
 
-**Key Features:**
+`requirements -> design -> tasks -> implementation`
 
-- **Platform Native** - Work entirely within your existing AI chat (no new UI)
-- **Strict Enforcement** - MCP-powered validation for AI-generated specs
-- **Rigorous Flow** - Requirements (EARS) → Technical Design (Mermaid) → Atomic Tasks → Implementation
+## Supported platforms
 
-**Supported Platforms:**
-
-- GitHub Copilot (VS Code and JetBrains IDEs)
-- Google Antigravity
+- GitHub Copilot for VS Code
+- GitHub Copilot for JetBrains
 - OpenCode
-
----
+- Google Antigravity
+- OpenAI Codex
 
 ## Installation
 
@@ -31,83 +30,65 @@
 npm install -g spec-driven-steroids
 ```
 
-**Requirements:** Node.js `>=20.0.0`
+Requirements:
+- Node.js `>=20`
 
----
+## Quick start
 
-## Quick Start
-
-### 1. Inject into Your Project
-
-Navigate to your repository and run:
+1. Inject platform files into a repository:
 
 ```bash
 spec-driven-steroids inject
 ```
 
-Select your AI platform to scaffold the necessary configuration files.
+2. Generate project guidance first:
 
-### 2. Generate Project Guidelines (Recommended)
+- use `/inject-guidelines` in supported tools
+- this creates `AGENTS.md`, `CONTRIBUTING.md`, `STYLEGUIDE.md`, `TESTING.md`, `ARCHITECTURE.md`, and `SECURITY.md`
 
-Use the `/inject-guidelines` command to generate comprehensive project documentation:
+3. Start the spec flow:
 
-```bash
-# In your AI chat:
-/inject-guidelines
+- GitHub Copilot: `@spec-driven Add a rate limiter to the API`
+- OpenCode: use the `Spec-Driven` agent
+- Antigravity: `/spec-driven`
+- Codex: `/spec-driven Add a rate limiter to the API`
+
+4. Approve each planning phase as it completes, then move to implementation.
+
+## Validation tools
+
+The bundled MCP server provides 5 tools:
+
+| Tool | Purpose |
+| --- | --- |
+| `verify_spec_structure` | Validate spec folder structure |
+| `verify_requirements_file` | Validate EARS requirements |
+| `verify_design_file` | Validate design structure and Mermaid usage |
+| `verify_tasks_file` | Validate task structure and traceability |
+| `verify_complete_spec` | Validate the full spec end to end |
+
+## Package contents
+
+```text
+dist/          Built CLI and MCP server
+templates/     Platform wrappers and universal skills
+README.md
+LICENSE
 ```
 
-This creates `AGENTS.md`, `CONTRIBUTING.md`, `STYLEGUIDE.md`, `TESTING.md`, `ARCHITECTURE.md`, and `SECURITY.md`.
+## Development
 
-### 3. Plan a Feature
+```bash
+pnpm install
+pnpm build
+pnpm test
+```
 
-Use your AI assistant with the spec-driven agent:
+## Links
 
-- **GitHub Copilot:** `@spec-driven I want to add a rate limiter to my API.`
-- **OpenCode:** Switch to the Spec-Driven agent (Tab) and describe your feature
-- **Antigravity:** `/spec-driven`
-
-The agent generates `specs/changes/<slug>/requirements.md`, `design.md`, and `tasks.md`.
-
-### 4. Implement
-
-Switch to your build agent and reference the generated tasks:
-
-- **GitHub Copilot:** `@copilot Implement the rate limiter following specs/changes/rate-limiter/tasks.md`
-- **OpenCode:** Switch to Build agent - it reads the spec and implements with traceability
-
----
-
-## MCP Validation Tools
-
-The package includes a Model Context Protocol (MCP) server with 5 validation tools:
-
-| Tool                       | Purpose              |
-| -------------------------- | -------------------- |
-| `verify_spec_structure`    | Folder structure     |
-| `verify_requirements_file` | Requirements content |
-| `verify_design_file`       | Design content       |
-| `verify_tasks_file`        | Tasks content        |
-| `verify_complete_spec`     | Complete workflow    |
-
----
-
-## Standards
-
-- **EARS** - Easy Approach to Requirements Syntax (WHEN, IF, THEN, SHALL, WHILE, WHERE)
-- **Mermaid** - Standard visualization for architecture and sequence diagrams
-- **Folder Convention** - `specs/changes/<slug>/[requirements.md | design.md | tasks.md]`
-- **Traceability** - Every design and task must link back to a requirement ID
-
----
-
-## Documentation
-
-- **[GitHub Repository](https://github.com/lindoelio/spec-driven-steroids)** - Full documentation and source code
-- **[Contributing Guide](https://github.com/lindoelio/spec-driven-steroids/blob/main/CONTRIBUTING.md)** - How to contribute
-- **[Issues](https://github.com/lindoelio/spec-driven-steroids/issues)** - Report bugs or request features
-
----
+- Repository: `https://github.com/lindoelio/spec-driven-steroids`
+- Issues: `https://github.com/lindoelio/spec-driven-steroids/issues`
 
 ## License
 
-MIT © [Lindoélio Lázaro](https://github.com/lindoelio)
+MIT

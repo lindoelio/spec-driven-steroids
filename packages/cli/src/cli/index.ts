@@ -165,7 +165,7 @@ program
       { name: 'OpenCode Config', path: '.opencode/skills' },
       { name: 'Codex Config', path: '.codex/agents' },
       { name: 'Codex Commands', path: '.codex/commands' },
-      { name: 'Codex MCP Config', path: '.codex/mcp.json' },
+      { name: 'Codex MCP Config', path: '.codex/config.toml' },
       { name: 'Standard Requirements', path: 'specs' }
     ];
 
@@ -377,35 +377,53 @@ async function configureJetBrainsMcp() {
 
 async function configureCodexMcp(targetDir: string) {
   try {
-    // Codex uses ~/.codex/config.toml for global config, but supports project-level .codex/ directory
-    // For project-specific MCP config, we create a .codex/mcp.json file
     const codexDir = path.join(targetDir, '.codex');
     await fs.ensureDir(codexDir);
-    
-    const mcpConfigPath = path.join(codexDir, 'mcp.json');
+    const mcpConfigPath = path.join(codexDir, 'config.toml');
+    const mcpLaunch = resolveMcpLaunchConfig();
+    const serverBlock = renderCodexMcpServerBlock('spec-driven-steroids', mcpLaunch);
 
-    let config: McpConfig = {};
+    let configContent = '';
     if (await fs.pathExists(mcpConfigPath)) {
-      try {
-        config = await fs.readJson(mcpConfigPath) as McpConfig;
-      } catch (e) {
-        console.warn(chalk.yellow('Warning: Could not parse existing .codex/mcp.json.'));
-      }
+      configContent = await fs.readFile(mcpConfigPath, 'utf-8');
     }
 
-    // Add spec-driven-steroids MCP server
-    if (!config.mcpServers) config.mcpServers = {};
-    const mcpLaunch = resolveMcpLaunchConfig();
-    config.mcpServers['spec-driven-steroids'] = {
-      command: mcpLaunch.command,
-      args: mcpLaunch.args
-    };
-
-    await fs.writeJson(mcpConfigPath, config, { spaces: 2 });
-    console.log(chalk.green('✅ Created .codex/mcp.json in project root.'));
+    const updatedContent = upsertCodexMcpServerBlock(configContent, 'spec-driven-steroids', serverBlock);
+    await fs.writeFile(mcpConfigPath, updatedContent, 'utf-8');
+    console.log(chalk.green('✅ Created .codex/config.toml in project root.'));
   } catch (error) {
     console.error(chalk.red('Failed to configure Codex MCP:'), error);
   }
+}
+
+function renderCodexMcpServerBlock(serverName: string, launch: McpLaunchConfig): string {
+  const quotedArgs = launch.args.map((arg) => `"${escapeTomlString(arg)}"`).join(', ');
+
+  return [
+    `[mcp_servers.${serverName}]`,
+    `command = "${escapeTomlString(launch.command)}"`,
+    `args = [${quotedArgs}]`
+  ].join('\n');
+}
+
+function upsertCodexMcpServerBlock(existingContent: string, serverName: string, block: string): string {
+  const trimmed = existingContent.trim();
+  const normalized = trimmed ? `${trimmed}\n` : '';
+  const pattern = new RegExp(`\\[mcp_servers\\.${escapeRegExp(serverName)}\\][\\s\\S]*?(?=\\n\\[|$)`, 'm');
+
+  if (pattern.test(normalized)) {
+    return normalized.replace(pattern, block).replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
+  }
+
+  return `${normalized}${normalized ? '\n' : ''}${block}\n`;
+}
+
+function escapeTomlString(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function resolveMcpLaunchConfig(): McpLaunchConfig {
