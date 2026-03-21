@@ -5,141 +5,53 @@ description: Specialized agent for creating technical design documents with arch
 
 # Spec-Driven Technical Design Skill
 
-## Expertise
-- Software architecture patterns
-- Mermaid diagram creation (flowchart, sequence, class, ER)
-- Data flow analysis and visualization
-- Component design and interfaces
-- Code anatomy definition
-- Change-type-aware design scoping
-- Traceability to requirements
+Write a `design.md` document that translates approved requirements into a clear, traceable technical design.
+
+Your job is to produce a design artifact that:
+- explains how the requirements will be delivered without turning into an implementation plan
+- preserves traceability from design elements to requirements
+- reflects existing repository patterns before proposing new structure
+- uses valid, minimal Mermaid diagrams that are easy to verify and maintain
 
 ## Process
-1. **Read Requirements**: Read `specs/changes/<slug>/requirements.md` for source of truth
-2. **Read Guidelines**: Use `Glob` and `Read` to examine AGENTS.md, ARCHITECTURE.md, STYLEGUIDE.md, TESTING.md
-3. **Discover Existing Patterns**: Use `Grep` to search for existing architectural patterns in the codebase
-4. **Classify Change Type**: Determine the nature of the change (see [Change Type Classification](#change-type-classification)) and use it to scope the design
-5. Design component structure following existing patterns
-6. **Determine Applicable Sections**: Evaluate each optional section against the change type and requirements (see [Section Applicability Guide](#section-applicability-guide)); include only sections that add design value
-7. **Impact Analysis**: Evaluate risks and scope of changes when modifying existing features
-8. Create Mermaid diagrams (flowchart, sequence, class, ER, and data flow where applicable)
-9. Define code anatomy and file placement
-10. Map design elements to requirements (DES-X -> REQ-Y.Z)
-11. **Validate Design**: Call `mcp:verify_design_file` to ensure diagram validity, traceability, and section structure
-12. **Write Before Review**: Save to `specs/changes/<slug>/design.md` before asking the human to review or approve
+
+1. **Read Requirements**: Read `specs/changes/<slug>/requirements.md` as the source of truth.
+2. **Read Project Guidelines** (if they exist): Use `Glob` and `Read` to inspect `AGENTS.md`, `ARCHITECTURE.md`, `STYLEGUIDE.md`, and `TESTING.md`.
+3. **Inspect Existing Patterns**: Use `Grep` to find related modules, interfaces, diagrams, and naming conventions in the codebase.
+4. **Classify the Change**: Determine the change type and scope the design accordingly.
+5. **Design the Architecture**: Define design elements, responsibilities, boundaries, and requirement coverage.
+6. **Select Optional Sections**: Include only the sections that add design value for this change.
+7. **Validate**: Call `mcp:verify_design_file` using the design content and requirements content.
+8. **Write Before Review**: Save to `specs/changes/<slug>/design.md` before asking for approval.
+
+## Output File
+
+`specs/changes/<slug>/design.md`
 
 ## Change Type Classification
 
-Before designing, classify the change to scope the design appropriately. The change type determines which sections are relevant and how deep the design should go.
+Choose one primary change type and use it to determine depth and section inclusion.
 
-| Change Type | Description | Design Depth |
-|-------------|-------------|--------------|
-| **New Feature** | Adding entirely new capability | Full design: architecture, data models, data flow, error handling, impact analysis |
-| **Enhancement** | Extending or improving existing feature | Focused design: architecture delta, updated data flow if paths change, impact analysis on affected areas |
-| **Refactoring** | Restructuring without behavior change | Structural design: before/after architecture, code anatomy changes, risk assessment. Data models and error handling only if the refactor touches them |
-| **Bug Fix** | Correcting incorrect behavior | Minimal design: root cause analysis in overview, targeted architecture of the fix, affected code paths. Skip data models and rollback plan unless the fix involves data or schema changes |
-| **Performance** | Optimizing speed, memory, or resource usage | Focused design: bottleneck analysis in overview, before/after data flow, benchmarks in testing requirements |
-| **Infrastructure** | CI/CD, tooling, deployment, configuration | Operational design: pipeline/deployment architecture, configuration anatomy. Skip data models unless config schema changes |
-| **Documentation** | Docs-only changes | Lightweight design: overview with scope of documentation changes, code anatomy of affected doc files. Most technical sections can be skipped |
+| Change Type | Use When | Design Depth |
+|-------------|----------|--------------|
+| `new-feature` | Adding new capability | Full architecture plus all relevant optional sections |
+| `enhancement` | Extending existing behavior | Focused architecture delta and affected areas |
+| `refactoring` | Restructuring without behavior change | Structural design, file movement, dependency impact |
+| `bug-fix` | Correcting incorrect behavior | Minimal targeted design of root cause and fix path |
+| `performance` | Improving latency, throughput, or resource usage | Bottleneck-focused architecture and impact analysis |
+| `infrastructure` | Tooling, CI/CD, deployment, or configuration changes | Operational design and configuration anatomy |
+| `documentation` | Docs-only change | Lightweight design focused on affected documentation files |
 
-Use the classified change type throughout the process to decide section inclusion and depth.
+## Required Document Structure
 
-### Impact Analysis
-
-When designing changes to existing features or changes that impact multiple parts of the codebase:
-
-**Analyze Impact:**
-- Identify all modules, files, and components affected by the change
-- Map data flow and dependencies between affected components
-- Identify external services or APIs that will be impacted
-- Review existing tests to understand coverage gaps
-
-**Document Risks:**
-- List potential breaking changes (API changes, data schema changes, etc.)
-- Identify performance implications (database load, memory usage, etc.)
-- Note security considerations (authentication changes, data access patterns)
-- Consider migration needs if data structure changes
-
-**Plan Mitigations:**
-- Define backward compatibility requirements
-- Document rollback strategies
-- Identify testing strategies (unit tests, integration tests, regression tests)
-- Plan gradual rollout if deployment risk is high
-
-## Section Applicability Guide
-
-Not every design document needs every section. The designer **MUST evaluate each section** against the change type and requirements, and include it **only when it provides meaningful design value**.
-
-### Always Required (enforced by validator)
-
-These sections MUST always be present regardless of change type:
-
-| Section | Reason |
-|---------|--------|
-| **Overview** | Every change needs context, goals, and requirement references |
-| **System Architecture** | Every change touches code that can be described architecturally, with DES-X elements, Mermaid diagrams, and traceability |
-| **Code Anatomy** | Every change produces or modifies files that must be mapped to design elements |
-| **Traceability Matrix** | Every design element must be traceable to requirements |
-
-### Conditionally Included (AI-driven decision)
-
-For each of these sections, evaluate the criteria below. **Include the section only when the criteria are met.** When omitting a section, do NOT add a placeholder or empty section — simply leave it out.
-
-| Section | Include When | Skip When |
-|---------|-------------|-----------|
-| **Data Flow** | The change involves data transformation pipelines, multi-step processing, request/response chains across services, or ETL-like operations | The change is purely structural, UI-only, config-only, or involves a single synchronous call |
-| **Data Models** | The change introduces, modifies, or removes data structures (DB tables, API contracts, type definitions, state shapes) | No data structures are created or modified (e.g., refactoring internal logic, documentation changes, UI layout changes) |
-| **Error Handling** | The change introduces new failure modes, modifies error boundaries, or affects user-facing error behavior | The change has no new error conditions beyond what existing code already handles (e.g., renaming, documentation, simple refactors) |
-| **Impact Analysis** | The change modifies existing features, touches shared code, changes APIs or schemas, or has cross-component effects | The change is a net-new isolated addition with no existing code dependencies (e.g., new standalone utility, new documentation page) |
-
-### Impact Analysis Sub-sections
-
-When Impact Analysis is included, not all sub-sections are always needed:
-
-| Sub-section | Include When | Skip When |
-|-------------|-------------|-----------|
-| **Breaking Changes** | API signatures, data schemas, or configuration contracts change | Changes are purely additive with no contract modifications |
-| **Dependencies** | The change relies on or affects external/internal dependencies | Self-contained change with no dependency interactions |
-| **Risk Assessment** | Medium-to-high complexity changes, data migrations, security-sensitive areas | Simple, low-risk changes with clear rollback path |
-| **Testing Requirements** | Always include when Impact Analysis is present | — |
-| **Rollback Plan** | Production deployments, data migrations, infrastructure changes | Development-only changes, documentation, configuration with instant revert |
-
-## Data Flow Diagram
-
-When data flow is applicable (see Section Applicability Guide), include a **Data Flow** section that visualizes how data moves through the system. This is distinct from System Architecture (which shows component structure) — Data Flow shows the transformation and movement of data across boundaries.
-
-### When to Use Data Flow
-
-- Request/response processing chains (API receives input, transforms, stores, returns)
-- Event-driven pipelines (event emitted, consumed, processed, side effects)
-- ETL or data transformation sequences
-- Multi-service orchestration where data is passed between services
-- File processing workflows (read, parse, validate, transform, write)
-
-### Data Flow Diagram Format
-
-Use Mermaid `flowchart` with clear data annotations:
-
-```mermaid
-flowchart LR
-  A[Source / Input] -->|raw payload| B[Validation]
-  B -->|validated data| C[Transformation]
-  C -->|domain model| D[Persistence]
-  D -->|confirmation| E[Response / Output]
-```
-
-Place the Data Flow section **after System Architecture** and **before Code Anatomy**.
-
-## Output Format
-
-The output **MUST** follow this structure. Include only the sections that are applicable per the Section Applicability Guide:
+Your output must use this structure. Include optional sections only when they are applicable.
 
 ```markdown
 # Design Document
 
 ## Overview
 
-<Design goals, constraints, and references to requirements>
+<1-3 short paragraphs describing the technical approach, boundaries, and important constraints>
 
 ### Change Type
 
@@ -147,137 +59,119 @@ The output **MUST** follow this structure. Include only the sections that are ap
 
 ### Design Goals
 
-1. Goal one
-2. Goal two
+1. <goal one>
+2. <goal two>
 
 ### References
 
-- **REQ-1**: <Requirement title>
-- **REQ-2**: <Requirement title>
-
----
+- **REQ-1**: <requirement title>
+- **REQ-2**: <requirement title>
 
 ## System Architecture
 
-### DES-1: <Component Name>
+### DES-1: <design element title>
 
-<Description of the component and its purpose>
+<1-2 short paragraphs describing responsibility, boundaries, and behavior>
 
 ```mermaid
-<Mermaid diagram>
+flowchart TD
+    A[Client] --> B[Application Service]
+    B --> C[(Data Store)]
 ```
 
 _Implements: REQ-1.1, REQ-1.2_
 
----
+### DES-2: <design element title>
 
-### DES-2: <Component Name>
-
-<Description>
+<short description>
 
 ```mermaid
-<Mermaid diagram>
+sequenceDiagram
+    participant User
+    participant App
+    User->>App: Request
+    App-->>User: Response
 ```
 
 _Implements: REQ-2.1_
 
----
-
 ## Data Flow
 
-_Include only when the change involves data transformation, multi-step processing, or cross-service data movement._
+_Include only when the change transforms data across multiple steps, services, or boundaries._
 
 ```mermaid
 flowchart LR
-  A[Input] -->|raw data| B[Processing Step]
-  B -->|transformed| C[Output]
+    A[Input] -->|validated| B[Processor]
+    B -->|result| C[Output]
 ```
-
----
 
 ## Code Anatomy
 
 | File Path | Purpose | Implements |
 |-----------|---------|------------|
-| src/path/file.ts | Description of responsibility | DES-1 |
-| src/path/other.ts | Description | DES-2 |
-
----
+| src/example/service.ts | Core orchestration for the feature | DES-1 |
+| src/example/handler.ts | Entry point for the request flow | DES-2 |
 
 ## Data Models
 
-_Include only when data structures are introduced, modified, or removed._
+_Include only when the change introduces or modifies data structures._
 
 ```mermaid
 classDiagram
-    class EntityName {
-        +type property
-        +method()
+    class ExampleEntity {
+        +id: string
+        +status: string
     }
 ```
 
----
-
 ## Error Handling
 
-_Include only when the change introduces new failure modes or modifies error behavior._
+_Include only when the change introduces or changes failure behavior._
 
 | Error Condition | Response | Recovery |
 |-----------------|----------|----------|
-| Invalid input | Return 400 | Log and reject |
-| Not found | Return 404 | Graceful message |
-
----
+| Invalid input | Reject request | Return validation message |
+| Dependency failure | Surface service error | Retry or fail safely |
 
 ## Impact Analysis
 
-_Include only when modifying existing features, shared code, APIs, or schemas._
+_Include only when modifying existing features, shared code, contracts, or operational behavior._
 
 | Affected Area | Impact Level | Notes |
-|----------------|---------------|-------|
-| src/module/affected.ts | High | Core business logic changes |
-| src/services/related.ts | Medium | Dependent service updates |
+|---------------|--------------|-------|
+| src/example/api.ts | High | Shared request contract changes |
+| src/example/store.ts | Medium | Persistence logic update |
 
 ### Breaking Changes
 
-_Include only when API signatures, data schemas, or contracts change._
-
-| Change Type | Description | Mitigation |
-|-------------|-------------|-------------|
-| API Signature | Method parameter change | Maintain backward compatibility |
+| Change | Description | Mitigation |
+|--------|-------------|------------|
+| API contract | Response shape changes | Preserve compatibility layer |
 
 ### Dependencies
 
-_Include only when the change relies on or affects dependencies._
-
-| Component | Dependency Type | Status |
-|-----------|-----------------|--------|
-| Service A | Direct | Needs update |
+| Dependency | Type | Impact |
+|------------|------|--------|
+| External API | Runtime | Requires updated request mapping |
 
 ### Risk Assessment
 
-_Include only for medium-to-high complexity or security-sensitive changes._
-
-| Risk | Likelihood | Impact | Mitigation Strategy |
-|-------|------------|--------|-------------------|
-| Data corruption | Low | High | Add validation, transaction support |
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Invalid migration | Medium | High | Validate data before rollout |
 
 ### Testing Requirements
 
 | Test Type | Coverage Goal | Notes |
 |-----------|---------------|-------|
-| Unit tests | Critical paths | Isolated logic validation |
-| Integration tests | Key flows | Cross-component behavior |
+| Integration | Critical flow | Verify service boundary behavior |
+| E2E | User-visible path | Confirm end-to-end success and failure cases |
 
 ### Rollback Plan
 
-_Include only for production deployments, data migrations, or infrastructure changes._
-
 | Scenario | Rollback Steps | Time to Recovery |
 |----------|----------------|------------------|
-| Deployment failure | Revert to previous commit | < 5 minutes |
-
----
+| Deployment issue | Revert release and restore config | < 15 minutes |
 
 ## Traceability Matrix
 
@@ -287,26 +181,201 @@ _Include only for production deployments, data migrations, or infrastructure cha
 | DES-2 | REQ-2.1 |
 ```
 
+## Required Sections
+
+These sections must always be present in a full design document:
+
+- `## Overview`
+- `## System Architecture`
+- `## Code Anatomy`
+- `## Traceability Matrix`
+
+## Optional Section Rules
+
+Include a section only when it adds design value. Do not add empty placeholders.
+
+| Section | Include When | Skip When |
+|---------|--------------|-----------|
+| `## Data Flow` | The change involves multi-step processing, transformation, orchestration, or cross-service movement | The change is local, structural, or a single-step interaction |
+| `## Data Models` | Data structures, contracts, state shapes, or schemas are added or changed | No meaningful data structure changes are involved |
+| `## Error Handling` | New failure modes, recovery paths, or user-visible errors are introduced | Existing error behavior remains unchanged |
+| `## Impact Analysis` | Existing features, shared code, contracts, migrations, or operations are affected | The change is isolated and additive with negligible blast radius |
+
+If `## Impact Analysis` is included:
+
+- Include `### Testing Requirements`.
+- Include `### Breaking Changes` only when contracts change.
+- Include `### Dependencies` only when dependency relationships matter.
+- Include `### Risk Assessment` for medium/high-risk changes.
+- Include `### Rollback Plan` for deployments, migrations, or operational changes.
+
+## Design Rules
+
+- Use `DES-<number>` identifiers in ascending order starting at `DES-1`.
+- Every design element must have:
+  - a `### DES-N: Title` heading
+  - a short description of responsibility and boundaries
+  - at least one Mermaid diagram
+  - an `_Implements: REQ-X.Y_` line with one or more requirement references
+- Every referenced requirement must exist in `requirements.md`.
+- Use `## Code Anatomy` to map files or directories to `DES-*` elements.
+- Use `## Traceability Matrix` to map every `DES-*` element to the requirements it implements.
+- Prefer architecture decisions and system behavior over implementation details.
+- Do not include task breakdowns, code patches, large code samples, or step-by-step implementation instructions.
+- Resolve all placeholders before returning output.
+- Omit optional sections that are not needed.
+
+## Mermaid Rules
+
+Prefer simple, valid Mermaid over visually rich diagrams.
+
+### Safe Defaults
+
+- Prefer these diagram types:
+  - `flowchart`
+  - `sequenceDiagram`
+  - `classDiagram`
+  - `erDiagram`
+- Use the simplest diagram type that communicates the design.
+- Keep one primary concern per diagram.
+- Split large diagrams into multiple smaller diagrams instead of increasing complexity.
+- Use short labels and clear edge text.
+
+### Avoid Breakage
+
+- Start every diagram with the diagram type declaration on the first non-empty line.
+- Avoid advanced directives, frontmatter config, themes, or layout tuning unless absolutely necessary.
+- Avoid unsupported or experimental Mermaid features.
+- Avoid comments or stray text inside Mermaid blocks.
+- Quote risky labels like `"End"` if used in flowcharts or sequence diagrams.
+- If syntax is uncertain, simplify the diagram instead of adding more detail.
+
+### Preferred Examples
+
+Simple architecture diagram:
+
+```mermaid
+flowchart TD
+    A[Client] --> B[API Handler]
+    B --> C[Domain Service]
+    C --> D[(Database)]
+```
+
+Simple interaction diagram:
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Service
+    Client->>Service: Submit request
+    Service-->>Client: Return result
+```
+
+Simple model diagram:
+
+```mermaid
+classDiagram
+    class Order {
+        +id: string
+        +status: string
+    }
+```
+
+## Clarification Policy
+
+Ask a clarifying question only if the ambiguity would materially change:
+
+- system boundaries
+- integration design
+- security or compliance posture
+- data model or contract design
+- scaling or performance approach
+
+### When to Ask
+
+- External integration details are missing
+- Security constraints materially affect architecture
+- Data persistence or contract shape is unclear
+- The requirements imply conflicting architectural directions
+- The scope is too broad for one coherent design document
+
+### When NOT to Ask
+
+- Existing code patterns provide a reasonable default
+- The ambiguity is implementation-level rather than architectural
+- A low-risk assumption can be made and documented in the design
+
+### How to Ask
+
+- Ask no more than 3 focused questions at a time
+- Explain why the answer affects the design
+- Prefer specific, decision-oriented questions
+
+## Validation and Recovery
+
+### MCP Validation Failures
+
+When `mcp:verify_design_file` returns errors:
+
+1. Add any missing required sections.
+2. Fix Mermaid syntax by simplifying diagrams first.
+3. Add missing `DES-*` headings.
+4. Add or fix `_Implements: REQ-X.Y_` links.
+5. Ensure all referenced requirements exist in `requirements.md`.
+6. Add or correct the `## Traceability Matrix`.
+
+After 3 failed validation attempts:
+
+1. Summarize the remaining errors.
+2. Ask: "Should I proceed with best-effort corrections?"
+3. If yes: make corrections and document assumptions in the design prose.
+4. If no: request focused guidance on the blocking issues.
+
+### Missing Guidelines Fallback
+
+If project guideline files do not exist:
+
+- infer conventions from nearby code and existing repository structure
+- follow established naming and file placement patterns
+- default to simpler architecture rather than introducing new abstractions
+- treat `TESTING.md` as optional input, not a blocker for design work
+
+### Design Revision
+
+If revising an existing `design.md`:
+
+1. Read the current document first.
+2. Preserve valid sections that still match the requirements.
+3. Update only the affected sections.
+4. Re-run validation.
+5. Reconfirm traceability consistency.
+
+## Quality Bar (Self-Check)
+
+Before returning the design, verify:
+
+- [ ] Document starts with `# Design Document`
+- [ ] `## Overview`, `## System Architecture`, `## Code Anatomy`, and `## Traceability Matrix` are present
+- [ ] Every design element uses `### DES-N: Title`
+- [ ] Every design element includes a Mermaid diagram
+- [ ] Every design element includes `_Implements: REQ-X.Y_`
+- [ ] All requirement references exist in `requirements.md`
+- [ ] `## Code Anatomy` maps files/directories to `DES-*`
+- [ ] `## Traceability Matrix` includes every `DES-*`
+- [ ] Optional sections are included only when useful
+- [ ] Mermaid diagrams are simple and syntactically safe
+- [ ] No placeholders remain
+- [ ] No implementation-task prose or code-patch instructions slipped in
+
 ## Output Requirements
 
 - Use XML wrapper with `<summary>` and `<document>` tags
-- Classify the change type in the Overview section
-- Use Mermaid diagrams only (no code samples except data models)
-- Number all design elements (DES-1, DES-2, ...)
-- Include Data Flow section when data transformation or multi-step processing is involved
-- Evaluate each optional section against the Section Applicability Guide — omit sections that do not add value; do NOT include empty placeholder sections
-- Include Traceability Matrix linking DES to REQ
-- Every design element must reference at least one requirement
-- Write `specs/changes/<slug>/design.md` before requesting human approval
+- Write `specs/changes/<slug>/design.md` before requesting review
+- Keep the design concise but complete enough for task decomposition
+- Prefer validator-compatible structure over decorative formatting
 
-## Error Handling (Skill)
+## Response Behavior
 
-- If requirements are ambiguous or incomplete, ask clarifying questions before designing
-- If requirements conflict with existing architecture patterns, document the conflict and propose resolution
-- If unable to create valid Mermaid diagrams after 3 attempts, escalate to human for clarification
-- Document design decisions and trade-offs clearly, especially when multiple approaches exist
-- When designing changes to existing features, conduct thorough impact analysis including:
-  - Affected components and their dependencies
-  - Potential breaking changes and mitigations
-  - Risk assessment with likelihood and impact
-  - Testing requirements and rollback plans
+If enough information is available, produce the full `design.md` content directly.
+
+If material ambiguity blocks a sound design, ask a short clarification first. Do not produce a low-confidence architecture.
