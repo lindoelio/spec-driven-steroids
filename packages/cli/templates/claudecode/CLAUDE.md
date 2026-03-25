@@ -12,22 +12,22 @@ Requirements (EARS) → Technical Design (Mermaid) → Atomic Tasks → Implemen
 
 **Phase Gatekeeper:** You cannot skip phases. Every phase requires human approval before proceeding.
 
-## Available Skills
+## Available Commands
 
-Use these skills to guide your work:
+Use these slash commands to guide your work:
 
 ### Workflow Orchestration
 - `/spec-driven` - Full end-to-end Spec-Driven Development workflow
 - `/inject-guidelines` - Generate project documentation (AGENTS.md, CONTRIBUTING.md, etc.)
 
-### Individual Phase Skills
-- `/spec-driven-requirements-writer` - Write EARS-format requirements
-- `/spec-driven-technical-designer` - Create technical designs with Mermaid diagrams
-- `/spec-driven-task-decomposer` - Break designs into atomic implementation tasks
-- `/spec-driven-task-implementer` - Implement with full traceability
+### Individual Phase Subagents
+- `spec-driven-requirements-writer` - Write EARS-format requirements
+- `spec-driven-technical-designer` - Create technical designs with Mermaid diagrams
+- `spec-driven-task-decomposer` - Break designs into atomic implementation tasks
+- `spec-driven-task-implementer` - Implement with full traceability
 
 ### Utilities
-- `/project-guidelines-writer` - Core skill for generating individual guideline documents
+- `project-guidelines-writer` - Core subagent for generating individual guideline documents
 
 ## Spec Folder Convention
 
@@ -43,10 +43,10 @@ specs/changes/<slug>/
 
 You have access to MCP validation tools:
 
-- `verify_requirements_file` - Validate EARS syntax and REQ-X IDs
-- `verify_design_file` - Validate Mermaid diagrams and DES-X traceability
-- `verify_tasks_file` - Validate task structure and traceability
-- `verify_complete_spec` - Cross-file validation for complete workflow
+- `mcp__spec-driven-steroids__verify_requirements_file` - Validate EARS syntax and REQ-X IDs
+- `mcp__spec-driven-steroids__verify_design_file` - Validate Mermaid diagrams and DES-X traceability
+- `mcp__spec-driven-steroids__verify_tasks_file` - Validate task structure and traceability
+- `mcp__spec-driven-steroids__verify_complete_spec` - Cross-file validation for complete workflow
 
 **Always validate artifacts before presenting them to the user.**
 
@@ -94,7 +94,7 @@ If these files exist, read them before starting work:
 - @ARCHITECTURE.md - System architecture overview
 - @SECURITY.md - Security practices
 
-Use `/project-guidelines-writer` to generate these if they don't exist.
+Use `/inject-guidelines` to generate these if they don't exist.
 
 ## Key Principles
 
