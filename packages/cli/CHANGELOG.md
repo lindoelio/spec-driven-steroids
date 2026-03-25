@@ -5,10 +5,10 @@
 ### Minor Changes
 
 - Added Claude Code platform support
-    - Created `.claude/skills/spec-driven.md` orchestration skill for full Spec-Driven workflow
-    - Created `.claude/skills/inject-guidelines.md` skill for project guidelines generation
+    - Created `.claude/agents/spec-driven.md` orchestration agent for full Spec-Driven workflow
+    - Created `.claude/commands/inject-guidelines.md` command for project guidelines generation
+    - Created `.claude/commands/spec-driven.md` command for project Spec-Driven workflow
     - Added `.claude/CLAUDE.md` main project context file (auto-loaded at startup)
-    - Added `.claude/rules/spec-driven-enforcement.md` path-specific enforcement rules
     - Configured MCP server integration via `.mcp.json`
     - Universal skills automatically injected to `.claude/skills/`
 
