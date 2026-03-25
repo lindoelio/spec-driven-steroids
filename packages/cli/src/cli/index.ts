@@ -174,8 +174,8 @@ program
       { name: 'Codex Config', path: '.codex/agents' },
       { name: 'Codex Commands', path: '.codex/commands' },
       { name: 'Codex MCP Config', path: '.codex/config.toml' },
-      { name: 'ClaudeCode Config', path: '.claude/skills' },
-      { name: 'ClaudeCode Rules', path: '.claude/rules' },
+      { name: 'ClaudeCode Agents', path: '.claude/agents' },
+      { name: 'ClaudeCode Commands', path: '.claude/commands' },
       { name: 'ClaudeCode', path: '.claude/CLAUDE.md' },
       { name: 'Standard Requirements', path: 'specs' }
     ];
@@ -437,37 +437,37 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-async function configureClaudeCodeMcp(targetDir: string) {
-    try {
-        const mcpConfigPath = path.join(targetDir, '.mcp.json');
-
-        let config: McpConfig = {};
-        if (await fs.pathExists(mcpConfigPath)) {
-            try {
-                config = await fs.readJson(mcpConfigPath) as McpConfig;
-            } catch (e) {
-                console.warn(chalk.yellow('Warning: Could not parse existing .mcp.json.'));
-            }
-        }
-
-        // Add spec-driven-steroids MCP server
-        if (!config.mcpServers) config.mcpServers = {};
-        const mcpLaunch = resolveMcpLaunchConfig();
-        config.mcpServers['spec-driven-steroids'] = {
-            command: mcpLaunch.command,
-            args: mcpLaunch.args
-        };
-
-        await fs.writeJson(mcpConfigPath, config, { spaces: 2 });
-        console.log(chalk.green('✅ Created .mcp.json in project root.'));
-    } catch (error) {
-        console.error(chalk.red('Failed to configure Claude Code MCP:'), error);
-    }
-}
-
 function resolveMcpLaunchConfig(): McpLaunchConfig {
   return {
     command: 'node',
     args: [path.resolve(__dirname, '../mcp/index.js')]
   };
+}
+
+async function configureClaudeCodeMcp(targetDir: string) {
+  try {
+    const mcpConfigPath = path.join(targetDir, '.mcp.json');
+
+    let config: McpConfig = {};
+    if (await fs.pathExists(mcpConfigPath)) {
+      try {
+        config = await fs.readJson(mcpConfigPath) as McpConfig;
+      } catch (e) {
+        console.warn(chalk.yellow('Warning: Could not parse existing .mcp.json.'));
+      }
+    }
+
+    // Add spec-driven-steroids MCP server
+    if (!config.mcpServers) config.mcpServers = {};
+    const mcpLaunch = resolveMcpLaunchConfig();
+    config.mcpServers['spec-driven-steroids'] = {
+      command: mcpLaunch.command,
+      args: mcpLaunch.args
+    };
+
+    await fs.writeJson(mcpConfigPath, config, { spaces: 2 });
+    console.log(chalk.green('✅ Created .mcp.json in project root.'));
+  } catch (error) {
+    console.error(chalk.red('Failed to configure Claude Code MCP:'), error);
+  }
 }
