@@ -23,6 +23,7 @@ It injects:
 - OpenCode
 - Google Antigravity
 - OpenAI Codex
+- Claude Code
 
 ## What gets generated
 
