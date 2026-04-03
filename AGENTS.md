@@ -28,6 +28,7 @@ You are a **Spec-Driven Development Engineer** working on the Spec-Driven Steroi
 | CLI Framework | Commander.js |
 | Interactive Prompts | Inquirer |
 | MCP SDK | @modelcontextprotocol/sdk |
+| Versioning | Changesets |
 
 ---
 
@@ -86,7 +87,7 @@ packages/
 ├── cli/                    # Main package: CLI + MCP Server + Templates
 │   ├── src/cli/           # Terminal interface (inject, validate commands)
 │   ├── src/mcp/           # MCP server with 5 validation tools
-│   ├── templates/         # Platform-specific templates (github, opencode, antigravity)
+│   ├── templates/         # Platform-specific templates (github, opencode, antigravity, codex)
 │   └── tests/             # Unit and integration tests
 ├── test-utils/            # Shared testing utilities and fixtures
 └── landing-page/          # Vite-based documentation site
@@ -101,6 +102,7 @@ packages/
 3. **Maintain traceability**: Changes to MCP tools must reference the tool purpose
 4. **Platform compatibility**: Changes to templates must work across all supported platforms
 5. **ESM only**: Use `.js` extensions in imports, NodeNext module resolution
+6. **Minimal comments**: Add code comments only when they are highly necessary to explain non-obvious intent, workarounds, or critical constraints
 
 ---
 
@@ -115,6 +117,18 @@ The MCP server provides 5 validation tools:
 | `verify_design_file` | Validates Mermaid diagrams and DES-X traceability |
 | `verify_tasks_file` | Validates task checkboxes and phase structure |
 | `verify_complete_spec` | Cross-file validation and traceability |
+
+---
+
+## Supported Platforms
+
+| Platform | Config Location |
+|----------|-----------------|
+| GitHub Copilot for VS Code | `.vscode/mcp.json`, `.github/` |
+| GitHub Copilot for JetBrains | Global MCP config, `.github/` |
+| OpenCode | `opencode.json`, `.opencode/` |
+| Google Antigravity | `~/.gemini/antigravity/mcp_config.json`, `.agents/` |
+| OpenAI Codex | `.codex/config.toml`, `.codex/` |
 
 ---
 

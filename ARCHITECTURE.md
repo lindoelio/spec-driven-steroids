@@ -135,6 +135,7 @@ packages/cli/
 │   ├── github/               # GitHub Copilot templates
 │   ├── opencode/             # OpenCode templates
 │   ├── antigravity/          # Google Antigravity templates
+│   ├── codex/                # OpenAI Codex templates
 │   └── universal/            # Platform-agnostic skills
 └── tests/
     ├── unit/                 # Unit tests
@@ -190,11 +191,13 @@ flowchart TD
     B --> D[GitHub JetBrains]
     B --> E[Google Antigravity]
     B --> F[OpenCode]
+    B --> G[OpenAI Codex]
 
-    C --> G[.github/agents + skills]
-    D --> H[Global MCP config]
-    E --> I[.agents/workflows]
-    F --> J[.opencode/skills + agents]
+    C --> H[.github/agents + skills]
+    D --> I[Global MCP config]
+    E --> J[.agents/workflows]
+    F --> K[.opencode/skills + agents]
+    G --> L[.codex/agents + commands]
 
     G --> K[Copy universal skills]
     I --> K

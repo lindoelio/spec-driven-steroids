@@ -1,6 +1,6 @@
 ---
 name: spec-driven-technical-designer
-description: Specialized agent for creating technical design documents with architecture diagrams.
+description: Use this skill when approved requirements need to be translated into a design.md file for Phase 2 of a Spec-Driven change. It creates a traceable technical design with validator-safe Mermaid diagrams and should not be used for task breakdown or implementation.
 ---
 
 # Spec-Driven Technical Design Skill
@@ -13,7 +13,13 @@ Your job is to produce a design artifact that:
 - reflects existing repository patterns before proposing new structure
 - uses valid, minimal Mermaid diagrams that are easy to verify and maintain
 
+Default path: read approved requirements, classify the change, design only the sections that add value, validate the design, save `design.md`, and return a short review-ready summary.
+
+Read `references/design-section-guide.md` when you need help selecting optional sections, keeping diagrams minimal, or correcting weak traceability coverage.
+
 ## Process
+
+If `long-running-work-planning` is available, load it at the start of this phase before shaping the design. Use it to structure architectural reasoning, keep progress visible, and avoid holding all analysis until the end.
 
 1. **Read Requirements**: Read `specs/changes/<slug>/requirements.md` as the source of truth.
 2. **Read Project Guidelines** (if they exist): Use `Glob` and `Read` to inspect `AGENTS.md`, `ARCHITECTURE.md`, `STYLEGUIDE.md`, and `TESTING.md`.
@@ -23,6 +29,26 @@ Your job is to produce a design artifact that:
 6. **Select Optional Sections**: Include only the sections that add design value for this change.
 7. **Validate**: Call `mcp:verify_design_file` using the design content and requirements content.
 8. **Write Before Review**: Save to `specs/changes/<slug>/design.md` before asking for approval.
+
+## Per-Phase Todo List
+
+When this skill begins execution, create a todo list containing the following items in `pending` state. This list is scoped to this phase only — do not carry over items from any previous phase.
+
+1. Read approved requirements.md
+2. Read project guidelines
+3. Inspect existing codebase patterns
+4. Classify change type
+5. Design architecture with design elements
+6. Validate design
+7. Quality grade design
+8. Save design.md
+
+### Progress Rules
+
+- Mark an item `in_progress` when starting that work step.
+- Mark an item `completed` only after the work step has been verified.
+- Do not mark an item `completed` until verification passes.
+- Create a fresh list when this phase begins; do not append to a prior phase's list.
 
 ## Output File
 
@@ -369,13 +395,31 @@ Before returning the design, verify:
 
 ## Output Requirements
 
-- Use XML wrapper with `<summary>` and `<document>` tags
 - Write `specs/changes/<slug>/design.md` before requesting review
 - Keep the design concise but complete enough for task decomposition
 - Prefer validator-compatible structure over decorative formatting
+- Return ordinary prose summary after the file is written; do not wrap the artifact in XML
 
 ## Response Behavior
 
 If enough information is available, produce the full `design.md` content directly.
 
 If material ambiguity blocks a sound design, ask a short clarification first. Do not produce a low-confidence architecture.
+
+## Quality Grading Integration
+
+After completing design and before requesting approval, invoke the `quality-grading` skill to assess and improve design quality:
+
+```
+Invoke: quality-grading skill
+Artifact: specs/changes/<slug>/design.md
+Mode: grade-and-fix
+```
+
+This ensures the design document meets quality standards across:
+- **Design Quality**: Architecture clarity, module boundaries, scalability patterns, diagram quality
+- **Originality**: Domain-specific architecture vs generic templates
+- **Craft**: Diagram clarity, consistent formatting, completeness
+- **Functionality**: All requirements covered, feasibility, traceability matrix
+
+The quality-grading skill will auto-fix issues scoring below 4 and provide actionable suggestions for remaining gaps.

@@ -1,6 +1,6 @@
 ---
 name: spec-driven-requirements-writer
-description: Specialized agent for writing EARS-format requirements documents.
+description: Use this skill when the user wants to start Phase 1 of a Spec-Driven change, define behavior, or turn a feature idea into a requirements.md file. It writes EARS-format requirements, validates them, and should not be used for design, task breakdown, or implementation.
 ---
 
 # Spec-Driven Requirements Writer Skill
@@ -13,7 +13,13 @@ Your job is to produce a clean requirements artifact that:
 - gives downstream design and task generation enough structure to work reliably
 - preserves traceability through stable requirement IDs
 
+Default path: analyze the request, extract actors and constraints, write concise EARS requirements, validate them, save `requirements.md`, and return a short review-ready summary.
+
+Read `references/requirements-patterns.md` when you need example EARS phrasing, stronger observable verbs, or recovery examples for invalid requirement wording.
+
 ## Process
+
+If `long-running-work-planning` is available, load it at the start of this phase before drafting requirements. Use it to chunk reasoning, keep progress visible, and avoid holding all analysis until the end.
 
 1. **Read Project Guidelines** (if they exist):
    - Use `Glob` to find `AGENTS.md`, `STYLEGUIDE.md`, `ARCHITECTURE.md`
@@ -25,6 +31,25 @@ Your job is to produce a clean requirements artifact that:
 5. Define glossary terms if domain-specific terminology is needed
 6. **Validate**: Call `mcp:verify_requirements_file` to ensure compliance
 7. **Write Before Review**: Save to `specs/changes/<slug>/requirements.md` before asking for approval
+
+## Per-Phase Todo List
+
+When this skill begins execution, create a todo list containing the following items in `pending` state. This list is scoped to this phase only — do not carry over items from any previous phase.
+
+1. Read project guidelines
+2. Analyze user description and context
+3. Extract actors, actions, and constraints
+4. Write EARS requirements
+5. Validate requirements
+6. Quality grade requirements
+7. Save requirements.md
+
+### Progress Rules
+
+- Mark an item `in_progress` when starting that work step.
+- Mark an item `completed` only after the work step has been verified.
+- Do not mark an item `completed` until verification passes.
+- Create a fresh list when this phase begins; do not append to a prior phase's list.
 
 ## Output File
 
@@ -244,3 +269,21 @@ Before returning the requirements, verify:
 If enough information is available, produce the full `requirements.md` content directly.
 
 If material ambiguity blocks a good requirements document, ask a short clarification first. Do not draft low-confidence requirements.
+
+## Quality Grading Integration
+
+After completing requirements and before requesting approval, invoke the `quality-grading` skill to assess and improve specification quality:
+
+```
+Invoke: quality-grading skill
+Artifact: specs/changes/<slug>/requirements.md
+Mode: grade-and-fix
+```
+
+This ensures the requirements document meets quality standards across:
+- **Design Quality**: Logical organization, traceability, clarity of structure
+- **Originality**: Tailored requirements vs boilerplate language
+- **Craft**: Clear writing, consistent terminology, proper EARS syntax
+- **Functionality**: Complete requirements, clear acceptance criteria, no gaps
+
+The quality-grading skill will auto-fix issues scoring below 4 and provide actionable suggestions for remaining gaps.

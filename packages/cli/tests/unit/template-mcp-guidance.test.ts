@@ -3,6 +3,12 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import {
+    expectContinuityStartup,
+    expectSharedPlannerContract,
+    expectTestingTrophyFallback
+} from '../helpers/template-test-helpers.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const standardsTemplatesRoot = path.resolve(__dirname, '../../templates');
@@ -12,48 +18,39 @@ async function readTemplate(relativePath: string): Promise<string> {
     return fs.readFile(absolutePath, 'utf-8');
 }
 
+async function readRepositoryFile(relativePath: string): Promise<string> {
+    const absolutePath = path.resolve(__dirname, '../../../..', relativePath);
+    return fs.readFile(absolutePath, 'utf-8');
+}
+
 describe('MCP Unit: template MCP guidance', () => {
     it('requires tasks and complete-spec validation in planner templates', async () => {
-        const targets = [
-            'github/agents/spec-driven.agent.md',
-            'opencode/agents/spec-driven.agent.md',
-            'antigravity/workflows/spec-driven.md',
-            'codex/agents/spec-driven.toml'
-        ];
-
-        for (const target of targets) {
-            const content = await readTemplate(target);
-            expect(content).toContain('mcp:verify_tasks_file');
-            expect(content).toContain('mcp:verify_complete_spec');
-        }
+        // Universal template is the source of truth
+        const content = await readTemplate('universal/agents/spec-driven.agent.md');
+        expect(content).toContain('mcp:verify_tasks_file');
+        expect(content).toContain('mcp:verify_complete_spec');
     });
 
     it('hardens Codex planner templates against phase-skipping', async () => {
-        const agentContent = await readTemplate('codex/agents/spec-driven.toml');
-        const commandContent = await readTemplate('codex/commands/spec-driven.md');
+        // Universal template is the source of truth for all platforms
+        const agentContent = await readTemplate('universal/agents/spec-driven.agent.md');
 
         expect(agentContent).toContain('In a single user turn, you may complete at most one planning phase.');
         expect(agentContent).toContain('After finishing Phase 1, Phase 2, or Phase 3, you MUST stop');
-        expect(agentContent).toContain('Stop. Do not begin design work until the user explicitly approves Phase 1.');
-
-        expect(commandContent).toContain('After Phase 1 is written, stop immediately.');
-        expect(commandContent).toContain('Do not start Phase 2, Phase 3, or Phase 4 in the same turn.');
+        expect(agentContent).toContain('Do not begin design work until the user explicitly approves Phase 1.');
     });
 
     it('hardens all planner wrappers against phase-skipping', async () => {
-        const targets = [
-            'github/agents/spec-driven.agent.md',
-            'opencode/agents/spec-driven.agent.md',
-            'antigravity/workflows/spec-driven.md',
-            'codex/agents/spec-driven.toml'
-        ];
+        // Universal template is the source of truth
+        const content = await readTemplate('universal/agents/spec-driven.agent.md');
+        expectSharedPlannerContract(content);
+        expect(content).toContain('After a planning artifact is written, stop immediately and wait for approval.');
+    });
 
-        for (const target of targets) {
-            const content = await readTemplate(target);
-            expect(content).toContain('### Non-Skippable Stop Rule');
-            expect(content).toContain('In a single user turn, you may complete at most one planning phase.');
-            expect(content).toContain('After a planning artifact is written, stop immediately and wait for approval.');
-        }
+    it('keeps continuity startup guidance aligned across planner templates', async () => {
+        // Universal template is the source of truth
+        const content = await readTemplate('universal/agents/spec-driven.agent.md');
+        expectContinuityStartup(content);
     });
 
     it('requires tasks and complete-spec validation in decomposition/implementation skills', async () => {
@@ -87,18 +84,12 @@ describe('MCP Unit: template MCP guidance', () => {
     it('requires Testing Trophy fallback guidance for inject-guidelines templates', async () => {
         const targets = [
             'universal/skills/project-guidelines-writer/SKILL.md',
-            'github/prompts/inject-guidelines.prompt.md',
-            'opencode/commands/inject-guidelines.md',
-            'antigravity/workflows/inject-guidelines.md',
-            'codex/commands/inject-guidelines.md'
+            'universal/commands/inject-guidelines.command.md'
         ];
 
         for (const target of targets) {
             const content = await readTemplate(target);
-            expect(content).toContain('Testing Trophy');
-            expect(content).toMatch(/integration/i);
-            expect(content).toMatch(/e2e/i);
-            expect(content).toMatch(/unit tests?/i);
+            expectTestingTrophyFallback(content);
         }
     });
 
@@ -107,5 +98,44 @@ describe('MCP Unit: template MCP guidance', () => {
         expect(content).toContain('code comment');
         expect(content).toContain('highly necessary');
         expect(content).toContain('non-obvious intent');
+    });
+
+    it('uses trigger-rich skill descriptions with progressive-disclosure references', async () => {
+        const skillTargets = [
+            'universal/skills/spec-driven-requirements-writer/SKILL.md',
+            'universal/skills/spec-driven-technical-designer/SKILL.md',
+            'universal/skills/spec-driven-task-decomposer/SKILL.md',
+            'universal/skills/spec-driven-task-implementer/SKILL.md',
+            'universal/skills/project-guidelines-writer/SKILL.md'
+        ];
+
+        for (const target of skillTargets) {
+            const content = await readTemplate(target);
+            expect(content).toContain('Use this skill when');
+            expect(content).toContain('Default path:');
+        }
+
+        const referenceTargets = [
+            'universal/skills/spec-driven-requirements-writer/references/requirements-patterns.md',
+            'universal/skills/spec-driven-technical-designer/references/design-section-guide.md',
+            'universal/skills/spec-driven-task-decomposer/references/task-patterns.md',
+            'universal/skills/spec-driven-task-implementer/references/task-execution-patterns.md'
+        ];
+
+        for (const target of referenceTargets) {
+            const content = await readTemplate(target);
+            expect(content.length).toBeGreaterThan(0);
+        }
+    });
+
+    it('publishes templates independently from the npm package release flow', async () => {
+        const content = await readRepositoryFile('.github/workflows/publish-templates.yml');
+
+        expect(content).toContain('name: Publish Templates');
+        expect(content).toContain('pnpm --filter spec-driven-steroids test');
+        expect(content).toContain('templates-manifest.json');
+        expect(content).toContain('templates-bundle.json');
+        expect(content).toContain('ncipollo/release-action');
+        expect(content).toContain('tag: templates-latest');
     });
 });

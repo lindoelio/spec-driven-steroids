@@ -1,6 +1,6 @@
 ---
 name: spec-driven-task-implementer
-description: Implement features following the Spec-Driven development workflow. Use this when asked to implement tasks, phases, or features from a specs/changes/<slug> directory.
+description: Use this skill when an approved Spec-Driven change has reached Phase 4 and the user wants a task, phase, or full feature implemented from specs/changes/<slug>. It executes tasks in order, updates task status immediately, verifies each task before completion, and should not be used before implementation approval.
 ---
 
 # Spec-Driven Task Implementer Skill
@@ -14,6 +14,10 @@ Your job is to:
 - verify each task before marking it complete
 - preserve the traceability chain from implementation back to `DES-*` and `REQ-*`
 
+Default path: validate the complete spec, pick the next eligible task, mark it in progress, implement only that scoped change, verify it, mark it complete, and then continue to the next eligible task.
+
+Read `references/task-execution-patterns.md` when you need examples for resuming interrupted work, choosing the smallest meaningful verification, or handling failed verification loops.
+
 ## Process
 
 1. **Read Project Guidelines** (if they exist): Use `Glob` and `Read` to inspect `AGENTS.md`, `ARCHITECTURE.md`, `STYLEGUIDE.md`, `TESTING.md`, and `SECURITY.md`.
@@ -23,6 +27,23 @@ Your job is to:
 5. **Select the Next Eligible Task**: Choose the requested task, requested phase, or the next pending task whose dependencies are satisfied.
 6. **Execute the Task Loop**: Mark the task in progress, implement it, verify it, then mark it complete.
 7. **Repeat**: Continue sequentially when implementing a phase or broader feature scope.
+
+## Per-Phase Todo List
+
+When this skill begins execution, create a todo list derived from the pending tasks in the approved `tasks.md` for the target slug. Each pending task becomes a todo item. This list is scoped to this phase only — do not carry over items from any previous phase.
+
+### Item Derivation
+
+- Read the approved `tasks.md` for the target slug.
+- For each task that is `- [ ]` (pending), create a corresponding todo item.
+- Skip tasks that are already `- [x]` (completed) or `- [~]` (in progress).
+
+### Progress Rules
+
+- Mark an item `in_progress` when starting that task.
+- Mark an item `completed` only after the task has been verified and marked `- [x]` in `tasks.md`.
+- Do not mark an item `completed` until verification passes.
+- Create a fresh list when this phase begins; do not append to a prior phase's list.
 
 ## Source Of Truth
 
@@ -220,22 +241,36 @@ Before marking a task complete or reporting progress, verify:
 
 ## Output Requirements
 
-When reporting implementation progress or completion, use this XML shape:
+When reporting implementation progress or completion:
 
-```xml
-<summary>
-Brief summary of what was implemented.
-</summary>
-<changes>
-List of files modified or created.
-</changes>
-<next_step>
-Next task to implement, or "Phase complete" if applicable.
-</next_step>
-```
+- summarize the work in ordinary prose
+- list the key files changed
+- identify the next eligible task or state that the phase is complete
 
 ## Response Behavior
 
 If the requested task or phase is implementable, execute it directly.
 
 If material ambiguity or a blocking spec conflict prevents safe implementation, ask a short clarification instead of making a low-confidence change.
+
+## Quality Grading Integration
+
+After completing implementation phases, invoke the `quality-grading` skill to assess and improve code quality:
+
+```
+Invoke: quality-grading skill
+Artifact: <implementation-directory-or-files>
+Mode: grade-and-fix
+```
+
+Quality-grading evaluates implementation across:
+- **Design Quality**: Architecture clarity, module structure, separation of concerns
+- **Originality**: Problem-specific solutions vs generic boilerplate
+- **Craft**: Code cleanliness, error handling, documentation, naming consistency
+- **Functionality**: Feature completeness, edge case handling, requirements coverage
+
+For ongoing quality during implementation:
+- After completing core implementation tasks: grade the implementation directory
+- After completing final checkpoint: run final quality assessment
+
+The quality-grading skill will auto-fix issues scoring below 4 and provide actionable suggestions for remaining gaps.

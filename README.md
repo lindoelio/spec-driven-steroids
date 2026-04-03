@@ -86,6 +86,65 @@ The bundled MCP server provides 5 tools:
 | `verify_tasks_file` | Validate task structure and traceability |
 | `verify_complete_spec` | Validate the full spec end to end |
 
+## Optional: Sequential-Thinking MCP
+
+For agents working on complex, long-running tasks, you can optionally add the sequential-thinking MCP server alongside the internal MCP. This provides structured reasoning capabilities to help agents break down complex problems and avoid timeout errors.
+
+### During Injection
+
+When running `spec-driven-steroids inject`, you'll be prompted:
+
+```
+Add sequential-thinking MCP server? (Enables structured reasoning for long-running tasks)
+```
+
+Select **Yes** to automatically configure both MCP servers.
+
+### Manual Configuration
+
+If you need to add it later, add this to your platform's MCP configuration:
+
+**VS Code (.vscode/mcp.json):**
+```json
+{
+  "servers": {
+    "spec-driven-steroids": {
+      "command": "node",
+      "args": ["path/to/spec-driven-steroids/dist/mcp/index.js"]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    }
+  }
+}
+```
+
+**OpenCode (opencode.json):**
+```json
+{
+  "mcp": {
+    "spec-driven-steroids": {
+      "type": "local",
+      "command": ["node", "path/to/spec-driven-steroids/dist/mcp/index.js"]
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"]
+    }
+  }
+}
+```
+
+### Requirements
+
+The sequential-thinking MCP is **optional** and does not affect the internal MCP functionality. To use it:
+
+1. Ensure `npx` is available in your environment
+2. The package `@modelcontextprotocol/server-sequential-thinking` will be downloaded automatically on first use
+
+For more details, see the `long-running-work-planning` skill documentation.
+
 ## Package layout
 
 ```text

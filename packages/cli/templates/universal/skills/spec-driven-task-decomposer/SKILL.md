@@ -1,6 +1,6 @@
 ---
 name: spec-driven-task-decomposer
-description: Specialized agent for decomposing designs into atomic implementation tasks.
+description: Use this skill when approved requirements and design need to be decomposed into tasks.md for Phase 3 of a Spec-Driven change. It creates atomic, traceable implementation and testing tasks, validates the plan, and should not be used to design architecture or write implementation code.
 ---
 
 # Spec-Driven Task Decomposer Skill
@@ -13,7 +13,13 @@ Your job is to produce a task artifact that:
 - preserves traceability from tasks to `DES-*` and `REQ-*`
 - includes explicit acceptance-criteria test coverage before final verification
 
+Default path: read approved requirements and design, group work into practical phases, create atomic tasks, add acceptance-criteria testing, validate `tasks.md`, and return a short review-ready summary.
+
+Read `references/task-patterns.md` when you need examples of atomic task sizing, grouped acceptance-criteria tests, or phase-shaping patterns.
+
 ## Process
+
+If `long-running-work-planning` is available, load it at the start of this phase before decomposing the work. Use it to shape phase ordering, keep progress visible, and avoid holding all task reasoning until the end.
 
 1. **Read Requirements**: Read `specs/changes/<slug>/requirements.md`.
 2. **Read Design**: Read `specs/changes/<slug>/design.md`.
@@ -26,6 +32,27 @@ Your job is to produce a task artifact that:
 9. **Validate Tasks**: Call `mcp:verify_tasks_file` using `tasks.md` and `design.md` content.
 10. **Validate Full Spec**: Call `mcp:verify_complete_spec` for `<slug>`.
 11. **Write Before Review**: Save to `specs/changes/<slug>/tasks.md` before asking for approval.
+
+## Per-Phase Todo List
+
+When this skill begins execution, create a todo list containing the following items in `pending` state. This list is scoped to this phase only — do not carry over items from any previous phase.
+
+1. Read requirements.md and design.md
+2. Read project guidelines
+3. Define implementation phases
+4. Create atomic tasks
+5. Add acceptance criteria testing phase
+6. Add final checkpoint phase
+7. Validate tasks
+8. Quality grade tasks
+9. Save tasks.md
+
+### Progress Rules
+
+- Mark an item `in_progress` when starting that work step.
+- Mark an item `completed` only after the work step has been verified.
+- Do not mark an item `completed` until verification passes.
+- Create a fresh list when this phase begins; do not append to a prior phase's list.
 
 ## Output File
 
@@ -275,13 +302,31 @@ Before returning the tasks, verify:
 
 ## Output Requirements
 
-- Use XML wrapper with `<summary>` and `<document>` tags
 - Write `specs/changes/<slug>/tasks.md` before requesting review
 - Prefer validator-compatible structure over decorative formatting
 - Keep the plan concise but complete enough for direct implementation
+- Return ordinary prose summary after the file is written; do not wrap the artifact in XML
 
 ## Response Behavior
 
 If enough information is available, produce the full `tasks.md` content directly.
 
 If material ambiguity blocks a sound task plan, ask a short clarification first. Do not produce a low-confidence decomposition.
+
+## Quality Grading Integration
+
+After completing tasks and before requesting approval, invoke the `quality-grading` skill to assess and improve task plan quality:
+
+```
+Invoke: quality-grading skill
+Artifact: specs/changes/<slug>/tasks.md
+Mode: grade-and-fix
+```
+
+This ensures the tasks document meets quality standards across:
+- **Design Quality**: Logical phase organization, task dependencies, clear structure
+- **Originality**: Tailored task breakdown vs generic boilerplate
+- **Craft**: Clear task descriptions, proper traceability, consistent formatting
+- **Functionality**: Complete coverage of requirements, all acceptance criteria mapped
+
+The quality-grading skill will auto-fix issues scoring below 4 and provide actionable suggestions for remaining gaps.

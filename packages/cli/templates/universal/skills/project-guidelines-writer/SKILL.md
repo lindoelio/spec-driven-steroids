@@ -1,6 +1,6 @@
 ---
 name: project-guidelines-writer
-description: Multi-step agent for analyzing a repository and generating focused, community-standard development guidelines (AGENTS.md, CONTRIBUTING.md, etc.) following the Spec-Driven flow without overlap.
+description: Use this skill when the user wants repository guidance documents generated or refreshed, including AGENTS.md, CONTRIBUTING.md, STYLEGUIDE.md, TESTING.md, ARCHITECTURE.md, and SECURITY.md. It analyzes the repository, generates all six guideline files by default, prefers managed-section updates for existing files, and should not be used for feature specs or implementation.
 ---
 
 # Project Guidelines Writer Skill
@@ -12,6 +12,8 @@ Your job is to:
 - detect conventions, architecture, testing posture, and documentation gaps
 - generate the standard guideline set with clear document boundaries
 - preserve user-authored content outside managed sections when updating existing files
+
+Default path: analyze the repository, infer conventions from representative files, create missing guideline files, update existing files through managed sections by default, and ask only when overwrite or skip decisions are truly needed.
 
 ## Standard Outputs
 
@@ -39,7 +41,7 @@ Select the files needed to understand the repository.
    - `TESTING.md`
    - `ARCHITECTURE.md`
    - `SECURITY.md`
-2. Select 10-30 representative files across:
+2. Select representative files across:
    - configuration
    - entry points
    - source code

@@ -147,10 +147,12 @@ describe('Integration: verifySpecStructure', () => {
 
 ## Coverage Targets
 
-| Package | Statements | Branches | Functions | Lines |
-|---------|------------|----------|-----------|-------|
-| cli | 75% | 75% | 75% | 75% |
-| Root | 80% | 80% | 80% | 80% |
+| Metric | Target |
+|--------|--------|
+| Statements | 80% |
+| Branches | 80% |
+| Functions | 80% |
+| Lines | 80% |
 
 ### Coverage Exclusions
 
@@ -228,10 +230,13 @@ describe('MCP Unit: verifyRequirementsFile', () => {
 
 ### Import Pattern for MCP Tests
 
+Tests import from the compiled `dist` directory to validate the built output:
+
 ```typescript
 // Import from compiled dist for integration testing
 import { verifyRequirementsFile } from '-dist/index.js';
 import { verifyDesignFile } from '@mcp-dist/index.js';
+import { validateMermaidDiagram } from '-dist/mermaid-validator.js';
 ```
 
 ---
