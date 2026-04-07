@@ -39,51 +39,53 @@ jobs:
         run: pnpm --filter spec-driven-steroids test
 
       - name: Build template bundle assets
-        run: node <<'EOF'
-          const fs = require('fs');
-          const path = require('path');
+        run: |
+          node -e '
+            const fs = require("fs");
+            const path = require("path");
 
-          const repoRoot = process.cwd();
-          const templatesRoot = path.join(repoRoot, 'packages/cli/templates');
-          const outputDir = path.join(repoRoot, '.template-release');
+            const repoRoot = process.cwd();
+            const templatesRoot = path.join(repoRoot, "packages/cli/templates");
+            const outputDir = path.join(repoRoot, ".template-release");
 
-          fs.rmSync(outputDir, { recursive: true, force: true });
-          fs.mkdirSync(outputDir, { recursive: true });
+            fs.rmSync(outputDir, { recursive: true, force: true });
+            fs.mkdirSync(outputDir, { recursive: true });
 
-          function walk(dir, prefix = '') {
-            const entries = fs.readdirSync(dir, { withFileTypes: true });
-            const files = {};
+            function walk(dir, prefix) {
+              prefix = prefix || "";
+              const entries = fs.readdirSync(dir, { withFileTypes: true });
+              const files = {};
 
-            for (const entry of entries) {
-              const absolutePath = path.join(dir, entry.name);
-              const relativePath = path.posix.join(prefix, entry.name);
+              for (const entry of entries) {
+                const absolutePath = path.join(dir, entry.name);
+                const relativePath = path.posix.join(prefix, entry.name);
 
-              if (entry.isDirectory()) {
-                Object.assign(files, walk(absolutePath, relativePath));
-                continue;
+                if (entry.isDirectory()) {
+                  Object.assign(files, walk(absolutePath, relativePath));
+                  continue;
+                }
+
+                files[relativePath] = fs.readFileSync(absolutePath, "utf8");
               }
 
-              files[relativePath] = fs.readFileSync(absolutePath, 'utf8');
+              return files;
             }
 
-            return files;
-          }
+            const version = process.env.GITHUB_SHA || "local-" + Date.now();
+            const bundleFileName = "templates-bundle.json";
+            const manifest = {
+              version: version,
+              bundleUrl: "https://github.com/" + process.env.GITHUB_REPOSITORY + "/releases/download/templates-latest/" + bundleFileName,
+              publishedAt: new Date().toISOString()
+            };
+            const bundle = {
+              version: version,
+              files: walk(templatesRoot)
+            };
 
-          const version = process.env.GITHUB_SHA || `local-${Date.now()}`;
-          const bundleFileName = 'templates-bundle.json';
-          const manifest = {
-            version,
-            bundleUrl: `https://github.com/${process.env.GITHUB_REPOSITORY}/releases/download/templates-latest/${bundleFileName}`,
-            publishedAt: new Date().toISOString()
-          };
-          const bundle = {
-            version,
-            files: walk(templatesRoot)
-          };
-
-          fs.writeFileSync(path.join(outputDir, 'templates-manifest.json'), JSON.stringify(manifest, null, 2));
-          fs.writeFileSync(path.join(outputDir, bundleFileName), JSON.stringify(bundle, null, 2));
-        EOF
+            fs.writeFileSync(path.join(outputDir, "templates-manifest.json"), JSON.stringify(manifest, null, 2));
+            fs.writeFileSync(path.join(outputDir, bundleFileName), JSON.stringify(bundle, null, 2));
+          '
 
       - name: Publish template release assets
         uses: ncipollo/release-action@v1
