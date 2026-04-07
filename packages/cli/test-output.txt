@@ -1,0 +1,668 @@
+
+> spec-driven-steroids@0.7.0 test /Users/lindoelio/Projects/spec-driven-steroids/packages/cli
+> tsc && vitest run
+
+
+ RUN  v2.1.9 /Users/lindoelio/Projects/spec-driven-steroids/packages/cli
+
+ ✓ tests/unit/format-transformer.test.ts (12 tests) 3ms
+ ✓ tests/unit/mermaid-validator.test.ts (29 tests) 17ms
+ ✓ tests/unit/template-mcp-guidance.test.ts (10 tests) 20ms
+stderr | tests/unit/verify-spec-structure.test.ts
+Spec-Driven Steroids MCP Server running on stdio
+
+stderr | tests/unit/verify-requirements-file.test.ts
+Spec-Driven Steroids MCP Server running on stdio
+
+stderr | tests/unit/error-formatter.test.ts
+Spec-Driven Steroids MCP Server running on stdio
+
+stderr | tests/unit/verify-design-file.test.ts
+Spec-Driven Steroids MCP Server running on stdio
+
+ ✓ tests/integration/transformation-pipeline.test.ts (6 tests) 115ms
+ ✓ tests/unit/error-formatter.test.ts (17 tests) 2ms
+ ✓ tests/unit/verify-requirements-file.test.ts (16 tests) 4ms
+stderr | tests/unit/verify-tasks-file.test.ts
+Spec-Driven Steroids MCP Server running on stdio
+
+ ✓ tests/unit/verify-design-file.test.ts (23 tests) 6ms
+ ✓ tests/unit/verify-tasks-file.test.ts (22 tests) 6ms
+ ✓ tests/unit/platform-config.test.ts (10 tests) 4ms
+ ✓ tests/unit/universal-agent-prompt.test.ts (4 tests) 6ms
+stdout | tests/integration/clean-global.e2e.test.ts > CLI E2E: clean --global command > clean --global preserves other MCP entries in OpenCode opencode.json
+
+🧹 Cleaning global steroids...
+
+🔍 Preview of --global clean:
+
+  GitHub Copilot for VS Code:
+    • MCP entry: spec-driven-steroids (~/Library/Application Support/Code/User/mcp.json)
+    • Prompts: ~/Library/Application Support/Code/User/prompts/
+    • Skills: ~/.copilot/skills/
+
+  OpenCode (~/.config/opencode):
+    • MCP entry: spec-driven-steroids
+    • agents/spec-driven.agent.md
+    • commands/spec-driven.command.md, inject-guidelines.md
+    • skills/spec-driven-technical-designer/, skills/spec-driven-task-implementer/, skills/spec-driven-requirements-writer/, skills/spec-driven-task-decomposer/, skills/long-running-work-planning/, skills/project-guidelines-writer/
+
+
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with GitHub platform creates .github directory structure
+
+💪 Injecting steroids...
+
+
+stdout | tests/integration/clean-global.e2e.test.ts > CLI E2E: clean --global command > clean --global preserves other MCP entries in OpenCode opencode.json
+  ✅ GitHub Copilot for VS Code cleaned.
+
+stdout | tests/integration/clean-global.e2e.test.ts > CLI E2E: clean --global command > clean --global preserves other MCP entries in OpenCode opencode.json
+  ✅ OpenCode cleaned.
+
+✅ All global steroids cleaned successfully.
+
+stdout | tests/integration/clean-global.e2e.test.ts > CLI E2E: clean --global command > clean --global preserves other MCP entries in VS Code mcp.json
+
+🧹 Cleaning global steroids...
+
+🔍 Preview of --global clean:
+
+  GitHub Copilot for VS Code:
+    • MCP entry: spec-driven-steroids (~/Library/Application Support/Code/User/mcp.json)
+    • Prompts: ~/Library/Application Support/Code/User/prompts/
+    • Skills: ~/.copilot/skills/
+
+  OpenCode (~/.config/opencode):
+    • MCP entry: spec-driven-steroids
+    • agents/spec-driven.agent.md
+    • commands/spec-driven.command.md, inject-guidelines.md
+    • skills/spec-driven-technical-designer/, skills/spec-driven-task-implementer/, skills/spec-driven-requirements-writer/, skills/spec-driven-task-decomposer/, skills/long-running-work-planning/, skills/project-guidelines-writer/
+
+
+
+  ✅ OpenCode cleaned.
+
+stdout | tests/integration/clean-global.e2e.test.ts > CLI E2E: clean --global command > clean --global preserves other MCP entries in VS Code mcp.json
+  ✅ GitHub Copilot for VS Code cleaned.
+
+✅ All global steroids cleaned successfully.
+
+ ❯ tests/unit/verify-spec-structure.test.ts (17 tests | 1 failed) 129ms
+   × MCP Unit: verifySpecStructure > edge cases > handles default target directory (current working directory) 16ms
+     → The "path" argument must be of type string. Received undefined
+stderr | tests/integration/verify-complete-spec.e2e.test.ts
+Spec-Driven Steroids MCP Server running on stdio
+
+ ❯ tests/integration/verify-complete-spec.e2e.test.ts (7 tests | 1 failed) 29ms
+   × MCP E2E: verify_complete_spec > uses default target directory when not specified 7ms
+     → The "path" argument must be of type string. Received undefined
+stdout | tests/integration/clean-global.e2e.test.ts > CLI E2E: clean --global command > clean --global does not rewrite opencode.json when steroids entry does not exist
+
+🧹 Cleaning global steroids...
+
+🔍 Preview of --global clean:
+
+  GitHub Copilot for VS Code:
+    • MCP entry: spec-driven-steroids (~/Library/Application Support/Code/User/mcp.json)
+    • Prompts: ~/Library/Application Support/Code/User/prompts/
+    • Skills: ~/.copilot/skills/
+
+  OpenCode (~/.config/opencode):
+    • MCP entry: spec-driven-steroids
+    • agents/spec-driven.agent.md
+    • commands/spec-driven.command.md, inject-guidelines.md
+    • skills/spec-driven-technical-designer/, skills/spec-driven-task-implementer/, skills/spec-driven-requirements-writer/, skills/spec-driven-task-decomposer/, skills/long-running-work-planning/, skills/project-guidelines-writer/
+
+
+
+  ✅ GitHub Copilot for VS Code cleaned.
+  ✅ OpenCode cleaned.
+
+✅ All global steroids cleaned successfully.
+
+stdout | tests/integration/clean-global.e2e.test.ts > CLI E2E: clean --global command > clean --global handles BOM in opencode.json and preserves other entries
+
+🧹 Cleaning global steroids...
+
+🔍 Preview of --global clean:
+
+  GitHub Copilot for VS Code:
+    • MCP entry: spec-driven-steroids (~/Library/Application Support/Code/User/mcp.json)
+    • Prompts: ~/Library/Application Support/Code/User/prompts/
+    • Skills: ~/.copilot/skills/
+
+  OpenCode (~/.config/opencode):
+    • MCP entry: spec-driven-steroids
+    • agents/spec-driven.agent.md
+    • commands/spec-driven.command.md, inject-guidelines.md
+    • skills/spec-driven-technical-designer/, skills/spec-driven-task-implementer/, skills/spec-driven-requirements-writer/, skills/spec-driven-task-decomposer/, skills/long-running-work-planning/, skills/project-guidelines-writer/
+
+
+
+  ✅ GitHub Copilot for VS Code cleaned.
+  ✅ OpenCode cleaned.
+
+✅ All global steroids cleaned successfully.
+
+stdout | tests/integration/clean-global.e2e.test.ts > CLI E2E: clean --global command > clean --global preserves trailing newline in opencode.json
+
+🧹 Cleaning global steroids...
+
+🔍 Preview of --global clean:
+
+  GitHub Copilot for VS Code:
+    • MCP entry: spec-driven-steroids (~/Library/Application Support/Code/User/mcp.json)
+    • Prompts: ~/Library/Application Support/Code/User/prompts/
+    • Skills: ~/.copilot/skills/
+
+  OpenCode (~/.config/opencode):
+    • MCP entry: spec-driven-steroids
+    • agents/spec-driven.agent.md
+    • commands/spec-driven.command.md, inject-guidelines.md
+    • skills/spec-driven-technical-designer/, skills/spec-driven-task-implementer/, skills/spec-driven-requirements-writer/, skills/spec-driven-task-decomposer/, skills/long-running-work-planning/, skills/project-guidelines-writer/
+
+
+
+
+stdout | tests/integration/clean-global.e2e.test.ts > CLI E2E: clean --global command > clean --global preserves trailing newline in opencode.json
+  ✅ GitHub Copilot for VS Code cleaned.
+  ✅ OpenCode cleaned.
+
+✅ All global steroids cleaned successfully.
+
+stdout | tests/integration/clean-global.e2e.test.ts > CLI E2E: inject --global preserves existing MCP entries > inject --global with OpenCode preserves existing MCP entries in opencode.json
+
+💪 Injecting steroids...
+
+
+stderr | tests/unit/mcp-tool-contract.test.ts
+Spec-Driven Steroids MCP Server running on stdio
+
+ ✓ tests/unit/mcp-tool-contract.test.ts (3 tests) 2ms
+stdout | tests/integration/clean-global.e2e.test.ts > CLI E2E: inject --global preserves existing MCP entries > inject --global with OpenCode preserves existing MCP entries in opencode.json
+Using bundled templates.
+Remote template retrieval failed, so inject fell back to bundled templates: Request failed: 404 Not Found
+
+Configuring opencode...
+
+stdout | tests/integration/clean-global.e2e.test.ts > CLI E2E: inject --global preserves existing MCP entries > inject --global with OpenCode preserves existing MCP entries in opencode.json
+✅ OpenCode configured globally at /var/folders/28/k17ffz850gsb4cv4rbr6j17c0000gn/T/spec-driven-test-1775573934684-phl2lq7m3i/.config/opencode
+
+stdout | tests/integration/clean-global.e2e.test.ts > CLI E2E: inject --global preserves existing MCP entries > inject --global with OpenCode preserves existing MCP entries in opencode.json
+  Transformed: universal/agents/spec-driven.agent.md -> /var/folders/28/k17ffz850gsb4cv4rbr6j17c0000gn/T/spec-driven-test-1775573934684-phl2lq7m3i/.config/opencode/agents/spec-driven.agent.md
+  Transformed: universal/commands/spec-driven.command.md -> /var/folders/28/k17ffz850gsb4cv4rbr6j17c0000gn/T/spec-driven-test-1775573934684-phl2lq7m3i/.config/opencode/commands/spec-driven.md
+  Transformed: universal/commands/inject-guidelines.command.md -> /var/folders/28/k17ffz850gsb4cv4rbr6j17c0000gn/T/spec-driven-test-1775573934684-phl2lq7m3i/.config/opencode/commands/inject-guidelines.md
+
+🚀 Injection Complete!
+
+stdout | tests/integration/clean-global.e2e.test.ts > CLI E2E: inject --global preserves existing MCP entries > inject --global with OpenCode aborts when opencode.json has invalid JSON
+
+💪 Injecting steroids...
+
+
+stderr | tests/integration/clean-global.e2e.test.ts > CLI E2E: inject --global preserves existing MCP entries > inject --global with OpenCode aborts when opencode.json has invalid JSON
+❌ Failed to inject opencode config: Error: Could not parse existing global OpenCode config at /var/folders/28/k17ffz850gsb4cv4rbr6j17c0000gn/T/spec-driven-test-1775573935133-ak7zndcqbbu/.config/opencode/opencode.json. Please fix or remove the file and try again.
+
+stdout | tests/integration/clean-global.e2e.test.ts > CLI E2E: inject --global preserves existing MCP entries > inject --global with OpenCode aborts when opencode.json has invalid JSON
+Using bundled templates.
+Remote template retrieval failed, so inject fell back to bundled templates: Request failed: 404 Not Found
+
+Configuring opencode...
+
+🚀 Injection Complete!
+
+ ✓ tests/integration/clean-global.e2e.test.ts (7 tests) 615ms
+   ✓ CLI E2E: inject --global preserves existing MCP entries > inject --global with OpenCode preserves existing MCP entries in opencode.json 449ms
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with JetBrains platform creates .github directory structure and configures global MCP
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with GitHub Copilot for VS Code global scope configures MCP and artifacts globally
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with GitHub Copilot for JetBrains skips global scope prompt and uses project-level injection
+
+💪 Injecting steroids...
+
+
+stdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with Antigravity platform creates .agents directory structure (project scope)
+
+💪 Injecting steroids...
+
+
+stdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with Antigravity platform creates .agents directory structure (project scope)
+Using bundled templates.
+Remote template retrieval failed, so inject fell back to bundled templates: Request failed: 404 Not Found
+
+Configuring antigravity...
+
+stdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with Antigravity platform creates .agents directory structure (project scope)
+✅ Antigravity MCP configured at /var/folders/28/k17ffz850gsb4cv4rbr6j17c0000gn/T/spec-driven-test-1775573954555-1io2xsajhjf/.gemini/antigravity/mcp_config.json
+
+stdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with Antigravity platform creates .agents directory structure (project scope)
+  Transformed: universal/agents/spec-driven.agent.md -> /private/var/folders/28/k17ffz850gsb4cv4rbr6j17c0000gn/T/spec-driven-test-1775573954555-iqa5hbx44ge/.agents/workflows/spec-driven.md
+  Transformed: universal/commands/inject-guidelines.command.md -> /private/var/folders/28/k17ffz850gsb4cv4rbr6j17c0000gn/T/spec-driven-test-1775573954555-iqa5hbx44ge/.agents/workflows/inject-guidelines.md
+
+stdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with Antigravity platform creates .agents directory structure (project scope)
+✅ antigravity config and universal skills injected.
+
+🚀 Injection Complete!
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with Antigravity skips global scope prompt and uses project-level injection
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80C(node:21814) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 keypress listeners added to [Socket]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+stdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command skips scope prompt for Antigravity and proceeds directly to project-level injection
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command displays single unified scope prompt for multiple global-capable platforms
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with OpenCode platform creates .opencode directory structure (project scope)
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command includes spec-driven phase-gating guardrails and command shortcut
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80C(node:21814) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 end listeners added to [Socket]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+stdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command includes spec-driven phase-gating guardrails for GitHub and Antigravity
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80C(node:21814) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 drain listeners added to [Socket]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(node:21814) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 error listeners added to [Socket]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(node:21814) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [Socket]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(node:21814) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 error listeners added to [Socket]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(node:21814) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 exit listeners added to [process]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+stdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command keeps spec-driven wrappers phase-aligned across supported platforms
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command prefers remote templates when they are available
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command falls back to bundled templates when remote retrieval fails
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command loads continuity guidance at the start of planning phases
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject-guidelines templates require creating all six guideline files by default
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command adds spec-driven-steroids MCP to OpenCode config (project scope)
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with OpenCode global scope configures all artifacts globally
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with Codex platform creates .codex directory structure
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command creates spec-driven agent and commands for Codex
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command adds spec-driven-steroids MCP to GitHub Copilot config
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command migrates legacy GitHub Copilot mcpServers key to servers
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command adds spec-driven-steroids MCP to global Antigravity config (project-level injection)
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with Antigravity does not create global artifacts directory
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command adds spec-driven-steroids MCP to .mcp.json with correct structure
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command merges with existing .mcp.json without overwriting existing servers
+
+💪 Injecting steroids...
+
+
+? Add memory MCP server? (Enables persistent memory across conversations) (Y/n) 
+[1A[0D[80Cstdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command includes sequential-thinking MCP when requested for Claude Code
+
+💪 Injecting steroids...
+
+
+stdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: validate command > validate command detects existing GitHub config
+
+🔍 Validating Spec-Driven setup...
+
+✅ GitHub Copilot Config found.
+➖ VS Code MCP Config not present (optional).
+➖ Antigravity Config not present (optional).
+➖ OpenCode Config not present (optional).
+➖ Codex Config not present (optional).
+➖ Codex Commands not present (optional).
+➖ Codex MCP Config not present (optional).
+➖ ClaudeCode Agents not present (optional).
+
+stdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: validate command > validate command detects existing GitHub config
+➖ ClaudeCode Commands not present (optional).
+➖ ClaudeCode not present (optional).
+➖ ClaudeCode MCP Config not present (optional).
+➖ Standard Requirements not present (optional).
+
+Tip: Make sure to connect your MCP server to enable structural validation.
+
+
+stdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: validate command > validate command detects existing Antigravity config
+
+🔍 Validating Spec-Driven setup...
+
+➖ GitHub Copilot Config not present (optional).
+➖ VS Code MCP Config not present (optional).
+✅ Antigravity Config found.
+➖ OpenCode Config not present (optional).
+➖ Codex Config not present (optional).
+➖ Codex Commands not present (optional).
+➖ Codex MCP Config not present (optional).
+➖ ClaudeCode Agents not present (optional).
+➖ ClaudeCode Commands not present (optional).
+➖ ClaudeCode not present (optional).
+➖ ClaudeCode MCP Config not present (optional).
+➖ Standard Requirements not present (optional).
+
+Tip: Make sure to connect your MCP server to enable structural validation.
+
+
+stdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: validate command > validate command detects existing OpenCode config
+
+🔍 Validating Spec-Driven setup...
+
+➖ GitHub Copilot Config not present (optional).
+➖ VS Code MCP Config not present (optional).
+➖ Antigravity Config not present (optional).
+✅ OpenCode Config found.
+➖ Codex Config not present (optional).
+➖ Codex Commands not present (optional).
+➖ Codex MCP Config not present (optional).
+➖ ClaudeCode Agents not present (optional).
+➖ ClaudeCode Commands not present (optional).
+➖ ClaudeCode not present (optional).
+➖ ClaudeCode MCP Config not present (optional).
+➖ Standard Requirements not present (optional).
+
+Tip: Make sure to connect your MCP server to enable structural validation.
+
+
+stdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: validate command > validate command detects existing Claude Code config
+
+🔍 Validating Spec-Driven setup...
+
+➖ GitHub Copilot Config not present (optional).
+➖ VS Code MCP Config not present (optional).
+➖ Antigravity Config not present (optional).
+➖ OpenCode Config not present (optional).
+➖ Codex Config not present (optional).
+
+stdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: validate command > validate command detects existing Claude Code config
+➖ Codex Commands not present (optional).
+➖ Codex MCP Config not present (optional).
+✅ ClaudeCode Agents found.
+✅ ClaudeCode Commands found.
+✅ ClaudeCode found.
+➖ ClaudeCode MCP Config not present (optional).
+➖ Standard Requirements not present (optional).
+
+Tip: Make sure to connect your MCP server to enable structural validation.
+
+
+stdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: validate command > validate command detects specs directory
+
+🔍 Validating Spec-Driven setup...
+
+➖ GitHub Copilot Config not present (optional).
+➖ VS Code MCP Config not present (optional).
+➖ Antigravity Config not present (optional).
+➖ OpenCode Config not present (optional).
+➖ Codex Config not present (optional).
+➖ Codex Commands not present (optional).
+➖ Codex MCP Config not present (optional).
+➖ ClaudeCode Agents not present (optional).
+➖ ClaudeCode Commands not present (optional).
+➖ ClaudeCode not present (optional).
+➖ ClaudeCode MCP Config not present (optional).
+✅ Standard Requirements found.
+
+Tip: Make sure to connect your MCP server to enable structural validation.
+
+
+stdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: validate command > validate command shows correct status for missing configs
+
+🔍 Validating Spec-Driven setup...
+
+➖ GitHub Copilot Config not present (optional).
+➖ VS Code MCP Config not present (optional).
+➖ Antigravity Config not present (optional).
+➖ OpenCode Config not present (optional).
+➖ Codex Config not present (optional).
+➖ Codex Commands not present (optional).
+
+stdout | tests/integration/inject-validate.e2e.test.ts > CLI E2E: validate command > validate command shows correct status for missing configs
+➖ Codex MCP Config not present (optional).
+➖ ClaudeCode Agents not present (optional).
+➖ ClaudeCode Commands not present (optional).
+➖ ClaudeCode not present (optional).
+➖ ClaudeCode MCP Config not present (optional).
+➖ Standard Requirements not present (optional).
+
+Tip: Make sure to connect your MCP server to enable structural validation.
+
+
+ ❯ tests/integration/inject-validate.e2e.test.ts (33 tests | 26 failed) 130265ms
+   × CLI E2E: inject command > inject command with GitHub platform creates .github directory structure 5004ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command with JetBrains platform creates .github directory structure and configures global MCP 5002ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command with GitHub Copilot for VS Code global scope configures MCP and artifacts globally 5004ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command with GitHub Copilot for JetBrains skips global scope prompt and uses project-level injection 5005ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command with Antigravity skips global scope prompt and uses project-level injection 5003ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command skips scope prompt for Antigravity and proceeds directly to project-level injection 5002ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command displays single unified scope prompt for multiple global-capable platforms 5003ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command with OpenCode platform creates .opencode directory structure (project scope) 5005ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command includes spec-driven phase-gating guardrails and command shortcut 5003ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command includes spec-driven phase-gating guardrails for GitHub and Antigravity 5001ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command keeps spec-driven wrappers phase-aligned across supported platforms 5003ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command prefers remote templates when they are available 5005ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command falls back to bundled templates when remote retrieval fails 5005ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command loads continuity guidance at the start of planning phases 5006ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject-guidelines templates require creating all six guideline files by default 5004ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command adds spec-driven-steroids MCP to OpenCode config (project scope) 5008ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command with OpenCode global scope configures all artifacts globally 5006ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command with Codex platform creates .codex directory structure 5005ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command creates spec-driven agent and commands for Codex 5007ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command adds spec-driven-steroids MCP to GitHub Copilot config 5006ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command migrates legacy GitHub Copilot mcpServers key to servers 5008ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command adds spec-driven-steroids MCP to global Antigravity config (project-level injection) 5008ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command with Antigravity does not create global artifacts directory 5007ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command adds spec-driven-steroids MCP to .mcp.json with correct structure 5007ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command merges with existing .mcp.json without overwriting existing servers 5007ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × CLI E2E: inject command > inject command includes sequential-thinking MCP when requested for Claude Code 5008ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 28 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with GitHub platform creates .github directory structure
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with JetBrains platform creates .github directory structure and configures global MCP
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with GitHub Copilot for VS Code global scope configures MCP and artifacts globally
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with GitHub Copilot for JetBrains skips global scope prompt and uses project-level injection
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with Antigravity skips global scope prompt and uses project-level injection
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command skips scope prompt for Antigravity and proceeds directly to project-level injection
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command displays single unified scope prompt for multiple global-capable platforms
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with OpenCode platform creates .opencode directory structure (project scope)
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command includes spec-driven phase-gating guardrails and command shortcut
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command includes spec-driven phase-gating guardrails for GitHub and Antigravity
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command keeps spec-driven wrappers phase-aligned across supported platforms
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command prefers remote templates when they are available
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command falls back to bundled templates when remote retrieval fails
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command loads continuity guidance at the start of planning phases
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject-guidelines templates require creating all six guideline files by default
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command adds spec-driven-steroids MCP to OpenCode config (project scope)
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with OpenCode global scope configures all artifacts globally
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with Codex platform creates .codex directory structure
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command creates spec-driven agent and commands for Codex
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command adds spec-driven-steroids MCP to GitHub Copilot config
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command migrates legacy GitHub Copilot mcpServers key to servers
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command adds spec-driven-steroids MCP to global Antigravity config (project-level injection)
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command with Antigravity does not create global artifacts directory
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command adds spec-driven-steroids MCP to .mcp.json with correct structure
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command merges with existing .mcp.json without overwriting existing servers
+ FAIL  tests/integration/inject-validate.e2e.test.ts > CLI E2E: inject command > inject command includes sequential-thinking MCP when requested for Claude Code
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/28]⎯
+
+ FAIL  tests/integration/verify-complete-spec.e2e.test.ts > MCP E2E: verify_complete_spec > uses default target directory when not specified
+TypeError: The "path" argument must be of type string. Received undefined
+ ❯ Module.verifyCompleteSpec src/mcp/index.ts:700:24
+ ❯ tests/integration/verify-complete-spec.e2e.test.ts:88:30
+     82|     });
+     83| 
+     84| });
+       |    ^
+     85| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/28]⎯
+
+ FAIL  tests/unit/verify-spec-structure.test.ts > MCP Unit: verifySpecStructure > edge cases > handles default target directory (current working directory)
+TypeError: The "path" argument must be of type string. Received undefined
+ ❯ Module.verifySpecStructure src/mcp/index.ts:131:24
+ ❯ tests/unit/verify-spec-structure.test.ts:142:34
+    140| 
+    141|             const result = await verifySpecStructure('test-spec', targ…
+    142|             expect(result.valid).toBe(true);
+       |                                  ^
+    143|         });
+    144| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/28]⎯
+
+ Test Files  3 failed | 12 passed (15)
+      Tests  28 failed | 188 passed (216)
+   Start at  11:58:53
+   Duration  130.84s (transform 479ms, setup 0ms, collect 2.29s, tests 131.22s, environment 1ms, prepare 1.03s)
+
+ ELIFECYCLE  Test failed. See above for more details.

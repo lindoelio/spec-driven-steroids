@@ -23,12 +23,13 @@ If `long-running-work-planning` is available, load it at the start of this phase
 
 1. **Read Requirements**: Read `specs/changes/<slug>/requirements.md` as the source of truth.
 2. **Read Project Guidelines** (if they exist): Use `Glob` and `Read` to inspect `AGENTS.md`, `ARCHITECTURE.md`, `STYLEGUIDE.md`, and `TESTING.md`.
-3. **Inspect Existing Patterns**: Use `Grep` to find related modules, interfaces, diagrams, and naming conventions in the codebase.
-4. **Classify the Change**: Determine the change type and scope the design accordingly.
-5. **Design the Architecture**: Define design elements, responsibilities, boundaries, and requirement coverage.
-6. **Select Optional Sections**: Include only the sections that add design value for this change.
-7. **Validate**: Call `mcp:verify_design_file` using the design content and requirements content.
-8. **Write Before Review**: Save to `specs/changes/<slug>/design.md` before asking for approval.
+3. **Retrieve Contextual Memory**: Invoke the `contextual-stewardship` skill to retrieve `architecture` rules.
+4. **Inspect Existing Patterns**: Use `Grep` to find related modules, interfaces, diagrams, and naming conventions in the codebase.
+5. **Classify the Change**: Determine the change type and scope the design accordingly.
+6. **Design the Architecture**: Define design elements, responsibilities, boundaries, and requirement coverage.
+7. **Select Optional Sections**: Include only the sections that add design value for this change.
+8. **Validate**: Call `mcp:verify_design_file` using the design content and requirements content.
+9. **Write Before Review**: Save to `specs/changes/<slug>/design.md` before asking for approval.
 
 ## Per-Phase Todo List
 
@@ -36,12 +37,13 @@ When this skill begins execution, create a todo list containing the following it
 
 1. Read approved requirements.md
 2. Read project guidelines
-3. Inspect existing codebase patterns
-4. Classify change type
-5. Design architecture with design elements
-6. Validate design
-7. Quality grade design
-8. Save design.md
+3. Retrieve contextual memory (architecture)
+4. Inspect existing codebase patterns
+5. Classify change type
+6. Design architecture with design elements
+7. Validate design
+8. Quality grade design
+9. Save design.md
 
 ### Progress Rules
 
@@ -405,6 +407,18 @@ Before returning the design, verify:
 If enough information is available, produce the full `design.md` content directly.
 
 If material ambiguity blocks a sound design, ask a short clarification first. Do not produce a low-confidence architecture.
+
+## Contextual Stewardship Integration
+
+At the start of this phase, before shaping the design, invoke the `contextual-stewardship` skill to retrieve established architectural patterns:
+
+```text
+Invoke: contextual-stewardship skill
+Action: retrieve
+Query: architecture
+```
+
+This ensures the new design aligns with existing tech stack choices, design patterns, and tooling decisions.
 
 ## Quality Grading Integration
 

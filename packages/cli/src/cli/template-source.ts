@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';
 
-export const DEFAULT_TEMPLATE_MANIFEST_URL = 'https://github.com/lindoelio/spec-driven-steroids/releases/latest/download/templates-manifest.json';
+export const DEFAULT_TEMPLATE_MANIFEST_URL = 'https://github.com/lindoelio/spec-driven-steroids/releases/download/templates-latest/templates-manifest.json';
 
 export type TemplateSourceKind = 'bundled' | 'remote';
 

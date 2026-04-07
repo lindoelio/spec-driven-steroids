@@ -24,14 +24,15 @@ If `long-running-work-planning` is available, load it at the start of this phase
 1. **Read Requirements**: Read `specs/changes/<slug>/requirements.md`.
 2. **Read Design**: Read `specs/changes/<slug>/design.md`.
 3. **Read Project Guidelines** (if they exist): Use `Glob` and `Read` to inspect `TESTING.md` and `STYLEGUIDE.md`.
-4. **Inspect Existing Patterns**: Use `Grep` to find similar task structures in existing specs when helpful.
-5. **Define Phases**: Group work into a small number of phases that follow implementation dependencies.
-6. **Create Atomic Tasks**: Break each design element into tasks that are concrete and usually completable within one focused session.
-7. **Add Acceptance Criteria Testing**: Create a dedicated penultimate testing phase covering every acceptance criterion.
-8. **Add Final Checkpoint**: Create a final phase that verifies all requirements and overall spec completeness.
-9. **Validate Tasks**: Call `mcp:verify_tasks_file` using `tasks.md` and `design.md` content.
-10. **Validate Full Spec**: Call `mcp:verify_complete_spec` for `<slug>`.
-11. **Write Before Review**: Save to `specs/changes/<slug>/tasks.md` before asking for approval.
+4. **Retrieve Contextual Memory**: Invoke the `contextual-stewardship` skill to retrieve `workflow` rules.
+5. **Inspect Existing Patterns**: Use `Grep` to find similar task structures in existing specs when helpful.
+6. **Define Phases**: Group work into a small number of phases that follow implementation dependencies.
+7. **Create Atomic Tasks**: Break each design element into tasks that are concrete and usually completable within one focused session.
+8. **Add Acceptance Criteria Testing**: Create a dedicated penultimate testing phase covering every acceptance criterion.
+9. **Add Final Checkpoint**: Create a final phase that verifies all requirements and overall spec completeness.
+10. **Validate Tasks**: Call `mcp:verify_tasks_file` using `tasks.md` and `design.md` content.
+11. **Validate Full Spec**: Call `mcp:verify_complete_spec` for `<slug>`.
+12. **Write Before Review**: Save to `specs/changes/<slug>/tasks.md` before asking for approval.
 
 ## Per-Phase Todo List
 
@@ -39,13 +40,15 @@ When this skill begins execution, create a todo list containing the following it
 
 1. Read requirements.md and design.md
 2. Read project guidelines
-3. Define implementation phases
-4. Create atomic tasks
-5. Add acceptance criteria testing phase
-6. Add final checkpoint phase
-7. Validate tasks
-8. Quality grade tasks
-9. Save tasks.md
+3. Retrieve contextual memory (workflow)
+4. Inspect existing patterns
+5. Define implementation phases
+6. Create atomic tasks
+7. Add acceptance criteria testing phase
+8. Add final checkpoint phase
+9. Validate tasks
+10. Quality grade tasks
+11. Save tasks.md
 
 ### Progress Rules
 
@@ -312,6 +315,18 @@ Before returning the tasks, verify:
 If enough information is available, produce the full `tasks.md` content directly.
 
 If material ambiguity blocks a sound task plan, ask a short clarification first. Do not produce a low-confidence decomposition.
+
+## Contextual Stewardship Integration
+
+At the start of this phase, before decomposing the work, invoke the `contextual-stewardship` skill to retrieve established workflow conventions:
+
+```text
+Invoke: contextual-stewardship skill
+Action: retrieve
+Query: workflow
+```
+
+This ensures the task breakdown aligns with team processes, testing rules, and naming conventions.
 
 ## Quality Grading Integration
 

@@ -120,7 +120,7 @@ const server = new Server(
  */
 async function verifySpecStructure(
   slug: string,
-  targetDir: string = process.cwd()
+  targetDir: string
 ): Promise<{
   valid: boolean;
   errors: string[];
@@ -679,7 +679,7 @@ function verifyTasksFile(content: string, designContent?: string): {
  */
 async function verifyCompleteSpec(
   slug: string,
-  targetDir: string = process.cwd()
+  targetDir: string
 ): Promise<{
   valid: boolean;
   overallErrors: string[];
@@ -816,10 +816,10 @@ const TOOL_DEFINITIONS = [
         },
         targetDir: {
           type: "string",
-          description: "Base directory to check (default: current working directory)."
+          description: "Absolute path to the project root directory. Do not use ~"
         }
       },
-      required: ["slug"]
+      required: ["slug", "targetDir"]
     }
   },
   {
@@ -884,10 +884,10 @@ const TOOL_DEFINITIONS = [
         },
         targetDir: {
           type: "string",
-          description: "Base directory to check (default: current working directory)."
+          description: "Absolute path to the project root directory. Do not use ~"
         }
       },
-      required: ["slug"]
+      required: ["slug", "targetDir"]
     }
   }
 ] as const;
@@ -895,7 +895,7 @@ const TOOL_DEFINITIONS = [
 async function executeTool(name: string, args: Record<string, unknown>) {
   switch (name) {
     case "verify_spec_structure": {
-      const result = await verifySpecStructure(args.slug as string, args.targetDir as string | undefined);
+      const result = await verifySpecStructure(args.slug as string, args.targetDir as string);
       return {
         content: [
           {
@@ -943,7 +943,7 @@ async function executeTool(name: string, args: Record<string, unknown>) {
       };
     }
     case "verify_complete_spec": {
-      const result = await verifyCompleteSpec(args.slug as string, args.targetDir as string | undefined);
+      const result = await verifyCompleteSpec(args.slug as string, args.targetDir as string);
       return {
         content: [
           {

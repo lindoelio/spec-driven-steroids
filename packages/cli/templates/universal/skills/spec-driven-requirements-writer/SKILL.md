@@ -25,24 +25,26 @@ If `long-running-work-planning` is available, load it at the start of this phase
    - Use `Glob` to find `AGENTS.md`, `STYLEGUIDE.md`, `ARCHITECTURE.md`
    - Use `Read` to understand existing patterns, naming conventions, and architecture
    - Use `Grep` to search for keywords or patterns relevant to the feature
-2. Analyze user description and any issue context
-3. Extract actors, actions, and constraints
-4. Write requirements using valid EARS syntax
-5. Define glossary terms if domain-specific terminology is needed
-6. **Validate**: Call `mcp:verify_requirements_file` to ensure compliance
-7. **Write Before Review**: Save to `specs/changes/<slug>/requirements.md` before asking for approval
+2. **Retrieve Contextual Memory**: Invoke the `contextual-stewardship` skill to retrieve `business` rules.
+3. Analyze user description and any issue context
+4. Extract actors, actions, and constraints
+5. Write requirements using valid EARS syntax
+6. Define glossary terms if domain-specific terminology is needed
+7. **Validate**: Call `mcp:verify_requirements_file` to ensure compliance
+8. **Write Before Review**: Save to `specs/changes/<slug>/requirements.md` before asking for approval
 
 ## Per-Phase Todo List
 
 When this skill begins execution, create a todo list containing the following items in `pending` state. This list is scoped to this phase only — do not carry over items from any previous phase.
 
 1. Read project guidelines
-2. Analyze user description and context
-3. Extract actors, actions, and constraints
-4. Write EARS requirements
-5. Validate requirements
-6. Quality grade requirements
-7. Save requirements.md
+2. Retrieve contextual memory (business)
+3. Analyze user description and context
+4. Extract actors, actions, and constraints
+5. Write EARS requirements
+6. Validate requirements
+7. Quality grade requirements
+8. Save requirements.md
 
 ### Progress Rules
 
@@ -269,6 +271,18 @@ Before returning the requirements, verify:
 If enough information is available, produce the full `requirements.md` content directly.
 
 If material ambiguity blocks a good requirements document, ask a short clarification first. Do not draft low-confidence requirements.
+
+## Contextual Stewardship Integration
+
+At the start of this phase, before analyzing requirements, invoke the `contextual-stewardship` skill to retrieve established business and domain rules:
+
+```text
+Invoke: contextual-stewardship skill
+Action: retrieve
+Query: business
+```
+
+This ensures the new requirements align with existing product rules, target audience constraints, and domain logic.
 
 ## Quality Grading Integration
 

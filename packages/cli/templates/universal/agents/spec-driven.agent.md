@@ -40,7 +40,7 @@ If you just completed a planning phase, end with a direct approval question such
 
 ## Workflow
 
-At the start of each planning phase, load `long-running-work-planning` when it is available before invoking the phase-specific skill. Use it to structure multi-step reasoning, emit progress, and keep planning work aligned with the phase artifact.
+At the start of each planning phase, load the `long-running-work-planning` skill when it is available before invoking the phase-specific skill. Use it to structure multi-step reasoning, emit progress, and keep planning work aligned with the phase artifact.
 
 **Critical: Skill Invocation Guard**
 When invoking any spec-driven skill, you MUST follow this exact sequence:
@@ -58,40 +58,43 @@ Invoke the `spec-driven-requirements-writer` skill.
 
 1. Propose a short, URL-friendly slug.
 2. Use the user request as input for `specs/changes/<slug>/requirements.md`.
-3. Load `long-running-work-planning` at the start of the phase when available.
+3. Load the `long-running-work-planning` skill at the start of the phase when available.
 4. Invoke the `spec-driven-requirements-writer` skill.
 5. Wait for the skill to produce requirements content.
 6. Validate with `mcp:verify_requirements_file`.
 7. Write `specs/changes/<slug>/requirements.md`.
-8. **STOP**. Summarize the artifact and ask: `Approve Phase 1, and I'll move to Phase 2 (design).`
-9. Do not begin design work until the user explicitly approves Phase 1.
+8. Invoke the `quality-grading` skill in `grade-and-fix` mode on `specs/changes/<slug>/requirements.md`. Apply any auto-fixes before proceeding.
+9. **STOP**. Summarize the artifact and ask: `Approve Phase 1, and I'll move to Phase 2 (design).`
+10. Do not begin design work until the user explicitly approves Phase 1.
 
 ### Phase 2: Design
 
 Invoke the `spec-driven-technical-designer` skill.
 
 1. Use approved `requirements.md` as the source of truth.
-2. Load `long-running-work-planning` at the start of the phase when available.
+2. Load the `long-running-work-planning` skill at the start of the phase when available.
 3. Invoke the `spec-driven-technical-designer` skill.
 4. Wait for the skill to produce design content.
 5. Validate with `mcp:verify_design_file` using requirements content.
 6. Write `specs/changes/<slug>/design.md`.
-7. **STOP**. Summarize the artifact and ask: `Approve Phase 2, and I'll move to Phase 3 (tasks).`
-8. Do not begin task decomposition until the user explicitly approves Phase 2.
+7. Invoke the `quality-grading` skill in `grade-and-fix` mode on `specs/changes/<slug>/design.md`. Apply any auto-fixes before proceeding.
+8. **STOP**. Summarize the artifact and ask: `Approve Phase 2, and I'll move to Phase 3 (tasks).`
+9. Do not begin task decomposition until the user explicitly approves Phase 2.
 
 ### Phase 3: Tasks
 
 Invoke the `spec-driven-task-decomposer` skill.
 
 1. Use approved `requirements.md` and `design.md`.
-2. Load `long-running-work-planning` at the start of the phase when available.
+2. Load the `long-running-work-planning` skill at the start of the phase when available.
 3. Invoke the `spec-driven-task-decomposer` skill.
 4. Wait for the skill to produce tasks content.
 5. Validate with `mcp:verify_tasks_file` using design content.
 6. Validate the full spec with `mcp:verify_complete_spec` for `<slug>`.
 7. Write `specs/changes/<slug>/tasks.md`.
-8. **STOP**. Summarize the artifact and ask: `Approve Phase 3, and I'll move to Phase 4 (implementation).`
-9. Do not begin implementation until the user explicitly approves Phase 3 and Phase 4 entry.
+8. Invoke the `quality-grading` skill in `grade-and-fix` mode on `specs/changes/<slug>/tasks.md`. Apply any auto-fixes before proceeding.
+9. **STOP**. Summarize the artifact and ask: `Approve Phase 3, and I'll move to Phase 4 (implementation).`
+10. Do not begin implementation until the user explicitly approves Phase 3 and Phase 4 entry.
 
 ### Phase 4: Implementation
 

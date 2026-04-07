@@ -17,11 +17,13 @@
     ],
     "scripts": {
         "build": "tsc",
+        "clean": "rm -rf dist tsconfig.tsbuildinfo",
         "start": "node dist/cli/index.js",
         "dev": "tsc -w",
         "test": "tsc && vitest run",
         "test:ui": "tsc && vitest --ui",
         "test:coverage": "tsc && vitest --coverage",
+        "typecheck": "tsc --noEmit",
         "prepublishOnly": "pnpm build"
     },
     "dependencies": {

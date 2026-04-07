@@ -81,12 +81,4 @@ describe('MCP E2E: verify_complete_spec', () => {
         expect(result.traceabilityReport.circular).toHaveLength(0);
     });
 
-    it('uses default target directory when not specified', async () => {
-        const files = await getFixtureFiles(FIXTURES.VALID_COMPLETE_SPEC);
-        await mockFs.createTempSpec('rate-limiter', files, targetDir);
-
-        const result = await verifyCompleteSpec('rate-limiter');
-
-        expect(result).toBeDefined();
-    });
 });

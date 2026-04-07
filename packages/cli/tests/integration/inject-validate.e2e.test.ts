@@ -29,7 +29,8 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['github-vscode'] })
             .mockResolvedValueOnce({ scope: 'project' })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -43,7 +44,8 @@ describe('CLI E2E: inject command', () => {
     it('inject command with JetBrains platform creates .github directory structure and configures global MCP', async () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['github-jetbrains'] })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -76,17 +78,18 @@ describe('CLI E2E: inject command', () => {
         let globalVSCodeDir: string;
         if (process.platform === 'win32') {
             const appData = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-            globalVSCodeDir = path.join(appData, 'Code', 'User', 'globalStorage', 'github.copilot');
+            globalVSCodeDir = path.join(appData, 'Code', 'User');
         } else if (process.platform === 'darwin') {
-            globalVSCodeDir = path.join(os.homedir(), 'Library', 'Application Support', 'Code', 'User', 'globalStorage', 'github.copilot');
+            globalVSCodeDir = path.join(os.homedir(), 'Library', 'Application Support', 'Code', 'User');
         } else {
-            globalVSCodeDir = path.join(os.homedir(), '.config', 'Code', 'User', 'globalStorage', 'github.copilot');
+            globalVSCodeDir = path.join(os.homedir(), '.config', 'Code', 'User');
         }
 
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['github-vscode'] })
             .mockResolvedValueOnce({ scope: 'global' })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -98,12 +101,14 @@ describe('CLI E2E: inject command', () => {
         expect(config.servers).toBeDefined();
         expect(config.servers['spec-driven-steroids']).toBeDefined();
 
-        // Global agents should be created
-        expect(await fs.pathExists(path.join(globalVSCodeDir, 'agents'))).toBe(true);
-        expect(await fs.pathExists(path.join(globalVSCodeDir, 'agents', 'spec-driven.agent.md'))).toBe(true);
+        // Global agents (prompts) should be created
+        expect(await fs.pathExists(path.join(globalVSCodeDir, 'prompts'))).toBe(true);
 
-        // Global skills should be created
-        expect(await fs.pathExists(path.join(globalVSCodeDir, 'skills'))).toBe(true);
+        // Global skills should be created in the .copilot/skills directory
+        const copilotSkillsDir = process.platform === 'win32'
+            ? path.join(process.env.USERPROFILE || os.homedir(), '.copilot', 'skills')
+            : path.join(os.homedir(), '.copilot', 'skills');
+        expect(await fs.pathExists(copilotSkillsDir)).toBe(true);
 
         // Project-level files should NOT be created
         expect(await fs.pathExists(path.join(targetDir, '.github'))).toBe(false);
@@ -130,7 +135,8 @@ describe('CLI E2E: inject command', () => {
         // Only two prompts: platform selection and sequential-thinking (no scope prompt for JetBrains)
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['github-jetbrains'] })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -154,7 +160,8 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['antigravity'] })
             .mockResolvedValueOnce({ scope: 'project' })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -170,7 +177,8 @@ describe('CLI E2E: inject command', () => {
         // Only two prompts: platform selection and sequential-thinking (no scope prompt for Antigravity)
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['antigravity'] })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -193,26 +201,28 @@ describe('CLI E2E: inject command', () => {
     it('inject command skips scope prompt for Antigravity and proceeds directly to project-level injection', async () => {
         const promptSpy = vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['antigravity'] })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
-        // Verify only two prompts were made (platform selection and sequential-thinking, no scope prompt)
-        expect(promptSpy).toHaveBeenCalledTimes(2);
+        // Verify only three prompts were made (platform selection, sequential-thinking, and memory MCP, no scope prompt)
+        expect(promptSpy).toHaveBeenCalledTimes(3);
     });
 
     it('inject command displays single unified scope prompt for multiple global-capable platforms', async () => {
         const promptSpy = vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['opencode', 'antigravity'] })
             .mockResolvedValueOnce({ scope: 'global' })  // Unified scope for OpenCode (Antigravity skips scope prompt)
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
-        // Verify three prompts were made (platform, unified scope, sequential-thinking)
-        expect(promptSpy).toHaveBeenCalledTimes(3);
+        // Verify four prompts were made (platform, unified scope, sequential-thinking, memory MCP)
+        expect(promptSpy).toHaveBeenCalledTimes(4);
         
         const secondCallArgs = promptSpy.mock.calls[1][0];
         expect(secondCallArgs[0].name).toBe('scope');
@@ -226,7 +236,8 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['opencode'] })
             .mockResolvedValueOnce({ scope: 'project' })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -240,7 +251,8 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['opencode'] })
             .mockResolvedValueOnce({ scope: 'project' })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -264,7 +276,8 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['github-vscode', 'antigravity'] })
             .mockResolvedValueOnce({ scope: 'project' })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -288,7 +301,8 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['github-vscode', 'antigravity', 'opencode', 'codex'] })
             .mockResolvedValueOnce({ scope: 'project' })  // Unified scope for all global-capable platforms
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -344,7 +358,8 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['github-vscode'] })
             .mockResolvedValueOnce({ scope: 'project' })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -368,7 +383,8 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['github-vscode'] })
             .mockResolvedValueOnce({ scope: 'project' })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -381,7 +397,8 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['github-vscode', 'antigravity', 'opencode', 'codex'] })
             .mockResolvedValueOnce({ scope: 'project' })  // Unified scope for all global-capable platforms
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -404,7 +421,8 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['github-vscode', 'antigravity', 'opencode'] })
             .mockResolvedValueOnce({ scope: 'project' })  // Unified scope for all global-capable platforms
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -431,6 +449,9 @@ describe('CLI E2E: inject command', () => {
         expect(opencodeGuidelinesContent.includes('Do not treat missing guideline files as optional.')).toBe(true);
         expect(opencodeGuidelinesContent.includes('Testing Trophy')).toBe(true);
         expect(opencodeGuidelinesContent.includes('default generated `TESTING.md` to Testing Trophy guidance')).toBe(true);
+        
+        // Ensure no phantom commands leak
+        expect(await fs.pathExists(path.join(targetDir, '.opencode', 'commands', 'inject-guidelines.command.md'))).toBe(false);
     });
 
     it('inject command adds spec-driven-steroids MCP to OpenCode config (project scope)', async () => {
@@ -440,7 +461,8 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['opencode'] })
             .mockResolvedValueOnce({ scope: 'project' })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -461,7 +483,8 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['opencode'] })
             .mockResolvedValueOnce({ scope: 'global' })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -482,6 +505,9 @@ describe('CLI E2E: inject command', () => {
         expect(await fs.pathExists(path.join(globalOpencodeDir, 'commands'))).toBe(true);
         expect(await fs.pathExists(path.join(globalOpencodeDir, 'commands', 'spec-driven.md'))).toBe(true);
         expect(await fs.pathExists(path.join(globalOpencodeDir, 'commands', 'inject-guidelines.md'))).toBe(true);
+        
+        // No phantom command artifacts
+        expect(await fs.pathExists(path.join(globalOpencodeDir, 'commands', 'inject-guidelines.command.md'))).toBe(false);
 
         // Global skills should be created
         expect(await fs.pathExists(path.join(globalOpencodeDir, 'skills'))).toBe(true);
@@ -495,7 +521,8 @@ describe('CLI E2E: inject command', () => {
     it('inject command with Codex platform creates .codex directory structure', async () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['codex'] })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -518,7 +545,8 @@ describe('CLI E2E: inject command', () => {
     it('inject command creates spec-driven agent and commands for Codex', async () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['codex'] })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -554,7 +582,8 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['github-vscode'] })
             .mockResolvedValueOnce({ scope: 'project' })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -581,7 +610,8 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['github-vscode'] })
             .mockResolvedValueOnce({ scope: 'project' })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -599,7 +629,8 @@ describe('CLI E2E: inject command', () => {
         // Only two prompts: platform selection and sequential-thinking (no scope prompt for Antigravity)
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['antigravity'] })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -623,7 +654,8 @@ describe('CLI E2E: inject command', () => {
         // Only two prompts: platform selection and sequential-thinking (no scope prompt for Antigravity)
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['antigravity'] })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -640,7 +672,8 @@ describe('CLI E2E: inject command', () => {
 
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['claudecode'] })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -657,7 +690,8 @@ describe('CLI E2E: inject command', () => {
 
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['claudecode'] })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         await fs.writeJson(mcpConfigPath, {
             mcpServers: {
@@ -682,7 +716,8 @@ describe('CLI E2E: inject command', () => {
 
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['claudecode'] })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: true });
+            .mockResolvedValueOnce({ addSequentialThinkingMcp: true })
+            .mockResolvedValueOnce({ addMemoryMcp: false });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);

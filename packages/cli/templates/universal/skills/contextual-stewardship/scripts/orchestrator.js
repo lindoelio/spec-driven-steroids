@@ -50,7 +50,7 @@ function retrieveContext(query) {
 
     // Filter entries matching query
     const matched = entries.filter(entry => {
-      if (['arquitetura', 'negocio', 'fluxo_trabalho'].includes(query.toLowerCase())) {
+      if (['architecture', 'business', 'workflow'].includes(query.toLowerCase())) {
         return entry.domain.toLowerCase() === query.toLowerCase();
       }
       const searchLower = query.toLowerCase();
@@ -83,7 +83,7 @@ function retrieveContext(query) {
 
     process.exit(0);
   } catch (e) {
-    console.error("ERROR: Falha ao recuperar contexto.");
+    console.error("ERROR: Failed to retrieve context.");
     console.error(e.message);
     process.exit(1);
   }
@@ -101,10 +101,10 @@ function saveContext(content) {
 
     fs.appendFileSync(toonPath, `\n${content}\n`);
 
-    console.log(`SUCCESS: Contexto salvo em: ${toonPath}`);
+    console.log(`SUCCESS: Context saved to: ${toonPath}`);
     process.exit(0);
   } catch (e) {
-    console.error("ERROR: Falha de I/O. Não foi possível salvar o contexto.");
+    console.error("ERROR: I/O failure. Could not save context.");
     console.error(e.message);
     process.exit(1);
   }
@@ -121,7 +121,7 @@ function parseTOON(content) {
     if (!trimmed) continue;
 
     // Check for domain header
-    const domainMatch = trimmed.match(/^(arquitetura|negocio|fluxo_trabalho):\s*$/i);
+    const domainMatch = trimmed.match(/^(architecture|business|workflow):\s*$/i);
     if (domainMatch) {
       currentDomain = domainMatch[1].toLowerCase();
       continue;

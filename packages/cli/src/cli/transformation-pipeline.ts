@@ -125,10 +125,10 @@ async function transformSource(
     }
     
     const rawContent = await fs.readFile(sourcePath, 'utf-8');
-    const body = extractBody(rawContent);
+    const { body, frontmatter } = extractContent(rawContent);
     
     // Transform
-    const transformResult = transform(body, config);
+    const transformResult = transform(body, config, frontmatter, source.outputType);
     
     // Determine output path based on output type
     let outputDir: string;
@@ -170,18 +170,31 @@ async function transformSource(
 }
 
 /**
- * Extract body content from a universal prompt file.
- * Strips YAML frontmatter if present.
+ * Extract body content and YAML frontmatter from a universal prompt file.
  */
-function extractBody(content: string): string {
-  // Check for YAML frontmatter
+function extractContent(content: string): { body: string; frontmatter: Record<string, string> } {
+  let body = content;
+  const frontmatter: Record<string, string> = {};
+  
   if (content.startsWith('---')) {
     const endFrontmatter = content.indexOf('---', 3);
     if (endFrontmatter !== -1) {
-      return content.slice(endFrontmatter + 3).trim();
+      body = content.slice(endFrontmatter + 3).trim();
+      const fmStr = content.slice(3, endFrontmatter).trim();
+      for (const line of fmStr.split('\n')) {
+        const colonIdx = line.indexOf(':');
+        if (colonIdx !== -1) {
+          const key = line.slice(0, colonIdx).trim();
+          let value = line.slice(colonIdx + 1).trim();
+          if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+            value = value.slice(1, -1);
+          }
+          frontmatter[key] = value;
+        }
+      }
     }
   }
-  return content.trim();
+  return { body, frontmatter };
 }
 
 /**

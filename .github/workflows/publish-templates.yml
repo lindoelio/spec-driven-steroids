@@ -73,7 +73,7 @@ jobs:
           const bundleFileName = 'templates-bundle.json';
           const manifest = {
             version,
-            bundleUrl: `https://github.com/${process.env.GITHUB_REPOSITORY}/releases/latest/download/${bundleFileName}`,
+            bundleUrl: `https://github.com/${process.env.GITHUB_REPOSITORY}/releases/download/templates-latest/${bundleFileName}`,
             publishedAt: new Date().toISOString()
           };
           const bundle = {

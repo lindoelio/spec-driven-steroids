@@ -132,17 +132,6 @@ describe('MCP Unit: verifySpecStructure', () => {
             expect(result.valid).toBe(true);
         });
 
-        it('handles default target directory (current working directory)', async () => {
-            const specDir = `${targetDir}/specs/changes/test-spec`;
-            await mockFs.writeFile(`${specDir}/requirements.md`, '# Requirements\n');
-            await mockFs.writeFile(`${specDir}/design.md`, '# Design\n');
-            await mockFs.writeFile(`${specDir}/tasks.md`, '# Tasks\n');
-
-            process.chdir(targetDir);
-            const result = await verifySpecStructure('test-spec');
-            expect(result.valid).toBe(true);
-        });
-
         it('handles files with content', async () => {
             const specDir = `${targetDir}/specs/changes/test-spec`;
             await mockFs.writeFile(`${specDir}/requirements.md`, '# Requirements\n\nThis is content.');

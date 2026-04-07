@@ -7,12 +7,27 @@ import type { PlatformConfig } from './platform-config.js';
  * @param config - Platform configuration
  * @returns Transformed content with YAML frontmatter
  */
-export function transformToMarkdown(body: string, config: PlatformConfig): string {
+export function transformToMarkdown(body: string, config: PlatformConfig, sourceFrontmatter: Record<string, string> = {}, outputType?: string): string {
   const frontmatterLines: string[] = ['---'];
   
-  // Add standard fields
-  for (const [key, value] of Object.entries(config.frontmatter.fields)) {
-    frontmatterLines.push(`${key}: ${escapeYamlString(value)}`);
+  let name = config.frontmatter.fields.name;
+  let description = config.frontmatter.fields.description;
+
+  if (outputType === 'inject-guidelines-command') {
+    name = 'inject-guidelines';
+    description = sourceFrontmatter.description || description;
+  } else if (outputType === 'spec-driven-command' || outputType === 'agent') {
+    description = sourceFrontmatter.description || description;
+  }
+
+  if (name) frontmatterLines.push(`name: ${escapeYamlString(name)}`);
+  if (description) frontmatterLines.push(`description: ${escapeYamlString(description)}`);
+
+  // Add standard fields not already added
+  for (const [key, value] of Object.entries(sourceFrontmatter)) {
+    if (key !== 'name' && key !== 'description' && !config.frontmatter.additionalFields?.[key]) {
+      frontmatterLines.push(`${key}: ${escapeYamlString(value)}`);
+    }
   }
   
   // Add additional fields if present
@@ -73,15 +88,24 @@ export function verifyBodyPreserved(originalBody: string, transformedContent: st
  * @param config - Platform configuration
  * @returns Transformed content in TOML format
  */
-export function transformToToml(body: string, config: PlatformConfig): string {
+export function transformToToml(body: string, config: PlatformConfig, sourceFrontmatter: Record<string, string> = {}, outputType?: string): string {
   const lines: string[] = [];
   
+  // Base fields
+  let name = config.frontmatter.fields.name || 'spec-driven';
+  let description = config.frontmatter.fields.description || '';
+
+  if (outputType === 'inject-guidelines-command') {
+    name = 'inject-guidelines';
+    description = sourceFrontmatter.description || description;
+  } else if (outputType === 'spec-driven-command' || outputType === 'agent') {
+    description = sourceFrontmatter.description || description;
+  }
+
   // Add name field
-  const name = config.frontmatter.fields.name || 'spec-driven';
   lines.push(`name = "${escapeTomlString(name)}"`);
   
   // Add description field
-  const description = config.frontmatter.fields.description || '';
   lines.push(`description = "${escapeTomlString(description)}"`);
   
   // Add developer_instructions as multi-line string
@@ -124,15 +148,15 @@ export interface TransformResult {
  * @param config - Platform configuration
  * @returns Transform result with content and verification status
  */
-export function transform(body: string, config: PlatformConfig): TransformResult {
+export function transform(body: string, config: PlatformConfig, sourceFrontmatter: Record<string, string> = {}, outputType?: string): TransformResult {
   let content: string;
   let format: 'markdown' | 'toml';
   
   if (config.format === 'toml') {
-    content = transformToToml(body, config);
+    content = transformToToml(body, config, sourceFrontmatter, outputType);
     format = 'toml';
   } else {
-    content = transformToMarkdown(body, config);
+    content = transformToMarkdown(body, config, sourceFrontmatter, outputType);
     format = 'markdown';
   }
   

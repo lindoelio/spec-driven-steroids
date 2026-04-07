@@ -10,34 +10,34 @@ When generating fallback memory payloads, use the TOON (Token-Oriented Object No
 
 ## Domain Structure
 
-### arquitetura
+### architecture
 
 Stores tech stack choices, design patterns, and tooling decisions.
 
 ```
-arquitetura:
-  padroes[1]{stack,regra}:
-    backend,Priorizar Node.js com Drizzle ORM para acesso a dados
+architecture:
+  patterns[1]{stack,rule}:
+    backend,Prioritize Node.js with Drizzle ORM for data access
 ```
 
-### negocio
+### business
 
 Stores product rules, target audience, and domain logic.
 
 ```
-negocio:
-  produtos[1]{nome,diretriz}:
-    ZapDeal AI,Foco inicial em agentes de vendas para food service
+business:
+  products[1]{name,guideline}:
+    Example App,Initial focus on sales agents for food service
 ```
 
-### fluxo_trabalho
+### workflow
 
 Stores Git patterns, testing conventions, and naming standards.
 
 ```
-fluxo_trabalho:
-  convencoes[1]{tipo,regra}:
-    git,Utilizar conventional commits para mensagens de commit
+workflow:
+  conventions[1]{type,rule}:
+    git,Use conventional commits for commit messages
 ```
 
 ## Example Output
@@ -45,27 +45,27 @@ fluxo_trabalho:
 When adding multiple decisions across domains:
 
 ```text
-arquitetura:
-  padroes[1]{stack,regra}:
-    backend,Priorizar Node.js com Drizzle ORM para acesso a dados
+architecture:
+  patterns[1]{stack,rule}:
+    backend,Prioritize Node.js with Drizzle ORM for data access
 
-negocio:
-  produtos[1]{nome,diretriz}:
-    ZapDeal AI,Foco inicial em agentes de vendas para food service
+business:
+  products[1]{name,guideline}:
+    Example App,Initial focus on sales agents for food service
 
-fluxo_trabalho:
-  convencoes[1]{tipo,regra}:
-    git,Utilizar conventional commits para mensagens de commit
+workflow:
+  conventions[1]{type,rule}:
+    git,Use conventional commits for commit messages
 ```
 
 ## Partial Block Output
 
 If you are only adding one new rule, you do not need to rewrite the whole file. Output only the specific block that applies to the new rule so the orchestrator can append it.
 
-Example for a single arquitetura decision:
+Example for a single architecture decision:
 
 ```text
-arquitetura:
-  padroes[1]{stack,regra}:
-    backend,Utilizar Svelte para frontend reativo
+architecture:
+  patterns[1]{stack,rule}:
+    frontend,Use Svelte for reactive frontend
 ```

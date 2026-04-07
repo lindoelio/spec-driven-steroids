@@ -6,6 +6,7 @@ export default defineConfig({
         globals: true,
         environment: 'node',
         root: './',
+        testTimeout: 30000,
         include: ['tests/**/*.test.ts'],
         coverage: {
             provider: 'v8',

@@ -11,7 +11,9 @@
     },
     "scripts": {
         "build": "tsc",
-        "dev": "tsc -w"
+        "clean": "rm -rf dist tsconfig.tsbuildinfo",
+        "dev": "tsc -w",
+        "typecheck": "tsc --noEmit"
     },
     "devDependencies": {
         "@types/node": "^25.2.1",

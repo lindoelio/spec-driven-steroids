@@ -11,9 +11,9 @@ You are acting as a Staff Engineer responsible for Contextual Stewardship. Your 
 
 Ignore casual conversation or temporary debugging steps. Focus ONLY on:
 
-1. **arquitetura**: Tech stack choices, design patterns, ORM preferences, library decisions.
-2. **negocio**: Product rules, target audience, domain logic, business constraints.
-3. **fluxo_trabalho**: Git patterns, testing rules, naming conventions, team processes.
+1. **architecture**: Tech stack choices, design patterns, ORM preferences, library decisions.
+2. **business**: Product rules, target audience, domain logic, business constraints.
+3. **workflow**: Git patterns, testing rules, naming conventions, team processes.
 
 ## Retrieval Strategy (Pre-flight Check)
 
@@ -31,7 +31,7 @@ Execute this command exactly:
 node contextual-stewardship/scripts/orchestrator.js retrieve <query>
 ```
 
-Where `<query>` is a domain name (`arquitetura`, `negocio`, or `fluxo_trabalho`) or keywords to search for.
+Where `<query>` is a domain name (`architecture`, `business`, or `workflow`) or keywords to search for.
 
 ## Persistence Strategy (Graceful Degradation)
 
@@ -50,7 +50,7 @@ When you identify a new rule that must be saved, you MUST follow this execution 
 ## Workflow
 
 1. Analyze the user's input.
-2. If a decision is made, categorize it into `arquitetura`, `negocio`, or `fluxo_trabalho`.
+2. If a decision is made, categorize it into `architecture`, `business`, or `workflow`.
 3. Attempt Tier 1 (MCP) first.
 4. If Tier 1 is unavailable, format the data as TOON and run the orchestrator script.
 5. Confirm to the user that the rule was added to the company lore.
@@ -62,16 +62,16 @@ When you retrieve contextual memory, display a summary to the user showing the m
 
 Example confirmations:
 
-- "Retrieved 2 rules from `arquitetura` domain via MCP Context."
-- "Retrieved context from `stewardship.toon` - Found 3 rules in `fluxo_trabalho`."
+- "Retrieved 2 rules from `architecture` domain via MCP Context."
+- "Retrieved context from `stewardship.toon` - Found 3 rules in `workflow`."
 
 ### For Persistence Operations
 When a decision is successfully persisted, display a confirmation message to the user:
 
-- Include the domain where the rule was stored (arquitetura, negocio, or fluxo_trabalho)
+- Include the domain where the rule was stored (architecture, business, or workflow)
 - Include the persistence mechanism used (MCP Context or local file path)
 
 Example confirmations:
 
-- "Rule saved to `arquitetura` domain via MCP Context."
-- "Rule saved to `negocio` domain in `~/.agents/stewardship.toon`."
+- "Rule saved to `architecture` domain via MCP Context."
+- "Rule saved to `business` domain in `~/.agents/stewardship.toon`."
