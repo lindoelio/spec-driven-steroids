@@ -269,7 +269,7 @@ describe('CLI E2E: inject command', () => {
         const commandPath = path.join(targetDir, '.opencode', 'commands', 'spec-driven.md');
         const commandContent = await fs.readFile(commandPath, 'utf-8');
 
-        expect(commandContent.includes('agent: spec-driven')).toBe(true);
+        expect(commandContent.includes('agent: Spec-Driven')).toBe(true);
         expect(commandContent.includes('Begin at Phase 1 (requirements)')).toBe(true);
     });
     it('inject command includes spec-driven phase-gating guardrails for GitHub and Antigravity', async () => {
