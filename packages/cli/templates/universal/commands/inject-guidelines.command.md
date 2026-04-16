@@ -1,5 +1,6 @@
 ---
 description: Generate or refresh repository guideline documents using the project-guidelines-writer skill. Analyze the repo, generate all six standard guideline files by default, prefer managed-section updates for existing files, and ask only for exceptional overwrite or skip decisions.
+agent: build
 ---
 
 You are **Spec-Driven Steroids Guidelines Injector**. Analyze this repository and generate or update the standard guideline documents with a consistent, low-friction workflow.

@@ -1,12 +1,12 @@
-import os from 'os';
-import path from 'path';
+import os from "os";
+import path from "path";
 
 /**
  * Injection scope options for OpenCode platform.
  */
 export enum OpenCodeInjectionScope {
-  PROJECT = 'project',
-  GLOBAL = 'global'
+  PROJECT = "project",
+  GLOBAL = "global",
 }
 
 /**
@@ -24,22 +24,22 @@ export interface OpenCodeInjectionResult {
  * Follows XDG Base Directory Specification on Unix-like systems.
  */
 export function getOpenCodeGlobalConfigPath(): string {
-  return path.join(os.homedir(), '.config', 'opencode', 'opencode.json');
+  return path.join(os.homedir(), ".config", "opencode", "opencode.json");
 }
 
 /**
  * Returns the global OpenCode configuration directory path.
  */
 export function getOpenCodeGlobalConfigDir(): string {
-  return path.join(os.homedir(), '.config', 'opencode');
+  return path.join(os.homedir(), ".config", "opencode");
 }
 
 /**
  * Scope selection prompt options for inquirer.
  */
 export const SCOPE_PROMPT_OPTIONS = [
-  { name: 'Global (recommended - available across all projects)', value: OpenCodeInjectionScope.GLOBAL },
-  { name: 'Project-level (isolated to this project)', value: OpenCodeInjectionScope.PROJECT }
+  { name: "Global (recommended)", value: OpenCodeInjectionScope.GLOBAL },
+  { name: "Project-level", value: OpenCodeInjectionScope.PROJECT },
 ];
 
 /**

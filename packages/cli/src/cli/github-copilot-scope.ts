@@ -1,12 +1,12 @@
-import os from 'os';
-import path from 'path';
+import os from "os";
+import path from "path";
 
 /**
  * Injection scope options for GitHub Copilot platforms.
  */
 export enum GitHubCopilotInjectionScope {
-  PROJECT = 'project',
-  GLOBAL = 'global'
+  PROJECT = "project",
+  GLOBAL = "global",
 }
 
 /**
@@ -24,28 +24,43 @@ export interface GitHubCopilotInjectionResult {
  * On VS Code, global MCP servers are defined in User/mcp.json.
  */
 export function getVSCodeUserProfileMcpPath(): string {
-  if (process.platform === 'win32') {
-    const appData = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-    return path.join(appData, 'Code', 'User', 'mcp.json');
+  if (process.platform === "win32") {
+    const appData =
+      process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming");
+    return path.join(appData, "Code", "User", "mcp.json");
   }
-  if (process.platform === 'darwin') {
-    return path.join(os.homedir(), 'Library', 'Application Support', 'Code', 'User', 'mcp.json');
+  if (process.platform === "darwin") {
+    return path.join(
+      os.homedir(),
+      "Library",
+      "Application Support",
+      "Code",
+      "User",
+      "mcp.json",
+    );
   }
-  return path.join(os.homedir(), '.config', 'Code', 'User', 'mcp.json');
+  return path.join(os.homedir(), ".config", "Code", "User", "mcp.json");
 }
 
 /**
  * Returns the VS Code user profile directory.
  */
 export function getVSCodeUserProfileDir(): string {
-  if (process.platform === 'win32') {
-    const appData = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
-    return path.join(appData, 'Code', 'User');
+  if (process.platform === "win32") {
+    const appData =
+      process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming");
+    return path.join(appData, "Code", "User");
   }
-  if (process.platform === 'darwin') {
-    return path.join(os.homedir(), 'Library', 'Application Support', 'Code', 'User');
+  if (process.platform === "darwin") {
+    return path.join(
+      os.homedir(),
+      "Library",
+      "Application Support",
+      "Code",
+      "User",
+    );
   }
-  return path.join(os.homedir(), '.config', 'Code', 'User');
+  return path.join(os.homedir(), ".config", "Code", "User");
 }
 
 /**
@@ -53,7 +68,7 @@ export function getVSCodeUserProfileDir(): string {
  * Custom prompts for Chat UI are stored in User/prompts/.
  */
 export function getVSCodeGlobalPromptsDir(): string {
-  return path.join(getVSCodeUserProfileDir(), 'prompts');
+  return path.join(getVSCodeUserProfileDir(), "prompts");
 }
 
 /**
@@ -61,11 +76,11 @@ export function getVSCodeGlobalPromptsDir(): string {
  * Skills are stored in ~/.copilot/skills/ regardless of VS Code platform.
  */
 export function getCopilotGlobalSkillsDir(): string {
-  if (process.platform === 'win32') {
+  if (process.platform === "win32") {
     const userProfile = process.env.USERPROFILE || os.homedir();
-    return path.join(userProfile, '.copilot', 'skills');
+    return path.join(userProfile, ".copilot", "skills");
   }
-  return path.join(os.homedir(), '.copilot', 'skills');
+  return path.join(os.homedir(), ".copilot", "skills");
 }
 
 /**
@@ -74,7 +89,11 @@ export function getCopilotGlobalSkillsDir(): string {
  * Use getVSCodeGlobalPromptsDir() for prompts and getCopilotGlobalSkillsDir() for skills.
  */
 export function getVSCodeGlobalArtifactsDir(): string {
-  return path.join(getVSCodeUserProfileDir(), 'globalStorage', 'github.copilot');
+  return path.join(
+    getVSCodeUserProfileDir(),
+    "globalStorage",
+    "github.copilot",
+  );
 }
 
 /**
@@ -82,19 +101,26 @@ export function getVSCodeGlobalArtifactsDir(): string {
  * Uses the same path as the existing JetBrains MCP configuration.
  */
 export function getJetBrainsGlobalMcpPath(): string {
-  if (process.platform === 'win32') {
-    const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
-    return path.join(localAppData, 'github-copilot', 'intellij', 'mcp.json');
+  if (process.platform === "win32") {
+    const localAppData =
+      process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local");
+    return path.join(localAppData, "github-copilot", "intellij", "mcp.json");
   }
-  return path.join(os.homedir(), '.config', 'github-copilot', 'intellij', 'mcp.json');
+  return path.join(
+    os.homedir(),
+    ".config",
+    "github-copilot",
+    "intellij",
+    "mcp.json",
+  );
 }
 
 /**
  * Scope selection prompt options for inquirer.
  */
 export const GITHUB_SCOPE_PROMPT_OPTIONS = [
-  { name: 'Global (recommended - available across all projects)', value: GitHubCopilotInjectionScope.GLOBAL },
-  { name: 'Project-level (isolated to this project)', value: GitHubCopilotInjectionScope.PROJECT }
+  { name: "Global (recommended)", value: GitHubCopilotInjectionScope.GLOBAL },
+  { name: "Project-level", value: GitHubCopilotInjectionScope.PROJECT },
 ];
 
 /**
