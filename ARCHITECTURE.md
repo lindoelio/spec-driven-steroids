@@ -49,7 +49,8 @@ Universal Markdown-based Skills and Agent Profiles that define specialized roles
 | `spec-driven-requirements-writer` | EARS-format requirements documents |
 | `spec-driven-technical-designer` | Technical design with Mermaid diagrams |
 | `spec-driven-task-decomposer` | Atomic implementation task breakdown |
-| `spec-driven-task-implementer` | Feature implementation workflow |
+| `spec-driven-task-implementer` | Feature implementation workflow (includes Phase 5 code review) |
+| `code-review-hardening` | Rigorous, type-aware code review with self-repair loop |
 | `project-guidelines-writer` | Project guideline generation |
 
 ### 2. The Enforcer (MCP)
@@ -246,6 +247,39 @@ flowchart LR
 | `vitest.config.ts` | Test configuration |
 | `opencode.json` | OpenCode MCP configuration |
 | `.changeset/config.json` | Changeset configuration |
+
+---
+
+## Phase 5: Code Review Flow
+
+After all Phase 4 implementation tasks complete, the spec-driven-task-implementer automatically triggers code review:
+
+```mermaid
+flowchart TD
+    A[Phase 4 Complete] --> B{Detect Change Type}
+    B --> C[Invoke code-review-hardening]
+    C --> D[Apply Type Strategy]
+    D --> E[Self-Repair Loop<br/>Max 1 Pass]
+    E --> F{Verdict}
+    F --> G[Approve]
+    F --> H[Request Changes]
+    F --> I[Approval with Notes]
+    G --> J[Quality Grading]
+    H --> J
+    I --> J
+```
+
+**Change Type Detection (in priority order):**
+1. Explicit tag from task context
+2. Branch name scan (feat/, fix/, hotfix/, refactor/, chore/, docs/)
+3. Commit message scan
+4. Heuristic guess
+5. Fallback: General review
+
+**Review Outcomes:**
+- `Approve` — All blocking findings resolved, proceed to quality grading
+- `Request Changes` — Author-required blocking findings, note and proceed to quality grading
+- `Approval with Notes` — Scoped review complete, other areas need other reviewers
 
 ---
 

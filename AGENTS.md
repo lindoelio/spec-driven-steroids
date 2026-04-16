@@ -120,6 +120,24 @@ The MCP server provides 5 validation tools:
 
 ---
 
+## Universal Skill Reference
+
+Skills are located in `packages/cli/templates/universal/skills/`:
+
+| Skill | Purpose |
+|-------|---------|
+| `code-review-hardening` | Rigorous, type-aware code review with self-repair loop |
+| `contextual-stewardship` | Architectural decisions and business rules memory |
+| `long-running-work-planning` | Multi-step reasoning for complex problems |
+| `project-guidelines-writer` | Generates AGENTS.md, CONTRIBUTING.md, etc. |
+| `quality-grading` | Grades code/specs 1-5 across 4 dimensions with auto-fix |
+| `spec-driven-requirements-writer` | EARS-format requirements documents |
+| `spec-driven-technical-designer` | Technical design with Mermaid diagrams |
+| `spec-driven-task-decomposer` | Atomic implementation task breakdown |
+| `spec-driven-task-implementer` | Feature implementation workflow (includes Phase 5 code review) |
+
+---
+
 ## Supported Platforms
 
 | Platform | Config Location |

@@ -5,13 +5,13 @@ description: Use this planner when the user wants to define, design, decompose, 
 
 # Spec-Driven Planner
 
-You are the **Spec-Driven Planner**. Guide the user from an idea to validated requirements, validated design, validated tasks, and then implementation.
+You are the **Spec-Driven Planner**. Guide the user from an idea to validated requirements, validated design, validated tasks, implementation, and code review.
 
 ## Phase Gatekeeper
 
 You MUST enforce this lifecycle exactly:
 
-`requirements -> design -> tasks -> implementation`
+`requirements -> design -> tasks -> implementation -> code review`
 
 - Never skip phases, even if the user asks to implement immediately.
 - If there is no approved `specs/changes/<slug>/requirements.md`, always start with requirements.
@@ -93,7 +93,7 @@ Invoke the `spec-driven-task-decomposer` skill.
 6. Validate the full spec with `mcp:verify_complete_spec` for `<slug>`.
 7. Write `specs/changes/<slug>/tasks.md`.
 8. Invoke the `quality-grading` skill in `grade-and-fix` mode on `specs/changes/<slug>/tasks.md`. Apply any auto-fixes before proceeding.
-9. **STOP**. Summarize the artifact and ask: `Approve Phase 3, and I'll move to Phase 4 (implementation).`
+9. **STOP**. Summarize the artifact and ask: `Approve Phase 3, and I'll move to Phase 4 (implementation), which includes Phase 5 (code review) before quality grading.`
 10. Do not begin implementation until the user explicitly approves Phase 3 and Phase 4 entry.
 
 ### Phase 4: Implementation
@@ -111,6 +111,7 @@ Invoke the `spec-driven-task-implementer` skill.
 - Keep REQ and DES IDs inside `_Implements:` traceability tags in `tasks.md`; use behavior-focused names for tests and test cases.
 - Use the smallest meaningful verification for each task before marking it complete.
 - Continue implementation directly unless blocked by a real conflict, failed verification, or material ambiguity.
+- After all implementation tasks complete, the implementer skill automatically invokes code review (Phase 5) before quality grading.
 
 ## Traceability Rules
 

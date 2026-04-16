@@ -253,9 +253,36 @@ If the requested task or phase is implementable, execute it directly.
 
 If material ambiguity or a blocking spec conflict prevents safe implementation, ask a short clarification instead of making a low-confidence change.
 
+## Phase 5: Code Review (Pre-Quality-Grading)
+
+After all Phase 4 implementation tasks are complete and before invoking quality grading:
+
+1. **Detect Change Type**: Infer from branch name, commit messages, or task context. If unclear, fall back to `General` review.
+2. **Invoke code-review-hardening**: Load the `code-review-hardening` skill and run it on the files changed in Phase 4.
+3. **Pass inputs**: Files/directories modified, detected change type.
+4. **Record verdict**: If verdict is `Approve` or `Approval with Notes`, proceed to quality grading. If `Request Changes`, flag findings and note them, but still proceed to quality grading.
+5. **Report findings**: Summarize blocking findings (author-required items) and verdict in the response. Do not create new tasks for these findings.
+
+**Code Review Integration:**
+
+```
+Invoke: code-review-hardening skill
+Input:  Files/directories changed in Phase 4, change type
+Output: Structured markdown review report with verdict
+```
+
+The code-review-hardening skill will:
+- Detect change type (feat/fix/hotfix/refactor/migrate/docs/General)
+- Apply type-appropriate review strategy
+- Perform self-repair loop (1 pass for direct-fix items)
+- Classify findings by severity (Blocking/Nit/Mentoring) and fixability (direct-fix/author-required/informational)
+- Produce a structured verdict: Approve, Request Changes, or Approval with Notes
+
+**Do not block on author-required findings.** Code review findings are author-resolution items. The spec-driven workflow continues to quality grading regardless of review verdict.
+
 ## Quality Grading Integration
 
-After completing implementation phases, invoke the `quality-grading` skill to assess and improve code quality:
+After completing Phase 5 (Code Review), invoke the `quality-grading` skill to assess and improve code quality:
 
 ```
 Invoke: quality-grading skill
