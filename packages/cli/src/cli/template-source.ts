@@ -86,6 +86,15 @@ export async function resolveTemplateSource(options: ResolveTemplateSourceOption
     fetchImpl = fetch
   } = options;
 
+  if (process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES === 'true') {
+    return {
+      source: 'bundled',
+      rootDir: bundledTemplatesDir,
+      version: 'bundled',
+      fallbackReason: 'SPEC_DRIVEN_USE_BUNDLED_TEMPLATES is set'
+    };
+  }
+
   try {
     const manifest = await readRemoteJson<RemoteTemplateManifest>(manifestUrl, fetchImpl);
 

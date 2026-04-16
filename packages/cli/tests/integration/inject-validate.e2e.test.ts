@@ -248,6 +248,7 @@ describe('CLI E2E: inject command', () => {
     });
 
     it('inject command includes spec-driven phase-gating guardrails and command shortcut', async () => {
+        process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES = 'true';
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['opencode'] })
             .mockResolvedValueOnce({ scope: 'project' })
@@ -271,6 +272,7 @@ describe('CLI E2E: inject command', () => {
 
         expect(commandContent.includes('agent: Spec-Driven')).toBe(true);
         expect(commandContent.includes('Begin at Phase 1 (requirements)')).toBe(true);
+        delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
     });
     it('inject command includes spec-driven phase-gating guardrails for GitHub and Antigravity', async () => {
         vi.spyOn(inquirer, 'prompt')
