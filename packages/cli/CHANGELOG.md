@@ -1,5 +1,11 @@
 # spec-driven-steroids
 
+## 0.8.0
+
+### Minor Changes
+
+- Multiple enhancements and fixes since 0.7.1 release
+
 ## 0.7.1
 
 ### Patch Changes

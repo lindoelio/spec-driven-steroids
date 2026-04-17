@@ -23,6 +23,7 @@ It supports a strict workflow:
 - OpenCode
 - Google Antigravity
 - OpenAI Codex
+- Claude Code
 
 ## Installation
 
