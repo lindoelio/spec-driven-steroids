@@ -10,7 +10,7 @@ Inject Spec-Driven Development into AI coding tools without building a new UI.
 `spec-driven-steroids` is the published CLI package for:
 - injecting platform-specific agents, commands, and workflows
 - installing universal Spec-Driven skills
-- exposing an MCP server for spec validation
+- providing CLI commands for spec validation
 
 It supports a strict workflow:
 
@@ -55,22 +55,22 @@ spec-driven-steroids inject
 
 4. Approve each planning phase as it completes, then move to implementation.
 
-## Validation tools
+## Validation commands
 
-The bundled MCP server provides 5 tools:
+The CLI provides 5 validation commands:
 
-| Tool | Purpose |
+| Command | Purpose |
 | --- | --- |
-| `verify_spec_structure` | Validate spec folder structure |
-| `verify_requirements_file` | Validate EARS requirements |
-| `verify_design_file` | Validate design structure and Mermaid usage |
-| `verify_tasks_file` | Validate task structure and traceability |
-| `verify_complete_spec` | Validate the full spec end to end |
+| `spec-driven validate structure` | Validate spec folder structure |
+| `spec-driven validate requirements` | Validate EARS requirements |
+| `spec-driven validate design` | Validate design structure and Mermaid usage |
+| `spec-driven validate tasks` | Validate task structure and traceability |
+| `spec-driven validate spec` | Validate the full spec end to end |
 
 ## Package contents
 
 ```text
-dist/          Built CLI and MCP server
+dist/          Built CLI and validation modules
 templates/     Platform wrappers and universal skills
 README.md
 LICENSE

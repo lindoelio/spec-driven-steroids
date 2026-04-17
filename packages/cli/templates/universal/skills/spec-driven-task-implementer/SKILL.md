@@ -1,6 +1,6 @@
 ---
 name: spec-driven-task-implementer
-description: Use this skill when an approved Spec-Driven change has reached Phase 4 and the user wants a task, phase, or full feature implemented from specs/changes/<slug>. It executes tasks in order, updates task status immediately, verifies each task before completion, and should not be used before implementation approval.
+description: Use this skill when an approved Spec-Driven change has reached Phase 4 and the user wants a task, phase, or full feature implemented from .specs/changes/<slug>. It executes tasks in order, updates task status immediately, verifies each task before completion, and should not be used before implementation approval.
 ---
 
 # Spec-Driven Task Implementer Skill
@@ -21,8 +21,8 @@ Read `references/task-execution-patterns.md` when you need examples for resuming
 ## Process
 
 1. **Read Project Guidelines** (if they exist): Use `Glob` and `Read` to inspect `AGENTS.md`, `ARCHITECTURE.md`, `STYLEGUIDE.md`, `TESTING.md`, and `SECURITY.md`.
-2. **Read the Feature Spec**: Read `specs/changes/<slug>/requirements.md`, `design.md`, and `tasks.md`.
-3. **Validate the Spec**: Call `mcp:verify_complete_spec` for `<slug>` before implementation. Resolve blocking spec issues first.
+2. **Read the Feature Spec**: Read `.specs/changes/<slug>/requirements.md`, `design.md`, and `tasks.md`.
+3. **Validate the Spec**: Run `spec-driven validate spec <slug>` before implementation. Resolve blocking spec issues first.
 4. **Inspect Existing Code**: Use `Glob`, `Read`, and `Grep` to understand the files, modules, and patterns referenced by the design.
 5. **Select the Next Eligible Task**: Choose the requested task, requested phase, or the next pending task whose dependencies are satisfied.
 6. **Execute the Task Loop**: Mark the task in progress, implement it, verify it, then mark it complete.
@@ -194,7 +194,7 @@ When a conflict appears:
 
 ### Spec Validation Failures
 
-If `mcp:verify_complete_spec` reports blocking errors before implementation:
+If `spec-driven validate spec` reports blocking errors before implementation:
 
 1. Do not start coding yet.
 2. Identify whether the issue is in requirements, design, or tasks.
@@ -279,6 +279,34 @@ The code-review-hardening skill will:
 - Produce a structured verdict: Approve, Request Changes, or Approval with Notes
 
 **Do not block on author-required findings.** Code review findings are author-resolution items. The spec-driven workflow continues to quality grading regardless of review verdict.
+
+## Live Check Integration (Pre-Quality-Grading)
+
+After completing Phase 5 (Code Review) but before invoking quality grading:
+
+1. **Invoke universal-live-check**: Run a final live validation pass on the files changed in Phase 4.
+2. **Detect domains**: Classify affected domains from file paths (CLI, backend, frontend, mobile, embedded, libs).
+3. **Detect change type**: Infer from branch name, commit messages, or task context.
+4. **Execute checks**: Run hierarchical validation (file → module → project) with incremental checks.
+5. **Self-healing loop**: Attempt auto-fix for fixable issues, re-verify, then report remaining findings.
+6. **Proceed to quality grading**: Include live-check report in quality grading assessment.
+
+```
+Invoke: universal-live-check skill
+Input:  Files/directories changed in Phase 4, change type
+Output: Structured check report with pass/fail per check category
+```
+
+The universal-live-check skill will:
+- Classify domains affected by the change (CLI, backend, frontend, mobile, embedded, libs)
+- Detect cross-domain contamination (e.g., libs changes affecting backend consumers)
+- Run domain-specific checks with change-type-aware strategies (feat needs full validation, hotfix needs minimal blocking)
+- Execute hierarchical validation: file-level (~10ms) → module-level (~100ms) → project-level (~1s)
+- Perform self-healing loop: attempt fix, re-run check, report unfixable issues
+
+**Performance target:** Full live check run completes in <5s. If exceeded, abort and report partial results.
+
+**Integration with Quality Grading:** Pass the live-check report to quality grading so it can factor in domain-specific validation results.
 
 ## Quality Grading Integration
 

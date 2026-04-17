@@ -54,6 +54,30 @@ describe('Unit: Platform Config', () => {
       expect(config?.format).toBe(FormatType.MARKDOWN);
       expect(config?.agentDirectory).toBe('workflows');
     });
+
+    it('returns config for github-copilot-cli', () => {
+      const config = getPlatformConfig('github-copilot-cli');
+      expect(config).toBeDefined();
+      expect(config?.format).toBe(FormatType.MARKDOWN);
+      expect(config?.agentDirectory).toBe('agents');
+      expect(config?.agentFilename).toBe('spec-driven.agent.md');
+    });
+
+    it('returns config for gemini-cli', () => {
+      const config = getPlatformConfig('gemini-cli');
+      expect(config).toBeDefined();
+      expect(config?.format).toBe(FormatType.MARKDOWN);
+      expect(config?.agentDirectory).toBe('skills');
+      expect(config?.agentFilename).toBe('spec-driven.md');
+    });
+
+    it('returns config for qwen-code', () => {
+      const config = getPlatformConfig('qwen-code');
+      expect(config).toBeDefined();
+      expect(config?.format).toBe(FormatType.MARKDOWN);
+      expect(config?.agentDirectory).toBe('skills');
+      expect(config?.agentFilename).toBe('spec-driven.md');
+    });
   });
 
   describe('PLATFORM_CONFIGS', () => {
@@ -61,6 +85,9 @@ describe('Unit: Platform Config', () => {
       const expectedPlatforms = [
         'github-vscode',
         'github-jetbrains',
+        'github-copilot-cli',
+        'gemini-cli',
+        'qwen-code',
         'claudecode',
         'opencode',
         'codex',

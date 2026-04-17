@@ -132,9 +132,9 @@ describe('Integration: verifySpecStructure', () => {
 
     it('validates complete spec structure', async () => {
         await mockFs.createStructure({
-            'specs/changes/test-spec/requirements.md': '...',
-            'specs/changes/test-spec/design.md': '...',
-            'specs/changes/test-spec/tasks.md': '...'
+            '.specs/changes/test-spec/requirements.md': '...',
+            '.specs/changes/test-spec/design.md': '...',
+            '.specs/changes/test-spec/tasks.md': '...'
         });
 
         const result = await verifySpecStructure('test-spec', mockFs.root);
@@ -177,9 +177,9 @@ import { MockFileSystem } from '@spec-driven-steroids/test-utils';
 
 const mockFs = new MockFileSystem('/test-dir');
 await mockFs.createStructure({
-    'specs/changes/test/requirements.md': '# Requirements',
-    'specs/changes/test/design.md': '# Design',
-    'specs/changes/test/tasks.md': '# Tasks'
+    '.specs/changes/test/requirements.md': '# Requirements',
+    '.specs/changes/test/design.md': '# Design',
+    '.specs/changes/test/tasks.md': '# Tasks'
 });
 ```
 
@@ -204,14 +204,14 @@ const validSpec = getFixtureContent(FIXTURES.VALID_COMPLETE_SPEC, 'requirements.
 
 ---
 
-## MCP Tool Testing
+## Validation Module Testing
 
-### Testing MCP Tools
+### Testing Validation Modules
 
 ```typescript
-import { verifyRequirementsFile } from '-dist/index.js';
+import { verifyRequirementsFile } from '../src/core/validate/requirements.js';
 
-describe('MCP Unit: verifyRequirementsFile', () => {
+describe('Unit: verifyRequirementsFile', () => {
     it('detects EARS patterns', () => {
         const content = `
 ## Requirements
@@ -228,15 +228,15 @@ describe('MCP Unit: verifyRequirementsFile', () => {
 });
 ```
 
-### Import Pattern for MCP Tests
+### Import Pattern for Validation Tests
 
-Tests import from the compiled `dist` directory to validate the built output:
+Tests import directly from source to validate the validation logic:
 
 ```typescript
-// Import from compiled dist for integration testing
-import { verifyRequirementsFile } from '-dist/index.js';
-import { verifyDesignFile } from '@mcp-dist/index.js';
-import { validateMermaidDiagram } from '-dist/mermaid-validator.js';
+// Import from source for unit testing
+import { verifyRequirementsFile } from '../src/core/validate/requirements.js';
+import { verifyDesignFile } from '../src/core/validate/design.js';
+import { validateMermaidDiagram } from '../src/core/validate/shared/mermaid.js';
 ```
 
 ---

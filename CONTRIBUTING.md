@@ -69,7 +69,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 | Scope | Package/Area |
 |-------|--------------|
 | `cli` | CLI commands and interface |
-| `mcp` | MCP server and tools |
+| `validate` | Validation modules |
 | `templates` | Platform templates |
 | `test-utils` | Testing utilities |
 | `docs` | Documentation |
@@ -78,7 +78,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
 feat(cli): add validate command for spec structure
-fix(mcp): handle empty mermaid blocks correctly
+fix(validate): handle empty mermaid blocks correctly
 docs(templates): update opencode agent instructions
 test(cli): add integration tests for inject command
 ```
@@ -126,8 +126,9 @@ spec-driven-steroids/
 ├── packages/
 │   ├── cli/                    # Main CLI package
 │   │   ├── src/
-│   │   │   ├── cli/           # CLI commands
-│   │   │   └── mcp/           # MCP server
+│   │   │   ├── cli/           # CLI commands and injection
+│   │   │   ├── core/validate/ # Validation modules
+│   │   │   └── context-stewardship/  # Knowledge graph system
 │   │   ├── templates/         # Platform templates
 │   │   └── tests/             # Test files
 │   ├── test-utils/            # Shared test utilities

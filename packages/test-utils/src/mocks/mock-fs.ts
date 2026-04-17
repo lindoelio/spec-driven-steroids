@@ -33,7 +33,7 @@ export class MockFileSystem {
         basePath?: string
     ): Promise<string> {
         const rootDir = basePath || await this.createTempDir();
-        const specDir = path.join(rootDir, 'specs', 'changes', slug);
+        const specDir = path.join(rootDir, '.specs', 'changes', slug);
         await fsPromises.mkdir(specDir, { recursive: true });
 
         for (const [filename, content] of Object.entries(files)) {

@@ -14,9 +14,9 @@ You MUST enforce this lifecycle exactly:
 `requirements -> design -> tasks -> implementation -> code review`
 
 - Never skip phases, even if the user asks to implement immediately.
-- If there is no approved `specs/changes/<slug>/requirements.md`, always start with requirements.
+- If there is no approved `.specs/changes/<slug>/requirements.md`, always start with requirements.
 - Before Phase 4 is explicitly approved by the human, do not write implementation code.
-- Before Phase 4 approval, only write files under `specs/changes/<slug>/`.
+- Before Phase 4 approval, only write files under `.specs/changes/<slug>/`.
 - Every phase transition requires explicit human approval.
 - For requirements, design, and tasks, always validate and write the artifact first, then ask whether to proceed.
 
@@ -30,7 +30,7 @@ You MUST enforce this lifecycle exactly:
 
 If the user asks for direct implementation before requirements, respond with:
 
-"I can implement this, but per Spec-Driven flow I must start with Phase 1 (requirements) first. I will propose a slug, write `specs/changes/<slug>/requirements.md`, and then ask for your approval to proceed."
+"I can implement this, but per Spec-Driven flow I must start with Phase 1 (requirements) first. I will propose a slug, write `.specs/changes/<slug>/requirements.md`, and then ask for your approval to proceed."
 
 If you just completed a planning phase, end with a direct approval question such as:
 
@@ -57,13 +57,13 @@ The skill's output or "direct" production of content does NOT mean the phase is 
 Invoke the `spec-driven-requirements-writer` skill.
 
 1. Propose a short, URL-friendly slug.
-2. Use the user request as input for `specs/changes/<slug>/requirements.md`.
+2. Use the user request as input for `.specs/changes/<slug>/requirements.md`.
 3. Load the `long-running-work-planning` skill at the start of the phase when available.
 4. Invoke the `spec-driven-requirements-writer` skill.
 5. Wait for the skill to produce requirements content.
-6. Validate with `mcp:verify_requirements_file`.
-7. Write `specs/changes/<slug>/requirements.md`.
-8. Invoke the `quality-grading` skill in `grade-and-fix` mode on `specs/changes/<slug>/requirements.md`. Apply any auto-fixes before proceeding.
+6. Validate with `spec-driven validate requirements .specs/changes/<slug>/requirements.md`.
+7. Write `.specs/changes/<slug>/requirements.md`.
+8. Invoke the `quality-grading` skill in `grade-and-fix` mode on `.specs/changes/<slug>/requirements.md`. Apply any auto-fixes before proceeding.
 9. **STOP**. Summarize the artifact and ask: `Approve Phase 1, and I'll move to Phase 2 (design).`
 10. Do not begin design work until the user explicitly approves Phase 1.
 
@@ -75,9 +75,9 @@ Invoke the `spec-driven-technical-designer` skill.
 2. Load the `long-running-work-planning` skill at the start of the phase when available.
 3. Invoke the `spec-driven-technical-designer` skill.
 4. Wait for the skill to produce design content.
-5. Validate with `mcp:verify_design_file` using requirements content.
-6. Write `specs/changes/<slug>/design.md`.
-7. Invoke the `quality-grading` skill in `grade-and-fix` mode on `specs/changes/<slug>/design.md`. Apply any auto-fixes before proceeding.
+5. Validate with `spec-driven validate design .specs/changes/<slug>/design.md`.
+6. Write `.specs/changes/<slug>/design.md`.
+7. Invoke the `quality-grading` skill in `grade-and-fix` mode on `.specs/changes/<slug>/design.md`. Apply any auto-fixes before proceeding.
 8. **STOP**. Summarize the artifact and ask: `Approve Phase 2, and I'll move to Phase 3 (tasks).`
 9. Do not begin task decomposition until the user explicitly approves Phase 2.
 
@@ -89,10 +89,10 @@ Invoke the `spec-driven-task-decomposer` skill.
 2. Load the `long-running-work-planning` skill at the start of the phase when available.
 3. Invoke the `spec-driven-task-decomposer` skill.
 4. Wait for the skill to produce tasks content.
-5. Validate with `mcp:verify_tasks_file` using design content.
-6. Validate the full spec with `mcp:verify_complete_spec` for `<slug>`.
-7. Write `specs/changes/<slug>/tasks.md`.
-8. Invoke the `quality-grading` skill in `grade-and-fix` mode on `specs/changes/<slug>/tasks.md`. Apply any auto-fixes before proceeding.
+5. Validate with `spec-driven validate tasks .specs/changes/<slug>/tasks.md`.
+6. Validate the full spec with `spec-driven validate spec <slug>`.
+7. Write `.specs/changes/<slug>/tasks.md`.
+8. Invoke the `quality-grading` skill in `grade-and-fix` mode on `.specs/changes/<slug>/tasks.md`. Apply any auto-fixes before proceeding.
 9. **STOP**. Summarize the artifact and ask: `Approve Phase 3, and I'll move to Phase 4 (implementation), which includes Phase 5 (code review) before quality grading.`
 10. Do not begin implementation until the user explicitly approves Phase 3 and Phase 4 entry.
 
@@ -111,7 +111,10 @@ Invoke the `spec-driven-task-implementer` skill.
 - Keep REQ and DES IDs inside `_Implements:` traceability tags in `tasks.md`; use behavior-focused names for tests and test cases.
 - Use the smallest meaningful verification for each task before marking it complete.
 - Continue implementation directly unless blocked by a real conflict, failed verification, or material ambiguity.
-- After all implementation tasks complete, the implementer skill automatically invokes code review (Phase 5) before quality grading.
+- After all implementation tasks complete, the implementer skill automatically:
+  1. Invokes code review (Phase 5)
+  2. Runs universal-live-check as a final pre-flight validation
+  3. Proceeds to quality grading
 
 ## Traceability Rules
 
@@ -123,7 +126,7 @@ Invoke the `spec-driven-task-implementer` skill.
 
 ## Key Behaviors
 
-- Always validate via MCP before presenting a planning artifact as complete.
+- Always validate via CLI before presenting a planning artifact as complete.
 - Explicitly invoke the specialized skill for each phase.
 - Write planning artifacts first, then ask for approval between phases.
 - After a planning artifact is written, stop immediately and wait for approval.
@@ -134,6 +137,6 @@ Invoke the `spec-driven-task-implementer` skill.
 ## Constraints
 
 - **Never skip the approval gate**: Even if skills produce content directly, you MUST stop after writing the artifact and wait for explicit approval before proceeding.
-- Do not edit files outside `specs/changes/<slug>/` before Phase 4 approval.
+- Do not edit files outside `.specs/changes/<slug>/` before Phase 4 approval.
 - Do not write implementation code before explicit Phase 4 approval.
 - Keep wrapper behavior aligned with the universal skills rather than adding platform-specific process rules.

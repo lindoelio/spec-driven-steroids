@@ -21,15 +21,15 @@ Read `references/design-section-guide.md` when you need help selecting optional 
 
 If `long-running-work-planning` is available, load it at the start of this phase before shaping the design. Use it to structure architectural reasoning, keep progress visible, and avoid holding all analysis until the end.
 
-1. **Read Requirements**: Read `specs/changes/<slug>/requirements.md` as the source of truth.
+1. **Read Requirements**: Read `.specs/changes/<slug>/requirements.md` as the source of truth.
 2. **Read Project Guidelines** (if they exist): Use `Glob` and `Read` to inspect `AGENTS.md`, `ARCHITECTURE.md`, `STYLEGUIDE.md`, and `TESTING.md`.
 3. **Retrieve Contextual Memory**: Invoke the `contextual-stewardship` skill to retrieve `architecture` rules.
 4. **Inspect Existing Patterns**: Use `Grep` to find related modules, interfaces, diagrams, and naming conventions in the codebase.
 5. **Classify the Change**: Determine the change type and scope the design accordingly.
 6. **Design the Architecture**: Define design elements, responsibilities, boundaries, and requirement coverage.
 7. **Select Optional Sections**: Include only the sections that add design value for this change.
-8. **Validate**: Call `mcp:verify_design_file` using the design content and requirements content.
-9. **Write Before Review**: Save to `specs/changes/<slug>/design.md` before asking for approval.
+8. **Validate**: Run `spec-driven validate design .specs/changes/<slug>/design.md` using the design content and requirements content.
+9. **Write Before Review**: Save to `.specs/changes/<slug>/design.md` before asking for approval.
 
 ## Per-Phase Todo List
 
@@ -54,7 +54,7 @@ When this skill begins execution, create a todo list containing the following it
 
 ## Output File
 
-`specs/changes/<slug>/design.md`
+`.specs/changes/<slug>/design.md`
 
 ## Change Type Classification
 
@@ -341,9 +341,9 @@ Ask a clarifying question only if the ambiguity would materially change:
 
 ## Validation and Recovery
 
-### MCP Validation Failures
+### CLI Validation Failures
 
-When `mcp:verify_design_file` returns errors:
+When `spec-driven validate design` returns errors:
 
 1. Add any missing required sections.
 2. Fix Mermaid syntax by simplifying diagrams first.
@@ -397,7 +397,7 @@ Before returning the design, verify:
 
 ## Output Requirements
 
-- Write `specs/changes/<slug>/design.md` before requesting review
+- Write `.specs/changes/<slug>/design.md` before requesting review
 - Keep the design concise but complete enough for task decomposition
 - Prefer validator-compatible structure over decorative formatting
 - Return ordinary prose summary after the file is written; do not wrap the artifact in XML
@@ -426,7 +426,7 @@ After completing design and before requesting approval, invoke the `quality-grad
 
 ```
 Invoke: quality-grading skill
-Artifact: specs/changes/<slug>/design.md
+Artifact: .specs/changes/<slug>/design.md
 Mode: grade-and-fix
 ```
 

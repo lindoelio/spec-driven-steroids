@@ -23,12 +23,12 @@ async function readRepositoryFile(relativePath: string): Promise<string> {
     return fs.readFile(absolutePath, 'utf-8');
 }
 
-describe('MCP Unit: template MCP guidance', () => {
+describe('Unit: template validation guidance', () => {
     it('requires tasks and complete-spec validation in planner templates', async () => {
         // Universal template is the source of truth
         const content = await readTemplate('universal/agents/spec-driven.agent.md');
-        expect(content).toContain('mcp:verify_tasks_file');
-        expect(content).toContain('mcp:verify_complete_spec');
+        expect(content).toContain('spec-driven validate tasks');
+        expect(content).toContain('spec-driven validate spec');
     });
 
     it('hardens Codex planner templates against phase-skipping', async () => {
@@ -61,11 +61,11 @@ describe('MCP Unit: template MCP guidance', () => {
 
         for (const target of targets) {
             const content = await readTemplate(target);
-            expect(content).toContain('mcp:verify_complete_spec');
+            expect(content).toContain('spec-driven validate spec');
         }
 
         const decomposerContent = await readTemplate('universal/skills/spec-driven-task-decomposer/SKILL.md');
-        expect(decomposerContent).toContain('mcp:verify_tasks_file');
+        expect(decomposerContent).toContain('spec-driven validate tasks');
     });
 
     it('requires behavior-focused testing task names with REQ IDs only in traceability tags', async () => {

@@ -30,8 +30,8 @@ If `long-running-work-planning` is available, load it at the start of this phase
 4. Extract actors, actions, and constraints
 5. Write requirements using valid EARS syntax
 6. Define glossary terms if domain-specific terminology is needed
-7. **Validate**: Call `mcp:verify_requirements_file` to ensure compliance
-8. **Write Before Review**: Save to `specs/changes/<slug>/requirements.md` before asking for approval
+7. **Validate**: Run `spec-driven validate requirements .specs/changes/<slug>/requirements.md` to ensure compliance
+8. **Write Before Review**: Save to `.specs/changes/<slug>/requirements.md` before asking for approval
 
 ## Per-Phase Todo List
 
@@ -55,7 +55,7 @@ When this skill begins execution, create a todo list containing the following it
 
 ## Output File
 
-`specs/changes/<slug>/requirements.md`
+`.specs/changes/<slug>/requirements.md`
 
 ## Required Document Structure
 
@@ -223,9 +223,9 @@ Instead: proceed with reasonable assumptions and document them in `## Assumption
 
 ## Validation and Error Recovery
 
-### MCP Validation Failures
+### CLI Validation Failures
 
-When `mcp:verify_requirements_file` returns errors:
+When `spec-driven validate requirements` returns errors:
 
 1. Fix missing or invalid sections
 2. Rewrite acceptance criteria with correct EARS syntax
@@ -290,7 +290,7 @@ After completing requirements and before requesting approval, invoke the `qualit
 
 ```
 Invoke: quality-grading skill
-Artifact: specs/changes/<slug>/requirements.md
+Artifact: .specs/changes/<slug>/requirements.md
 Mode: grade-and-fix
 ```
 

@@ -34,7 +34,7 @@ coverage/
 *.vsix
 
 # Spec artifacts (user-specific)
-specs/
+.specs/
 
 # AI engines configs
 .agent/*

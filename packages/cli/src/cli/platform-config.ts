@@ -134,6 +134,51 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     commandDirectory: 'workflows',
     specDrivenCommandFilename: 'spec-driven.md',
     injectGuidelinesCommandFilename: 'inject-guidelines.md'
+  },
+  'github-copilot-cli': {
+    id: 'github-copilot-cli',
+    format: FormatType.MARKDOWN,
+    frontmatter: {
+      fields: {
+        name: 'Spec-Driven',
+        description: 'Use this planner when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
+      }
+    },
+    agentDirectory: 'agents',
+    agentFilename: 'spec-driven.agent.md',
+    commandDirectory: 'commands',
+    specDrivenCommandFilename: 'spec-driven.md',
+    injectGuidelinesCommandFilename: 'inject-guidelines.md'
+  },
+  'gemini-cli': {
+    id: 'gemini-cli',
+    format: FormatType.MARKDOWN,
+    frontmatter: {
+      fields: {
+        name: 'Spec-Driven',
+        description: 'Use this planner when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
+      }
+    },
+    agentDirectory: 'skills',
+    agentFilename: 'spec-driven.md',
+    commandDirectory: 'skills',
+    specDrivenCommandFilename: 'spec-driven.md',
+    injectGuidelinesCommandFilename: 'inject-guidelines.md'
+  },
+  'qwen-code': {
+    id: 'qwen-code',
+    format: FormatType.MARKDOWN,
+    frontmatter: {
+      fields: {
+        name: 'Spec-Driven',
+        description: 'Use this planner when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
+      }
+    },
+    agentDirectory: 'skills',
+    agentFilename: 'spec-driven.md',
+    commandDirectory: 'skills',
+    specDrivenCommandFilename: 'spec-driven.md',
+    injectGuidelinesCommandFilename: 'inject-guidelines.md'
   }
 };
 

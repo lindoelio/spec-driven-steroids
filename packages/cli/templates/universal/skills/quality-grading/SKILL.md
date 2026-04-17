@@ -257,7 +257,7 @@ Mode: grade-and-fix
 
 ```
 User: Grade this requirements document
-Artifact: specs/changes/feature/requirements.md
+Artifact: .specs/changes/feature/requirements.md
 Mode: evaluate
 ```
 

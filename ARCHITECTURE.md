@@ -51,22 +51,25 @@ Universal Markdown-based Skills and Agent Profiles that define specialized roles
 | `spec-driven-task-decomposer` | Atomic implementation task breakdown |
 | `spec-driven-task-implementer` | Feature implementation workflow (includes Phase 5 code review) |
 | `code-review-hardening` | Rigorous, type-aware code review with self-repair loop |
+| `contextual-stewardship` | Architectural decisions and business rules memory |
+| `quality-grading` | Grades code/specs 1-5 across 4 dimensions with auto-fix |
+| `long-running-work-planning` | Multi-step reasoning for complex problems |
 | `project-guidelines-writer` | Project guideline generation |
 
-### 2. The Enforcer (MCP)
+### 2. The Enforcer (Validation)
 
-A Model Context Protocol server with 5 validation tools.
+TypeScript validation modules with CLI commands for spec validation.
 
-**Location**: `packages/cli/src/mcp/`
+**Location**: `packages/cli/src/core/validate/`
 
 ```mermaid
 flowchart LR
-    subgraph "MCP Server"
-        A[verify_spec_structure]
-        B[verify_requirements_file]
-        C[verify_design_file]
-        D[verify_tasks_file]
-        E[verify_complete_spec]
+    subgraph "Validation Modules"
+        A[structure.ts]
+        B[requirements.ts]
+        C[design.ts]
+        D[tasks.ts]
+        E[spec.ts]
     end
 
     A --> F[File System]
@@ -81,6 +84,32 @@ flowchart LR
 Command-line interface for platform injection and MCP configuration.
 
 **Location**: `packages/cli/src/cli/`
+
+### 4. The Memory (Context Stewardship)
+
+Knowledge graph system for persistent architectural memory and graceful degradation.
+
+**Location**: `packages/cli/src/context-stewardship/`
+
+```mermaid
+flowchart TD
+    subgraph "Context Stewardship"
+        A[Orchestrator]
+        B[KnowledgeGraphStore]
+        C[LifecycleManager]
+        D[GracefulDegradationRouter]
+        E[SpecDecisionExtractor]
+        F[McpContextInjector]
+    end
+
+    A --> B
+    A --> C
+    A --> D
+    A --> E
+    A --> F
+    D --> G[(Capability Detection)]
+    F --> H[(MCP Context)]
+```
 
 ---
 
@@ -127,16 +156,33 @@ flowchart TB
 ```
 packages/cli/
 ├── src/
-│   ├── cli/
-│   │   └── index.ts          # CLI entry point, commands
-│   └── mcp/
-│       ├── index.ts          # MCP server entry, tool handlers
-│       └── mermaid-validator.ts  # Mermaid syntax validation
+│   ├── cli/                  # Terminal interface and injection
+│   │   ├── index.ts         # CLI entry point, commands
+│   │   ├── platform-config.ts
+│   │   ├── template-source.ts
+│   │   ├── transformation-pipeline.ts
+│   │   ├── format-transformer.ts
+│   │   └── opencode-scope.ts
+│   ├── core/validate/       # Validation modules
+│   │   ├── index.ts         # validate command factory
+│   │   ├── requirements.ts  # EARS validation
+│   │   ├── design.ts        # Mermaid validation
+│   │   ├── tasks.ts        # Task phase validation
+│   │   ├── structure.ts    # File structure validation
+│   │   ├── spec.ts         # Cross-file validation
+│   │   └── shared/         # Shared utilities
+│   └── context-stewardship/ # Knowledge graph system
+│       ├── orchestrator.ts
+│       ├── knowledge-graph-store.ts
+│       ├── lifecycle-manager.ts
+│       ├── graceful-degradation-router.ts
+│       └── types.ts
 ├── templates/
 │   ├── github/               # GitHub Copilot templates
 │   ├── opencode/             # OpenCode templates
 │   ├── antigravity/          # Google Antigravity templates
 │   ├── codex/                # OpenAI Codex templates
+│   ├── claudecode/           # Claude Code templates
 │   └── universal/            # Platform-agnostic skills
 └── tests/
     ├── unit/                 # Unit tests
@@ -145,41 +191,41 @@ packages/cli/
 
 ---
 
-## MCP Server Architecture
+## Validation Architecture
 
 ```mermaid
 sequenceDiagram
-    participant AI as AI Assistant
-    participant MCP as MCP Server
+    participant CLI as spec-driven CLI
+    participant Val as Validation Modules
     participant FS as File System
 
-    AI->>MCP: verify_spec_structure(slug)
-    MCP->>FS: Check specs/changes/<slug>/
-    FS-->>MCP: Directory contents
-    MCP-->>AI: Validation result
+    CLI->>Val: validate structure <slug>
+    Val->>FS: Check .specs/changes/<slug>/
+    FS-->>Val: Directory contents
+    Val-->>CLI: Structure result
 
-    AI->>MCP: verify_requirements_file(content)
-    MCP->>MCP: Parse EARS patterns
-    MCP->>MCP: Check REQ-X numbering
-    MCP-->>AI: Validation result
+    CLI->>Val: validate requirements <path>
+    Val->>Val: Parse EARS patterns
+    Val->>Val: Check REQ-X numbering
+    Val-->>CLI: Requirements result
 
-    AI->>MCP: verify_complete_spec(slug)
-    MCP->>FS: Read all 3 files
-    MCP->>MCP: Cross-file traceability
-    MCP-->>AI: Complete validation
+    CLI->>Val: validate spec <slug>
+    Val->>FS: Read all 3 files
+    Val->>Val: Cross-file traceability
+    Val-->>CLI: Complete validation
 ```
 
 ---
 
-## MCP Tool Responsibilities
+## Validation Module Responsibilities
 
-| Tool | Scope | Validates |
-|------|-------|-----------|
-| `verify_spec_structure` | File system | Directory exists, required files present |
-| `verify_requirements_file` | Content | EARS patterns, REQ-X IDs, acceptance criteria |
-| `verify_design_file` | Content | Mermaid diagrams, DES-X IDs, traceability |
-| `verify_tasks_file` | Content | Phases, checkboxes, status markers, traceability |
-| `verify_complete_spec` | Cross-file | End-to-end traceability REQ → DES → Task |
+| Module | Scope | Validates |
+|--------|-------|-----------|
+| `structure.ts` | File system | Directory exists, required files present |
+| `requirements.ts` | Content | EARS patterns, REQ-X IDs, acceptance criteria |
+| `design.ts` | Content | Mermaid diagrams, DES-X IDs, traceability |
+| `tasks.ts` | Content | Phases, checkboxes, status markers, traceability |
+| `spec.ts` | Cross-file | End-to-end traceability REQ → DES → Task |
 
 ---
 
@@ -193,21 +239,24 @@ flowchart TD
     B --> E[Google Antigravity]
     B --> F[OpenCode]
     B --> G[OpenAI Codex]
+    B --> H[Claude Code]
 
-    C --> H[.github/agents + skills]
-    D --> I[Global MCP config]
-    E --> J[.agents/workflows]
-    F --> K[.opencode/skills + agents]
-    G --> L[.codex/agents + commands]
+    C --> I[.github/agents + skills]
+    D --> J[Global MCP config]
+    E --> K[.agents/workflows]
+    F --> L[.opencode/skills + agents]
+    G --> M[.codex/agents + commands]
+    H --> N[.claude/commands]
 
-    G --> K[Copy universal skills]
-    I --> K
-    J --> K
+    G --> L
+    J --> L
+    K --> L
 
-    C --> L[.vscode/mcp.json]
-    D --> M[~/.../intellij/mcp.json]
-    E --> N[~/.gemini/antigravity/mcp_config.json]
-    F --> O[opencode.json]
+    C --> O[.vscode/mcp.json]
+    D --> P[~/.../intellij/mcp.json]
+    E --> Q[~/.gemini/antigravity/mcp_config.json]
+    F --> R[opencode.json]
+    H --> S[.mcp.json]
 ```
 
 ---
@@ -283,12 +332,71 @@ flowchart TD
 
 ---
 
+## Context Stewardship System
+
+The Context Stewardship system provides persistent memory for architectural decisions and business rules.
+
+### Storage Backend
+
+The system uses a JSON file-based knowledge graph storage:
+
+| Backend | Storage Location |
+|---------|-----------------|
+| `json-graph` | `~/.agents/stewardship/{scope}/{state}/` JSON files |
+
+Features: semantic retrieval, versioning, conflict detection, lifecycle management.
+
+### Knowledge Graph
+
+Rules are stored with full provenance and lifecycle tracking:
+
+```typescript
+interface RuleNode {
+    id: string
+    domain: Domain
+    subDomain?: string
+    content: string
+    provenance: {
+        source: 'manual' | 'extract' | 'import'
+        author: string
+        decisionDate: string  // ISO-8601
+        originalText: string
+    }
+    metadata: {
+        confidence: number  // 0-1
+        expiresAt: string  // ISO-8601
+        tags: string[]
+    }
+    state: {
+        value: 'active' | 'deprecated' | 'archived'
+        changedAt: string
+        changedBy: string
+    }
+    relations: string[]  // rule IDs
+}
+```
+
+### Standard Domains
+
+| Domain | Purpose |
+|--------|---------|
+| `architecture` | System design, patterns, decisions |
+| `business` | Business rules, domain logic |
+| `workflow` | Process definitions, phases |
+| `security` | Security policies, authentication |
+| `performance` | Optimization rules, SLAs |
+| `legal` | Compliance, data handling |
+| `team-structure` | Org charts, responsibilities |
+| `technical-debt` | Debt tracking, remediation |
+
+---
+
 ## Extension Points
 
 1. **New Platforms**: Add template directory under `packages/cli/templates/`
-2. **New MCP Tools**: Add tool definition and handler in `packages/cli/src/mcp/index.ts`
+2. **New Validators**: Add validator module in `packages/cli/src/core/validate/`
 3. **New Skills**: Add SKILL.md under `packages/cli/templates/universal/skills/`
-4. **New Validators**: Add validator module in `packages/cli/src/mcp/`
+4. **New Context Domains**: Add to `Domain` type in `context-stewardship/types.ts`
 
 ---
 

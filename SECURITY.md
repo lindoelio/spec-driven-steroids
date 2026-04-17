@@ -87,9 +87,9 @@ function safePath(baseDir: string, userPath: string): string {
 }
 ```
 
-### 4. MCP Tool Security
+### 4. Validation Command Security
 
-MCP tools must:
+Validation commands must:
 - Validate all input parameters
 - Sanitize file paths before filesystem operations
 - Return safe error messages (no stack traces in production)
@@ -101,10 +101,10 @@ async function verifySpecStructure(slug: string, targetDir?: string) {
     if (!validateSlug(slug)) {
         throw new Error('Invalid slug format');
     }
-    
+
     const baseDir = targetDir || process.cwd();
-    const specDir = safePath(baseDir, `specs/changes/${slug}`);
-    
+    const specDir = safePath(baseDir, `.specs/changes/${slug}`);
+
     // Safe filesystem operations
     // ...
 }
@@ -124,14 +124,14 @@ The CLI performs these security-sensitive operations:
 | MCP config modification | Credential exposure | Configurable paths, user consent |
 | Template injection | Code injection | Template validation, no executable code |
 
-### MCP Server
+### External MCP Configuration
 
-The MCP server operates with filesystem access:
+When configuring external MCP servers (sequential-thinking, memory):
 
 | Operation | Risk | Mitigation |
 |-----------|------|------------|
-| Read spec files | Information disclosure | Path validation, sandboxed to spec directories |
-| Validate content | DoS | Input size limits, timeout handling |
+| Read MCP config | Information disclosure | Path validation, user-owned configs only |
+| Write MCP config | Config corruption | Atomic writes, backups |
 
 ---
 
@@ -171,7 +171,7 @@ pnpm update
 ### For Users
 
 1. **Review injected files** before committing to repositories
-2. **Understand MCP server permissions** in your AI tool
+2. **Understand MCP permissions** for external MCP servers you configure
 3. **Keep the package updated** for security fixes
 4. **Report suspicious behavior** promptly
 

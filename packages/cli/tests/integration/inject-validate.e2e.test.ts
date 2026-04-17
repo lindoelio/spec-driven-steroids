@@ -60,7 +60,7 @@ describe('CLI E2E: inject command', () => {
         expect(jetbrainsAgentContent.includes('## Phase Gatekeeper')).toBe(true);
         expect(jetbrainsPromptContent.includes('Generate all six guideline documents by default unless the user explicitly skips named files.')).toBe(true);
 
-        // Verify JetBrains MCP config
+        // Verify JetBrains MCP config exists (but spec-driven-steroids MCP server no longer added)
         const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
         const mcpConfigPath = process.platform === 'win32'
             ? path.join(localAppData, 'github-copilot', 'intellij', 'mcp.json')
@@ -68,9 +68,7 @@ describe('CLI E2E: inject command', () => {
 
         const config = await fs.readJson(mcpConfigPath);
         expect(config.servers).toBeDefined();
-        expect(config.servers['spec-driven-steroids']).toBeDefined();
-        expect(config.servers['spec-driven-steroids'].command).toBe('node');
-        expect(config.servers['spec-driven-steroids'].args[0]).toMatch(/dist[\\/]mcp[\\/]index\.js$/);
+        // Note: spec-driven-steroids MCP server is no longer added - CLI has been replaced with validate command
     });
 
     it('inject command with GitHub Copilot for VS Code global scope configures MCP and artifacts globally', async () => {
@@ -94,12 +92,12 @@ describe('CLI E2E: inject command', () => {
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
-        // Global MCP config should be created
+        // Global MCP config should be created (but spec-driven-steroids MCP server no longer added)
         const mcpConfigPath = path.join(globalVSCodeDir, 'mcp.json');
         expect(await fs.pathExists(mcpConfigPath)).toBe(true);
         const config = await fs.readJson(mcpConfigPath);
         expect(config.servers).toBeDefined();
-        expect(config.servers['spec-driven-steroids']).toBeDefined();
+        // Note: spec-driven-steroids MCP server is no longer added - CLI has been replaced with validate command
 
         // Global agents (prompts) should be created
         expect(await fs.pathExists(path.join(globalVSCodeDir, 'prompts'))).toBe(true);
@@ -153,7 +151,8 @@ describe('CLI E2E: inject command', () => {
         const mcpConfigPath = path.join(globalJetBrainsDir, 'mcp.json');
         expect(await fs.pathExists(mcpConfigPath)).toBe(true);
         const config = await fs.readJson(mcpConfigPath);
-        expect(config.servers['spec-driven-steroids']).toBeDefined();
+        expect(config.servers).toBeDefined();
+        // Note: spec-driven-steroids MCP server is no longer added
     });
 
     it('inject command with Antigravity platform creates .agents directory structure (project scope)', async () => {
@@ -195,7 +194,8 @@ describe('CLI E2E: inject command', () => {
         const mcpConfigPath = path.join(globalAntigravityDir, 'mcp_config.json');
         expect(await fs.pathExists(mcpConfigPath)).toBe(true);
         const config = await fs.readJson(mcpConfigPath);
-        expect(config.mcpServers['spec-driven-steroids']).toBeDefined();
+        expect(config.mcpServers).toBeDefined();
+        // Note: spec-driven-steroids MCP server is no longer added
     });
 
     it('inject command skips scope prompt for Antigravity and proceeds directly to project-level injection', async () => {
@@ -263,7 +263,7 @@ describe('CLI E2E: inject command', () => {
 
         expect(agentContent.includes('## Phase Gatekeeper')).toBe(true);
         expect(agentContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
-        expect(agentContent.includes('Before Phase 4 approval, only write files under `specs/changes/<slug>/`.')).toBe(true);
+        expect(agentContent.includes('Before Phase 4 approval, only write files under `.specs/changes/<slug>/`.')).toBe(true);
         expect(agentContent.includes('I can implement this, but per Spec-Driven flow I must start with Phase 1 (requirements) first.')).toBe(true);
         expect(agentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
 
@@ -275,6 +275,7 @@ describe('CLI E2E: inject command', () => {
         delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
     });
     it('inject command includes spec-driven phase-gating guardrails for GitHub and Antigravity', async () => {
+        process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES = 'true';
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['github-vscode', 'antigravity'] })
             .mockResolvedValueOnce({ scope: 'project' })
@@ -288,15 +289,16 @@ describe('CLI E2E: inject command', () => {
         const githubAgentContent = await fs.readFile(githubAgentPath, 'utf-8');
         expect(githubAgentContent.includes('## Phase Gatekeeper')).toBe(true);
         expect(githubAgentContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
-        expect(githubAgentContent.includes('Before Phase 4 approval, only write files under `specs/changes/<slug>/`.')).toBe(true);
+        expect(githubAgentContent.includes('Before Phase 4 approval, only write files under `.specs/changes/<slug>/`.')).toBe(true);
         expect(githubAgentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
 
         const antigravityWorkflowPath = path.join(targetDir, '.agents', 'workflows', 'spec-driven.md');
         const antigravityWorkflowContent = await fs.readFile(antigravityWorkflowPath, 'utf-8');
         expect(antigravityWorkflowContent.includes('## Phase Gatekeeper')).toBe(true);
         expect(antigravityWorkflowContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
-        expect(antigravityWorkflowContent.includes('Before Phase 4 approval, only write files under `specs/changes/<slug>/`.')).toBe(true);
+        expect(antigravityWorkflowContent.includes('Before Phase 4 approval, only write files under `.specs/changes/<slug>/`.')).toBe(true);
         expect(antigravityWorkflowContent.includes('### Non-Skippable Stop Rule')).toBe(true);
+        delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
     });
 
     it('inject command keeps spec-driven wrappers phase-aligned across supported platforms', async () => {
@@ -456,7 +458,7 @@ describe('CLI E2E: inject command', () => {
         expect(await fs.pathExists(path.join(targetDir, '.opencode', 'commands', 'inject-guidelines.command.md'))).toBe(false);
     });
 
-    it('inject command adds spec-driven-steroids MCP to OpenCode config (project scope)', async () => {
+    it('inject command no longer adds spec-driven-steroids MCP to OpenCode config (project scope)', async () => {
         const opencodeConfigPath = path.join(targetDir, 'opencode.json');
         await fs.writeJson(opencodeConfigPath, {});
 
@@ -472,10 +474,7 @@ describe('CLI E2E: inject command', () => {
         const config = await fs.readJson(opencodeConfigPath);
         expect(config.$schema).toBe('https://opencode.ai/config.json');
         expect(config.mcp).toBeDefined();
-        expect(config.mcp['spec-driven-steroids']).toBeDefined();
-        expect(config.mcp['spec-driven-steroids'].type).toBe('local');
-        expect(config.mcp['spec-driven-steroids'].command[0]).toBe('node');
-        expect(config.mcp['spec-driven-steroids'].command[1]).toMatch(/dist[\\/]mcp[\\/]index\.js$/);
+        // Note: spec-driven-steroids MCP server is no longer added - CLI has been replaced with validate command
     });
 
     it('inject command with OpenCode global scope configures all artifacts globally', async () => {
@@ -491,13 +490,10 @@ describe('CLI E2E: inject command', () => {
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
-        // Global MCP config should be created
+        // Global MCP config should be created (but spec-driven-steroids MCP server no longer added)
         const globalConfig = await fs.readJson(globalConfigPath);
         expect(globalConfig.mcp).toBeDefined();
-        expect(globalConfig.mcp['spec-driven-steroids']).toBeDefined();
-        expect(globalConfig.mcp['spec-driven-steroids'].type).toBe('local');
-        expect(globalConfig.mcp['spec-driven-steroids'].command[0]).toBe('node');
-        expect(globalConfig.mcp['spec-driven-steroids'].command[1]).toMatch(/dist[\\/]mcp[\\/]index\.js$/);
+        // Note: spec-driven-steroids MCP server is no longer added - CLI has been replaced with validate command
 
         // Global agents should be created
         expect(await fs.pathExists(path.join(globalOpencodeDir, 'agents'))).toBe(true);
@@ -539,9 +535,8 @@ describe('CLI E2E: inject command', () => {
         expect(await fs.pathExists(mcpConfigPath)).toBe(true);
 
         const mcpConfigContent = await fs.readFile(mcpConfigPath, 'utf-8');
-        expect(mcpConfigContent.includes('[mcp_servers.spec-driven-steroids]')).toBe(true);
-        expect(mcpConfigContent.includes('command = "node"')).toBe(true);
-        expect(mcpConfigContent).toMatch(/args = \[[^\]]*dist[\\/]mcp[\\/]index\.js/);
+        // Note: spec-driven-steroids MCP server is no longer added - CLI has been replaced with validate command
+        // The MCP config file may still exist but spec-driven-steroids won't be in it
     });
 
     it('inject command creates spec-driven agent and commands for Codex', async () => {
@@ -578,7 +573,7 @@ describe('CLI E2E: inject command', () => {
         expect(injectGuidelinesContent.includes('Testing Trophy')).toBe(true);
     });
 
-    it('inject command adds spec-driven-steroids MCP to GitHub Copilot config', async () => {
+    it('inject command no longer adds spec-driven-steroids MCP to GitHub Copilot config', async () => {
         const mcpConfigPath = path.join(targetDir, '.vscode', 'mcp.json');
 
         vi.spyOn(inquirer, 'prompt')
@@ -592,9 +587,7 @@ describe('CLI E2E: inject command', () => {
 
         const config = await fs.readJson(mcpConfigPath);
         expect(config.servers).toBeDefined();
-        expect(config.servers['spec-driven-steroids']).toBeDefined();
-        expect(config.servers['spec-driven-steroids'].command).toBe('node');
-        expect(config.servers['spec-driven-steroids'].args[0]).toMatch(/dist[\\/]mcp[\\/]index\.js$/);
+        // Note: spec-driven-steroids MCP server is no longer added - CLI has been replaced with validate command
     });
 
     it('inject command migrates legacy GitHub Copilot mcpServers key to servers', async () => {
@@ -621,11 +614,11 @@ describe('CLI E2E: inject command', () => {
         const config = await fs.readJson(mcpConfigPath);
         expect(config.servers).toBeDefined();
         expect(config.servers.existing).toBeDefined();
-        expect(config.servers['spec-driven-steroids']).toBeDefined();
+        // Note: spec-driven-steroids MCP server is no longer added
         expect(config.mcpServers).toBeUndefined();
     });
 
-    it('inject command adds spec-driven-steroids MCP to global Antigravity config (project-level injection)', async () => {
+    it('inject command no longer adds spec-driven-steroids MCP to global Antigravity config (project-level injection)', async () => {
         const mcpConfigPath = path.join(os.homedir(), '.gemini', 'antigravity', 'mcp_config.json');
 
         // Only two prompts: platform selection and sequential-thinking (no scope prompt for Antigravity)
@@ -639,9 +632,7 @@ describe('CLI E2E: inject command', () => {
 
         const config = await fs.readJson(mcpConfigPath);
         expect(config.mcpServers).toBeDefined();
-        expect(config.mcpServers['spec-driven-steroids']).toBeDefined();
-        expect(config.mcpServers['spec-driven-steroids'].command).toBe('node');
-        expect(config.mcpServers['spec-driven-steroids'].args[0]).toMatch(/dist[\\/]mcp[\\/]index\.js$/);
+        // Note: spec-driven-steroids MCP server is no longer added - CLI has been replaced with validate command
     });
 
     it('inject command with Antigravity does not create global artifacts directory', async () => {
@@ -669,7 +660,7 @@ describe('CLI E2E: inject command', () => {
         expect(await fs.pathExists(path.join(targetDir, '.agents'))).toBe(true);
     });
 
-    it('inject command adds spec-driven-steroids MCP to .mcp.json with correct structure', async () => {
+    it('inject command no longer adds spec-driven-steroids MCP to .mcp.json', async () => {
         const mcpConfigPath = path.join(targetDir, '.mcp.json');
 
         vi.spyOn(inquirer, 'prompt')
@@ -682,9 +673,7 @@ describe('CLI E2E: inject command', () => {
 
         const config = await fs.readJson(mcpConfigPath);
         expect(config.mcpServers).toBeDefined();
-        expect(config.mcpServers['spec-driven-steroids']).toBeDefined();
-        expect(config.mcpServers['spec-driven-steroids'].command).toBe('node');
-        expect(config.mcpServers['spec-driven-steroids'].args[0]).toMatch(/dist[\\/]mcp[\\/]index\.js$/);
+        // Note: spec-driven-steroids MCP server is no longer added - CLI has been replaced with validate command
     });
 
     it('inject command merges with existing .mcp.json without overwriting existing servers', async () => {
@@ -710,7 +699,7 @@ describe('CLI E2E: inject command', () => {
         const config = await fs.readJson(mcpConfigPath);
         expect(config.mcpServers).toBeDefined();
         expect(config.mcpServers.existing).toBeDefined();
-        expect(config.mcpServers['spec-driven-steroids']).toBeDefined();
+        // Note: spec-driven-steroids MCP server is no longer added
     });
 
     it('inject command includes sequential-thinking MCP when requested for Claude Code', async () => {
@@ -725,91 +714,14 @@ describe('CLI E2E: inject command', () => {
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const config = await fs.readJson(mcpConfigPath);
-        expect(config.mcpServers['spec-driven-steroids']).toBeDefined();
+        expect(config.mcpServers).toBeDefined();
+        // Note: spec-driven-steroids MCP server is no longer added - CLI has been replaced with validate command
         expect(config.mcpServers['sequential-thinking']).toBeDefined();
         expect(config.mcpServers['sequential-thinking'].command).toBe('npx');
         expect(config.mcpServers['sequential-thinking'].args).toEqual(['-y', '@modelcontextprotocol/server-sequential-thinking']);
     });
 });
 
-describe('CLI E2E: validate command', () => {
-    let targetDir: string;
-    let originalCwd: string;
-
-    beforeEach(async () => {
-        originalCwd = process.cwd();
-        targetDir = await mockFs.createTempDir();
-        process.chdir(targetDir);
-        vi.clearAllMocks();
-    });
-
-    afterEach(async () => {
-        process.chdir(originalCwd);
-        await mockFs.cleanup();
-    });
-
-    it('validate command detects existing GitHub config', async () => {
-        const githubDir = path.join(targetDir, '.github');
-        await fs.ensureDir(path.join(githubDir, 'agents'));
-
-        const program = (await import('../../dist/cli/index.js')).default;
-        await program.parseAsync(['validate'], { from: 'user' } as any);
-
-        const githubDirExists = await fs.pathExists(githubDir);
-        expect(githubDirExists).toBe(true);
-    });
-
-    it('validate command detects existing Antigravity config', async () => {
-        const agentDir = path.join(targetDir, '.agents');
-        await fs.ensureDir(path.join(agentDir, 'workflows'));
-
-        const program = (await import('../../dist/cli/index.js')).default;
-        await program.parseAsync(['validate'], { from: 'user' } as any);
-
-        const agentDirExists = await fs.pathExists(agentDir);
-        expect(agentDirExists).toBe(true);
-    });
-
-    it('validate command detects existing OpenCode config', async () => {
-        const opencodeDir = path.join(targetDir, '.opencode');
-        await fs.ensureDir(path.join(opencodeDir, 'skills'));
-
-        const program = (await import('../../dist/cli/index.js')).default;
-        await program.parseAsync(['validate'], { from: 'user' } as any);
-
-        const opencodeDirExists = await fs.pathExists(opencodeDir);
-        expect(opencodeDirExists).toBe(true);
-    });
-    it('validate command detects existing Claude Code config', async () => {
-        const claudeDir = path.join(targetDir, '.claude');
-        await fs.ensureDir(path.join(claudeDir, 'agents'));
-        await fs.ensureDir(path.join(claudeDir, 'commands'));
-        await fs.ensureFile(path.join(claudeDir, 'CLAUDE.md'));
-
-        const program = (await import('../../dist/cli/index.js')).default;
-        await program.parseAsync(['validate'], { from: 'user' } as any);
-
-        const claudeDirExists = await fs.pathExists(claudeDir);
-        expect(claudeDirExists).toBe(true);
-    });
-
-    it('validate command detects specs directory', async () => {
-        const specsDir = path.join(targetDir, 'specs');
-        await fs.ensureDir(specsDir);
-
-        const program = (await import('../../dist/cli/index.js')).default;
-        await program.parseAsync(['validate'], { from: 'user' } as any);
-
-        const specsDirExists = await fs.pathExists(specsDir);
-        expect(specsDirExists).toBe(true);
-    });
-
-    it('validate command shows correct status for missing configs', async () => {
-        const program = (await import('../../dist/cli/index.js')).default;
-        await program.parseAsync(['validate'], { from: 'user' } as any);
-
-        const githubDir = path.join(targetDir, '.github');
-        const githubDirExists = await fs.pathExists(githubDir);
-        expect(githubDirExists).toBe(false);
-    });
-});
+// NOTE: Old validate command tests removed - validate command has been replaced
+// with a new command that validates spec files (requirements.md, design.md, tasks.md)
+// See tests for the new validate command in unit/validate/ directory

@@ -26,9 +26,7 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-            '@test-utils': path.resolve(__dirname, '../test-utils/src'),
-            '@mcp-dist': path.resolve(__dirname, './dist/mcp'),
-            '-dist': path.resolve(__dirname, './dist/mcp')
+            '@test-utils': path.resolve(__dirname, '../test-utils/src')
         },
         extensions: ['.js', '.ts']
     }

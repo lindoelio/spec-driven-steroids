@@ -21,8 +21,8 @@ Read `references/task-patterns.md` when you need examples of atomic task sizing,
 
 If `long-running-work-planning` is available, load it at the start of this phase before decomposing the work. Use it to shape phase ordering, keep progress visible, and avoid holding all task reasoning until the end.
 
-1. **Read Requirements**: Read `specs/changes/<slug>/requirements.md`.
-2. **Read Design**: Read `specs/changes/<slug>/design.md`.
+1. **Read Requirements**: Read `.specs/changes/<slug>/requirements.md`.
+2. **Read Design**: Read `.specs/changes/<slug>/design.md`.
 3. **Read Project Guidelines** (if they exist): Use `Glob` and `Read` to inspect `TESTING.md` and `STYLEGUIDE.md`.
 4. **Retrieve Contextual Memory**: Invoke the `contextual-stewardship` skill to retrieve `workflow` rules.
 5. **Inspect Existing Patterns**: Use `Grep` to find similar task structures in existing specs when helpful.
@@ -30,9 +30,9 @@ If `long-running-work-planning` is available, load it at the start of this phase
 7. **Create Atomic Tasks**: Break each design element into tasks that are concrete and usually completable within one focused session.
 8. **Add Acceptance Criteria Testing**: Create a dedicated penultimate testing phase covering every acceptance criterion.
 9. **Add Final Checkpoint**: Create a final phase that verifies all requirements and overall spec completeness.
-10. **Validate Tasks**: Call `mcp:verify_tasks_file` using `tasks.md` and `design.md` content.
-11. **Validate Full Spec**: Call `mcp:verify_complete_spec` for `<slug>`.
-12. **Write Before Review**: Save to `specs/changes/<slug>/tasks.md` before asking for approval.
+10. **Validate Tasks**: Run `spec-driven validate tasks .specs/changes/<slug>/tasks.md` using `tasks.md` and `design.md` content.
+11. **Validate Full Spec**: Run `spec-driven validate spec <slug>`.
+12. **Write Before Review**: Save to `.specs/changes/<slug>/tasks.md` before asking for approval.
 
 ## Per-Phase Todo List
 
@@ -59,7 +59,7 @@ When this skill begins execution, create a todo list containing the following it
 
 ## Output File
 
-`specs/changes/<slug>/tasks.md`
+`.specs/changes/<slug>/tasks.md`
 
 ## Required Document Structure
 
@@ -259,9 +259,9 @@ Ask a clarifying question only if the ambiguity would materially change:
 
 ## Validation and Recovery
 
-### MCP Validation Failures
+### CLI Validation Failures
 
-When `mcp:verify_tasks_file` or `mcp:verify_complete_spec` returns errors:
+When `spec-driven validate tasks` or `spec-driven validate spec` returns errors:
 
 1. Add missing required sections or phases.
 2. Fix task numbering and checkbox formatting.
@@ -305,7 +305,7 @@ Before returning the tasks, verify:
 
 ## Output Requirements
 
-- Write `specs/changes/<slug>/tasks.md` before requesting review
+- Write `.specs/changes/<slug>/tasks.md` before requesting review
 - Prefer validator-compatible structure over decorative formatting
 - Keep the plan concise but complete enough for direct implementation
 - Return ordinary prose summary after the file is written; do not wrap the artifact in XML
@@ -334,7 +334,7 @@ After completing tasks and before requesting approval, invoke the `quality-gradi
 
 ```
 Invoke: quality-grading skill
-Artifact: specs/changes/<slug>/tasks.md
+Artifact: .specs/changes/<slug>/tasks.md
 Mode: grade-and-fix
 ```
 

@@ -5,8 +5,7 @@
     "type": "module",
     "main": "dist/cli/index.js",
     "bin": {
-        "spec-driven-steroids": "dist/cli/index.js",
-        "spec-driven-mcp": "dist/mcp/index.js"
+        "spec-driven-steroids": "dist/cli/index.js"
     },
     "files": [
         "dist",
@@ -27,7 +26,6 @@
         "prepublishOnly": "pnpm build"
     },
     "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.26.0",
         "commander": "^11.1.0",
         "inquirer": "^9.2.12",
         "chalk": "^5.3.0",

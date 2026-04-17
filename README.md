@@ -7,14 +7,14 @@ Inject Spec-Driven Development into AI coding tools without building a new UI.
 
 ## What it is
 
-`spec-driven-steroids` is a CLI plus MCP server plus template bundle for running a strict workflow inside AI coding tools:
+`spec-driven-steroids` is a CLI plus template bundle for running a strict workflow inside AI coding tools:
 
 `requirements -> design -> tasks -> implementation`
 
 It injects:
 - platform-specific agents, commands, or workflows
 - universal writing/implementation skills
-- MCP validation tools for spec structure and traceability
+- CLI validation commands for spec structure and traceability
 
 ## Supported platforms
 
@@ -30,7 +30,7 @@ It injects:
 Spec-Driven planning writes artifacts to:
 
 ```text
-specs/changes/<slug>/
+.specs/changes/<slug>/
   requirements.md
   design.md
   tasks.md
@@ -74,21 +74,21 @@ spec-driven-steroids inject
 
 4. Approve each planning phase as it completes, then move to implementation.
 
-## Validation tools
+## Validation commands
 
-The bundled MCP server provides 5 tools:
+The CLI provides 5 validation commands:
 
-| Tool | Purpose |
+| Command | Purpose |
 | --- | --- |
-| `verify_spec_structure` | Validate spec folder structure |
-| `verify_requirements_file` | Validate EARS requirements |
-| `verify_design_file` | Validate design structure and Mermaid usage |
-| `verify_tasks_file` | Validate task structure and traceability |
-| `verify_complete_spec` | Validate the full spec end to end |
+| `spec-driven validate structure` | Validate spec folder structure |
+| `spec-driven validate requirements` | Validate EARS requirements |
+| `spec-driven validate design` | Validate design structure and Mermaid usage |
+| `spec-driven validate tasks` | Validate task structure and traceability |
+| `spec-driven validate spec` | Validate the full spec end to end |
 
 ## Optional: Sequential-Thinking MCP
 
-For agents working on complex, long-running tasks, you can optionally add the sequential-thinking MCP server alongside the internal MCP. This provides structured reasoning capabilities to help agents break down complex problems and avoid timeout errors.
+For agents working on complex, long-running tasks, you can optionally add the sequential-thinking MCP server alongside the CLI. This provides structured reasoning capabilities to help agents break down complex problems and avoid timeout errors.
 
 ### During Injection
 
@@ -98,7 +98,7 @@ When running `spec-driven-steroids inject`, you'll be prompted:
 Add sequential-thinking MCP server? (Enables structured reasoning for long-running tasks)
 ```
 
-Select **Yes** to automatically configure both MCP servers.
+Select **Yes** to automatically configure the MCP server.
 
 ### Manual Configuration
 
@@ -138,7 +138,7 @@ If you need to add it later, add this to your platform's MCP configuration:
 
 ### Requirements
 
-The sequential-thinking MCP is **optional** and does not affect the internal MCP functionality. To use it:
+The sequential-thinking MCP is **optional** and does not affect CLI validation functionality. To use it:
 
 1. Ensure `npx` is available in your environment
 2. The package `@modelcontextprotocol/server-sequential-thinking` will be downloaded automatically on first use
@@ -151,7 +151,8 @@ For more details, see the `long-running-work-planning` skill documentation.
 packages/
   cli/
     src/cli/        CLI injection and validation commands
-    src/mcp/        MCP validation server
+    src/core/validate/   Validation modules
+    src/context-stewardship/   Knowledge graph system
     templates/      Platform wrappers and universal skills
   test-utils/       Shared fixtures and helpers
   landing-page/     Documentation site

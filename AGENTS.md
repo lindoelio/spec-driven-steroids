@@ -27,7 +27,6 @@ You are a **Spec-Driven Development Engineer** working on the Spec-Driven Steroi
 | Test | Vitest 2.1.0 |
 | CLI Framework | Commander.js |
 | Interactive Prompts | Inquirer |
-| MCP SDK | @modelcontextprotocol/sdk |
 | Versioning | Changesets |
 
 ---
@@ -84,10 +83,12 @@ pnpm --filter @spec-driven-steroids/cli test
 
 ```
 packages/
-├── cli/                    # Main package: CLI + MCP Server + Templates
-│   ├── src/cli/           # Terminal interface (inject, validate commands)
-│   ├── src/mcp/           # MCP server with 5 validation tools
-│   ├── templates/         # Platform-specific templates (github, opencode, antigravity, codex)
+├── cli/                    # Main package: CLI + Validation + Templates
+│   ├── src/
+│   │   ├── cli/           # Terminal interface (inject, validate commands)
+│   │   ├── core/validate/ # Validation modules (structure, requirements, design, tasks, spec)
+│   │   └── context-stewardship/  # Knowledge graph system (orchestrator, lifecycle, graceful degradation)
+│   ├── templates/         # Platform-specific templates (github, opencode, antigravity, codex, claudecode)
 │   └── tests/             # Unit and integration tests
 ├── test-utils/            # Shared testing utilities and fixtures
 └── landing-page/          # Vite-based documentation site
@@ -106,17 +107,26 @@ packages/
 
 ---
 
-## MCP Tool Reference
+## Validation Commands
 
-The MCP server provides 5 validation tools:
+The CLI provides 5 validation commands under `spec-driven-steroids validate`:
 
-| Tool | Purpose |
-|------|---------|
-| `verify_spec_structure` | Validates folder structure and file existence |
-| `verify_requirements_file` | Validates EARS patterns and REQ-X numbering |
-| `verify_design_file` | Validates Mermaid diagrams and DES-X traceability |
-| `verify_tasks_file` | Validates task checkboxes and phase structure |
-| `verify_complete_spec` | Cross-file validation and traceability |
+| Command | Purpose |
+|---------|---------|
+| `validate structure` | Validates folder structure and file existence |
+| `validate requirements` | Validates EARS patterns and REQ-X numbering |
+| `validate design` | Validates Mermaid diagrams and DES-X traceability |
+| `validate tasks` | Validates task checkboxes and phase structure |
+| `validate spec` | Cross-file validation and traceability |
+
+### MCP Server Configuration
+
+The CLI can configure external MCP servers for AI platforms:
+
+| MCP Server | Purpose |
+|------------|---------|
+| `sequential-thinking` | Structured reasoning for complex problems |
+| `memory` | Persistent memory across conversations |
 
 ---
 

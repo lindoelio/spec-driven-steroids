@@ -277,9 +277,7 @@ describe('CLI E2E: inject --global preserves existing MCP entries', () => {
 
         const config = await fs.readJson(configPath);
 
-        // New steroids entry should be added
-        expect(config.mcp['spec-driven-steroids']).toBeDefined();
-        expect(config.mcp['spec-driven-steroids'].type).toBe('local');
+        // Note: spec-driven-steroids MCP server is no longer added - CLI has been replaced with validate command
 
         // Existing entries should be preserved
         expect(config.mcp['my-existing-server']).toBeDefined();

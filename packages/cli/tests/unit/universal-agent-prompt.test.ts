@@ -45,17 +45,14 @@ describe('Unit: Universal Agent Prompt', () => {
     expect(content).not.toContain('subagent');
   });
 
-  it('uses consistent MCP invocation syntax', async () => {
+  it('uses consistent CLI invocation syntax', async () => {
     const universalPath = path.join(templatesDir, 'universal/agents/spec-driven.agent.md');
     const content = await fs.readFile(universalPath, 'utf-8');
-    
-    // Should use mcp: prefix for MCP tools
-    expect(content).toContain('mcp:verify_requirements_file');
-    expect(content).toContain('mcp:verify_design_file');
-    expect(content).toContain('mcp:verify_tasks_file');
-    expect(content).toContain('mcp:verify_complete_spec');
-    
-    // Should NOT use alternative prefixes
-    expect(content).not.toContain('mcp__spec-driven-steroids__');
+
+    // Should use CLI commands for validation
+    expect(content).toContain('spec-driven validate requirements');
+    expect(content).toContain('spec-driven validate design');
+    expect(content).toContain('spec-driven validate tasks');
+    expect(content).toContain('spec-driven validate spec');
   });
 });

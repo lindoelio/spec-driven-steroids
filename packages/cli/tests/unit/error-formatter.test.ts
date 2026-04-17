@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { formatError, findLineNumber, addLineInfo } from '@mcp-dist/index.js';
+import { formatError, addLineInfo } from '../../src/core/validate/shared/formatter.js';
+import { findLineNumber } from '../../src/core/validate/shared/ids.js';
 
 describe('MCP Unit: formatError', () => {
     it('formats error with all fields', () => {
