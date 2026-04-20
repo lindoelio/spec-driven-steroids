@@ -36,6 +36,7 @@ Universal dimensions evaluated for every audit:
 | Traceability | Can we trace it? | Partial |
 | Safety | Could it cause harm? | No |
 | Maintainability | Will future devs thank us? | Partial |
+| Rigorous Against Prompt/Spec | Does it match the original intent? | Partial |
 
 ### Layer 2: Change-Type Modules (Per-Invocation)
 
@@ -100,7 +101,7 @@ Activated when relevant context is detected:
    └─ Core (always) → Type module → Extensions (if detected)
 
 5. EVALUATE dimensions
-   └─ Universal (6) → Type-specific → Extension-specific
+   └─ Universal (7) → Type-specific → Extension-specific
 
 6. CLASSIFY findings
    └─ Severity (blocking, warning, info)

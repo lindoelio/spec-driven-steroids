@@ -2,6 +2,8 @@
 
 Auto-activates when `.specs/` directory or spec artifacts are detected.
 
+**Note:** "Rigorous Against Prompt/Spec" is a CORE dimension (always active for every audit). This extension provides additional spec-specific verification beyond that core check.
+
 ## Activation Triggers
 
 - `.specs/` directory exists
@@ -34,13 +36,14 @@ Verify prerequisite phases are complete:
 | Tasks | Design approved |
 | Implementation | Tasks approved |
 
-### 3. Spec Adherence
+### 3. Spec-Specific Adherence
 
-Verify implementation matches approved design:
+Additional spec-driven checks beyond CORE "Rigorous Against Prompt/Spec":
 
 - Code changes match TASK descriptions
 - No scope creep (changes outside spec scope)
 - No descoping without explicit approval
+- Phase gate sequencing is correct
 
 ### 4. Scope Creep Detection
 
