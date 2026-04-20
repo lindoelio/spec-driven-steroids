@@ -34,12 +34,18 @@ npm install -g spec-driven-steroids
 Requirements:
 - Node.js `>=20`
 
+The CLI provides two command names that work interchangeably:
+- `sds` (short alias - recommended)
+- `spec-driven-steroids` (full name)
+
+Both commands work identically.
+
 ## Quick start
 
 1. Inject platform files into a repository:
 
 ```bash
-spec-driven-steroids inject
+sds inject
 ```
 
 2. Generate project guidance first:
@@ -62,11 +68,11 @@ The CLI provides 5 validation commands:
 
 | Command | Purpose |
 | --- | --- |
-| `spec-driven validate structure` | Validate spec folder structure |
-| `spec-driven validate requirements` | Validate EARS requirements |
-| `spec-driven validate design` | Validate design structure and Mermaid usage |
-| `spec-driven validate tasks` | Validate task structure and traceability |
-| `spec-driven validate spec` | Validate the full spec end to end |
+| `sds validate structure <slug>` | Validate spec folder structure |
+| `sds validate requirements <path>` | Validate EARS requirements |
+| `sds validate design <path>` | Validate design structure and Mermaid usage |
+| `sds validate tasks <path>` | Validate task structure and traceability |
+| `sds validate spec <slug>` | Validate the full spec end to end |
 
 ## Package contents
 
