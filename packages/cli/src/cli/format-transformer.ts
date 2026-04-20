@@ -133,6 +133,28 @@ function escapeTomlString(value: string): string {
 }
 
 /**
+ * Transform command content to TOML format for Gemini CLI custom commands.
+ * Uses description and prompt fields per Gemini CLI custom commands spec.
+ *
+ * @param body - The prompt body content
+ * @param description - The command description
+ * @returns Transformed content in TOML format for Gemini CLI
+ */
+export function transformToTomlCommand(body: string, description: string): string {
+  const lines: string[] = [];
+
+  // Add description field
+  lines.push(`description = "${escapeTomlString(description)}"`);
+
+  // Add prompt as multi-line string
+  lines.push('prompt = """');
+  lines.push(body);
+  lines.push('"""');
+
+  return lines.join('\n');
+}
+
+/**
  * Transform result containing the transformed content and verification status.
  */
 export interface TransformResult {

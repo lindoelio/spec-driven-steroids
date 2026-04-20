@@ -63,3 +63,33 @@ export function getGeminiCliProjectSkillsDir(targetDir: string): string {
 export function getGeminiCliProjectMcpPath(targetDir: string): string {
   return path.join(targetDir, ".gemini", "mcp_config.json")
 }
+
+/**
+ * Returns the Gemini CLI user-level agents directory.
+ * Agents are stored in ~/.gemini/agents/ for user-level access.
+ */
+export function getGeminiCliUserAgentsDir(): string {
+  return path.join(os.homedir(), ".gemini", "agents")
+}
+
+/**
+ * Returns the Gemini CLI user-level commands directory.
+ * Commands are stored in ~/.gemini/commands/ for user-level access.
+ */
+export function getGeminiCliUserCommandsDir(): string {
+  return path.join(os.homedir(), ".gemini", "commands")
+}
+
+/**
+ * Returns the Gemini CLI project-level agents directory path.
+ */
+export function getGeminiCliProjectAgentsDir(targetDir: string): string {
+  return path.join(targetDir, ".gemini", "agents")
+}
+
+/**
+ * Returns the Gemini CLI project-level commands directory path.
+ */
+export function getGeminiCliProjectCommandsDir(targetDir: string): string {
+  return path.join(targetDir, ".gemini", "commands")
+}

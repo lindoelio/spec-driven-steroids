@@ -28,7 +28,9 @@ import {
   GeminiCliInjectionScope,
   getGeminiCliGlobalMcpPath,
   getGeminiCliUserSkillsDir,
-  getGeminiCliAgentsAliasDir
+  getGeminiCliAgentsAliasDir,
+  getGeminiCliUserAgentsDir,
+  getGeminiCliUserCommandsDir
 } from './gemini-cli-scope.js';
 import {
   QwenCodeInjectionScope,
@@ -61,6 +63,22 @@ const UNIFIED_SCOPE_PROMPT_OPTIONS = [
 ];
 
 const DEFAULT_UNIFIED_SCOPE = UnifiedInjectionScope.GLOBAL;
+
+const STEROIDS_SERVER_NAME = 'spec-driven-steroids';
+
+const STEROIDS_FILES = {
+  agents: ['spec-driven.agent.md'],
+  commands: ['spec-driven.command.md', 'inject-guidelines.md']
+} as const;
+
+const STEROIDS_SKILL_DIRS = [
+  'spec-driven-technical-designer',
+  'spec-driven-task-implementer',
+  'spec-driven-requirements-writer',
+  'spec-driven-task-decomposer',
+  'long-running-work-planning',
+  'project-guidelines-writer'
+] as const;
 
 interface McpConfig {
   mcpServers?: Record<string, McpServerEntry>;
@@ -329,18 +347,14 @@ program
             // User-level injection
             await configureGeminiCliMcp(geminiCliScope, targetDir, addSequentialThinkingMcp, addMemoryMcp)
 
-            // For gemini-cli, agentDirectory is 'skills', skills go to ~/.gemini/skills/
+            // For gemini-cli: agents go to ~/.gemini/agents/, commands to ~/.gemini/commands/, skills to ~/.gemini/skills/
             platformDest = path.join(os.homedir(), '.gemini')
             transformDestDir = platformDest
 
-            // Also copy to alias location ~/.agents/skills/
-            const aliasDir = getGeminiCliAgentsAliasDir()
-            await fs.ensureDir(aliasDir)
-            await fs.copy(universalSkillsDir, aliasDir, { overwrite: true })
-
             console.log(chalk.green(`✅ Gemini CLI configured at user level`))
+            console.log(chalk.cyan(`   Agents: ${getGeminiCliUserAgentsDir()}/`))
+            console.log(chalk.cyan(`   Commands: ${getGeminiCliUserCommandsDir()}/`))
             console.log(chalk.cyan(`   Skills: ${getGeminiCliUserSkillsDir()}/`))
-            console.log(chalk.cyan(`   Alias: ${aliasDir}/`))
           } else {
             // Project-level injection
             await configureGeminiCliMcp(geminiCliScope, targetDir, addSequentialThinkingMcp, addMemoryMcp)
@@ -406,6 +420,15 @@ program
           console.log(chalk.green(`✅ ${platform} config and universal skills injected.`));
         }
 
+        // Sync alias directory for Gemini CLI after skills are copied to native location
+        // This ensures ~/.gemini/skills/ is the authoritative source and ~/.agents/skills/ is synced from it
+        if (platform === 'gemini-cli' && geminiCliScope === GeminiCliInjectionScope.USER) {
+          const nativeSkillsDir = getGeminiCliUserSkillsDir();
+          const aliasDir = getGeminiCliAgentsAliasDir();
+          await fs.ensureDir(aliasDir);
+          await fs.copy(nativeSkillsDir, aliasDir, { overwrite: true });
+        }
+
       } catch (err) {
         console.error(chalk.red(`❌ Failed to inject ${platform} config:`, err));
       }
@@ -417,7 +440,7 @@ program
 program
   .command('clean')
   .description('Remove globally injected Spec-Driven Steroids')
-  .requiredOption('--global', 'Clean global steroids from all platforms')
+  .option('--global', 'Clean global steroids from all platforms (default)')
   .option('-y, --yes', 'Skip confirmation prompt')
   .action(async ({ yes }) => {
     console.log(chalk.bold.cyan('\n🧹 Cleaning global steroids...\n'));
@@ -1037,22 +1060,6 @@ async function configureQwenCodeMcp(scope: QwenCodeInjectionScope, targetDir: st
     console.error(chalk.red('Failed to configure Qwen Code MCP:'), error)
   }
 }
-
-const STEROIDS_SERVER_NAME = 'spec-driven-steroids';
-
-const STEROIDS_FILES = {
-  agents: ['spec-driven.agent.md'],
-  commands: ['spec-driven.command.md', 'inject-guidelines.md']
-} as const;
-
-const STEROIDS_SKILL_DIRS = [
-  'spec-driven-technical-designer',
-  'spec-driven-task-implementer',
-  'spec-driven-requirements-writer',
-  'spec-driven-task-decomposer',
-  'long-running-work-planning',
-  'project-guidelines-writer'
-] as const;
 
 function buildCleanPreview(): string {
   const vscodeMcpPath = getVSCodeUserProfileMcpPath();

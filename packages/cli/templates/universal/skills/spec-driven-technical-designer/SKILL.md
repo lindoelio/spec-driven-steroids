@@ -42,7 +42,7 @@ When this skill begins execution, create a todo list containing the following it
 5. Classify change type
 6. Design architecture with design elements
 7. Validate design
-8. Quality grade design
+8. Audit design (agent-work-auditor)
 9. Save design.md
 
 ### Progress Rules
@@ -395,6 +395,58 @@ If revising an existing `design.md`:
 4. Re-run validation.
 5. Reconfirm traceability consistency.
 
+## Auditing Integration
+
+After completing design and before requesting approval, invoke the `agent-work-auditor` skill to perform a unified audit:
+
+```
+Invoke: agent-work-auditor skill
+Artifact: .specs/changes/<slug>/design.md
+ChangeType: feat
+Mode: standard
+Extensions: spec-driven
+```
+
+The `agent-work-auditor` provides a three-layer audit:
+
+### Layer 1: Core Dimensions (Always Evaluated)
+
+| Dimension | Focus | Auto-Fix |
+|-----------|-------|----------|
+| Completeness | All design elements present? | Yes |
+| Correctness | Valid Mermaid syntax, proper DES-* structure? | Yes |
+| Consistency | Consistent with existing patterns? | Yes |
+| Traceability | DES-* → REQ-* links complete? | Partial |
+| Safety | No harmful side effects? | No |
+| Maintainability | Clear and maintainable diagrams? | Partial |
+
+### Layer 2: Change-Type Module
+
+Based on classified change type (new-feature, enhancement, refactoring, etc.):
+- Applies appropriate rigor level for the design depth required
+
+### Layer 3: Spec-Driven Extension
+
+- **Rigorous Against Prompt/Spec**: Verifies design aligns with approved requirements
+- **Traceability Matrix**: Confirms all DES-* elements trace to REQ-* requirements
+- **Phase Gate Verification**: Confirms requirements phase passed before design approval
+
+### Composition: quality-grading (Originality Dimension)
+
+The agent-work-auditor internally composes `quality-grading` for the **Originality** dimension:
+- **Originality**: Domain-specific architecture vs generic templates
+
+This composition ensures comprehensive quality assessment without requiring separate skill invocation.
+
+### Self-Fix Loop
+
+agent-work-auditor will:
+1. Auto-fix direct-fix findings (up to 2 passes)
+2. Escalate remaining issues to author-required
+3. Output a structured audit report with verdict
+
+The audit verdict (Approve / Request Changes / Approval with Notes) determines whether to proceed to Phase 3.
+
 ## Quality Bar (Self-Check)
 
 Before returning the design, verify:
@@ -436,21 +488,3 @@ Query: architecture
 ```
 
 This ensures the new design aligns with existing tech stack choices, design patterns, and tooling decisions.
-
-## Quality Grading Integration
-
-After completing design and before requesting approval, invoke the `quality-grading` skill to assess and improve design quality:
-
-```
-Invoke: quality-grading skill
-Artifact: .specs/changes/<slug>/design.md
-Mode: grade-and-fix
-```
-
-This ensures the design document meets quality standards across:
-- **Design Quality**: Architecture clarity, module boundaries, scalability patterns, diagram quality
-- **Originality**: Domain-specific architecture vs generic templates
-- **Craft**: Diagram clarity, consistent formatting, completeness
-- **Functionality**: All requirements covered, feasibility, traceability matrix
-
-The quality-grading skill will auto-fix issues scoring below 4 and provide actionable suggestions for remaining gaps.

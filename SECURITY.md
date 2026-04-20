@@ -1,204 +1,176 @@
 # SECURITY.md
 
-> Security policy and practices for Spec-Driven Steroids.
+> Security policy, vulnerability reporting, and security practices for Spec-Driven Steroids.
 
 <!-- SpecDriven:managed:start -->
 
-## Security Policy
+## Reporting Security Issues
 
-### Supported Versions
+### How to Report
 
-| Version | Supported |
-| ------- | --------- |
-| 0.7.x   | ✅ |
-| < 0.7.0 | ❌ |
+If you discover a security vulnerability, please report it responsibly:
 
----
-
-## Reporting a Vulnerability
-
-**Do NOT open a public issue for security vulnerabilities.**
-
-Instead, report vulnerabilities privately:
-
-1. Email: [lindoelio@gmail.com](mailto:lindoelio@gmail.com)
-2. Subject: `[SECURITY] Spec-Driven Steroids Vulnerability`
+1. **Do NOT** create a public GitHub issue
+2. Email: `lindoelio [at] gmail.com`
 3. Include:
    - Description of the vulnerability
    - Steps to reproduce
    - Potential impact
-   - Suggested fix (if any)
+   - Any suggested fixes (optional)
 
 ### Response Timeline
 
-| Stage | Timeline |
-|-------|----------|
-| Acknowledgment | Within 48 hours |
-| Initial Assessment | Within 7 days |
-| Fix Development | Varies by severity |
-| Release | Within 30 days (critical) |
+| Timeline | Action |
+|----------|--------|
+| 24-48 hours | Acknowledge report |
+| 7 days | Initial fix proposal |
+| 30 days | Public disclosure |
 
----
+## Security Practices
 
-## Security Rules
+### Input Validation
 
-### 1. No Secrets in Code
-
-**Never commit:**
-- API keys
-- Tokens
-- Passwords
-- Private keys
-- Database credentials
+All user inputs must be validated:
 
 ```typescript
-// ❌ WRONG
-const apiKey = 'sk-abc123...';
+interface ValidationSchema {
+  type: 'string' | 'number' | 'enum';
+  required?: boolean;
+  min?: number;
+  max?: number;
+  pattern?: RegExp;
+  allowedValues?: string[];
+}
 
-// ✅ CORRECT
-const apiKey = process.env.API_KEY;
-```
-
-### 2. Input Validation
-
-All user inputs must be validated before processing:
-
-```typescript
-function validateSlug(slug: string): boolean {
-    if (!slug || typeof slug !== 'string') return false;
-    if (slug.length > 100) return false;
-    return /^[a-z0-9-]+$/.test(slug);
+function validateInput(input: unknown, schema: ValidationSchema): ValidationResult {
+  if (schema.required && !input) {
+    return { valid: false, error: 'Input required' };
+  }
+  // Additional validation logic
 }
 ```
 
-### 3. Path Traversal Prevention
+### File System Operations
 
-Validate and sanitize file paths:
+- Validate all file paths to prevent directory traversal
+- Use path.resolve() to normalize paths
+- Restrict operations to specified directories
 
 ```typescript
-import path from 'path';
+const ALLOWED_DIRECTORIES = [
+  process.cwd(),
+  os.homedir()
+];
 
-function safePath(baseDir: string, userPath: string): string {
-    const resolved = path.resolve(baseDir, userPath);
-    if (!resolved.startsWith(baseDir)) {
-        throw new Error('Path traversal attempt detected');
-    }
-    return resolved;
+function isPathAllowed(filePath: string): boolean {
+  const resolved = path.resolve(filePath);
+  return ALLOWED_DIRECTORIES.some(dir => resolved.startsWith(dir));
 }
 ```
 
-### 4. Validation Command Security
+### Command Injection Prevention
 
-Validation commands must:
-- Validate all input parameters
-- Sanitize file paths before filesystem operations
-- Return safe error messages (no stack traces in production)
-- Use structured error formatting
+Never pass unsanitized input to shell commands:
 
 ```typescript
-async function verifySpecStructure(slug: string, targetDir?: string) {
-    // Validate inputs
-    if (!validateSlug(slug)) {
-        throw new Error('Invalid slug format');
-    }
+import { escapeShellArg } from 'shell-escape';
 
-    const baseDir = targetDir || process.cwd();
-    const specDir = safePath(baseDir, `.specs/changes/${slug}`);
+// Use execFile instead of exec
+import { execFile } from 'child_process';
 
-    // Safe filesystem operations
-    // ...
-}
+// Correct
+execFile('spec-driven', ['validate', 'structure'], { cwd: projectDir });
+
+// Avoid
+exec(`spec-driven validate ${userInput}`);
 ```
 
----
+### Sensitive Data Handling
 
-## Security Considerations
+- Never log sensitive data (API keys, tokens, credentials)
+- Clear sensitive data from memory after use
+- Use environment variables for secrets
 
-### CLI Execution
-
-The CLI performs these security-sensitive operations:
-
-| Operation | Risk | Mitigation |
-|-----------|------|------------|
-| File system writes | Data loss | User confirmation, overwrite flags |
-| MCP config modification | Credential exposure | Configurable paths, user consent |
-| Template injection | Code injection | Template validation, no executable code |
-
-### External MCP Configuration
-
-When configuring external MCP servers (sequential-thinking, memory):
-
-| Operation | Risk | Mitigation |
-|-----------|------|------------|
-| Read MCP config | Information disclosure | Path validation, user-owned configs only |
-| Write MCP config | Config corruption | Atomic writes, backups |
-
----
+```typescript
+// Do NOT log sensitive data
+console.log('Processing file:', filePath); // Safe
+console.log('API key:', apiKey); // Unsafe - do NOT do this
+```
 
 ## Dependency Security
 
-### Vulnerability Scanning
+### Update Dependencies
 
-Regular security audits:
+Regularly update dependencies to address known vulnerabilities:
 
 ```bash
-# Check for known vulnerabilities
 pnpm audit
-
-# Update dependencies
-pnpm update
+pnpm audit fix
 ```
 
-### Dependency Policy
+### Dependency Scanning
 
-1. Use minimal dependencies
-2. Prefer well-maintained packages
-3. Review dependency updates before merging
-4. Pin dependency versions in production
+GitHub Dependabot is enabled for this repository. It will:
+- Alert on known vulnerabilities
+- Create PRs with security updates
+- Monitor transitive dependencies
 
----
+## Access Control
 
-## Security Best Practices
+### Scope Restrictions
 
-### For Contributors
+The CLI operates within user-specified scopes:
 
-1. **Never expose internal errors** to end users
-2. **Always validate inputs** at function boundaries
-3. **Use TypeScript strict mode** to catch type errors
-4. **Run `pnpm audit`** before submitting PRs
-5. **Review file operations** for path traversal risks
+| Scope | Access |
+|-------|--------|
+| `project` | Current directory and subdirectories |
+| `global` | Platform config directories only |
 
-### For Users
+Platform scopes ensure:
+- No unauthorized file access
+- Configurable permission boundaries
+- User consent for all operations
 
-1. **Review injected files** before committing to repositories
-2. **Understand MCP permissions** for external MCP servers you configure
-3. **Keep the package updated** for security fixes
-4. **Report suspicious behavior** promptly
+## Platform-Specific Security
 
----
+### Global Injection
 
-## Security Contacts
+Global injection writes to platform directories:
+- `~/.config/` (Linux/macOS)
+- Platform-specific config locations
 
-| Role | Contact |
+Only inject with explicit user consent.
+
+### MCP Servers
+
+MCP servers run in user context. Ensure:
+- No network access beyond necessary
+- Minimal required permissions
+- Proper exit codes on failure
+
+## Security Checklist
+
+Before releasing:
+
+- [ ] Run `pnpm audit` - no high/critical vulnerabilities
+- [ ] Review file system operations - no directory traversal risks
+- [ ] Validate all user inputs - no injection vulnerabilities
+- [ ] Check sensitive data handling - no credentials logged
+- [ ] Test scope restrictions - no unauthorized access
+- [ ] Update dependencies - no known CVEs
+
+## Security Tooling
+
+| Tool | Purpose |
 |------|---------|
-| Maintainer | [Lindoélio Lázaro](mailto:lindoelio@gmail.com) |
-| Security Issues | [lindoelio@gmail.com](mailto:lindoelio@gmail.com) |
+| `pnpm audit` | Dependency vulnerability scanning |
+| Dependabot | Automated security updates |
+| ESLint | Code quality and security patterns |
 
----
-
-## Security Changelog
-
-| Date | Issue | Resolution |
-|------|-------|------------|
-| Initial | Security policy established | N/A |
-
----
+<!-- SpecDriven:managed:end -->
 
 ## See Also
 
-- [AGENTS.md](AGENTS.md) - Build and test commands
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
-- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
+- [AGENTS.md](AGENTS.md) - Project structure
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Development workflow
 - [TESTING.md](TESTING.md) - Testing patterns
-
-<!-- SpecDriven:managed:end -->

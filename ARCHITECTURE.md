@@ -1,411 +1,233 @@
 # ARCHITECTURE.md
 
-> System architecture overview for Spec-Driven Steroids.
+> High-level architecture, system boundaries, and design decisions for Spec-Driven Steroids.
 
 <!-- SpecDriven:managed:start -->
 
 ## System Overview
 
-```mermaid
-flowchart TD
-    subgraph "User Environment"
-        A[Developer Terminal]
-        B[AI Assistant]
-    end
-
-    subgraph "Spec-Driven Steroids"
-        C[CLI Injector]
-        D[MCP Server]
-        E[Template Registry]
-    end
-
-    subgraph "Target Project"
-        F[.github/agents]
-        G[.opencode/skills]
-        H[.agents/workflows]
-    end
-
-    A --> C
-    B --> D
-    C --> E
-    C --> F
-    C --> G
-    C --> H
-    D --> E
-```
-
----
-
-## Core Pillars
-
-### 1. The Brain (Standards)
-
-Universal Markdown-based Skills and Agent Profiles that define specialized roles.
-
-**Location**: `packages/cli/templates/universal/skills/`
-
-| Skill | Purpose |
-|-------|---------|
-| `spec-driven-requirements-writer` | EARS-format requirements documents |
-| `spec-driven-technical-designer` | Technical design with Mermaid diagrams |
-| `spec-driven-task-decomposer` | Atomic implementation task breakdown |
-| `spec-driven-task-implementer` | Feature implementation workflow (includes Phase 5 code review) |
-| `code-review-hardening` | Rigorous, type-aware code review with self-repair loop |
-| `contextual-stewardship` | Architectural decisions and business rules memory |
-| `quality-grading` | Grades code/specs 1-5 across 4 dimensions with auto-fix |
-| `long-running-work-planning` | Multi-step reasoning for complex problems |
-| `project-guidelines-writer` | Project guideline generation |
-
-### 2. The Enforcer (Validation)
-
-TypeScript validation modules with CLI commands for spec validation.
-
-**Location**: `packages/cli/src/core/validate/`
-
-```mermaid
-flowchart LR
-    subgraph "Validation Modules"
-        A[structure.ts]
-        B[requirements.ts]
-        C[design.ts]
-        D[tasks.ts]
-        E[spec.ts]
-    end
-
-    A --> F[File System]
-    B --> G[EARS Parser]
-    C --> H[Mermaid Validator]
-    D --> I[Task Parser]
-    E --> J[Cross-File Validator]
-```
-
-### 3. The Injector (CLI)
-
-Command-line interface for platform injection and MCP configuration.
-
-**Location**: `packages/cli/src/cli/`
-
-### 4. The Memory (Context Stewardship)
-
-Knowledge graph system for persistent architectural memory and graceful degradation.
-
-**Location**: `packages/cli/src/context-stewardship/`
-
-```mermaid
-flowchart TD
-    subgraph "Context Stewardship"
-        A[Orchestrator]
-        B[KnowledgeGraphStore]
-        C[LifecycleManager]
-        D[GracefulDegradationRouter]
-        E[SpecDecisionExtractor]
-        F[McpContextInjector]
-    end
-
-    A --> B
-    A --> C
-    A --> D
-    A --> E
-    A --> F
-    D --> G[(Capability Detection)]
-    F --> H[(MCP Context)]
-```
-
----
+Spec-Driven Steroids injects a structured spec-driven workflow (requirements → design → tasks → implementation) into AI coding platforms without requiring a new UI.
 
 ## Package Architecture
 
 ```mermaid
-flowchart TB
-    subgraph "Monorepo"
-        subgraph "packages/cli"
-            A[src/cli] --> B[CLI Commands]
-            C[src/mcp] --> D[MCP Server]
-            E[templates] --> F[Platform Templates]
-            G[tests] --> H[Unit & Integration Tests]
-        end
+graph TB
+    subgraph "packages/cli"
+        CLI[CLI Entry<br/>(index.ts)]
+        TRANSFORM[Transformation<br/>Pipeline]
+        VALIDATE[Validation Modules]
+        KNOWLEDGE[Knowledge Graph<br/>System]
 
-        subgraph "packages/test-utils"
-            I[src/mocks] --> J[MockFileSystem]
-            K[src/fixtures] --> L[Test Fixtures]
-        end
-
-        subgraph "packages/landing-page"
-            M[Vite App]
-        end
+        CLI -->|injects| PLATFORMS[Platform Scopes]
+        CLI -->|validates| VALIDATE
+        CLI -->|manages| KNOWLEDGE
     end
 
-    A --> I
-    G --> I
+    subgraph "packages/test-utils"
+        MOCKS[MockFileSystem]
+        FIXTURES[Fixtures]
+    end
+
+    subgraph "packages/landing-page"
+        DOCS[Documentation Site]
+    end
+
+    VALIDATE -.->|uses| MOCKS
+    KNOWLEDGE -.->|stores| MOCKS
 ```
 
----
+## Core Packages
 
-## Package Responsibilities
+### packages/cli
 
-| Package | Responsibility |
-|---------|---------------|
-| `cli` | Main distribution: CLI, MCP Server, Templates |
-| `test-utils` | Shared testing utilities and fixtures |
-| `landing-page` | Documentation website |
+Main CLI package providing injection and validation.
 
----
+| Module | Responsibility |
+|--------|---------------|
+| `src/cli/` | CLI entry points, platform injection |
+| `src/core/validate/` | Requirements, design, tasks, structure validation |
+| `src/context-stewardship/` | Knowledge graph and semantic retrieval |
+| `templates/` | Platform-specific agents, commands, skills |
 
-## CLI Package Structure
+### packages/test-utils
+
+Shared testing utilities.
+
+| Module | Responsibility |
+|--------|---------------|
+| `src/mocks/mock-fs.ts` | Mock file system for tests |
+| `src/fixtures/` | Test fixtures for validation |
+
+### packages/landing-page
+
+Documentation site built with Vite/Svelte.
+
+## Injection Architecture
+
+### Platform Injection Flow
+
+```mermaid
+sequenceDiagram
+    User->>CLI: spec-driven inject
+    CLI->>CLI: Detect platform
+    CLI->>Platform: Load platform scope
+    Platform-->>CLI: Return injection paths
+    CLI->>CLI: Transform templates
+    CLI->>FileSystem: Write platform files
+    FileSystem-->>CLI: Confirm
+    CLI->>User: Success message
+```
+
+### Supported Platforms
+
+| Platform | Scope Type | Injection Target |
+|----------|-----------|------------------|
+| Antigravity | project | `/spec-driven` agent |
+| Claude Code | project | `CLAUDE.md` |
+| Gemini CLI | global | MCP servers, agents, commands |
+| GitHub Copilot CLI | global | MCP servers, skills |
+| GitHub Copilot VS Code | global | MCP config |
+| GitHub Copilot JetBrains | global | MCP config |
+| OpenCode | global | MCP config, skills |
+| OpenAI Codex | project | Agent instructions |
+| Qwen Code | global | MCP config, skills |
+
+## Validation Architecture
+
+### Validation Layers
+
+```mermaid
+graph TD
+    INPUT[CLI Input<br/>or File] --> STRUCTURE[Structure<br/>Validation]
+
+    STRUCTURE --> REQ[Requirements<br/>Validation]
+
+    REQ --> DESIGN[Design<br/>Validation]
+
+    DESIGN --> TASKS[Tasks<br/>Validation]
+
+    TASKS --> RESULT[Validation<br/>Result]
+
+    REQ -->|EARS patterns| REQ
+    DESIGN -->|Mermaid| DESIGN
+    TASKS -->|Traceability| TASKS
+```
+
+### Validation Modules
+
+| Module | Validates |
+|--------|-----------|
+| `structure.ts` | Spec folder structure, required files |
+| `requirements.ts` | EARS syntax, REQ-ID format |
+| `design.ts` | Mermaid diagrams, architecture sections |
+| `tasks.ts` | Task structure, traceability links |
+| `spec.ts` | Full spec end-to-end |
+
+## Context Stewardship
+
+Knowledge graph system for persisting architectural decisions.
+
+```mermaid
+graph LR
+    EXTRACT[Spec Decision<br/>Extractor] --> GRAPH[Knowledge<br/>Graph]
+    GRAPH --> RETRIEVE[Semantic<br/>Retrieval]
+    RETRIEVE --> INJECT[Context<br/>Injector]
+    INJECT --> AGENT[AI Agent<br/>Context]
+```
+
+### Components
+
+| Component | Responsibility |
+|-----------|---------------|
+| `knowledge-graph-store.ts` | JSON graph persistence |
+| `semantic-retrieval-engine.ts` | Semantic search |
+| `spec-decision-extractor.ts` | Extract decisions from specs |
+| `orchestrator.ts` | Coordinate components |
+| `domain-taxonomy.ts` | Categorize decisions |
+
+## Design Decisions
+
+### Technology Choices
+
+| Decision | Rationale |
+|----------|-----------|
+| TypeScript ESM | Modern Node.js support, tree-shaking |
+| Commander for CLI | Simple CLI framework, subcommands |
+| Vitest for testing | Fast, near Jest compatibility |
+| fs-extra | Promise-based file operations |
+| Changesets | Semantic versioning, changelog auto-generation |
+
+### Module Resolution
+
+Uses `.js` extension for runtime compatibility:
+
+```typescript
+// Source (.ts)
+import { validateRequirements } from './requirements.js';
+
+// Bundler resolves .ts → .js at build time
+```
+
+### Error Handling Strategy
+
+- Typed validation errors with context
+- Suggested fixes in error messages
+- Skill documentation links
+- Exit codes for CLI integration
+
+## File Structure
 
 ```
 packages/cli/
 ├── src/
-│   ├── cli/                  # Terminal interface and injection
-│   │   ├── index.ts         # CLI entry point, commands
-│   │   ├── platform-config.ts
-│   │   ├── template-source.ts
+│   ├── cli/
+│   │   ├── index.ts           # Main CLI entry
 │   │   ├── transformation-pipeline.ts
 │   │   ├── format-transformer.ts
-│   │   └── opencode-scope.ts
-│   ├── core/validate/       # Validation modules
-│   │   ├── index.ts         # validate command factory
-│   │   ├── requirements.ts  # EARS validation
-│   │   ├── design.ts        # Mermaid validation
-│   │   ├── tasks.ts        # Task phase validation
-│   │   ├── structure.ts    # File structure validation
-│   │   ├── spec.ts         # Cross-file validation
-│   │   └── shared/         # Shared utilities
-│   └── context-stewardship/ # Knowledge graph system
+│   │   ├── template-source.ts
+│   │   └── platform-scopes/
+│   │       ├── antigravity-scope.ts
+│   │       ├── opencode-scope.ts
+│   │       ├── github-copilot-scope.ts
+│   │       ├── github-copilot-cli-scope.ts
+│   │       ├── gemini-cli-scope.ts
+│   │       └── qwen-code-scope.ts
+│   ├── core/
+│   │   └── validate/
+│   │       ├── index.ts
+│   │       ├── structure.ts
+│   │       ├── requirements.ts
+│   │       ├── design.ts
+│   │       ├── tasks.ts
+│   │       ├── spec.ts
+│   │       └── shared/
+│   │           ├── formatter.ts
+│   │           ├── traceability.ts
+│   │           ├── ids.ts
+│   │           ├── ears.ts
+│   │           └── mermaid.ts
+│   └── context-stewardship/
 │       ├── orchestrator.ts
 │       ├── knowledge-graph-store.ts
-│       ├── lifecycle-manager.ts
+│       ├── semantic-retrieval-engine.ts
+│       ├── spec-decision-extractor.ts
+│       ├── domain-taxonomy.ts
 │       ├── graceful-degradation-router.ts
-│       └── types.ts
+│       └── lifecycle-manager.ts
 ├── templates/
-│   ├── github/               # GitHub Copilot templates
-│   ├── opencode/             # OpenCode templates
-│   ├── antigravity/          # Google Antigravity templates
-│   ├── codex/                # OpenAI Codex templates
-│   ├── claudecode/           # Claude Code templates
-│   └── universal/            # Platform-agnostic skills
+│   └── universal/
+│       ├── agents/
+│       ├── commands/
+│       └── skills/
 └── tests/
-    ├── unit/                 # Unit tests
-    └── integration/          # Integration tests
+    ├── unit/
+    └── integration/
 ```
 
----
-
-## Validation Architecture
-
-```mermaid
-sequenceDiagram
-    participant CLI as spec-driven CLI
-    participant Val as Validation Modules
-    participant FS as File System
-
-    CLI->>Val: validate structure <slug>
-    Val->>FS: Check .specs/changes/<slug>/
-    FS-->>Val: Directory contents
-    Val-->>CLI: Structure result
-
-    CLI->>Val: validate requirements <path>
-    Val->>Val: Parse EARS patterns
-    Val->>Val: Check REQ-X numbering
-    Val-->>CLI: Requirements result
-
-    CLI->>Val: validate spec <slug>
-    Val->>FS: Read all 3 files
-    Val->>Val: Cross-file traceability
-    Val-->>CLI: Complete validation
-```
-
----
-
-## Validation Module Responsibilities
-
-| Module | Scope | Validates |
-|--------|-------|-----------|
-| `structure.ts` | File system | Directory exists, required files present |
-| `requirements.ts` | Content | EARS patterns, REQ-X IDs, acceptance criteria |
-| `design.ts` | Content | Mermaid diagrams, DES-X IDs, traceability |
-| `tasks.ts` | Content | Phases, checkboxes, status markers, traceability |
-| `spec.ts` | Cross-file | End-to-end traceability REQ → DES → Task |
-
----
-
-## Platform Injection Flow
-
-```mermaid
-flowchart TD
-    A[User runs inject] --> B{Select Platforms}
-    B --> C[GitHub VS Code]
-    B --> D[GitHub JetBrains]
-    B --> E[Google Antigravity]
-    B --> F[OpenCode]
-    B --> G[OpenAI Codex]
-    B --> H[Claude Code]
-
-    C --> I[.github/agents + skills]
-    D --> J[Global MCP config]
-    E --> K[.agents/workflows]
-    F --> L[.opencode/skills + agents]
-    G --> M[.codex/agents + commands]
-    H --> N[.claude/commands]
-
-    G --> L
-    J --> L
-    K --> L
-
-    C --> O[.vscode/mcp.json]
-    D --> P[~/.../intellij/mcp.json]
-    E --> Q[~/.gemini/antigravity/mcp_config.json]
-    F --> R[opencode.json]
-    H --> S[.mcp.json]
-```
-
----
-
-## Data Flow
-
-### Spec Validation Flow
-
-```mermaid
-flowchart LR
-    A[requirements.md] --> B[REQ-X IDs]
-    A --> C[EARS Patterns]
-    A --> D[Acceptance Criteria]
-
-    E[design.md] --> F[DES-X IDs]
-    E --> G[Mermaid Diagrams]
-    E --> H[_Implements: REQ-X.Y]
-
-    I[tasks.md] --> J[Phase Structure]
-    I --> K[Task Checkboxes]
-    I --> L[_Implements: DES-X]
-
-    B --> M[Traceability Matrix]
-    F --> M
-    H --> M
-    L --> M
-```
-
----
-
-## Configuration Files
-
-| File | Purpose |
-|------|---------|
-| `package.json` | Package metadata, scripts, dependencies |
-| `tsconfig.json` | TypeScript configuration |
-| `vitest.config.ts` | Test configuration |
-| `opencode.json` | OpenCode MCP configuration |
-| `.changeset/config.json` | Changeset configuration |
-
----
-
-## Phase 5: Code Review Flow
-
-After all Phase 4 implementation tasks complete, the spec-driven-task-implementer automatically triggers code review:
-
-```mermaid
-flowchart TD
-    A[Phase 4 Complete] --> B{Detect Change Type}
-    B --> C[Invoke code-review-hardening]
-    C --> D[Apply Type Strategy]
-    D --> E[Self-Repair Loop<br/>Max 1 Pass]
-    E --> F{Verdict}
-    F --> G[Approve]
-    F --> H[Request Changes]
-    F --> I[Approval with Notes]
-    G --> J[Quality Grading]
-    H --> J
-    I --> J
-```
-
-**Change Type Detection (in priority order):**
-1. Explicit tag from task context
-2. Branch name scan (feat/, fix/, hotfix/, refactor/, chore/, docs/)
-3. Commit message scan
-4. Heuristic guess
-5. Fallback: General review
-
-**Review Outcomes:**
-- `Approve` — All blocking findings resolved, proceed to quality grading
-- `Request Changes` — Author-required blocking findings, note and proceed to quality grading
-- `Approval with Notes` — Scoped review complete, other areas need other reviewers
-
----
-
-## Context Stewardship System
-
-The Context Stewardship system provides persistent memory for architectural decisions and business rules.
-
-### Storage Backend
-
-The system uses a JSON file-based knowledge graph storage:
-
-| Backend | Storage Location |
-|---------|-----------------|
-| `json-graph` | `~/.agents/stewardship/{scope}/{state}/` JSON files |
-
-Features: semantic retrieval, versioning, conflict detection, lifecycle management.
-
-### Knowledge Graph
-
-Rules are stored with full provenance and lifecycle tracking:
-
-```typescript
-interface RuleNode {
-    id: string
-    domain: Domain
-    subDomain?: string
-    content: string
-    provenance: {
-        source: 'manual' | 'extract' | 'import'
-        author: string
-        decisionDate: string  // ISO-8601
-        originalText: string
-    }
-    metadata: {
-        confidence: number  // 0-1
-        expiresAt: string  // ISO-8601
-        tags: string[]
-    }
-    state: {
-        value: 'active' | 'deprecated' | 'archived'
-        changedAt: string
-        changedBy: string
-    }
-    relations: string[]  // rule IDs
-}
-```
-
-### Standard Domains
-
-| Domain | Purpose |
-|--------|---------|
-| `architecture` | System design, patterns, decisions |
-| `business` | Business rules, domain logic |
-| `workflow` | Process definitions, phases |
-| `security` | Security policies, authentication |
-| `performance` | Optimization rules, SLAs |
-| `legal` | Compliance, data handling |
-| `team-structure` | Org charts, responsibilities |
-| `technical-debt` | Debt tracking, remediation |
-
----
-
-## Extension Points
-
-1. **New Platforms**: Add template directory under `packages/cli/templates/`
-2. **New Validators**: Add validator module in `packages/cli/src/core/validate/`
-3. **New Skills**: Add SKILL.md under `packages/cli/templates/universal/skills/`
-4. **New Context Domains**: Add to `Domain` type in `context-stewardship/types.ts`
-
----
+<!-- SpecDriven:managed:end -->
 
 ## See Also
 
-- [AGENTS.md](AGENTS.md) - Build commands and agent constraints
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Development workflow
-- [STYLEGUIDE.md](STYLEGUIDE.md) - Code conventions
-- [TESTING.md](TESTING.md) - Testing strategy
-- [SECURITY.md](SECURITY.md) - Security considerations
-
-<!-- SpecDriven:managed:end -->
+- [AGENTS.md](AGENTS.md) - Project structure and build commands
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Developer workflow
+- [TESTING.md](TESTING.md) - Testing patterns

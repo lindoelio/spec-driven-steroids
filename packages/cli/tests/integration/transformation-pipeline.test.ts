@@ -70,12 +70,38 @@ describe('Integration: Transformation Pipeline', () => {
 
     it('preserves body content in transformed output', async () => {
       const results = await transformForPlatform('github-vscode', templatesDir, tempDir);
-      
+
       for (const result of results) {
         if (result.success) {
           expect(result.bodyPreserved).toBe(true);
         }
       }
+    });
+
+    it('produces TOML format for Gemini CLI inject-guidelines commands', async () => {
+      const results = await transformForPlatform('gemini-cli', templatesDir, tempDir);
+
+      const guidelinesResult = results.find(r => r.sourcePath.includes('inject-guidelines.command.md'));
+      expect(guidelinesResult).toBeDefined();
+      expect(guidelinesResult?.success).toBe(true);
+      expect(guidelinesResult?.outputPath).toMatch(/\.toml$/);
+
+      const content = await fs.readFile(guidelinesResult!.outputPath, 'utf-8');
+      expect(content).toContain('description = "');
+      expect(content).toContain('prompt = """');
+    });
+
+    it('produces markdown format for Gemini CLI agent files', async () => {
+      const results = await transformForPlatform('gemini-cli', templatesDir, tempDir);
+
+      const agentResult = results.find(r => r.sourcePath.includes('spec-driven.agent.md'));
+      expect(agentResult).toBeDefined();
+      expect(agentResult?.success).toBe(true);
+      expect(agentResult?.outputPath).toMatch(/\.md$/);
+
+      const content = await fs.readFile(agentResult!.outputPath, 'utf-8');
+      expect(content).toContain('---');
+      expect(content).toContain('name:');
     });
   });
 

@@ -1,181 +1,110 @@
 # CONTRIBUTING.md
 
-> Contribution guidelines for Spec-Driven Steroids.
+> Contribution guidelines, git workflow, and PR process for Spec-Driven Steroids.
 
 <!-- SpecDriven:managed:start -->
 
 ## Getting Started
 
-1. Fork the repository
-2. Clone your fork: `git clone https://github.com/<your-username>/spec-driven-steroids.git`
-3. Install dependencies: `pnpm install`
-4. Build the project: `pnpm build`
-
----
+1. Clone the repository
+2. Install dependencies: `pnpm install`
+3. Build the project: `pnpm build`
+4. Run tests: `pnpm test`
 
 ## Git Workflow
 
 ### Branch Naming
 
-```
-<type>/<short-description>
+| Type | Pattern | Example |
+|------|---------|---------|
+| Feature | `feat/<slug>` | `feat/add-qwen-support` |
+| Fix | `fix/<slug>` | `fix/validate-ears-error` |
+| Hotfix | `hotfix/<slug>` | `hotfix/release-tag-format` |
+| Refactor | `refactor/<slug>` | `refactor/injection-pipeline` |
 
-Examples:
-- feature/mcp-tool-validation
-- fix/mermaid-parser-edge-case
-- docs/api-reference
-- refactor/cli-commands
-```
+### Commit Messages
 
-### Branch Types
-
-| Type | Purpose |
-|------|---------|
-| `feature` | New functionality |
-| `fix` | Bug fixes |
-| `docs` | Documentation changes |
-| `refactor` | Code refactoring |
-| `test` | Test additions/modifications |
-| `chore` | Maintenance tasks |
-
----
-
-## Commit Convention
-
-Follow [Conventional Commits](https://www.conventionalcommits.org/):
+Use conventional commits:
 
 ```
 <type>(<scope>): <description>
 
 [optional body]
-
-[optional footer(s)]
 ```
 
-### Types
+Types: `feat`, `fix`, `hotfix`, `refactor`, `docs`, `test`, `chore`
 
-| Type | Description |
-|------|-------------|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `docs` | Documentation only |
-| `style` | Code style (formatting) |
-| `refactor` | Code change without fix/feature |
-| `test` | Adding/modifying tests |
-| `chore` | Build, tooling, dependencies |
-
-### Scopes
-
-| Scope | Package/Area |
-|-------|--------------|
-| `cli` | CLI commands and interface |
-| `validate` | Validation modules |
-| `templates` | Platform templates |
-| `test-utils` | Testing utilities |
-| `docs` | Documentation |
-
-### Examples
+Example:
 
 ```
-feat(cli): add validate command for spec structure
-fix(validate): handle empty mermaid blocks correctly
-docs(templates): update opencode agent instructions
-test(cli): add integration tests for inject command
+feat(validation): add EARS pattern detection
+
+- Detect SHALL, MUST, SHOULD patterns
+- Add error context for missing patterns
 ```
 
----
-
-## Pull Request Process
+## PR Process
 
 ### Before Submitting
 
-1. **Create a changeset** (for user-facing changes):
-   ```bash
-   pnpm changeset
-   ```
-   Select package and version bump type (patch/minor/major).
+1. Run `pnpm test` - all tests must pass
+2. Run `pnpm typecheck` - no type errors
+3. Run `pnpm lint` - no lint errors
+4. Update [CHANGELOG.md](packages/cli/CHANGELOG.md) if applicable
 
-2. **Run quality checks**:
-   ```bash
-   pnpm typecheck
-   pnpm test
-   pnpm lint
-   ```
+### PR Description
 
-3. **Update documentation** if needed
+Include:
+- Summary of changes
+- Related issue or context
+- Testing performed
 
-### PR Title Format
+### Review Process
 
-Same as commit convention: `type(scope): description`
+- At least one approval required
+- Address all review comments
+- Re-run tests before merge
 
-### PR Checklist
-
-- [ ] Branch follows naming convention
-- [ ] Commits follow conventional commits
-- [ ] Typecheck passes (`pnpm typecheck`)
-- [ ] Tests pass (`pnpm test`)
-- [ ] Changeset added (if user-facing)
-- [ ] Documentation updated (if applicable)
-
----
-
-## Directory Structure
+## Repository Structure
 
 ```
-spec-driven-steroids/
+.
 ├── packages/
-│   ├── cli/                    # Main CLI package
+│   ├── cli/           # Main CLI package
 │   │   ├── src/
-│   │   │   ├── cli/           # CLI commands and injection
-│   │   │   ├── core/validate/ # Validation modules
-│   │   │   └── context-stewardship/  # Knowledge graph system
-│   │   ├── templates/         # Platform templates
-│   │   └── tests/             # Test files
-│   ├── test-utils/            # Shared test utilities
-│   └── landing-page/          # Documentation site
-├── .changeset/                # Changeset configs
-├── opencode.json              # OpenCode configuration
-├── package.json               # Root package (workspace)
-├── tsconfig.base.json         # Shared TypeScript config
-└── vitest.config.ts           # Root test configuration
+│   │   │   ├── cli/        # Injection commands
+│   │   │   ├── core/        # Validation modules
+│   │   │   └── context-stewardship/  # Knowledge graph
+│   │   ├── templates/   # Platform templates
+│   │   ├── tests/      # CLI tests
+│   │   └── package.json
+│   ├── test-utils/    # Test utilities
+│   └── landing-page/  # Documentation site
+├── specs/            # Spec-driven specs
+│   └── changes/       # Change specs
+├── .specs/            # Repository spec
+└── vitest.config.ts    # Root test config
 ```
-
----
-
-## Documentation Rules
-
-1. **README.md**: Installation, quick start, and feature overview
-2. **CHANGELOG.md**: Auto-generated from changesets
-3. **Inline docs**: JSDoc for public APIs
-4. **Template docs**: Each template includes usage instructions
-
-### When to Update Docs
-
-- New CLI commands → Update README.md and CLI README
-- New MCP tools → Update MCP tool reference
-- New templates → Add usage examples
-- Breaking changes → Add migration guide
-
----
 
 ## Release Process
 
-Maintainers handle releases:
+Uses Changesets for versioning and publishing:
 
-1. `pnpm changeset:version` - Bump versions and update CHANGELOGs
-2. Commit version changes
-3. `pnpm release:tag` - Create release tag
-4. `pnpm release:push-tags` - Push tags to remote
-5. `pnpm changeset:publish` - Publish to npm
+```bash
+pnpm changeset
+pnpm changeset:version
+pnpm test && pnpm build
+git push origin main
+pnpm release:tag
+pnpm release:push-tags
+```
 
----
+See [AGENTS.md](AGENTS.md) for build commands.
+
+<!-- SpecDriven:managed:end -->
 
 ## See Also
 
-- [AGENTS.md](AGENTS.md) - AI agent runtime guidance
+- [AGENTS.md](AGENTS.md) - Build commands and project structure
+- [TESTING.md](TESTING.md) - Testing patterns and utilities
 - [STYLEGUIDE.md](STYLEGUIDE.md) - Code conventions
-- [TESTING.md](TESTING.md) - Testing strategy
-- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
-- [SECURITY.md](SECURITY.md) - Security policy
-
-<!-- SpecDriven:managed:end -->

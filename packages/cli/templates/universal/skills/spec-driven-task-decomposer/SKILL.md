@@ -47,7 +47,7 @@ When this skill begins execution, create a todo list containing the following it
 7. Add acceptance criteria testing phase
 8. Add final checkpoint phase
 9. Validate tasks
-10. Quality grade tasks
+10. Audit tasks (agent-work-auditor)
 11. Save tasks.md
 
 ### Progress Rules
@@ -305,6 +305,58 @@ If `requirements.md` or `design.md` is incomplete but still usable:
 3. Avoid inventing major new architecture.
 4. Surface the blocking gaps if they prevent reliable decomposition.
 
+## Auditing Integration
+
+After completing tasks and before requesting approval, invoke the `agent-work-auditor` skill to perform a unified audit:
+
+```
+Invoke: agent-work-auditor skill
+Artifact: .specs/changes/<slug>/tasks.md
+ChangeType: feat
+Mode: standard
+Extensions: spec-driven
+```
+
+The `agent-work-auditor` provides a three-layer audit:
+
+### Layer 1: Core Dimensions (Always Evaluated)
+
+| Dimension | Focus | Auto-Fix |
+|-----------|-------|----------|
+| Completeness | All DES-* elements have tasks? | Yes |
+| Correctness | Valid task structure, checkbox format? | Yes |
+| Consistency | Consistent with existing patterns? | Yes |
+| Traceability | TASK → DES-* → REQ-* links complete? | Partial |
+| Safety | No harmful side effects in tasks? | No |
+| Maintainability | Clear and actionable tasks? | Partial |
+
+### Layer 2: Change-Type Module
+
+Based on classified change type:
+- Applies appropriate rigor for task breakdown depth
+
+### Layer 3: Spec-Driven Extension
+
+- **Rigorous Against Prompt/Spec**: Verifies tasks align with approved requirements and design
+- **Traceability Matrix**: Confirms all DES-* and REQ-* are covered
+- **Phase Gate Verification**: Confirms design phase passed before tasks approval
+
+### Composition: quality-grading (Originality Dimension)
+
+The agent-work-auditor internally composes `quality-grading` for the **Originality** dimension:
+- **Originality**: Tailored task breakdown vs generic boilerplate
+
+This composition ensures comprehensive quality assessment without requiring separate skill invocation.
+
+### Self-Fix Loop
+
+agent-work-auditor will:
+1. Auto-fix direct-fix findings (up to 2 passes)
+2. Escalate remaining issues to author-required
+3. Output a structured audit report with verdict
+
+The audit verdict (Approve / Request Changes / Approval with Notes) determines whether to proceed to Phase 4.
+
 ## Quality Bar (Self-Check)
 
 Before returning the tasks, verify:
@@ -346,21 +398,3 @@ Query: workflow
 ```
 
 This ensures the task breakdown aligns with team processes, testing rules, and naming conventions.
-
-## Quality Grading Integration
-
-After completing tasks and before requesting approval, invoke the `quality-grading` skill to assess and improve task plan quality:
-
-```
-Invoke: quality-grading skill
-Artifact: .specs/changes/<slug>/tasks.md
-Mode: grade-and-fix
-```
-
-This ensures the tasks document meets quality standards across:
-- **Design Quality**: Logical phase organization, task dependencies, clear structure
-- **Originality**: Tailored task breakdown vs generic boilerplate
-- **Craft**: Clear task descriptions, proper traceability, consistent formatting
-- **Functionality**: Complete coverage of requirements, all acceptance criteria mapped
-
-The quality-grading skill will auto-fix issues scoring below 4 and provide actionable suggestions for remaining gaps.

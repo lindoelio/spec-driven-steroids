@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { getPlatformConfig, type PlatformConfig } from './platform-config.js';
-import { transform } from './format-transformer.js';
+import { transform, transformToTomlCommand } from './format-transformer.js';
 
 /**
  * Universal prompt source configuration.
@@ -110,7 +110,7 @@ async function transformSource(
   destDir: string
 ): Promise<PlatformTransformResult> {
   const sourcePath = path.join(templatesDir, source.sourcePath);
-  
+
   try {
     // Read the universal source
     if (!await fs.pathExists(sourcePath)) {
@@ -123,17 +123,14 @@ async function transformSource(
         error: `Source file not found: ${sourcePath}`
       };
     }
-    
+
     const rawContent = await fs.readFile(sourcePath, 'utf-8');
     const { body, frontmatter } = extractContent(rawContent);
-    
-    // Transform
-    const transformResult = transform(body, config, frontmatter, source.outputType);
-    
+
     // Determine output path based on output type
     let outputDir: string;
     let outputFilename: string;
-    
+
     if (source.outputType === 'agent') {
       outputDir = config.agentDirectory;
       outputFilename = config.agentFilename;
@@ -143,13 +140,27 @@ async function transformSource(
         ? config.specDrivenCommandFilename
         : config.injectGuidelinesCommandFilename;
     }
-    
+
+    // Transform
+    let transformResult: { content: string; bodyPreserved: boolean };
+
+    // For Gemini CLI inject-guidelines commands, use TOML format
+    if (config.id === 'gemini-cli' && source.outputType === 'inject-guidelines-command') {
+      const description = frontmatter.description || config.frontmatter.fields.description || '';
+      transformResult = {
+        content: transformToTomlCommand(body, description),
+        bodyPreserved: true
+      };
+    } else {
+      transformResult = transform(body, config, frontmatter, source.outputType);
+    }
+
     const outputPath = path.join(destDir, outputDir, outputFilename);
-    
+
     // Write transformed content
     await fs.ensureDir(path.dirname(outputPath));
     await fs.writeFile(outputPath, transformResult.content, 'utf-8');
-    
+
     return {
       platformId: config.id,
       sourcePath: source.sourcePath,

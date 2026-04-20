@@ -253,43 +253,85 @@ If the requested task or phase is implementable, execute it directly.
 
 If material ambiguity or a blocking spec conflict prevents safe implementation, ask a short clarification instead of making a low-confidence change.
 
-## Phase 5: Code Review (Pre-Quality-Grading)
+## Phase 5: Unified Auditing (agent-work-auditor)
 
-After all Phase 4 implementation tasks are complete and before invoking quality grading:
-
-1. **Detect Change Type**: Infer from branch name, commit messages, or task context. If unclear, fall back to `General` review.
-2. **Invoke code-review-hardening**: Load the `code-review-hardening` skill and run it on the files changed in Phase 4.
-3. **Pass inputs**: Files/directories modified, detected change type.
-4. **Record verdict**: If verdict is `Approve` or `Approval with Notes`, proceed to quality grading. If `Request Changes`, flag findings and note them, but still proceed to quality grading.
-5. **Report findings**: Summarize blocking findings (author-required items) and verdict in the response. Do not create new tasks for these findings.
-
-**Code Review Integration:**
+After all Phase 4 implementation tasks are complete, invoke the `agent-work-auditor` skill to perform a unified audit on the implementation:
 
 ```
-Invoke: code-review-hardening skill
-Input:  Files/directories changed in Phase 4, change type
-Output: Structured markdown review report with verdict
+Invoke: agent-work-auditor skill
+Artifact: <implementation-directory-or-files>
+ChangeType: <detected-from-branch-commit-context>
+Mode: standard
+Extensions: spec-driven
 ```
 
-The code-review-hardening skill will:
-- Detect change type (feat/fix/hotfix/refactor/migrate/docs/General)
-- Apply type-appropriate review strategy
-- Perform self-repair loop (1 pass for direct-fix items)
-- Classify findings by severity (Blocking/Nit/Mentoring) and fixability (direct-fix/author-required/informational)
-- Produce a structured verdict: Approve, Request Changes, or Approval with Notes
+### Step 1: Detect Change Type
 
-**Do not block on author-required findings.** Code review findings are author-resolution items. The spec-driven workflow continues to quality grading regardless of review verdict.
+Infer from branch name, commit messages, or task context. If unclear, fall back to `General` review.
 
-## Live Check Integration (Pre-Quality-Grading)
+### Step 2: Invoke agent-work-auditor
 
-After completing Phase 5 (Code Review) but before invoking quality grading:
+The `agent-work-auditor` provides a three-layer audit:
+
+#### Layer 1: Core Dimensions (Always Evaluated)
+
+| Dimension | Focus | Auto-Fix |
+|-----------|-------|----------|
+| Completeness | All required elements present? | Yes |
+| Correctness | Implementation matches spec? | Yes |
+| Consistency | Consistent with codebase patterns? | Yes |
+| Traceability | Implementation traces to DES-*/REQ-*? | Partial |
+| Safety | No harmful side effects? | No |
+| Maintainability | Clear and maintainable code? | Partial |
+
+#### Layer 2: Change-Type Module
+
+Based on detected change type:
+- `feat` → Thorough design and scalability review
+- `fix` → Focused bug reproduction and verification
+- `hotfix` → Compressed scope minimization and correctness
+- `refactor` → Rigorous behavioral parity
+- `migrate` → Cautious backward compatibility and schema review
+- `docs` → Lightweight accuracy review
+- `general` → Balanced review across dimensions
+
+#### Layer 3: Spec-Driven Extension
+
+- **Rigorous Against Prompt/Spec**: Verifies implementation aligns with approved requirements, design, and tasks
+- **Traceability Matrix**: Confirms all DES-* and REQ-* are implemented
+- **Phase Gate Verification**: Confirms all prior phases passed
+
+### Step 3: Composition with quality-grading (Originality Dimension)
+
+The agent-work-auditor internally composes `quality-grading` for the **Originality** dimension:
+- **Originality**: Problem-specific solutions vs generic boilerplate
+
+This composition ensures comprehensive quality assessment without requiring separate skill invocation.
+
+### Step 4: Self-Fix Loop
+
+agent-work-auditor will:
+1. Auto-fix direct-fix findings (up to 2 passes)
+2. Escalate remaining issues to author-required
+3. Output a structured audit report with verdict
+
+### Step 5: Record Verdict
+
+- If verdict is `Approve` or `Approval with Notes`, proceed to Live Check
+- If `Request Changes`, flag findings but still proceed to Live Check
+- Report findings in the response. Do not create new tasks for author-required findings.
+
+**Do not block on author-required findings.** Findings are author-resolution items. The spec-driven workflow continues to Live Check regardless of audit verdict.
+
+## Live Check Integration (Final Pre-Flight Validation)
+
+After completing Phase 5 (Unified Auditing) but before the implementation is considered complete:
 
 1. **Invoke universal-live-check**: Run a final live validation pass on the files changed in Phase 4.
 2. **Detect domains**: Classify affected domains from file paths (CLI, backend, frontend, mobile, embedded, libs).
 3. **Detect change type**: Infer from branch name, commit messages, or task context.
 4. **Execute checks**: Run hierarchical validation (file → module → project) with incremental checks.
 5. **Self-healing loop**: Attempt auto-fix for fixable issues, re-verify, then report remaining findings.
-6. **Proceed to quality grading**: Include live-check report in quality grading assessment.
 
 ```
 Invoke: universal-live-check skill
@@ -306,26 +348,4 @@ The universal-live-check skill will:
 
 **Performance target:** Full live check run completes in <5s. If exceeded, abort and report partial results.
 
-**Integration with Quality Grading:** Pass the live-check report to quality grading so it can factor in domain-specific validation results.
-
-## Quality Grading Integration
-
-After completing Phase 5 (Code Review), invoke the `quality-grading` skill to assess and improve code quality:
-
-```
-Invoke: quality-grading skill
-Artifact: <implementation-directory-or-files>
-Mode: grade-and-fix
-```
-
-Quality-grading evaluates implementation across:
-- **Design Quality**: Architecture clarity, module structure, separation of concerns
-- **Originality**: Problem-specific solutions vs generic boilerplate
-- **Craft**: Code cleanliness, error handling, documentation, naming consistency
-- **Functionality**: Feature completeness, edge case handling, requirements coverage
-
-For ongoing quality during implementation:
-- After completing core implementation tasks: grade the implementation directory
-- After completing final checkpoint: run final quality assessment
-
-The quality-grading skill will auto-fix issues scoring below 4 and provide actionable suggestions for remaining gaps.
+**Note:** Live Check is a separate final validation step. The audit verdict from agent-work-auditor already incorporates quality-grading for Originality. Live Check provides domain-specific validation (linting, typing, testing) that complements the audit.

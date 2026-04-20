@@ -1,4 +1,4 @@
-# Spec-Driven Steroids
+# Spec-Driven Steroids CLI
 
 Inject Spec-Driven Development into AI coding tools without building a new UI.
 
@@ -7,23 +7,30 @@ Inject Spec-Driven Development into AI coding tools without building a new UI.
 
 ## What it is
 
-`spec-driven-steroids` is the published CLI package for:
-- injecting platform-specific agents, commands, and workflows
-- installing universal Spec-Driven skills
-- providing CLI commands for spec validation
+`spec-driven-steroids` is the published CLI package for injecting a strict Spec-Driven workflow into AI coding tools:
 
-It supports a strict workflow:
+```
+requirements → design → tasks → implementation
+```
 
-`requirements -> design -> tasks -> implementation`
+It provides:
+- Platform-specific injection (agents, commands, workflows)
+- Universal skills across all platforms
+- CLI validation commands for specs
 
-## Supported platforms
+## Supported Platforms
 
-- GitHub Copilot for VS Code
-- GitHub Copilot for JetBrains
-- OpenCode
-- Google Antigravity
-- OpenAI Codex
-- Claude Code
+| Platform | Scope | Injection Type |
+|----------|-------|-------------|
+| Antigravity | project | `/spec-driven` command |
+| Claude Code | project | `CLAUDE.md` |
+| Gemini CLI | global | MCP servers, agents, commands |
+| GitHub Copilot CLI | global | MCP servers, skills |
+| GitHub Copilot for VS Code | global | MCP configuration |
+| GitHub Copilot for JetBrains | global | MCP configuration |
+| OpenCode | global | MCP configuration, skills |
+| OpenAI Codex | project | Agent instructions |
+| Qwen Code | global | MCP configuration, skills |
 
 ## Installation
 
@@ -34,67 +41,110 @@ npm install -g spec-driven-steroids
 Requirements:
 - Node.js `>=20`
 
-The CLI provides two command names that work interchangeably:
-- `sds` (short alias - recommended)
+The CLI provides two command names (work identically):
+- `sds` (recommended - short alias)
 - `spec-driven-steroids` (full name)
 
-Both commands work identically.
+## CLI Usage
 
-## Quick start
+### inject
 
-1. Inject platform files into a repository:
+Inject platform-specific files into the current repository:
 
 ```bash
+# Interactive - prompts for platform and options
 sds inject
+
+# With flags
+sds inject -p opencode
+sds inject -p github-copilot --scope global
+sds inject -p gemini-cli --scope project
 ```
 
-2. Generate project guidance first:
+Flags:
+- `-p, --platform <platform>` - Target platform
+- `-s, --scope <scope>` - Injection scope (`project` or `global`)
+- `-y, --yes` -Skip prompts, use defaults
+- `--include-sequential-thinking` - Add sequential-thinking MCP
 
-- use `/inject-guidelines` in supported tools
-- this creates `AGENTS.md`, `CONTRIBUTING.md`, `STYLEGUIDE.md`, `TESTING.md`, `ARCHITECTURE.md`, and `SECURITY.md`
+### validate
 
-3. Start the spec flow:
+Validate spec artifacts:
 
-- GitHub Copilot: `@spec-driven Add a rate limiter to the API`
-- OpenCode: use the `Spec-Driven` agent
-- Antigravity: `/spec-driven`
-- Codex: `/spec-driven Add a rate limiter to the API`
+```bash
+sds validate structure <slug>          # Spec folder structure
+sds validate requirements <path>        # EARS requirements
+sds validate design <path>              # Mermaid diagrams
+sds validate tasks <path>               # Task traceability
+sds validate spec <slug>               # Full validation
+```
 
-4. Approve each planning phase as it completes, then move to implementation.
+### Other commands
 
-## Validation commands
+```bash
+sds --version    # Show version
+sds --help      # Show help
+```
 
-The CLI provides 5 validation commands:
+## Skills Injected
 
-| Command | Purpose |
-| --- | --- |
-| `sds validate structure <slug>` | Validate spec folder structure |
-| `sds validate requirements <path>` | Validate EARS requirements |
-| `sds validate design <path>` | Validate design structure and Mermaid usage |
-| `sds validate tasks <path>` | Validate task structure and traceability |
-| `sds validate spec <slug>` | Validate the full spec end to end |
+### Core Spec-Driven Skills
 
-## Package contents
+| Skill | Purpose | Phase |
+|-------|--------|-------|
+| `spec-driven-requirements-writer` | Write EARS-format requirements | 1 |
+| `spec-driven-technical-designer` | Create technical design | 2 |
+| `spec-driven-task-decomposer` | Decompose into tasks | 3 |
+| `spec-driven-task-implementer` | Execute tasks | 4 |
 
-```text
-dist/          Built CLI and validation modules
-templates/     Platform wrappers and universal skills
+### Universal Skills
+
+| Skill | Purpose |
+|-------|---------|
+| `contextual-stewardship` | Knowledge graph for decisions |
+| `quality-grading` | Grade code/specs quality |
+| `code-review-hardening` | Code review with self-repair |
+| `universal-live-check` | Real-time validation |
+| `long-running-work-planning` | Complex task reasoning |
+| `project-guidelines-writer` | Generate guidelines |
+| `agent-work-auditor` | Audit agent output |
+
+### Agents
+
+| Agent | Purpose |
+|-------|---------|
+| `spec-driven` | Main workflow orchestrator |
+
+## Package Contents
+
+```
+dist/              # Built CLI and validation modules
+templates/          # Platform templates and universal skills
 README.md
 LICENSE
 ```
 
-## Development
+## Quick Start
 
 ```bash
-pnpm install
-pnpm build
-pnpm test
+# 1. Inject platform files
+sds inject
+
+# 2. Generate project guidance (optional)
+/inject-guidelines
+
+# 3. Run spec flow
+# - Copilot: @spec-driven Add a feature
+# - OpenCode: use Spec-Driven agent
+# - Antigravity: /spec-driven
+# - Codex: /spec-driven Add a feature
 ```
 
 ## Links
 
-- Repository: `https://github.com/lindoelio/spec-driven-steroids`
-- Issues: `https://github.com/lindoelio/spec-driven-steroids/issues`
+- npm: https://www.npmjs.com/package/spec-driven-steroids
+- Repository: https://github.com/lindoelio/spec-driven-steroids
+- Issues: https://github.com/lindoelio/spec-driven-steroids/issues
 
 ## License
 

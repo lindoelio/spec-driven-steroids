@@ -43,7 +43,7 @@ When this skill begins execution, create a todo list containing the following it
 4. Extract actors, actions, and constraints
 5. Write EARS requirements
 6. Validate requirements
-7. Quality grade requirements
+7. Audit requirements (agent-work-auditor)
 8. Save requirements.md
 
 ### Progress Rules
@@ -266,6 +266,57 @@ If `requirements.md` is corrupted:
 3. Rewrite invalid sections with correct EARS syntax
 4. Re-validate
 5. Document what was recovered vs rewritten
+
+## Auditing Integration
+
+After completing requirements and before requesting approval, invoke the `agent-work-auditor` skill to perform a unified audit:
+
+```
+Invoke: agent-work-auditor skill
+Artifact: .specs/changes/<slug>/requirements.md
+ChangeType: feat
+Mode: standard
+Extensions: spec-driven
+```
+
+The `agent-work-auditor` provides a three-layer audit:
+
+### Layer 1: Core Dimensions (Always Evaluated)
+
+| Dimension | Focus | Auto-Fix |
+|-----------|-------|----------|
+| Completeness | All requirements present? | Yes |
+| Correctness | Valid EARS syntax? | Yes |
+| Consistency | Consistent terminology? | Yes |
+| Traceability | REQ-* numbering? | Partial |
+| Safety | No harmful side effects? | No |
+| Maintainability | Clear and readable? | Partial |
+
+### Layer 2: Change-Type Module
+
+- `feat` module provides thorough review of design and scalability aspects
+
+### Layer 3: Spec-Driven Extension
+
+- **Rigorous Against Prompt/Spec**: Verifies requirements align with original user request and spec structure
+- **Traceability Matrix**: Links requirements to original intent
+- **Phase Gate Verification**: Confirms this phase completed before approval
+
+### Composition: quality-grading (Originality Dimension)
+
+The agent-work-auditor internally composes `quality-grading` for the **Originality** dimension:
+- **Originality**: Tailored requirements vs boilerplate language
+
+This composition ensures comprehensive quality assessment without requiring separate skill invocation.
+
+### Self-Fix Loop
+
+agent-work-auditor will:
+1. Auto-fix direct-fix findings (up to 2 passes)
+2. Escalate remaining issues to author-required
+3. Output a structured audit report with verdict
+
+The audit verdict (Approve / Request Changes / Approval with Notes) determines whether to proceed to Phase 2.
 
 ## Quality Bar (Self-Check)
 

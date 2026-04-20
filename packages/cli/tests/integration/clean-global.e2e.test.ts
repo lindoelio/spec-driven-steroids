@@ -127,6 +127,65 @@ describe('CLI E2E: clean --global command', () => {
         expect(config.mcpServers['legacy-server']).toBeDefined();
     });
 
+    it('clean without --global flag works and shows preview', async () => {
+        // This test verifies that the TDZ bug is fixed:
+        // STEROIDS_SERVER_NAME and related constants must be accessible
+        // when buildCleanPreview() is called in the action handler
+        const configPath = getGlobalOpencodeConfigPath();
+        const configDir = getGlobalOpencodeDir();
+
+        await fs.ensureDir(configDir);
+        await fs.writeJson(configPath, {
+            mcp: {
+                'spec-driven-steroids': {
+                    type: 'local',
+                    command: ['node', '/path/to/server.js']
+                }
+            }
+        }, { spaces: 2 });
+
+        const program = (await import('../../dist/cli/index.js')).default;
+
+        // Should NOT throw: ReferenceError: Cannot access 'STEROIDS_SERVER_NAME' before initialization
+        await program.parseAsync(['clean', '--yes'], { from: 'user' } as any);
+
+        // Verify clean was executed
+        const config = await fs.readJson(configPath);
+        expect(config.mcp['spec-driven-steroids']).toBeUndefined();
+    });
+
+    it('clean --global flag is optional and defaults to global clean', async () => {
+        // This test verifies the UX fix: --global is no longer required
+        const configPath = getGlobalOpencodeConfigPath();
+        const configDir = getGlobalOpencodeDir();
+
+        await fs.ensureDir(configDir);
+        await fs.writeJson(configPath, {
+            mcp: {
+                'spec-driven-steroids': {
+                    type: 'local',
+                    command: ['node', '/path/to/server.js']
+                },
+                'other-server': {
+                    type: 'local',
+                    command: ['node', '/path/to/other.js']
+                }
+            }
+        }, { spaces: 2 });
+
+        const program = (await import('../../dist/cli/index.js')).default;
+
+        // Run without --global flag - should still work and clean steroids
+        await program.parseAsync(['clean', '--yes'], { from: 'user' } as any);
+
+        // Verify steroids was removed
+        const config = await fs.readJson(configPath);
+        expect(config.mcp['spec-driven-steroids']).toBeUndefined();
+
+        // Verify other entries were preserved
+        expect(config.mcp['other-server']).toBeDefined();
+    });
+
     it('clean --global does not rewrite opencode.json when steroids entry does not exist', async () => {
         const configPath = getGlobalOpencodeConfigPath();
         const configDir = getGlobalOpencodeDir();

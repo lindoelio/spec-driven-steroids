@@ -159,11 +159,11 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
         description: 'Use this planner when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
       }
     },
-    agentDirectory: 'skills',
+    agentDirectory: 'agents',
     agentFilename: 'spec-driven.md',
-    commandDirectory: 'skills',
+    commandDirectory: 'commands',
     specDrivenCommandFilename: 'spec-driven.md',
-    injectGuidelinesCommandFilename: 'inject-guidelines.md'
+    injectGuidelinesCommandFilename: 'inject-guidelines.toml'
   },
   'qwen-code': {
     id: 'qwen-code',

@@ -9,38 +9,28 @@ Inject Spec-Driven Development into AI coding tools without building a new UI.
 
 `spec-driven-steroids` is a CLI plus template bundle for running a strict workflow inside AI coding tools:
 
-`requirements -> design -> tasks -> implementation`
-
-It injects:
-- platform-specific agents, commands, or workflows
-- universal writing/implementation skills
-- CLI validation commands for spec structure and traceability
-
-## Supported platforms
-
-- GitHub Copilot for VS Code
-- GitHub Copilot for JetBrains
-- OpenCode
-- Google Antigravity
-- OpenAI Codex
-- Claude Code
-
-## What gets generated
-
-Spec-Driven planning writes artifacts to:
-
-```text
-.specs/changes/<slug>/
-  requirements.md
-  design.md
-  tasks.md
+```
+requirements → design → tasks → implementation
 ```
 
-The workflow is built around:
-- EARS requirements
-- Mermaid design diagrams
-- atomic implementation tasks
-- requirement/design/task traceability
+It injects:
+- Platform-specific agents, commands, or workflows
+- Universal writing/implementation skills
+- CLI validation commands for spec structure and traceability
+
+## Supported Platforms
+
+| Platform | Scope | Injection Type |
+|----------|-------|-------------|
+| Antigravity | project | `/spec-driven` command |
+| Claude Code | project | `CLAUDE.md` |
+| Gemini CLI | global | MCP servers, agents, commands |
+| GitHub Copilot CLI | global | MCP servers, skills |
+| GitHub Copilot for VS Code | global | MCP configuration |
+| GitHub Copilot for JetBrains | global | MCP configuration |
+| OpenCode | global | MCP configuration, skills |
+| OpenAI Codex | project | Agent instructions |
+| Qwen Code | global | MCP configuration, skills |
 
 ## Installation
 
@@ -52,110 +42,151 @@ Requirements:
 - Node.js `>=20`
 - `pnpm` for local development
 
-## Quick start
+## CLI Usage
+
+The CLI provides two command names:
+- `sds` (short alias - recommended)
+- `spec-driven-steroids` (full name)
+
+### Inject Command
+
+```bash
+# Interactive injection (prompts for platform and options)
+sds inject
+
+# With flags
+sds inject -p opencode
+sds inject -p github-copilot --scope global
+```
+
+### Validate Commands
+
+```bash
+# Validate spec folder structure
+sds validate structure <slug>
+
+# Validate EARS requirements
+sds validate requirements <path>
+
+# Validate design structure and Mermaid
+sds validate design <path>
+
+# Validate task structure and traceability
+sds validate tasks <path>
+
+# Full end-to-end validation
+sds validate spec <slug>
+```
+
+### Other Commands
+
+```bash
+# Show version
+sds --version
+
+# Show help
+sds --help
+```
+
+## Skills Injected
+
+The CLI injects these universal skills that work across all platforms:
+
+### Core Spec-Driven Skills
+
+| Skill | Purpose | Phase |
+|-------|--------|-------|
+| `spec-driven-requirements-writer` | Write EARS-format requirements | 1 |
+| `spec-driven-technical-designer` | Create technical design with Mermaid | 2 |
+| `spec-driven-task-decomposer` | Decompose into atomic tasks | 3 |
+| `spec-driven-task-implementer` | Execute tasks from tasks.md | 4 |
+
+### Universal Skills
+
+| Skill | Purpose |
+|-------|---------|
+| `contextual-stewardship` | Knowledge graph for architectural decisions |
+| `quality-grading` | Grade code/specs across 4 dimensions |
+| `code-review-hardening` | Structured code review with self-repair |
+| `universal-live-check` | Real-time validation framework |
+| `long-running-work-planning` | Structured reasoning for complex tasks |
+| `project-guidelines-writer` | Generate repository guidelines |
+| `agent-work-auditor` | Audit agent-generated artifacts |
+
+### Agents Injected
+
+| Agent | Purpose |
+|-------|---------|
+| `spec-driven` | Main spec-driven workflow orchestrator |
+
+## Spec Flow
+
+### What gets generated
+
+Spec-Driven planning writes artifacts to:
+
+```
+.specs/changes/<slug>/
+├── requirements.md
+├── design.md
+└── tasks.md
+```
+
+### Workflow phases
+
+1. **Requirements** - EARS-syntax requirements with stable IDs
+2. **Design** - Mermaid diagrams, architecture sections
+3. **Tasks** - Atomic implementation tasks with traceability
+4. **Implementation** - Task execution with verification
+
+### Quick start
 
 1. Inject platform files into a repository:
 
 ```bash
-spec-driven-steroids inject
+sds inject
 ```
 
-2. Generate project guidance first:
+2. Generate project guidance:
 
-- use `/inject-guidelines` in supported tools
-- this creates `AGENTS.md`, `CONTRIBUTING.md`, `STYLEGUIDE.md`, `TESTING.md`, `ARCHITECTURE.md`, and `SECURITY.md`
+```bash
+/inject-guidelines
+```
+
+This creates: `AGENTS.md`, `CONTRIBUTING.md`, `STYLEGUIDE.md`, `TESTING.md`, `ARCHITECTURE.md`, `SECURITY.md`
 
 3. Start the spec flow:
 
-- GitHub Copilot: `@spec-driven Add a rate limiter to the API`
+- GitHub Copilot: `@spec-driven Add a rate limiter`
 - OpenCode: use the `Spec-Driven` agent
 - Antigravity: `/spec-driven`
-- Codex: `/spec-driven Add a rate limiter to the API`
+- Codex: `/spec-driven Add a rate limiter`
 
-4. Approve each planning phase as it completes, then move to implementation.
-
-## Validation commands
-
-The CLI provides 5 validation commands:
-
-| Command | Purpose |
-| --- | --- |
-| `spec-driven validate structure` | Validate spec folder structure |
-| `spec-driven validate requirements` | Validate EARS requirements |
-| `spec-driven validate design` | Validate design structure and Mermaid usage |
-| `spec-driven validate tasks` | Validate task structure and traceability |
-| `spec-driven validate spec` | Validate the full spec end to end |
+4. Approve each planning phase, then move to implementation.
 
 ## Optional: Sequential-Thinking MCP
 
-For agents working on complex, long-running tasks, you can optionally add the sequential-thinking MCP server alongside the CLI. This provides structured reasoning capabilities to help agents break down complex problems and avoid timeout errors.
+For complex long-running tasks, you can optionally add the sequential-thinking MCP server:
 
-### During Injection
-
-When running `spec-driven-steroids inject`, you'll be prompted:
-
-```
-Add sequential-thinking MCP server? (Enables structured reasoning for long-running tasks)
+```bash
+sds inject
+# Select "Yes" when prompted to add sequential-thinking MCP
 ```
 
-Select **Yes** to automatically configure the MCP server.
+This enables structured reasoning to help agents break down complex problems.
 
-### Manual Configuration
+## Package Layout
 
-If you need to add it later, add this to your platform's MCP configuration:
-
-**VS Code (.vscode/mcp.json):**
-```json
-{
-  "servers": {
-    "spec-driven-steroids": {
-      "command": "node",
-      "args": ["path/to/spec-driven-steroids/dist/mcp/index.js"]
-    },
-    "sequential-thinking": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
-    }
-  }
-}
 ```
-
-**OpenCode (opencode.json):**
-```json
-{
-  "mcp": {
-    "spec-driven-steroids": {
-      "type": "local",
-      "command": ["node", "path/to/spec-driven-steroids/dist/mcp/index.js"]
-    },
-    "sequential-thinking": {
-      "type": "local",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"]
-    }
-  }
-}
-```
-
-### Requirements
-
-The sequential-thinking MCP is **optional** and does not affect CLI validation functionality. To use it:
-
-1. Ensure `npx` is available in your environment
-2. The package `@modelcontextprotocol/server-sequential-thinking` will be downloaded automatically on first use
-
-For more details, see the `long-running-work-planning` skill documentation.
-
-## Package layout
-
-```text
 packages/
-  cli/
-    src/cli/        CLI injection and validation commands
-    src/core/validate/   Validation modules
-    src/context-stewardship/   Knowledge graph system
-    templates/      Platform wrappers and universal skills
-  test-utils/       Shared fixtures and helpers
-  landing-page/     Documentation site
+├── cli/                    # Main CLI package
+│   ├── src/
+│   │   ├── cli/           # Injection commands
+│   │   ├── core/validate/ # Validation modules
+│   │   └── context-stewardship/ # Knowledge graph
+│   └── templates/          # Platform templates & skills
+├── test-utils/             # Test fixtures and mocks
+└── landing-page/         # Documentation site
 ```
 
 ## Development
@@ -167,37 +198,20 @@ pnpm test
 ```
 
 Useful commands:
-- `pnpm typecheck`
-- `pnpm test:coverage`
-- `pnpm changeset`
-- `pnpm changeset:version`
+- `pnpm typecheck` - Type check all packages
+- `pnpm lint` - Lint all packages
+- `pnpm test:coverage` - Run tests with coverage
+- `pnpm changeset` - Create a changeset
+- `pnpm changeset:version` - Version bump
 
-## Release flow
+## Repository Docs
 
-This repo publishes the `spec-driven-steroids` npm package with Changesets and GitHub Actions trusted publishing.
-
-Typical release steps:
-
-```bash
-pnpm changeset
-pnpm changeset:version
-pnpm test
-pnpm build
-git push origin main
-git tag -a v<version> -m "release v<version>"
-git push origin v<version>
-```
-
-The publish workflow runs from `.github/workflows/publish.yml` and uses npm trusted publishing through GitHub Actions OIDC, so no long-lived npm token is required in the repository.
-
-## Repository docs
-
-- `AGENTS.md`
-- `CONTRIBUTING.md`
-- `STYLEGUIDE.md`
-- `TESTING.md`
-- `ARCHITECTURE.md`
-- `SECURITY.md`
+- [AGENTS.md](AGENTS.md) - AI agent guidance
+- [CONTRIBUTING.md](CONTRIBUTING.md) - PR process
+- [STYLEGUIDE.md](STYLEGUIDE.md) - Code conventions
+- [TESTING.md](TESTING.md) - Testing strategy
+- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
+- [SECURITY.md](SECURITY.md) - Security policy
 
 ## License
 

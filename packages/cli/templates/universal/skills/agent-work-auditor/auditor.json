@@ -1,0 +1,31 @@
+{
+  "description": "agent-work-auditor configuration",
+  "defaults": {
+    "changeType": "general",
+    "mode": "standard",
+    "autoFixEnabled": true
+  },
+  "artifactPriorities": ["code", "spec", "design", "tasks"],
+  "severityThreshold": "warning",
+  "extensions": {
+    "spec-driven": {
+      "enabled": true,
+      "specPath": ".specs",
+      "requirePhaseGates": true
+    }
+  },
+  "migration": {
+    "phase0Required": true,
+    "minDimensionScore": 4,
+    "proveItRequired": true
+  },
+  "output": {
+    "format": ["markdown", "json"],
+    "includeTraceabilityMatrix": true,
+    "includeMentoring": true
+  },
+  "selfFix": {
+    "maxPasses": 2,
+    "rollbackOnNewIssues": true
+  }
+}
