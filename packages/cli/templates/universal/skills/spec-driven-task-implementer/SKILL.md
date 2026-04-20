@@ -22,7 +22,7 @@ Read `references/task-execution-patterns.md` when you need examples for resuming
 
 1. **Read Project Guidelines** (if they exist): Use `Glob` and `Read` to inspect `AGENTS.md`, `ARCHITECTURE.md`, `STYLEGUIDE.md`, `TESTING.md`, and `SECURITY.md`.
 2. **Read the Feature Spec**: Read `.specs/changes/<slug>/requirements.md`, `design.md`, and `tasks.md`.
-3. **Validate the Spec**: Run `spec-driven validate spec <slug>` before implementation. Resolve blocking spec issues first.
+3. **Validate the Spec**: Run `sds validate spec <slug>` before implementation. Resolve blocking spec issues first.
 4. **Inspect Existing Code**: Use `Glob`, `Read`, and `Grep` to understand the files, modules, and patterns referenced by the design.
 5. **Select the Next Eligible Task**: Choose the requested task, requested phase, or the next pending task whose dependencies are satisfied.
 6. **Execute the Task Loop**: Mark the task in progress, implement it, verify it, then mark it complete.
@@ -194,7 +194,7 @@ When a conflict appears:
 
 ### Spec Validation Failures
 
-If `spec-driven validate spec` reports blocking errors before implementation:
+If `sds validate spec` reports blocking errors before implementation:
 
 1. Do not start coding yet.
 2. Identify whether the issue is in requirements, design, or tasks.

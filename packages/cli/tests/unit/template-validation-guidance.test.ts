@@ -27,8 +27,8 @@ describe('Unit: template validation guidance', () => {
     it('requires tasks and complete-spec validation in planner templates', async () => {
         // Universal template is the source of truth
         const content = await readTemplate('universal/agents/spec-driven.agent.md');
-        expect(content).toContain('spec-driven validate tasks');
-        expect(content).toContain('spec-driven validate spec');
+        expect(content).toContain('sds validate tasks');
+        expect(content).toContain('sds validate spec');
     });
 
     it('hardens Codex planner templates against phase-skipping', async () => {
@@ -61,11 +61,11 @@ describe('Unit: template validation guidance', () => {
 
         for (const target of targets) {
             const content = await readTemplate(target);
-            expect(content).toContain('spec-driven validate spec');
+            expect(content).toContain('sds validate spec');
         }
 
         const decomposerContent = await readTemplate('universal/skills/spec-driven-task-decomposer/SKILL.md');
-        expect(decomposerContent).toContain('spec-driven validate tasks');
+        expect(decomposerContent).toContain('sds validate tasks');
     });
 
     it('requires behavior-focused testing task names with REQ IDs only in traceability tags', async () => {

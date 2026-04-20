@@ -30,8 +30,8 @@ If `long-running-work-planning` is available, load it at the start of this phase
 7. **Create Atomic Tasks**: Break each design element into tasks that are concrete and usually completable within one focused session.
 8. **Add Acceptance Criteria Testing**: Create a dedicated penultimate testing phase covering every acceptance criterion.
 9. **Add Final Checkpoint**: Create a final phase that verifies all requirements and overall spec completeness.
-10. **Validate Tasks**: Run `spec-driven validate tasks .specs/changes/<slug>/tasks.md` using `tasks.md` and `design.md` content.
-11. **Validate Full Spec**: Run `spec-driven validate spec <slug>`.
+10. **Validate Tasks**: Run `sds validate tasks .specs/changes/<slug>/tasks.md` using `tasks.md` and `design.md` content.
+11. **Validate Full Spec**: Run `sds validate spec <slug>`.
 12. **Write Before Review**: Save to `.specs/changes/<slug>/tasks.md` before asking for approval.
 
 ## Per-Phase Todo List
@@ -60,6 +60,25 @@ When this skill begins execution, create a todo list containing the following it
 ## Output File
 
 `.specs/changes/<slug>/tasks.md`
+
+**IMPORTANT:** Only `tasks.md` is a valid spec document name for tasks. Do NOT create `implementation.md`, `plan.md`, `spec.md`, or any other document name. The spec-driven workflow strictly requires exactly three document types: `requirements.md`, `design.md`, and `tasks.md`.
+
+## CLI Validation Discovery
+
+After writing the tasks file, validate it using the CLI:
+
+```bash
+sds validate tasks .specs/changes/<slug>/tasks.md
+sds validate spec <slug>
+```
+
+Examples:
+```bash
+sds validate tasks .specs/changes/my-feature/tasks.md
+sds validate spec my-feature
+```
+
+**Note:** Both `sds` and `spec-driven-steroids` work interchangeably as the CLI command name.
 
 ## Required Document Structure
 
@@ -261,7 +280,7 @@ Ask a clarifying question only if the ambiguity would materially change:
 
 ### CLI Validation Failures
 
-When `spec-driven validate tasks` or `spec-driven validate spec` returns errors:
+When `sds validate tasks` or `sds validate spec` returns errors:
 
 1. Add missing required sections or phases.
 2. Fix task numbering and checkbox formatting.

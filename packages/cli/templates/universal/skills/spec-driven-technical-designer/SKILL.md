@@ -28,7 +28,7 @@ If `long-running-work-planning` is available, load it at the start of this phase
 5. **Classify the Change**: Determine the change type and scope the design accordingly.
 6. **Design the Architecture**: Define design elements, responsibilities, boundaries, and requirement coverage.
 7. **Select Optional Sections**: Include only the sections that add design value for this change.
-8. **Validate**: Run `spec-driven validate design .specs/changes/<slug>/design.md` using the design content and requirements content.
+8. **Validate**: Run `sds validate design .specs/changes/<slug>/design.md` using the design content and requirements content.
 9. **Write Before Review**: Save to `.specs/changes/<slug>/design.md` before asking for approval.
 
 ## Per-Phase Todo List
@@ -55,6 +55,23 @@ When this skill begins execution, create a todo list containing the following it
 ## Output File
 
 `.specs/changes/<slug>/design.md`
+
+**IMPORTANT:** Only `design.md` is a valid spec document name for design. Do NOT create `architecture.md`, `spec.md`, `overview.md`, or any other document name. The spec-driven workflow strictly requires exactly three document types: `requirements.md`, `design.md`, and `tasks.md`.
+
+## CLI Validation Discovery
+
+After writing the design file, validate it using the CLI:
+
+```bash
+sds validate design .specs/changes/<slug>/design.md
+```
+
+Example:
+```bash
+sds validate design .specs/changes/my-feature/design.md
+```
+
+**Note:** Both `sds` and `spec-driven-steroids` work interchangeably as the CLI command name.
 
 ## Change Type Classification
 
@@ -343,7 +360,7 @@ Ask a clarifying question only if the ambiguity would materially change:
 
 ### CLI Validation Failures
 
-When `spec-driven validate design` returns errors:
+When `sds validate design` returns errors:
 
 1. Add any missing required sections.
 2. Fix Mermaid syntax by simplifying diagrams first.

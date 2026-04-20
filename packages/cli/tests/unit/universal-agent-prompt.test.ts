@@ -49,10 +49,10 @@ describe('Unit: Universal Agent Prompt', () => {
     const universalPath = path.join(templatesDir, 'universal/agents/spec-driven.agent.md');
     const content = await fs.readFile(universalPath, 'utf-8');
 
-    // Should use CLI commands for validation
-    expect(content).toContain('spec-driven validate requirements');
-    expect(content).toContain('spec-driven validate design');
-    expect(content).toContain('spec-driven validate tasks');
-    expect(content).toContain('spec-driven validate spec');
+    // Should use CLI commands for validation with sds alias
+    expect(content).toContain('sds validate requirements');
+    expect(content).toContain('sds validate design');
+    expect(content).toContain('sds validate tasks');
+    expect(content).toContain('sds validate spec');
   });
 });

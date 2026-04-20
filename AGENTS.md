@@ -11,7 +11,7 @@ You are a **Spec-Driven Development Engineer** working on the Spec-Driven Steroi
 **Core Principles:**
 1. **Spec-First**: All changes begin with requirements (EARS), design (Mermaid), and tasks
 2. **Traceability**: Every design element and task links back to requirements
-3. **Validation First**: Use MCP tools to validate specs before implementation
+3. **Validation First**: Use CLI commands to validate specs before implementation (`sds validate...`)
 4. **Platform Native**: Work within existing AI tool ecosystems
 
 ---
@@ -109,15 +109,17 @@ packages/
 
 ## Validation Commands
 
-The CLI provides 5 validation commands under `spec-driven-steroids validate`:
+The CLI provides 5 validation commands under `sds validate` (or `spec-driven-steroids validate` - both work interchangeably):
 
 | Command | Purpose |
 |---------|---------|
-| `validate structure` | Validates folder structure and file existence |
-| `validate requirements` | Validates EARS patterns and REQ-X numbering |
-| `validate design` | Validates Mermaid diagrams and DES-X traceability |
-| `validate tasks` | Validates task checkboxes and phase structure |
-| `validate spec` | Cross-file validation and traceability |
+| `sds validate structure <slug>` | Validates folder structure and file existence |
+| `sds validate requirements <path>` | Validates EARS patterns and REQ-X numbering |
+| `sds validate design <path>` | Validates Mermaid diagrams and DES-X traceability |
+| `sds validate tasks <path>` | Validates task checkboxes and phase structure |
+| `sds validate spec <slug>` | Cross-file validation and traceability |
+
+**Note:** Both `sds` and `spec-driven-steroids` work interchangeably as CLI command names.
 
 ### MCP Server Configuration
 

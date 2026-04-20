@@ -98,6 +98,7 @@ const program = new Command();
 
 program
   .name('spec-driven-steroids')
+  .alias('sds')
   .description('Inject Spec-Driven standards into your repository')
   .version(getCliVersion());
 

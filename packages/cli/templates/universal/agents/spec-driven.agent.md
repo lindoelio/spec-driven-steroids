@@ -61,7 +61,7 @@ Invoke the `spec-driven-requirements-writer` skill.
 3. Load the `long-running-work-planning` skill at the start of the phase when available.
 4. Invoke the `spec-driven-requirements-writer` skill.
 5. Wait for the skill to produce requirements content.
-6. Validate with `spec-driven validate requirements .specs/changes/<slug>/requirements.md`.
+6. Validate with `sds validate requirements .specs/changes/<slug>/requirements.md`.
 7. Write `.specs/changes/<slug>/requirements.md`.
 8. Invoke the `quality-grading` skill in `grade-and-fix` mode on `.specs/changes/<slug>/requirements.md`. Apply any auto-fixes before proceeding.
 9. **STOP**. Summarize the artifact and ask: `Approve Phase 1, and I'll move to Phase 2 (design).`
@@ -75,7 +75,7 @@ Invoke the `spec-driven-technical-designer` skill.
 2. Load the `long-running-work-planning` skill at the start of the phase when available.
 3. Invoke the `spec-driven-technical-designer` skill.
 4. Wait for the skill to produce design content.
-5. Validate with `spec-driven validate design .specs/changes/<slug>/design.md`.
+5. Validate with `sds validate design .specs/changes/<slug>/design.md`.
 6. Write `.specs/changes/<slug>/design.md`.
 7. Invoke the `quality-grading` skill in `grade-and-fix` mode on `.specs/changes/<slug>/design.md`. Apply any auto-fixes before proceeding.
 8. **STOP**. Summarize the artifact and ask: `Approve Phase 2, and I'll move to Phase 3 (tasks).`
@@ -89,8 +89,8 @@ Invoke the `spec-driven-task-decomposer` skill.
 2. Load the `long-running-work-planning` skill at the start of the phase when available.
 3. Invoke the `spec-driven-task-decomposer` skill.
 4. Wait for the skill to produce tasks content.
-5. Validate with `spec-driven validate tasks .specs/changes/<slug>/tasks.md`.
-6. Validate the full spec with `spec-driven validate spec <slug>`.
+5. Validate with `sds validate tasks .specs/changes/<slug>/tasks.md`.
+6. Validate the full spec with `sds validate spec <slug>`.
 7. Write `.specs/changes/<slug>/tasks.md`.
 8. Invoke the `quality-grading` skill in `grade-and-fix` mode on `.specs/changes/<slug>/tasks.md`. Apply any auto-fixes before proceeding.
 9. **STOP**. Summarize the artifact and ask: `Approve Phase 3, and I'll move to Phase 4 (implementation), which includes Phase 5 (code review) before quality grading.`

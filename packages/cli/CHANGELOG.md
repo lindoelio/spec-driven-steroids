@@ -1,5 +1,16 @@
 # spec-driven-steroids
 
+## 0.9.0
+
+### Minor Changes
+
+- Add `sds` CLI alias and update validation documentation
+
+  - Add `sds` as short alias for `spec-driven-steroids` CLI
+  - Update AGENTS.md to reference CLI-based validation (not MCP)
+  - Update skill instructions with CLI validation discovery sections
+  - Enforce only requirements.md, design.md, and tasks.md as valid spec documents
+
 ## 0.8.0
 
 ### Minor Changes
