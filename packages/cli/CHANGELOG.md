@@ -1,5 +1,15 @@
 # spec-driven-steroids
 
+## 0.10.0
+
+### Minor Changes
+
+- 9a63e46: feat: add Rigorous Against Prompt/Spec as CORE auditing dimension
+
+  - agent-work-auditor: Add "Rigorous Against Prompt/Spec" as 7th core dimension (was in spec-driven extension)
+  - agent-work-auditor: Update spec-driven extension to note this dimension is now CORE
+  - Enables autonomous auditing workflow across all spec-driven phases
+
 ## 0.9.0
 
 ### Minor Changes
