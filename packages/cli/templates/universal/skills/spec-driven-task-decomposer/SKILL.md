@@ -19,20 +19,20 @@ Read `references/task-patterns.md` when you need examples of atomic task sizing,
 
 ## Process
 
-If `long-running-work-planning` is available, load it at the start of this phase before decomposing the work. Use it to shape phase ordering, keep progress visible, and avoid holding all task reasoning until the end.
+If `long-running-work-planning` is available, load it at the start of this phase before decomposing the work. Use it to shape execution-safe tasks, checkpoint progress, and ensure the resulting `tasks.md` can drive resumable autonomous implementation.
 
 1. **Read Requirements**: Read `.specs/changes/<slug>/requirements.md`.
 2. **Read Design**: Read `.specs/changes/<slug>/design.md`.
 3. **Read Project Guidelines** (if they exist): Use `Glob` and `Read` to inspect `TESTING.md` and `STYLEGUIDE.md`.
 4. **Retrieve Contextual Memory**: Invoke the `contextual-stewardship` skill to retrieve `workflow` rules.
-5. **Inspect Existing Patterns**: Use `Grep` to find similar task structures in existing specs when helpful.
+5. **Inspect Existing Patterns**: Use `Grep` to find similar task structures in existing specs only when helpful; context budget is requirements, design, testing guidance, and targeted examples only.
 6. **Define Phases**: Group work into a small number of phases that follow implementation dependencies.
 7. **Create Atomic Tasks**: Break each design element into tasks that are concrete and usually completable within one focused session.
 8. **Add Acceptance Criteria Testing**: Create a dedicated penultimate testing phase covering every acceptance criterion.
 9. **Add Final Checkpoint**: Create a final phase that verifies all requirements and overall spec completeness.
-10. **Validate Tasks**: Run `sds validate tasks .specs/changes/<slug>/tasks.md` using `tasks.md` and `design.md` content.
-11. **Validate Full Spec**: Run `sds validate spec <slug>`.
-12. **Write Before Review**: Save to `.specs/changes/<slug>/tasks.md` before asking for approval.
+10. **Write Before Validation**: Save to `.specs/changes/<slug>/tasks.md` before validating.
+11. **Validate Tasks**: Run `sds validate tasks .specs/changes/<slug>/tasks.md` against the written file.
+12. **Validate Full Spec**: Run `sds validate spec <slug>`, fix failures in the written file, and re-run validation before asking for approval.
 
 ## Per-Phase Todo List
 
@@ -46,9 +46,9 @@ When this skill begins execution, create a todo list containing the following it
 6. Create atomic tasks
 7. Add acceptance criteria testing phase
 8. Add final checkpoint phase
-9. Validate tasks
-10. Audit tasks (agent-work-auditor)
-11. Save tasks.md
+9. Save tasks.md
+10. Validate tasks
+11. Audit tasks (agent-work-auditor)
 
 ### Progress Rules
 
@@ -65,16 +65,16 @@ When this skill begins execution, create a todo list containing the following it
 
 ## CLI Validation Discovery
 
-After writing the tasks file, validate it using the CLI:
+After writing the tasks file, validate it using the CLI. Do not claim validation passed unless these commands were actually run and their output was observed:
 
 ```bash
-sds validate tasks .specs/changes/<slug>/tasks.md
+sds validate tasks .specs/changes/<slug>/tasks.md --design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md
 sds validate spec <slug>
 ```
 
 Examples:
 ```bash
-sds validate tasks .specs/changes/my-feature/tasks.md
+sds validate tasks .specs/changes/my-feature/tasks.md --design .specs/changes/my-feature/design.md --requirements .specs/changes/my-feature/requirements.md
 sds validate spec my-feature
 ```
 
@@ -351,7 +351,7 @@ This composition ensures comprehensive quality assessment without requiring sepa
 ### Self-Fix Loop
 
 agent-work-auditor will:
-1. Auto-fix direct-fix findings (up to 2 passes)
+1. Auto-fix direct-fix findings (up to 3 passes)
 2. Escalate remaining issues to author-required
 3. Output a structured audit report with verdict
 

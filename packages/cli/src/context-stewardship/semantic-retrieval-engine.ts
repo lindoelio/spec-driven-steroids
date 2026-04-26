@@ -47,6 +47,13 @@ export class SemanticRetrievalEngine {
       rules = rules.filter(r => r.state.value === 'active');
     }
 
+    const now = Date.now();
+    rules = rules.filter(r => {
+      if (r.state.value !== 'active') return true;
+      const expiresAt = new Date(r.metadata.expiresAt).getTime();
+      return Number.isNaN(expiresAt) || expiresAt > now;
+    });
+
     if (query.projectScope) {
       rules = rules.filter(r => r.projectScope === query.projectScope);
     }

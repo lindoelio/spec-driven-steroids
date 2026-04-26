@@ -69,7 +69,7 @@ describe('Unit: Gemini CLI Scope Path Helpers', () => {
     it('getGeminiCliGlobalMcpPath returns global MCP config path', () => {
       const result = getGeminiCliGlobalMcpPath();
       expect(result).toContain('.gemini');
-      expect(result).toContain('mcp_config.json');
+      expect(result).toContain('settings.json');
     });
 
     it('getGeminiCliGlobalConfigDir returns global config directory', () => {
@@ -96,7 +96,7 @@ describe('Unit: Gemini CLI Scope Path Helpers', () => {
 
     it('getGeminiCliProjectMcpPath returns project-level MCP config path', () => {
       const result = getGeminiCliProjectMcpPath('/some/project');
-      expect(result).toContain('/some/project/.gemini/mcp_config.json');
+      expect(result).toContain('/some/project/.gemini/settings.json');
     });
   });
 });

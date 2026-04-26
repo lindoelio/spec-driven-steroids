@@ -147,7 +147,7 @@ Activated when relevant context is detected:
    - Re-review to verify no new issues
    - If new blocking issues: rollback, mark author-required
 
-2. Max 2 passes to prevent infinite loops
+2. Max 3 passes to prevent infinite loops
 
 3. After max passes, escalate remaining direct-fix to author-required
 

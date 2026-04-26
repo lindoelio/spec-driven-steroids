@@ -10,9 +10,9 @@ import {
   ValidationError
 } from './shared/formatter.js';
 import {
-  extractRequirementIds
+  extractDeclaredRequirementIds
 } from './shared/ids.js';
-import { detectEarsPatterns } from './shared/ears.js';
+import { validateEarsCriterion } from './shared/ears.js';
 
 const SKILL_DOCS = {
   requirements: 'skills/spec-driven-requirements-writer/SKILL.md',
@@ -66,7 +66,7 @@ function verifyRequirementsFile(content: string): RequirementsValidationResult {
     });
   }
 
-  const reqMatches = extractRequirementIds(content);
+  const reqMatches = extractDeclaredRequirementIds(content);
   if (reqMatches.length > 0) {
     requirementsFound.push(...reqMatches);
   } else {
@@ -78,26 +78,66 @@ function verifyRequirementsFile(content: string): RequirementsValidationResult {
     });
   }
 
-  const foundPatterns = detectEarsPatterns(content);
-  earsPatterns.push(...foundPatterns);
+  const criteriaByReq = new Map<string, string[]>();
+  const lines = content.split('\n');
+  let currentReq: string | undefined;
 
-  if (earsPatterns.length === 0) {
-    errors.push({
-      errorType: 'Format Error',
-      context: 'No EARS patterns detected',
-      suggestedFix: 'Use EARS keywords (WHEN, IF, THEN, SHALL, WHILE, WHERE) to structure requirements',
-      skillDocLink: SKILL_DOCS.requirements
-    });
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index];
+    const heading = line.match(/^###\s+(?:Requirement\s+(\d+)\s*:|(REQ-(\d+))\b)/i);
+    if (heading) {
+      currentReq = `REQ-${heading[1] || heading[3]}`;
+      criteriaByReq.set(currentReq, []);
+      continue;
+    }
+
+    const criterion = line.match(/^\s*(\d+)\.(\d+)\s+(.+)$/);
+    if (!criterion || !currentReq) continue;
+
+    const criterionReq = `REQ-${criterion[1]}`;
+    if (criterionReq !== currentReq) {
+      errors.push({
+        errorType: 'Format Error',
+        context: `Line ${index + 1}: acceptance criterion ${criterion[1]}.${criterion[2]} does not match ${currentReq}`,
+        suggestedFix: `Renumber the criterion to match ${currentReq}`,
+        line: index + 1,
+        skillDocLink: SKILL_DOCS.requirements
+      });
+    }
+
+    const validation = validateEarsCriterion(criterion[3]);
+    if (validation.pattern) earsPatterns.push(validation.pattern);
+    criteriaByReq.get(currentReq)?.push(`${criterion[1]}.${criterion[2]}`);
+
+    if (!validation.valid) {
+      errors.push({
+        errorType: 'EARS Error',
+        context: `Line ${index + 1}: ${validation.errors.join('; ')}`,
+        suggestedFix: 'Rewrite the criterion using canonical EARS syntax',
+        line: index + 1,
+        skillDocLink: SKILL_DOCS.requirements
+      });
+    }
   }
 
-  const acceptanceCriteriaMatches = content.match(/^\s*\d+(?:\.\d+)?(?:\.)?\s+/gm);
-  if (!acceptanceCriteriaMatches || acceptanceCriteriaMatches.length === 0) {
+  if (criteriaByReq.size === 0 || Array.from(criteriaByReq.values()).every(criteria => criteria.length === 0)) {
     errors.push({
       errorType: 'Format Error',
       context: 'No 1.1, 1.2, etc. numbering found',
       suggestedFix: 'Add numbered acceptance criteria for each requirement',
       skillDocLink: SKILL_DOCS.requirements
     });
+  }
+
+  for (const reqId of reqMatches) {
+    if ((criteriaByReq.get(reqId) ?? []).length === 0) {
+      errors.push({
+        errorType: 'Format Error',
+        context: `${reqId} has no acceptance criteria`,
+        suggestedFix: `Add at least one numbered acceptance criterion under ${reqId}`,
+        skillDocLink: SKILL_DOCS.requirements
+      });
+    }
   }
 
   return {

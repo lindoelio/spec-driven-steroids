@@ -19,19 +19,19 @@ Read `references/requirements-patterns.md` when you need example EARS phrasing, 
 
 ## Process
 
-If `long-running-work-planning` is available, load it at the start of this phase before drafting requirements. Use it to chunk reasoning, keep progress visible, and avoid holding all analysis until the end.
+If `long-running-work-planning` is available, load it at the start of this phase before drafting requirements. Use it to keep the phase artifact durable, checkpoint progress, and avoid relying on unstored analysis for long-running work.
 
 1. **Read Project Guidelines** (if they exist):
    - Use `Glob` to find `AGENTS.md`, `STYLEGUIDE.md`, `ARCHITECTURE.md`
    - Use `Read` to understand existing patterns, naming conventions, and architecture
-   - Use `Grep` to search for keywords or patterns relevant to the feature
+   - Context budget: do not perform broad code searches unless the request requires repository-specific behavior
 2. **Retrieve Contextual Memory**: Invoke the `contextual-stewardship` skill to retrieve `business` rules.
 3. Analyze user description and any issue context
 4. Extract actors, actions, and constraints
 5. Write requirements using valid EARS syntax
 6. Define glossary terms if domain-specific terminology is needed
-7. **Validate**: Run `sds validate requirements .specs/changes/<slug>/requirements.md` to ensure compliance
-8. **Write Before Review**: Save to `.specs/changes/<slug>/requirements.md` before asking for approval
+7. **Write Before Validation**: Save to `.specs/changes/<slug>/requirements.md` before validating
+8. **Validate**: Run `sds validate requirements .specs/changes/<slug>/requirements.md` against the written file, fix failures in the file, and re-run validation before asking for approval
 
 ## Per-Phase Todo List
 
@@ -42,9 +42,9 @@ When this skill begins execution, create a todo list containing the following it
 3. Analyze user description and context
 4. Extract actors, actions, and constraints
 5. Write EARS requirements
-6. Validate requirements
-7. Audit requirements (agent-work-auditor)
-8. Save requirements.md
+6. Save requirements.md
+7. Validate requirements
+8. Audit requirements (agent-work-auditor)
 
 ### Progress Rules
 
@@ -61,7 +61,7 @@ When this skill begins execution, create a todo list containing the following it
 
 ## CLI Validation Discovery
 
-After writing the requirements file, validate it using the CLI:
+After writing the requirements file, validate it using the CLI. Do not claim validation passed unless this command was actually run and its output was observed:
 
 ```bash
 sds validate requirements .specs/changes/<slug>/requirements.md
@@ -312,7 +312,7 @@ This composition ensures comprehensive quality assessment without requiring sepa
 ### Self-Fix Loop
 
 agent-work-auditor will:
-1. Auto-fix direct-fix findings (up to 2 passes)
+1. Auto-fix direct-fix findings (up to 3 passes)
 2. Escalate remaining issues to author-required
 3. Output a structured audit report with verdict
 

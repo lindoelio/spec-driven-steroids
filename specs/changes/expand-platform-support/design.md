@@ -85,7 +85,7 @@ _Implements: REQ-1.1, REQ-1.2, REQ-2.1, REQ-2.2, REQ-3.1, REQ-3.2_
 
 MCP configuration functions handle reading, updating, and writing MCP server settings for each platform.
 
-**Responsibility:** Configure external MCP servers (sequential-thinking, memory) in platform-specific config files.
+**Responsibility:** Preserve existing platform MCP config files while avoiding SDS-owned external MCP server entries.
 
 ```mermaid
 sequenceDiagram

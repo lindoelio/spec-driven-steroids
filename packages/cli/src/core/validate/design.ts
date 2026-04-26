@@ -11,7 +11,8 @@ import {
 } from './shared/formatter.js';
 import {
   extractDesignElementIds,
-  extractRequirementIds,
+  extractAcceptanceCriteriaRefs,
+  extractDeclaredRequirementIds,
   findLineNumber
 } from './shared/ids.js';
 import { extractMermaidBlocks, validateMermaidDiagram } from './shared/mermaid.js';
@@ -94,7 +95,9 @@ function verifyDesignFile(content: string, requirementsContent?: string): Design
     });
   }
   
-  const reqIds = requirementsContent ? extractRequirementIds(requirementsContent) : [];
+  const reqIds = requirementsContent
+    ? [...extractDeclaredRequirementIds(requirementsContent), ...extractAcceptanceCriteriaRefs(requirementsContent)]
+    : [];
   
   const mermaidBlocks = extractMermaidBlocks(content);
   const mermaidErrors: Array<{ line: number; errorType: string; message: string }> = [];
@@ -138,6 +141,17 @@ function verifyDesignFile(content: string, requirementsContent?: string): Design
       errorType: 'Traceability Error',
       context: `${orphan} has no requirement traceability link`,
       suggestedFix: `Add _Implements: REQ-X.Y_ under ${orphan}`,
+      line: line > 0 ? line : undefined,
+      skillDocLink: SKILL_DOCS.design
+    });
+  }
+
+  for (const invalidRef of traceReport.invalidReqRefs) {
+    const line = findLineNumber(content, new RegExp(invalidRef.split(' -> ')[1]?.replace('.', '\\.') || invalidRef, 'm'));
+    errors.push({
+      errorType: 'Traceability Error',
+      context: `${invalidRef} references a requirement or acceptance criterion not defined in requirements.md`,
+      suggestedFix: 'Fix the _Implements:_ reference so it matches an existing REQ-* or REQ-*.* entry',
       line: line > 0 ? line : undefined,
       skillDocLink: SKILL_DOCS.design
     });

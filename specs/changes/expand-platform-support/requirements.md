@@ -24,7 +24,7 @@ The existing GitHub Copilot support targets IDE plugins (VS Code, JetBrains), wh
 - All three platforms support external MCP servers for extending functionality
 - The transformation pipeline handles agent and command files; skills are copied as directories
 - Global/user-level scope is supported by GitHub Copilot CLI and Gemini CLI; Qwen Code supports user-level skills
-- Spec-Driven Steroids configures external MCP servers (sequential-thinking, memory) but does not embed an MCP server itself
+- Spec-Driven Steroids injects skills, agents, commands, and validation workflows, but does not embed or configure external MCP servers by default.
 
 ## Requirements
 
@@ -96,7 +96,7 @@ The existing GitHub Copilot support targets IDE plugins (VS Code, JetBrains), wh
 
 4.2 THE inject command SHALL support user-level and project scope selection for all new platforms.
 
-4.3 THE inject command SHALL prompt for optional external MCP server configuration (sequential-thinking, memory) for all new platforms.
+4.3 THE inject command SHALL rely on injected skills and artifacts for long-running work rather than prompting for optional external MCP server configuration.
 
 4.4 THE transformation pipeline SHALL produce platform-appropriate filenames and directory structures for each new platform.
 

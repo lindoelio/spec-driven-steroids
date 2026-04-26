@@ -155,14 +155,14 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     format: FormatType.MARKDOWN,
     frontmatter: {
       fields: {
-        name: 'Spec-Driven',
+        name: 'spec-driven',
         description: 'Use this planner when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
       }
     },
     agentDirectory: 'agents',
     agentFilename: 'spec-driven.md',
     commandDirectory: 'commands',
-    specDrivenCommandFilename: 'spec-driven.md',
+    specDrivenCommandFilename: 'spec-driven.toml',
     injectGuidelinesCommandFilename: 'inject-guidelines.toml'
   },
   'qwen-code': {

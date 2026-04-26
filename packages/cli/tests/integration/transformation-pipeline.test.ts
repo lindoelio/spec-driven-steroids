@@ -91,6 +91,19 @@ describe('Integration: Transformation Pipeline', () => {
       expect(content).toContain('prompt = """');
     });
 
+    it('produces TOML format for Gemini CLI spec-driven commands', async () => {
+      const results = await transformForPlatform('gemini-cli', templatesDir, tempDir);
+
+      const commandResult = results.find(r => r.sourcePath.includes('spec-driven.command.md'));
+      expect(commandResult).toBeDefined();
+      expect(commandResult?.success).toBe(true);
+      expect(commandResult?.outputPath).toMatch(/spec-driven\.toml$/);
+
+      const content = await fs.readFile(commandResult!.outputPath, 'utf-8');
+      expect(content).toContain('description = "');
+      expect(content).toContain('prompt = """');
+    });
+
     it('produces markdown format for Gemini CLI agent files', async () => {
       const results = await transformForPlatform('gemini-cli', templatesDir, tempDir);
 
@@ -101,7 +114,7 @@ describe('Integration: Transformation Pipeline', () => {
 
       const content = await fs.readFile(agentResult!.outputPath, 'utf-8');
       expect(content).toContain('---');
-      expect(content).toContain('name:');
+      expect(content).toContain('name: spec-driven');
     });
   });
 

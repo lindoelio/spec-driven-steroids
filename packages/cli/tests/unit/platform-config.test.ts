@@ -67,9 +67,11 @@ describe('Unit: Platform Config', () => {
       const config = getPlatformConfig('gemini-cli');
       expect(config).toBeDefined();
       expect(config?.format).toBe(FormatType.MARKDOWN);
+      expect(config?.frontmatter.fields.name).toBe('spec-driven');
       expect(config?.agentDirectory).toBe('agents');
       expect(config?.agentFilename).toBe('spec-driven.md');
       expect(config?.commandDirectory).toBe('commands');
+      expect(config?.specDrivenCommandFilename).toBe('spec-driven.toml');
       expect(config?.injectGuidelinesCommandFilename).toBe('inject-guidelines.toml');
     });
 

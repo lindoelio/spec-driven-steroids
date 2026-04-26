@@ -29,6 +29,18 @@ describe('Unit: template validation guidance', () => {
         const content = await readTemplate('universal/agents/spec-driven.agent.md');
         expect(content).toContain('sds validate tasks');
         expect(content).toContain('sds validate spec');
+        expect(content).toContain('Never claim validation passed unless the command was actually run against the written file');
+    });
+
+    it('uses write-before-validate sequencing for planning artifacts', async () => {
+        const content = await readTemplate('universal/agents/spec-driven.agent.md');
+
+        expect(content).toContain('Write `.specs/changes/<slug>/requirements.md`.');
+        expect(content).toContain('Validate with `sds validate requirements .specs/changes/<slug>/requirements.md`.');
+        expect(content.indexOf('Write `.specs/changes/<slug>/requirements.md`.')).toBeLessThan(
+            content.indexOf('Validate with `sds validate requirements .specs/changes/<slug>/requirements.md`.')
+        );
+        expect(content).not.toContain('Invoke the `quality-grading` skill in `grade-and-fix` mode');
     });
 
     it('hardens Codex planner templates against phase-skipping', async () => {
@@ -79,6 +91,18 @@ describe('Unit: template validation guidance', () => {
         expect(implementerContent).toContain('Do not include `REQ-*` or `DES-*` IDs in test names');
         expect(implementerContent).toContain('Do not include `REQ-*` or `DES-*` IDs in code comments');
         expect(implementerContent).not.toContain('tasks prefixed with "Test REQ-"');
+    });
+
+    it('requires evidence for design code anatomy and bounded context loading', async () => {
+        const designerContent = await readTemplate('universal/skills/spec-driven-technical-designer/SKILL.md');
+        const implementerContent = await readTemplate('universal/skills/spec-driven-task-implementer/SKILL.md');
+
+        expect(designerContent).toContain('| File Path | Status | Evidence | Purpose | Implements |');
+        expect(designerContent).toContain('Verified by Glob/Read');
+        expect(designerContent).toContain('Existing paths must be verified by `Glob` or `Read`');
+        expect(designerContent).toContain('Read` at most 5 relevant files');
+        expect(implementerContent).toContain('Context budget: load only the active task block');
+        expect(implementerContent).toContain('Implement one task by default');
     });
 
     it('requires Testing Trophy fallback guidance for inject-guidelines templates', async () => {

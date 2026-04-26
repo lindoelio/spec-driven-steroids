@@ -40,15 +40,16 @@ If you just completed a planning phase, end with a direct approval question such
 
 ## Workflow
 
-At the start of each planning phase, load the `long-running-work-planning` skill when it is available before invoking the phase-specific skill. Use it to structure multi-step reasoning, emit progress, and keep planning work aligned with the phase artifact.
+At the start of each planning phase, load the `long-running-work-planning` skill when it is available before invoking the phase-specific skill. Use it to checkpoint progress, keep work aligned with durable artifacts, and make long-running phases resumable.
 
 **Critical: Skill Invocation Guard**
 When invoking any spec-driven skill, you MUST follow this exact sequence:
 1. Invoke the skill
 2. Wait for the skill to produce its artifact
 3. Write the artifact to the appropriate file path
-4. **STOP** — Do NOT invoke the next skill or continue to the next phase
-5. Summarize the artifact and ask for explicit human approval
+4. Run the validator against the written file, fix failures in the file, and re-run validation until it passes or a real blocker is reported
+5. **STOP** — Do NOT invoke the next skill or continue to the next phase
+6. Summarize the artifact and ask for explicit human approval
 
 The skill's output or "direct" production of content does NOT mean the phase is complete. You MUST stop after writing the artifact and await approval before proceeding.
 
@@ -61,9 +62,9 @@ Invoke the `spec-driven-requirements-writer` skill.
 3. Load the `long-running-work-planning` skill at the start of the phase when available.
 4. Invoke the `spec-driven-requirements-writer` skill.
 5. Wait for the skill to produce requirements content.
-6. Validate with `sds validate requirements .specs/changes/<slug>/requirements.md`.
-7. Write `.specs/changes/<slug>/requirements.md`.
-8. Invoke the `quality-grading` skill in `grade-and-fix` mode on `.specs/changes/<slug>/requirements.md`. Apply any auto-fixes before proceeding.
+6. Write `.specs/changes/<slug>/requirements.md`.
+7. Validate with `sds validate requirements .specs/changes/<slug>/requirements.md`.
+8. If validation fails, fix the written file and re-run the validator before requesting approval.
 9. **STOP**. Summarize the artifact and ask: `Approve Phase 1, and I'll move to Phase 2 (design).`
 10. Do not begin design work until the user explicitly approves Phase 1.
 
@@ -75,9 +76,9 @@ Invoke the `spec-driven-technical-designer` skill.
 2. Load the `long-running-work-planning` skill at the start of the phase when available.
 3. Invoke the `spec-driven-technical-designer` skill.
 4. Wait for the skill to produce design content.
-5. Validate with `sds validate design .specs/changes/<slug>/design.md`.
-6. Write `.specs/changes/<slug>/design.md`.
-7. Invoke the `quality-grading` skill in `grade-and-fix` mode on `.specs/changes/<slug>/design.md`. Apply any auto-fixes before proceeding.
+5. Write `.specs/changes/<slug>/design.md`.
+6. Validate with `sds validate design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md`.
+7. If validation fails, fix the written file and re-run the validator before requesting approval.
 8. **STOP**. Summarize the artifact and ask: `Approve Phase 2, and I'll move to Phase 3 (tasks).`
 9. Do not begin task decomposition until the user explicitly approves Phase 2.
 
@@ -89,11 +90,11 @@ Invoke the `spec-driven-task-decomposer` skill.
 2. Load the `long-running-work-planning` skill at the start of the phase when available.
 3. Invoke the `spec-driven-task-decomposer` skill.
 4. Wait for the skill to produce tasks content.
-5. Validate with `sds validate tasks .specs/changes/<slug>/tasks.md`.
-6. Validate the full spec with `sds validate spec <slug>`.
-7. Write `.specs/changes/<slug>/tasks.md`.
-8. Invoke the `quality-grading` skill in `grade-and-fix` mode on `.specs/changes/<slug>/tasks.md`. Apply any auto-fixes before proceeding.
-9. **STOP**. Summarize the artifact and ask: `Approve Phase 3, and I'll move to Phase 4 (implementation), which includes Phase 5 (code review) before quality grading.`
+5. Write `.specs/changes/<slug>/tasks.md`.
+6. Validate with `sds validate tasks .specs/changes/<slug>/tasks.md --design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md`.
+7. Validate the full spec with `sds validate spec <slug>`.
+8. If either validation fails, fix the written file and re-run the validator before requesting approval.
+9. **STOP**. Summarize the artifact and ask: `Approve Phase 3, and I'll move to Phase 4 (implementation), which includes Phase 5 (code review) before final validation.`
 10. Do not begin implementation until the user explicitly approves Phase 3 and Phase 4 entry.
 
 ### Phase 4: Implementation
@@ -127,6 +128,7 @@ Invoke the `spec-driven-task-implementer` skill.
 ## Key Behaviors
 
 - Always validate via CLI before presenting a planning artifact as complete.
+- Never claim validation passed unless the command was actually run against the written file and its output was observed.
 - Explicitly invoke the specialized skill for each phase.
 - Write planning artifacts first, then ask for approval between phases.
 - After a planning artifact is written, stop immediately and wait for approval.

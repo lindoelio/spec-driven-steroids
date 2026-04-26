@@ -45,7 +45,7 @@ Workflow:
 2. Gather project context (style guide, conventions, docs)
 3. Review per type strategy — read every line
 4. Classify findings by severity AND fixability
-5. Self-repair loop — apply direct fixes, re-review (max 2 passes)
+5. Self-repair loop — apply direct fixes, re-review (max 3 passes)
 6. Author review — remaining author-required items
 7. Final verdict + escalation if needed
 ```
@@ -150,9 +150,9 @@ Read `references/finding-severity.md` to classify each finding:
 
 ### Phase 6: Self-Repair Loop
 
-Apply direct fixes autonomously. Max 1 pass.
+Apply direct fixes autonomously. Max 3 passes.
 
-**Pass 1:**
+**Each pass:**
 
 1. For every `direct-fix` blocking finding: apply the fix.
 2. Re-read modified files to verify fix didn't break anything.
@@ -163,7 +163,7 @@ Apply direct fixes autonomously. Max 1 pass.
 5. If no new blocking findings: mark original finding as `fixed`.
 6. Collect remaining unfixed `direct-fix` items.
 
-After 1 pass, any remaining `direct-fix` items are marked
+After 3 passes, any remaining `direct-fix` items are marked
 `author-required` and escalated via `references/escalation.md`.
 
 ### Phase 7: Author Review

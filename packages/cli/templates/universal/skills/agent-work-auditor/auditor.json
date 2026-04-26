@@ -25,7 +25,7 @@
     "includeMentoring": true
   },
   "selfFix": {
-    "maxPasses": 2,
+    "maxPasses": 3,
     "rollbackOnNewIssues": true
   }
 }

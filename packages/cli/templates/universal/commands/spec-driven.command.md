@@ -12,7 +12,7 @@ Use the `spec-driven` agent for this request.
 Command behavior:
 - Begin at Phase 1 (requirements).
 - Enforce the full lifecycle: `requirements -> design -> tasks -> implementation`.
-- Load `long-running-work-planning` at the start of each planning phase when it is available.
+- Load `long-running-work-planning` at the start of each planning phase when it is available, using it for durable checkpoints and resumable progress.
 - Do not implement code yet.
 - Propose a slug and draft `.specs/changes/<slug>/requirements.md`.
 - Write `.specs/changes/<slug>/requirements.md` first, validate it, then ask for human approval before moving to design.

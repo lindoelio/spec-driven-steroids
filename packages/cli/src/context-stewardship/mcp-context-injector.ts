@@ -74,7 +74,8 @@ export class McpContextInjector {
       lines.push(`\n[${ctx.domain.toUpperCase()}] (${ctx.source}):`);
       for (const rule of ctx.rules.slice(0, 3)) {
         const truncated = rule.content.length > 150 ? rule.content.slice(0, 150) + '...' : rule.content;
-        lines.push(`  • ${truncated}`);
+        const source = rule.projectScope ? `project:${rule.projectScope}` : 'global';
+        lines.push(`  • ${rule.id} [${rule.domain}, ${source}, confidence=${rule.metadata.confidence}, decided=${rule.provenance.decisionDate}, expires=${rule.metadata.expiresAt}] ${truncated}`);
       }
     }
 

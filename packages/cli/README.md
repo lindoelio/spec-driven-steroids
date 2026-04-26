@@ -65,7 +65,6 @@ Flags:
 - `-p, --platform <platform>` - Target platform
 - `-s, --scope <scope>` - Injection scope (`project` or `global`)
 - `-y, --yes` -Skip prompts, use defaults
-- `--include-sequential-thinking` - Add sequential-thinking MCP
 
 ### validate
 
@@ -105,7 +104,7 @@ sds --help      # Show help
 | `quality-grading` | Grade code/specs quality |
 | `code-review-hardening` | Code review with self-repair |
 | `universal-live-check` | Real-time validation |
-| `long-running-work-planning` | Complex task reasoning |
+| `long-running-work-planning` | Durable checkpointed execution for long tasks |
 | `project-guidelines-writer` | Generate guidelines |
 | `agent-work-auditor` | Audit agent output |
 

@@ -13,15 +13,30 @@ export function findLineNumber(content: string, pattern: RegExp): number {
 }
 
 export function extractRequirementIds(content: string): string[] {
+  return extractDeclaredRequirementIds(content);
+}
+
+export function extractDeclaredRequirementIds(content: string): string[] {
   const fromHeadings = Array.from(content.matchAll(/^###\s+Requirement\s+(\d+)\s*:/gmi), (match) => `REQ-${match[1]}`);
-  const explicit = content.match(/REQ-\d+/g) || [];
-  return unique([...fromHeadings, ...explicit]);
+  const explicitHeadings = Array.from(content.matchAll(/^###\s+(REQ-\d+)\b/gmi), (match) => match[1]);
+  return unique([...fromHeadings, ...explicitHeadings]);
+}
+
+export function extractRequirementRefs(content: string): string[] {
+  return unique(content.match(/REQ-\d+(?:\.\d+)?/g) || []);
 }
 
 export function extractDesignElementIds(content: string): string[] {
+  return extractDeclaredDesignElementIds(content);
+}
+
+export function extractDeclaredDesignElementIds(content: string): string[] {
   const fromHeadings = Array.from(content.matchAll(/^###\s+(DES-\d+)\b/gmi), (match) => match[1]);
-  const explicit = content.match(/DES-\d+/g) || [];
-  return unique([...fromHeadings, ...explicit]);
+  return unique(fromHeadings);
+}
+
+export function extractDesignElementRefs(content: string): string[] {
+  return unique(content.match(/DES-\d+/g) || []);
 }
 
 export function extractAcceptanceCriteriaRefs(content: string): string[] {
@@ -33,9 +48,9 @@ export function extractAcceptanceCriteriaRefs(content: string): string[] {
   let currentReq: string | null = null;
 
   for (const line of lines) {
-    const heading = line.match(/^###\s+Requirement\s+(\d+)\s*:/i);
+    const heading = line.match(/^###\s+(?:Requirement\s+(\d+)\s*:|(REQ-(\d+))\b)/i);
     if (heading) {
-      currentReq = heading[1];
+      currentReq = heading[1] || heading[3];
       continue;
     }
 

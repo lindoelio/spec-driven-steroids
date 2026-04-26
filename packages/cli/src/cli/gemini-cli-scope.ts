@@ -20,11 +20,11 @@ export interface GeminiCliInjectionResult {
 }
 
 /**
- * Returns the Gemini CLI global MCP configuration file path.
- * Uses ~/.gemini/mcp_config.json
+ * Returns the Gemini CLI global settings file path.
+ * MCP servers are configured under mcpServers in ~/.gemini/settings.json.
  */
 export function getGeminiCliGlobalMcpPath(): string {
-  return path.join(os.homedir(), ".gemini", "mcp_config.json")
+  return path.join(os.homedir(), ".gemini", "settings.json")
 }
 
 /**
@@ -58,10 +58,10 @@ export function getGeminiCliProjectSkillsDir(targetDir: string): string {
 }
 
 /**
- * Returns the Gemini CLI project-level MCP configuration file path.
+ * Returns the Gemini CLI project-level settings file path.
  */
 export function getGeminiCliProjectMcpPath(targetDir: string): string {
-  return path.join(targetDir, ".gemini", "mcp_config.json")
+  return path.join(targetDir, ".gemini", "settings.json")
 }
 
 /**

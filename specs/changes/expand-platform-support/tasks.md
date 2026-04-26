@@ -41,19 +41,19 @@ This implementation adds support for three new CLI-based AI coding assistant pla
 
 - [x] 3.1 Add configureGitHubCopilotCliMcp function
   - Read existing `~/.config/github-copilot/mcp.json` or create new
-  - Merge external MCP servers (sequential-thinking, memory) when enabled
+  - Preserve existing external MCP server entries without adding SDS-owned reasoning or memory servers
   - Write updated config
   - _Implements: DES-3, REQ-1.3_
 
 - [x] 3.2 Add configureGeminiCliMcp function
   - Read existing `~/.gemini/mcp_config.json` or create new
-  - Merge external MCP servers (sequential-thinking, memory) when enabled
+  - Preserve existing external MCP server entries without adding SDS-owned reasoning or memory servers
   - Write updated config
   - _Implements: DES-3, REQ-2.3_
 
 - [x] 3.3 Add configureQwenCodeMcp function
   - Read existing `~/.qwen/mcp_config.json` or create new
-  - Merge external MCP servers (sequential-thinking, memory) when enabled
+  - Preserve existing external MCP server entries without adding SDS-owned reasoning or memory servers
   - Write updated config
   - _Implements: DES-3, REQ-3.3_
 

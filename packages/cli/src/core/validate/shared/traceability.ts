@@ -1,4 +1,4 @@
-import { extractDesignElementIds } from './ids.js';
+import { extractDeclaredDesignElementIds } from './ids.js';
 
 export function stripInlineMarkdown(value: string): string {
   return value.replace(/[*_`]/g, '');
@@ -50,7 +50,7 @@ export function buildTraceabilityReport(
   const orphaned: string[] = [];
   const invalidReqRefs: string[] = [];
   
-  const desIds = extractDesignElementIds(content);
+  const desIds = extractDeclaredDesignElementIds(content);
   const lines = content.split('\n');
   
   for (const desId of desIds) {

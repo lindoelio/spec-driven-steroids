@@ -109,7 +109,7 @@ The CLI injects these universal skills that work across all platforms:
 | `quality-grading` | Grade code/specs across 4 dimensions |
 | `code-review-hardening` | Structured code review with self-repair |
 | `universal-live-check` | Real-time validation framework |
-| `long-running-work-planning` | Structured reasoning for complex tasks |
+| `long-running-work-planning` | Durable checkpointed execution for long tasks |
 | `project-guidelines-writer` | Generate repository guidelines |
 | `agent-work-auditor` | Audit agent-generated artifacts |
 
@@ -164,16 +164,9 @@ This creates: `AGENTS.md`, `CONTRIBUTING.md`, `STYLEGUIDE.md`, `TESTING.md`, `AR
 
 4. Approve each planning phase, then move to implementation.
 
-## Optional: Sequential-Thinking MCP
+## Long-Running Work
 
-For complex long-running tasks, you can optionally add the sequential-thinking MCP server:
-
-```bash
-sds inject
-# Select "Yes" when prompted to add sequential-thinking MCP
-```
-
-This enables structured reasoning to help agents break down complex problems.
+For complex long-running tasks, SDS injects `long-running-work-planning`. It keeps agents working through durable artifacts, task status updates, checkpoints, and verification instead of relying on an external reasoning MCP server.
 
 ## Package Layout
 

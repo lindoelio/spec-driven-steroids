@@ -127,6 +127,56 @@ describe('CLI E2E: clean --global command', () => {
         expect(config.mcpServers['legacy-server']).toBeDefined();
     });
 
+    it('clean --global removes Gemini CLI global artifacts and preserves other settings', async () => {
+        const geminiDir = path.join(os.homedir(), '.gemini');
+        const settingsPath = path.join(geminiDir, 'settings.json');
+        const legacyMcpPath = path.join(geminiDir, 'mcp_config.json');
+
+        await fs.ensureDir(geminiDir);
+        await fs.writeJson(settingsPath, {
+            theme: 'dark',
+            mcpServers: {
+                'spec-driven-steroids': {
+                    command: 'node',
+                    args: ['/path/to/server.js']
+                },
+                'other-server': {
+                    command: 'npx',
+                    args: ['other-package']
+                }
+            }
+        }, { spaces: 2 });
+        await fs.writeJson(legacyMcpPath, {
+            mcpServers: {
+                'spec-driven-steroids': {
+                    command: 'node',
+                    args: ['/legacy/server.js']
+                }
+            }
+        }, { spaces: 2 });
+
+        await fs.outputFile(path.join(geminiDir, 'agents', 'spec-driven.md'), 'agent');
+        await fs.outputFile(path.join(geminiDir, 'commands', 'spec-driven.toml'), 'command');
+        await fs.outputFile(path.join(geminiDir, 'commands', 'inject-guidelines.toml'), 'command');
+        await fs.outputFile(path.join(geminiDir, 'skills', 'long-running-work-planning', 'SKILL.md'), 'skill');
+
+        const program = (await import('../../dist/cli/index.js')).default;
+        await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
+
+        const settings = await fs.readJson(settingsPath);
+        expect(settings.theme).toBe('dark');
+        expect(settings.mcpServers['spec-driven-steroids']).toBeUndefined();
+        expect(settings.mcpServers['other-server']).toBeDefined();
+
+        const legacyMcp = await fs.readJson(legacyMcpPath);
+        expect(legacyMcp.mcpServers['spec-driven-steroids']).toBeUndefined();
+
+        expect(await fs.pathExists(path.join(geminiDir, 'agents', 'spec-driven.md'))).toBe(false);
+        expect(await fs.pathExists(path.join(geminiDir, 'commands', 'spec-driven.toml'))).toBe(false);
+        expect(await fs.pathExists(path.join(geminiDir, 'commands', 'inject-guidelines.toml'))).toBe(false);
+        expect(await fs.pathExists(path.join(geminiDir, 'skills', 'long-running-work-planning'))).toBe(false);
+    });
+
     it('clean without --global flag works and shows preview', async () => {
         // This test verifies that the TDZ bug is fixed:
         // STEROIDS_SERVER_NAME and related constants must be accessible
@@ -327,9 +377,7 @@ describe('CLI E2E: inject --global preserves existing MCP entries', () => {
 
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['opencode'] })
-            .mockResolvedValueOnce({ scope: 'global' })
-            .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
-            .mockResolvedValueOnce({ addMemoryMcp: false });
+            .mockResolvedValueOnce({ scope: 'global' });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
@@ -368,9 +416,7 @@ describe('CLI E2E: inject --global preserves existing MCP entries', () => {
 
             vi.spyOn(inquirer, 'prompt')
                 .mockResolvedValueOnce({ platforms: ['opencode'] })
-                .mockResolvedValueOnce({ scope: 'global' })
-                .mockResolvedValueOnce({ addSequentialThinkingMcp: false })
-                .mockResolvedValueOnce({ addMemoryMcp: false });
+                .mockResolvedValueOnce({ scope: 'global' });
 
             const program = (await import('../../dist/cli/index.js')).default;
             await program.parseAsync(['inject'], { from: 'user' } as any);

@@ -20,6 +20,7 @@ export const DEFAULT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 export class ProjectScopedResolver {
   private globalStore: KnowledgeGraphStore;
   private projectStore?: KnowledgeGraphStore;
+  private currentProjectScope?: string;
   private engine: SemanticRetrievalEngine;
   private sessionCache: Map<string, CachedResult> = new Map();
   private cacheTtlMs: number = DEFAULT_CACHE_TTL_MS;
@@ -35,13 +36,17 @@ export class ProjectScopedResolver {
   }
 
   setProjectScope(projectId: string): void {
+    this.currentProjectScope = projectId;
     this.projectStore = new KnowledgeGraphStore('project', projectId);
     this.engine = new SemanticRetrievalEngine(this.projectStore);
+    this.clearSessionCache();
   }
 
   clearProjectScope(): void {
+    this.currentProjectScope = undefined;
     this.projectStore = undefined;
     this.engine = new SemanticRetrievalEngine(this.globalStore);
+    this.clearSessionCache();
   }
 
   detectCurrentProject(): string | undefined {
@@ -59,7 +64,8 @@ export class ProjectScopedResolver {
     const conflicts: Array<{ projectRule: RuleNode; globalRule: RuleNode }> = [];
 
     // Check session cache first (with TTL expiration)
-    const cacheKey = JSON.stringify(query);
+    const scopeKey = this.projectStore ? `project:${this.currentProjectScope ?? 'active'}` : 'global';
+    const cacheKey = JSON.stringify({ scopeKey, query });
     if (this.sessionCache.has(cacheKey)) {
       const cached = this.sessionCache.get(cacheKey)!;
       if (Date.now() - cached.timestamp < this.cacheTtlMs) {
@@ -99,9 +105,7 @@ export class ProjectScopedResolver {
 
     // Fall through to global
     const globalResults = await this.resolveGlobal(query);
-    if (!this.projectStore) {
-      allRules.push(...globalResults.rules);
-    }
+    allRules.push(...globalResults.rules);
     scopesResolved.push('global');
 
     // Merge and dedupe

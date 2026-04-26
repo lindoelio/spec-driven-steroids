@@ -30,7 +30,8 @@ import {
   getGeminiCliUserSkillsDir,
   getGeminiCliAgentsAliasDir,
   getGeminiCliUserAgentsDir,
-  getGeminiCliUserCommandsDir
+  getGeminiCliUserCommandsDir,
+  getGeminiCliProjectMcpPath
 } from './gemini-cli-scope.js';
 import {
   QwenCodeInjectionScope,
@@ -68,7 +69,7 @@ const STEROIDS_SERVER_NAME = 'spec-driven-steroids';
 
 const STEROIDS_FILES = {
   agents: ['spec-driven.agent.md'],
-  commands: ['spec-driven.command.md', 'inject-guidelines.md']
+  commands: ['spec-driven.command.md', 'spec-driven.md', 'inject-guidelines.md']
 } as const;
 
 const STEROIDS_SKILL_DIRS = [
@@ -77,7 +78,12 @@ const STEROIDS_SKILL_DIRS = [
   'spec-driven-requirements-writer',
   'spec-driven-task-decomposer',
   'long-running-work-planning',
-  'project-guidelines-writer'
+  'project-guidelines-writer',
+  'agent-work-auditor',
+  'code-review-hardening',
+  'contextual-stewardship',
+  'quality-grading',
+  'universal-live-check'
 ] as const;
 
 interface McpConfig {
@@ -90,11 +96,6 @@ interface CopilotMcpConfig {
 }
 
 interface McpServerEntry {
-  command: string;
-  args: string[];
-}
-
-interface McpLaunchConfig {
   command: string;
   args: string[];
 }
@@ -197,26 +198,6 @@ program
       ? QwenCodeInjectionScope.USER
       : QwenCodeInjectionScope.PROJECT;
 
-    // Third prompt: sequential-thinking MCP
-    const { addSequentialThinkingMcp } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'addSequentialThinkingMcp',
-        message: 'Add sequential-thinking MCP server? (Enables structured reasoning for long-running tasks)',
-        default: true
-      }
-    ]);
-
-    // Fourth prompt: memory MCP
-    const { addMemoryMcp } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'addMemoryMcp',
-        message: 'Add memory MCP server? (Enables persistent memory across conversations)',
-        default: true
-      }
-    ]);
-
     const targetDir = process.cwd();
     const bundledTemplatesDir = path.resolve(__dirname, '../../templates');
     const templateSource = await resolveTemplateSource({
@@ -245,7 +226,7 @@ program
         if (platform === 'github-vscode') {
           if (githubScope === GitHubCopilotInjectionScope.GLOBAL) {
             // Global injection: configure MCP at user profile level
-            await configureVSCodeMcpGlobal(addSequentialThinkingMcp, addMemoryMcp);
+            await configureVSCodeMcpGlobal();
             
             // Transform universal prompts to global VS Code prompts directory
             const globalPromptsDir = getVSCodeGlobalPromptsDir();
@@ -262,7 +243,7 @@ program
             console.log(chalk.cyan(`   Skills: ${globalSkillsDir}/`));
           } else {
             // Project-level injection
-            await configureCopilotMcp(targetDir, addSequentialThinkingMcp, addMemoryMcp);
+            await configureCopilotMcp(targetDir);
             platformDest = path.join(targetDir, '.github');
             transformDestDir = platformDest;
           }
@@ -270,14 +251,14 @@ program
 
         if (platform === 'github-jetbrains') {
           // Project-level injection: configure MCP and project .github/
-          await configureJetBrainsMcp(addSequentialThinkingMcp, addMemoryMcp);
+          await configureJetBrainsMcp();
           platformDest = path.join(targetDir, '.github');
           transformDestDir = platformDest;
         }
 
         if (platform === 'antigravity') {
           // Project-level injection only: configure MCP and copy templates
-          await configureAntigravityMcp(addSequentialThinkingMcp, addMemoryMcp);
+          await configureAntigravityMcp();
           platformDest = path.join(targetDir, '.agents');
           transformDestDir = platformDest;
         }
@@ -285,7 +266,7 @@ program
         if (platform === 'opencode') {
           if (openCodeScope === OpenCodeInjectionScope.GLOBAL) {
             // Global injection: configure MCP and copy all artifacts to global directory
-            await configureOpenCodeMcpGlobal(addSequentialThinkingMcp, addMemoryMcp);
+            await configureOpenCodeMcpGlobal();
             
             // Transform universal prompts to global opencode directory
             const globalOpencodeDir = getOpenCodeGlobalConfigDir();
@@ -299,7 +280,7 @@ program
             console.log(chalk.green(`✅ OpenCode configured globally at ${globalOpencodeDir}`));
           } else {
             // Project-level injection: configure MCP and copy templates
-            await configureOpenCodeMcp(targetDir, addSequentialThinkingMcp, addMemoryMcp);
+            await configureOpenCodeMcp(targetDir);
             platformDest = path.join(targetDir, '.opencode');
             transformDestDir = platformDest;
 
@@ -309,13 +290,13 @@ program
         }
 
         if (platform === 'codex') {
-          await configureCodexMcp(targetDir, addSequentialThinkingMcp, addMemoryMcp);
+          await configureCodexMcp(targetDir);
           platformDest = path.join(targetDir, '.codex');
           transformDestDir = platformDest;
         }
 
         if(platform === 'claudecode') {
-          await configureClaudeCodeMcp(targetDir, addSequentialThinkingMcp, addMemoryMcp);
+          await configureClaudeCodeMcp(targetDir);
           platformDest = path.join(targetDir, '.claude');
           transformDestDir = platformDest;
         }
@@ -323,7 +304,7 @@ program
         if (platform === 'github-copilot-cli') {
           if (githubCopilotCliScope === GitHubCopilotCliInjectionScope.USER) {
             // User-level injection
-            await configureGitHubCopilotCliMcp(githubCopilotCliScope, targetDir, addSequentialThinkingMcp, addMemoryMcp)
+            await configureGitHubCopilotCliMcp(githubCopilotCliScope, targetDir)
 
             // For github-copilot-cli, agentDirectory is 'agents', skills go to ~/.copilot/skills/
             // The MCP config goes to ~/.config/github-copilot/
@@ -336,7 +317,7 @@ program
             console.log(chalk.cyan(`   MCP: ${getGitHubCopilotCliGlobalMcpPath()}`))
           } else {
             // Project-level injection
-            await configureGitHubCopilotCliMcp(githubCopilotCliScope, targetDir, addSequentialThinkingMcp, addMemoryMcp)
+            await configureGitHubCopilotCliMcp(githubCopilotCliScope, targetDir)
             platformDest = path.join(targetDir, '.github')
             transformDestDir = platformDest
           }
@@ -345,7 +326,7 @@ program
         if (platform === 'gemini-cli') {
           if (geminiCliScope === GeminiCliInjectionScope.USER) {
             // User-level injection
-            await configureGeminiCliMcp(geminiCliScope, targetDir, addSequentialThinkingMcp, addMemoryMcp)
+            await configureGeminiCliMcp(geminiCliScope, targetDir)
 
             // For gemini-cli: agents go to ~/.gemini/agents/, commands to ~/.gemini/commands/, skills to ~/.gemini/skills/
             platformDest = path.join(os.homedir(), '.gemini')
@@ -357,7 +338,7 @@ program
             console.log(chalk.cyan(`   Skills: ${getGeminiCliUserSkillsDir()}/`))
           } else {
             // Project-level injection
-            await configureGeminiCliMcp(geminiCliScope, targetDir, addSequentialThinkingMcp, addMemoryMcp)
+            await configureGeminiCliMcp(geminiCliScope, targetDir)
             platformDest = path.join(targetDir, '.gemini')
             transformDestDir = platformDest
           }
@@ -366,7 +347,7 @@ program
         if (platform === 'qwen-code') {
           if (qwenCodeScope === QwenCodeInjectionScope.USER) {
             // User-level injection
-            await configureQwenCodeMcp(qwenCodeScope, targetDir, addSequentialThinkingMcp, addMemoryMcp)
+            await configureQwenCodeMcp(qwenCodeScope, targetDir)
 
             // For qwen-code, agentDirectory is 'skills', skills go to ~/.qwen/skills/
             platformDest = path.join(os.homedir(), '.qwen')
@@ -376,7 +357,7 @@ program
             console.log(chalk.cyan(`   Skills: ${getQwenCodeUserSkillsDir()}/`))
           } else {
             // Project-level injection
-            await configureQwenCodeMcp(qwenCodeScope, targetDir, addSequentialThinkingMcp, addMemoryMcp)
+            await configureQwenCodeMcp(qwenCodeScope, targetDir)
             platformDest = path.join(targetDir, '.qwen')
             transformDestDir = platformDest
           }
@@ -400,6 +381,9 @@ program
           for (const result of transformResults) {
             if (result.success) {
               console.log(chalk.green(`  Transformed: ${result.sourcePath} -> ${result.outputPath}`));
+              if (!result.bodyPreserved) {
+                console.log(chalk.yellow(`  Warning: transformed prompt body preservation could not be verified for ${result.outputPath}`));
+              }
             } else {
               console.error(chalk.red(`  Transform failed: ${result.sourcePath} - ${result.error}`));
             }
@@ -508,7 +492,7 @@ if (isCliEntrypoint()) {
 
 export default program;
 
-async function configureCopilotMcp(targetDir: string, addSequentialThinkingMcp: boolean = false, addMemoryMcp: boolean = false) {
+async function configureCopilotMcp(targetDir: string) {
   try {
     const vscodeDir = path.join(targetDir, '.vscode');
     await fs.ensureDir(vscodeDir);
@@ -532,22 +516,6 @@ async function configureCopilotMcp(targetDir: string, addSequentialThinkingMcp: 
       }
     }
 
-    // Add sequential-thinking MCP (optional)
-    if (addSequentialThinkingMcp) {
-      config.servers['sequential-thinking'] = {
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-sequential-thinking']
-      };
-    }
-
-    // Add memory MCP (optional)
-    if (addMemoryMcp) {
-      config.servers['memory'] = {
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-memory']
-      };
-    }
-
     delete config.mcpServers;
 
     await fs.writeJson(mcpConfigPath, config, { spaces: 2 });
@@ -560,7 +528,7 @@ function getAntigravityMcpPath(): string {
   return path.join(os.homedir(), '.gemini', 'antigravity', 'mcp_config.json');
 }
 
-async function configureAntigravityMcp(addSequentialThinkingMcp: boolean = false, addMemoryMcp: boolean = false): Promise<boolean> {
+async function configureAntigravityMcp(): Promise<boolean> {
   try {
     const mcpConfigPath = getAntigravityMcpPath();
     const configDir = path.dirname(mcpConfigPath);
@@ -579,22 +547,6 @@ async function configureAntigravityMcp(addSequentialThinkingMcp: boolean = false
 
     if (!config.mcpServers) config.mcpServers = {};
 
-    // Add sequential-thinking MCP (optional)
-    if (addSequentialThinkingMcp) {
-      config.mcpServers['sequential-thinking'] = {
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-sequential-thinking']
-      };
-    }
-
-    // Add memory MCP (optional)
-    if (addMemoryMcp) {
-      config.mcpServers['memory'] = {
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-memory']
-      };
-    }
-
     await fs.writeJson(mcpConfigPath, config, { spaces: 2 });
     console.log(chalk.green(`✅ Antigravity MCP configured at ${mcpConfigPath}`));
     return true;
@@ -604,7 +556,7 @@ async function configureAntigravityMcp(addSequentialThinkingMcp: boolean = false
   }
 }
 
-async function configureOpenCodeMcp(targetDir: string, addSequentialThinkingMcp: boolean = false, addMemoryMcp: boolean = false) {
+async function configureOpenCodeMcp(targetDir: string) {
   try {
     const configPath = path.join(targetDir, 'opencode.json');
 
@@ -623,29 +575,13 @@ async function configureOpenCodeMcp(targetDir: string, addSequentialThinkingMcp:
     const mcp = (config.mcp ?? {}) as Record<string, unknown>;
     config.mcp = mcp;
 
-    // Add sequential-thinking MCP (optional)
-    if (addSequentialThinkingMcp) {
-      mcp['sequential-thinking'] = {
-        type: 'local',
-        command: ['npx', '-y', '@modelcontextprotocol/server-sequential-thinking']
-      };
-    }
-
-    // Add memory MCP (optional)
-    if (addMemoryMcp) {
-      mcp['memory'] = {
-        type: 'local',
-        command: ['npx', '-y', '@modelcontextprotocol/server-memory']
-      };
-    }
-
     await fs.writeJson(configPath, config, { spaces: 2 });
   } catch (error) {
     console.error(chalk.red('Failed to configure OpenCode MCP:'), error);
   }
 }
 
-async function configureOpenCodeMcpGlobal(addSequentialThinkingMcp: boolean = false, addMemoryMcp: boolean = false): Promise<string> {
+async function configureOpenCodeMcpGlobal(): Promise<string> {
   const mcpConfigPath = getOpenCodeGlobalConfigPath();
   const configDir = path.dirname(mcpConfigPath);
 
@@ -666,22 +602,6 @@ async function configureOpenCodeMcpGlobal(addSequentialThinkingMcp: boolean = fa
 
   const mcp = (config.mcp ?? {}) as Record<string, unknown>;
   config.mcp = mcp;
-
-  // Add sequential-thinking MCP (optional)
-  if (addSequentialThinkingMcp) {
-    mcp['sequential-thinking'] = {
-      type: 'local',
-      command: ['npx', '-y', '@modelcontextprotocol/server-sequential-thinking']
-    };
-  }
-
-  // Add memory MCP (optional)
-  if (addMemoryMcp) {
-    mcp['memory'] = {
-      type: 'local',
-      command: ['npx', '-y', '@modelcontextprotocol/server-memory']
-    };
-  }
 
   await fs.writeJson(mcpConfigPath, config, { spaces: 2 });
   return mcpConfigPath;
@@ -712,7 +632,7 @@ function getJetBrainsMcpPath(): string {
   return path.join(os.homedir(), '.config', 'github-copilot', 'intellij', 'mcp.json');
 }
 
-async function configureJetBrainsMcp(addSequentialThinkingMcp: boolean = false, addMemoryMcp: boolean = false) {
+async function configureJetBrainsMcp() {
   try {
     const mcpConfigPath = getJetBrainsMcpPath();
     const configDir = path.dirname(mcpConfigPath);
@@ -737,22 +657,6 @@ async function configureJetBrainsMcp(addSequentialThinkingMcp: boolean = false, 
       }
     }
 
-    // Add sequential-thinking MCP (optional)
-    if (addSequentialThinkingMcp) {
-      config.servers['sequential-thinking'] = {
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-sequential-thinking']
-      };
-    }
-
-    // Add memory MCP (optional)
-    if (addMemoryMcp) {
-      config.servers['memory'] = {
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-memory']
-      };
-    }
-
     delete config.mcpServers;
 
     await fs.writeJson(mcpConfigPath, config, { spaces: 2 });
@@ -762,7 +666,7 @@ async function configureJetBrainsMcp(addSequentialThinkingMcp: boolean = false, 
   }
 }
 
-async function configureVSCodeMcpGlobal(addSequentialThinkingMcp: boolean = false, addMemoryMcp: boolean = false): Promise<string> {
+async function configureVSCodeMcpGlobal(): Promise<string> {
   const mcpConfigPath = getVSCodeUserProfileMcpPath();
   const configDir = path.dirname(mcpConfigPath);
 
@@ -786,20 +690,6 @@ async function configureVSCodeMcpGlobal(addSequentialThinkingMcp: boolean = fals
     }
   }
 
-  if (addSequentialThinkingMcp) {
-    config.servers['sequential-thinking'] = {
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-sequential-thinking']
-    };
-  }
-
-  if (addMemoryMcp) {
-    config.servers['memory'] = {
-      command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-memory']
-    };
-  }
-
   delete config.mcpServers;
 
   await fs.writeJson(mcpConfigPath, config, { spaces: 2 });
@@ -807,75 +697,23 @@ async function configureVSCodeMcpGlobal(addSequentialThinkingMcp: boolean = fals
   return mcpConfigPath;
 }
 
-async function configureCodexMcp(targetDir: string, addSequentialThinkingMcp: boolean = false, addMemoryMcp: boolean = false) {
+async function configureCodexMcp(targetDir: string) {
   try {
     const codexDir = path.join(targetDir, '.codex');
     await fs.ensureDir(codexDir);
     const mcpConfigPath = path.join(codexDir, 'config.toml');
 
-    let configContent = '';
-    if (await fs.pathExists(mcpConfigPath)) {
-      configContent = await fs.readFile(mcpConfigPath, 'utf-8');
+    if (!await fs.pathExists(mcpConfigPath)) {
+      await fs.writeFile(mcpConfigPath, '', 'utf-8');
     }
 
-    let updatedContent = configContent;
-
-    // Add sequential-thinking MCP (optional)
-    if (addSequentialThinkingMcp) {
-      const sequentialThinkingBlock = renderCodexMcpServerBlock('sequential-thinking', {
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-sequential-thinking']
-      });
-      updatedContent = upsertCodexMcpServerBlock(updatedContent, 'sequential-thinking', sequentialThinkingBlock);
-    }
-
-    // Add memory MCP (optional)
-    if (addMemoryMcp) {
-      const memoryBlock = renderCodexMcpServerBlock('memory', {
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-memory']
-      });
-      updatedContent = upsertCodexMcpServerBlock(updatedContent, 'memory', memoryBlock);
-    }
-
-    await fs.writeFile(mcpConfigPath, updatedContent, 'utf-8');
     console.log(chalk.green('✅ Created .codex/config.toml in project root.'));
   } catch (error) {
     console.error(chalk.red('Failed to configure Codex MCP:'), error);
   }
 }
 
-function renderCodexMcpServerBlock(serverName: string, launch: McpLaunchConfig): string {
-  const quotedArgs = launch.args.map((arg) => `"${escapeTomlString(arg)}"`).join(', ');
-
-  return [
-    `[mcp_servers.${serverName}]`,
-    `command = "${escapeTomlString(launch.command)}"`,
-    `args = [${quotedArgs}]`
-  ].join('\n');
-}
-
-function upsertCodexMcpServerBlock(existingContent: string, serverName: string, block: string): string {
-  const trimmed = existingContent.trim();
-  const normalized = trimmed ? `${trimmed}\n` : '';
-  const pattern = new RegExp(`\\[mcp_servers\\.${escapeRegExp(serverName)}\\][\\s\\S]*?(?=\\n\\[|$)`, 'm');
-
-  if (pattern.test(normalized)) {
-    return normalized.replace(pattern, block).replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
-  }
-
-  return `${normalized}${normalized ? '\n' : ''}${block}\n`;
-}
-
-function escapeTomlString(value: string): string {
-  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-async function configureClaudeCodeMcp(targetDir: string, addSequentialThinkingMcp: boolean = false, addMemoryMcp: boolean = false) {
+async function configureClaudeCodeMcp(targetDir: string) {
   try {
     const mcpConfigPath = path.join(targetDir, '.mcp.json');
 
@@ -889,22 +727,6 @@ async function configureClaudeCodeMcp(targetDir: string, addSequentialThinkingMc
       }
     }
 
-    // Add sequential-thinking MCP (optional)
-    if (addSequentialThinkingMcp) {
-      config.mcpServers!['sequential-thinking'] = {
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-sequential-thinking']
-      };
-    }
-
-    // Add memory MCP (optional)
-    if (addMemoryMcp) {
-      config.mcpServers!['memory'] = {
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-memory']
-      };
-    }
-
     await fs.writeJson(mcpConfigPath, config, { spaces: 2 });
     console.log(chalk.green('✅ Created .mcp.json in project root.'));
   } catch (error) {
@@ -912,7 +734,7 @@ async function configureClaudeCodeMcp(targetDir: string, addSequentialThinkingMc
   }
 }
 
-async function configureGitHubCopilotCliMcp(scope: GitHubCopilotCliInjectionScope, targetDir: string, addSequentialThinkingMcp: boolean = false, addMemoryMcp: boolean = false) {
+async function configureGitHubCopilotCliMcp(scope: GitHubCopilotCliInjectionScope, targetDir: string) {
   try {
     let mcpConfigPath: string
     if (scope === GitHubCopilotCliInjectionScope.USER) {
@@ -942,22 +764,6 @@ async function configureGitHubCopilotCliMcp(scope: GitHubCopilotCliInjectionScop
       }
     }
 
-    // Add sequential-thinking MCP (optional)
-    if (addSequentialThinkingMcp) {
-      config.servers['sequential-thinking'] = {
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-sequential-thinking']
-      };
-    }
-
-    // Add memory MCP (optional)
-    if (addMemoryMcp) {
-      config.servers['memory'] = {
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-memory']
-      };
-    }
-
     delete config.mcpServers
 
     await fs.writeJson(mcpConfigPath, config, { spaces: 2 })
@@ -967,13 +773,13 @@ async function configureGitHubCopilotCliMcp(scope: GitHubCopilotCliInjectionScop
   }
 }
 
-async function configureGeminiCliMcp(scope: GeminiCliInjectionScope, targetDir: string, addSequentialThinkingMcp: boolean = false, addMemoryMcp: boolean = false) {
+async function configureGeminiCliMcp(scope: GeminiCliInjectionScope, targetDir: string) {
   try {
     let mcpConfigPath: string
     if (scope === GeminiCliInjectionScope.USER) {
       mcpConfigPath = getGeminiCliGlobalMcpPath()
     } else {
-      mcpConfigPath = path.join(targetDir, '.gemini', 'mcp_config.json')
+      mcpConfigPath = getGeminiCliProjectMcpPath(targetDir)
     }
 
     const configDir = path.dirname(mcpConfigPath)
@@ -991,22 +797,6 @@ async function configureGeminiCliMcp(scope: GeminiCliInjectionScope, targetDir: 
 
     if (!config.mcpServers) config.mcpServers = {}
 
-    // Add sequential-thinking MCP (optional)
-    if (addSequentialThinkingMcp) {
-      config.mcpServers['sequential-thinking'] = {
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-sequential-thinking']
-      };
-    }
-
-    // Add memory MCP (optional)
-    if (addMemoryMcp) {
-      config.mcpServers['memory'] = {
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-memory']
-      };
-    }
-
     await fs.writeJson(mcpConfigPath, config, { spaces: 2 })
     console.log(chalk.green(`✅ Gemini CLI MCP configured at ${mcpConfigPath}`))
   } catch (error) {
@@ -1014,7 +804,7 @@ async function configureGeminiCliMcp(scope: GeminiCliInjectionScope, targetDir: 
   }
 }
 
-async function configureQwenCodeMcp(scope: QwenCodeInjectionScope, targetDir: string, addSequentialThinkingMcp: boolean = false, addMemoryMcp: boolean = false) {
+async function configureQwenCodeMcp(scope: QwenCodeInjectionScope, targetDir: string) {
   try {
     let mcpConfigPath: string
     if (scope === QwenCodeInjectionScope.USER) {
@@ -1037,22 +827,6 @@ async function configureQwenCodeMcp(scope: QwenCodeInjectionScope, targetDir: st
     }
 
     if (!config.mcpServers) config.mcpServers = {}
-
-    // Add sequential-thinking MCP (optional)
-    if (addSequentialThinkingMcp) {
-      config.mcpServers['sequential-thinking'] = {
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-sequential-thinking']
-      };
-    }
-
-    // Add memory MCP (optional)
-    if (addMemoryMcp) {
-      config.mcpServers['memory'] = {
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-memory']
-      };
-    }
 
     await fs.writeJson(mcpConfigPath, config, { spaces: 2 })
     console.log(chalk.green(`✅ Qwen Code MCP configured at ${mcpConfigPath}`))
@@ -1205,6 +979,8 @@ async function removeGeminiCliSteroids(): Promise<boolean> {
   try {
     const mcpPath = getGeminiCliGlobalMcpPath()
     await removeMcpEntry(mcpPath, ['mcpServers'])
+    await removeLegacyGeminiCliMcpEntry()
+    await removeGeminiCliGlobalFiles()
     await removeSteroidsSkillDirs(path.join(os.homedir(), '.gemini'))
     // Also clean alias location
     const aliasDir = path.join(os.homedir(), '.agents', 'skills')
@@ -1221,6 +997,34 @@ async function removeGeminiCliSteroids(): Promise<boolean> {
   } catch (err) {
     console.warn(chalk.yellow(`  ⚠️ Gemini CLI: ${err}`));
     return false;
+  }
+}
+
+async function removeLegacyGeminiCliMcpEntry(): Promise<void> {
+  await removeMcpEntry(path.join(os.homedir(), '.gemini', 'mcp_config.json'), ['mcpServers'])
+}
+
+async function removeGeminiCliGlobalFiles(): Promise<void> {
+  const filesToRemove = [
+    path.join(os.homedir(), '.gemini', 'agents', 'spec-driven.md'),
+    path.join(os.homedir(), '.gemini', 'commands', 'spec-driven.toml'),
+    path.join(os.homedir(), '.gemini', 'commands', 'inject-guidelines.toml'),
+    path.join(os.homedir(), '.gemini', 'commands', 'spec-driven.md'),
+    path.join(os.homedir(), '.gemini', 'commands', 'inject-guidelines.md')
+  ];
+
+  for (const file of filesToRemove) {
+    if (await fs.pathExists(file)) {
+      await fs.remove(file)
+    }
+  }
+
+  for (const dir of ['agents', 'commands']) {
+    const dirPath = path.join(os.homedir(), '.gemini', dir)
+    const remaining = await fs.readdir(dirPath).catch(() => [])
+    if (remaining.length === 0) {
+      await fs.remove(dirPath)
+    }
   }
 }
 

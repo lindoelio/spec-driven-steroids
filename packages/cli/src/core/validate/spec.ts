@@ -9,7 +9,7 @@ import {
   getExitCode,
   ValidationError
 } from './shared/formatter.js';
-import { extractDesignElementIds } from './shared/ids.js';
+import { extractDeclaredDesignElementIds } from './shared/ids.js';
 import { verifyDesignFile } from './design.js';
 import { verifyTasksFile } from './tasks.js';
 import { verifyRequirementsFile } from './requirements.js';
@@ -87,6 +87,7 @@ function verifyCompleteSpec(slug: string, targetDir: string): SpecValidationResu
     if (!reqResult.valid) {
       for (const err of reqResult.errors) {
         requirementsErrors.push(err.context || err.message || 'Unknown error');
+        errors.push({ ...err, context: `requirements.md: ${err.context || err.message || 'Unknown error'}` });
       }
     }
   }
@@ -96,27 +97,37 @@ function verifyCompleteSpec(slug: string, targetDir: string): SpecValidationResu
     if (!desResult.valid) {
       for (const err of desResult.errors) {
         designErrors.push(err.context || err.message || 'Unknown error');
+        errors.push({ ...err, context: `design.md: ${err.context || err.message || 'Unknown error'}` });
       }
     }
   }
   
   if (tasksContent) {
-    const taskResult = verifyTasksFile(tasksContent, designContent);
+    const taskResult = verifyTasksFile(tasksContent, designContent, requirementsContent);
     if (!taskResult.valid) {
       for (const err of taskResult.errors) {
         tasksErrors.push(err.context || err.message || 'Unknown error');
+        errors.push({ ...err, context: `tasks.md: ${err.context || err.message || 'Unknown error'}` });
       }
     }
   }
   
-  const desIds = designContent ? extractDesignElementIds(designContent).map(id => id) : [];
-  const taskDesImpl = tasksContent ? Array.from(tasksContent.matchAll(/_Implements:\s*DES-\d+/gi), m => m[0]) : [];
+  const desIds = designContent ? extractDeclaredDesignElementIds(designContent).map(id => id) : [];
+  const taskDesImpl = tasksContent
+    ? Array.from(tasksContent.matchAll(/_Implements:\s*([^_\n]+)_/gi), m => m[1].match(/DES-\d+/g) || []).flat()
+    : [];
   const orphans: string[] = [];
   
   for (const desId of desIds) {
-    const hasTask = taskDesImpl.some(t => t.includes(desId));
+    const hasTask = taskDesImpl.includes(desId);
     if (!hasTask) {
       orphans.push(desId);
+      errors.push({
+        errorType: 'Traceability Error',
+        context: `${desId} has no implementation task`,
+        suggestedFix: `Add a task with _Implements: ${desId}_`,
+        skillDocLink: SKILL_DOCS.tasks
+      });
     }
   }
   
@@ -132,6 +143,8 @@ function verifyCompleteSpec(slug: string, targetDir: string): SpecValidationResu
     }
   };
 }
+
+export { verifyCompleteSpec };
 
 export function createSpecCommand(): Command {
   const cmd = new Command();

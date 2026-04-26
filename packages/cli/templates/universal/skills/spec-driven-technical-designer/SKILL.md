@@ -19,17 +19,17 @@ Read `references/design-section-guide.md` when you need help selecting optional 
 
 ## Process
 
-If `long-running-work-planning` is available, load it at the start of this phase before shaping the design. Use it to structure architectural reasoning, keep progress visible, and avoid holding all analysis until the end.
+If `long-running-work-planning` is available, load it at the start of this phase before shaping the design. Use it to keep design decisions checkpointed, preserve validation-ready progress, and avoid relying on unstored analysis for long-running work.
 
 1. **Read Requirements**: Read `.specs/changes/<slug>/requirements.md` as the source of truth.
 2. **Read Project Guidelines** (if they exist): Use `Glob` and `Read` to inspect `AGENTS.md`, `ARCHITECTURE.md`, `STYLEGUIDE.md`, and `TESTING.md`.
 3. **Retrieve Contextual Memory**: Invoke the `contextual-stewardship` skill to retrieve `architecture` rules.
-4. **Inspect Existing Patterns**: Use `Grep` to find related modules, interfaces, diagrams, and naming conventions in the codebase.
+4. **Inspect Existing Patterns**: Use targeted `Grep` to find related modules, interfaces, diagrams, and naming conventions, then `Read` at most 5 relevant files before drafting.
 5. **Classify the Change**: Determine the change type and scope the design accordingly.
 6. **Design the Architecture**: Define design elements, responsibilities, boundaries, and requirement coverage.
 7. **Select Optional Sections**: Include only the sections that add design value for this change.
-8. **Validate**: Run `sds validate design .specs/changes/<slug>/design.md` using the design content and requirements content.
-9. **Write Before Review**: Save to `.specs/changes/<slug>/design.md` before asking for approval.
+8. **Write Before Validation**: Save to `.specs/changes/<slug>/design.md` before validating.
+9. **Validate**: Run `sds validate design .specs/changes/<slug>/design.md` against the written file, fix failures in the file, and re-run validation before asking for approval.
 
 ## Per-Phase Todo List
 
@@ -41,9 +41,9 @@ When this skill begins execution, create a todo list containing the following it
 4. Inspect existing codebase patterns
 5. Classify change type
 6. Design architecture with design elements
-7. Validate design
-8. Audit design (agent-work-auditor)
-9. Save design.md
+7. Save design.md
+8. Validate design
+9. Audit design (agent-work-auditor)
 
 ### Progress Rules
 
@@ -60,15 +60,15 @@ When this skill begins execution, create a todo list containing the following it
 
 ## CLI Validation Discovery
 
-After writing the design file, validate it using the CLI:
+After writing the design file, validate it using the CLI. Do not claim validation passed unless this command was actually run and its output was observed:
 
 ```bash
-sds validate design .specs/changes/<slug>/design.md
+sds validate design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md
 ```
 
 Example:
 ```bash
-sds validate design .specs/changes/my-feature/design.md
+sds validate design .specs/changes/my-feature/design.md --requirements .specs/changes/my-feature/requirements.md
 ```
 
 **Note:** Both `sds` and `spec-driven-steroids` work interchangeably as the CLI command name.
@@ -152,10 +152,10 @@ flowchart LR
 
 ## Code Anatomy
 
-| File Path | Purpose | Implements |
-|-----------|---------|------------|
-| src/example/service.ts | Core orchestration for the feature | DES-1 |
-| src/example/handler.ts | Entry point for the request flow | DES-2 |
+| File Path | Status | Evidence | Purpose | Implements |
+|-----------|--------|----------|---------|------------|
+| src/example/service.ts | Existing | Verified by Glob/Read | Core orchestration for the feature | DES-1 |
+| src/example/handler.ts | New | Proposed by DES-2 | Entry point for the request flow | DES-2 |
 
 ## Data Models
 
@@ -263,7 +263,7 @@ If `## Impact Analysis` is included:
   - at least one Mermaid diagram
   - an `_Implements: REQ-X.Y_` line with one or more requirement references
 - Every referenced requirement must exist in `requirements.md`.
-- Use `## Code Anatomy` to map files or directories to `DES-*` elements.
+- Use `## Code Anatomy` to map files or directories to `DES-*` elements. Existing paths must be verified by `Glob` or `Read`; proposed paths must be labeled `New` and must not be presented as existing.
 - Use `## Traceability Matrix` to map every `DES-*` element to the requirements it implements.
 - Prefer architecture decisions and system behavior over implementation details.
 - Do not include task breakdowns, code patches, large code samples, or step-by-step implementation instructions.
@@ -441,7 +441,7 @@ This composition ensures comprehensive quality assessment without requiring sepa
 ### Self-Fix Loop
 
 agent-work-auditor will:
-1. Auto-fix direct-fix findings (up to 2 passes)
+1. Auto-fix direct-fix findings (up to 3 passes)
 2. Escalate remaining issues to author-required
 3. Output a structured audit report with verdict
 

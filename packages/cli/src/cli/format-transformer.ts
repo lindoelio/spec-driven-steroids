@@ -110,7 +110,7 @@ export function transformToToml(body: string, config: PlatformConfig, sourceFron
   
   // Add developer_instructions as multi-line string
   lines.push('developer_instructions = """');
-  lines.push(body);
+  lines.push(escapeTomlMultilineBody(body));
   lines.push('"""');
   
   // Add sandbox_mode
@@ -148,10 +148,14 @@ export function transformToTomlCommand(body: string, description: string): strin
 
   // Add prompt as multi-line string
   lines.push('prompt = """');
-  lines.push(body);
+  lines.push(escapeTomlMultilineBody(body));
   lines.push('"""');
 
   return lines.join('\n');
+}
+
+function escapeTomlMultilineBody(value: string): string {
+  return value.replace(/"""/g, '\\"\\"\\"');
 }
 
 /**

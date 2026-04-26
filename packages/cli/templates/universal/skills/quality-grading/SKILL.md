@@ -19,7 +19,7 @@ It supports two invocation modes:
 - **evaluate**: Score the artifact and return structured JSON results
 - **grade-and-fix**: Score the artifact, then auto-fix dimensions scoring below 4, re-grade, and provide final results
 
-The skill targets score 4+ as the quality bar. Auto-fix attempts are limited to 2 per dimension to keep improvements pragmatic and avoid unnecessary complexity.
+The skill targets score 4+ as the quality bar. Auto-fix attempts are limited to 3 per dimension to keep improvements pragmatic and avoid unnecessary complexity.
 
 ## Invocation
 
@@ -41,7 +41,7 @@ Load this skill when:
 2. **Detect artifact type**: Determine if this is code, a specification, or a design document
 3. **Apply dimension rubrics**: Score each of the four dimensions independently, adapting criteria to artifact type
 4. **Use calibration examples**: Compare against few-shot examples for consistency
-5. **If grade-and-fix mode and score < 4**: Apply targeted auto-fix, re-grade, repeat up to 2 times
+5. **If grade-and-fix mode and score < 4**: Apply targeted auto-fix, re-grade, repeat up to 3 times
 6. **Generate JSON output**: Return structured results with scores, justifications, and suggestions
 
 ## Grading Dimensions

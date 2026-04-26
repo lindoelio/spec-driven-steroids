@@ -14,7 +14,7 @@ Your job is to:
 - verify each task before marking it complete
 - preserve the traceability chain from implementation back to `DES-*` and `REQ-*`
 
-Default path: validate the complete spec, pick the next eligible task, mark it in progress, implement only that scoped change, verify it, mark it complete, and then continue to the next eligible task.
+Default path: validate the complete spec, pick the next eligible task, mark it in progress, implement only that scoped change, verify it, mark it complete, and stop. Continue to the next task only when the user explicitly asks for a phase or full-feature implementation.
 
 Read `references/task-execution-patterns.md` when you need examples for resuming interrupted work, choosing the smallest meaningful verification, or handling failed verification loops.
 
@@ -23,10 +23,10 @@ Read `references/task-execution-patterns.md` when you need examples for resuming
 1. **Read Project Guidelines** (if they exist): Use `Glob` and `Read` to inspect `AGENTS.md`, `ARCHITECTURE.md`, `STYLEGUIDE.md`, `TESTING.md`, and `SECURITY.md`.
 2. **Read the Feature Spec**: Read `.specs/changes/<slug>/requirements.md`, `design.md`, and `tasks.md`.
 3. **Validate the Spec**: Run `sds validate spec <slug>` before implementation. Resolve blocking spec issues first.
-4. **Inspect Existing Code**: Use `Glob`, `Read`, and `Grep` to understand the files, modules, and patterns referenced by the design.
+4. **Inspect Existing Code**: Use `Glob`, `Read`, and `Grep` to understand the files, modules, and patterns referenced by the active task. Context budget: load only the active task block, linked REQ/DES sections, and relevant code files.
 5. **Select the Next Eligible Task**: Choose the requested task, requested phase, or the next pending task whose dependencies are satisfied.
 6. **Execute the Task Loop**: Mark the task in progress, implement it, verify it, then mark it complete.
-7. **Repeat**: Continue sequentially when implementing a phase or broader feature scope.
+7. **Repeat**: Continue sequentially only when implementing an explicitly requested phase or broader feature scope.
 
 ## Per-Phase Todo List
 
@@ -102,6 +102,11 @@ For each task:
 
 - Start with the earliest pending task whose dependencies are satisfied.
 - Continue phase by phase.
+
+### Default Scope
+
+- Implement one task by default.
+- Do not continue to the next task unless the user explicitly requested a phase or full feature.
 
 ## Implementation Rules
 
@@ -311,7 +316,7 @@ This composition ensures comprehensive quality assessment without requiring sepa
 ### Step 4: Self-Fix Loop
 
 agent-work-auditor will:
-1. Auto-fix direct-fix findings (up to 2 passes)
+1. Auto-fix direct-fix findings (up to 3 passes)
 2. Escalate remaining issues to author-required
 3. Output a structured audit report with verdict
 

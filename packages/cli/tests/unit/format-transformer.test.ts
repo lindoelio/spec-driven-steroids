@@ -70,6 +70,14 @@ You MUST enforce this lifecycle exactly.`;
       // The body inside multi-line string should preserve quotes
       expect(result).toContain('Test "quoted" text');
     });
+
+    it('escapes embedded triple quotes in TOML multi-line bodies', () => {
+      const config = PLATFORM_CONFIGS['codex'];
+      const result = transformToToml('Before """ after', config);
+
+      expect(result).toContain('Before \\\"\\\"\\\" after');
+      expect(result).not.toContain('Before """ after');
+    });
   });
 
   describe('verifyBodyPreserved', () => {

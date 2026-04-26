@@ -144,8 +144,8 @@ async function transformSource(
     // Transform
     let transformResult: { content: string; bodyPreserved: boolean };
 
-    // For Gemini CLI inject-guidelines commands, use TOML format
-    if (config.id === 'gemini-cli' && source.outputType === 'inject-guidelines-command') {
+    // Gemini CLI custom slash commands must be TOML files.
+    if (config.id === 'gemini-cli' && source.outputType !== 'agent') {
       const description = frontmatter.description || config.frontmatter.fields.description || '';
       transformResult = {
         content: transformToTomlCommand(body, description),
