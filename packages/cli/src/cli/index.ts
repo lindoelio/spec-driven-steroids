@@ -25,9 +25,7 @@ import {
 import {
   GeminiCliInjectionScope,
   getGeminiCliUserSkillsDir,
-  getGeminiCliAgentsAliasDir,
-  getGeminiCliUserAgentsDir,
-  getGeminiCliUserCommandsDir
+  getGeminiCliAgentsAliasDir
 } from './gemini-cli-scope.js';
 import {
   QwenCodeInjectionScope,
@@ -36,6 +34,14 @@ import {
 import { transformTemplates } from './transformation-pipeline.js';
 import { createValidateCommand } from '../core/validate/index.js';
 import { createStewardshipCommand } from '../context-stewardship/cli-command.js';
+
+interface InjectionResult {
+  platform: string;
+  displayName: string;
+  scope: string;
+  ok: boolean;
+  error: string;
+}
 
 const GLOBAL_CAPABLE_PLATFORMS = ['github-vscode', 'github-copilot-cli', 'gemini-cli', 'qwen-code', 'opencode'] as const;
 type GlobalCapablePlatform = typeof GLOBAL_CAPABLE_PLATFORMS[number];
@@ -75,6 +81,57 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const packageJsonPath = path.resolve(__dirname, '../../package.json');
 
+function platformDisplayName(platform: string): string {
+  switch (platform) {
+    case 'github-vscode': return 'GitHub Copilot for VS Code';
+    case 'github-jetbrains': return 'GitHub Copilot for JetBrains';
+    case 'github-copilot-cli': return 'GitHub Copilot CLI';
+    case 'gemini-cli': return 'Gemini CLI';
+    case 'qwen-code': return 'Qwen Code';
+    case 'antigravity': return 'Google Antigravity';
+    case 'opencode': return 'OpenCode';
+    case 'codex': return 'OpenAI Codex';
+    case 'claudecode': return 'Claude Code';
+    default: return platform;
+  }
+}
+
+function renderInjectionSummary(
+  results: InjectionResult[],
+  templateSource: { source: 'remote' | 'bundled' | 'local'; version?: string; fallbackReason?: string },
+  scopeLabel: string
+): void {
+  const okCount = results.filter(r => r.ok).length;
+  const total = results.length;
+
+  if (templateSource.source === 'remote' && templateSource.version) {
+    console.log(chalk.bold(`Templates: remote (${templateSource.version})`));
+  } else if (templateSource.fallbackReason) {
+    console.log(chalk.yellow(`Templates: bundled (fallback: ${templateSource.fallbackReason})`));
+  } else {
+    console.log(chalk.yellow('Templates: bundled'));
+  }
+  console.log('');
+
+  for (const r of results) {
+    const status = r.ok ? chalk.green('OK') : chalk.red('FAIL');
+    const pad = ' '.repeat(Math.max(1, 24 - r.displayName.length));
+    if (r.ok) {
+      console.log(`  ${r.displayName}${pad}${r.scope}   ${status}`);
+    } else {
+      console.log(`  ${r.displayName}${pad}${r.scope}   ${status}`);
+      console.log(`    ${chalk.red(r.error)}`);
+    }
+  }
+
+  console.log('');
+  if (okCount === total) {
+    console.log(chalk.bold(`${total} ${total === 1 ? 'platform' : 'platforms'} configured (${scopeLabel})`));
+  } else {
+    console.log(chalk.bold(`${okCount}/${total} platforms configured (${scopeLabel})`));
+  }
+}
+
 function getCliVersion(): string {
   try {
     const pkg = fs.readJsonSync(packageJsonPath) as { version?: string };
@@ -96,11 +153,9 @@ program.addCommand(createValidateCommand());
 program.addCommand(createStewardshipCommand());
 
 program
-  .command('inject')
+   .command('inject')
   .description('Inject platform-specific Spec-Driven configs')
   .action(async () => {
-    console.log(chalk.bold.cyan('\n💪 Injecting steroids...\n'));
-
     const { platforms } = await inquirer.prompt([
       {
         type: 'checkbox',
@@ -150,6 +205,9 @@ program
       unifiedScope = scope as UnifiedInjectionScope;
     }
 
+    const scopeLabel = unifiedScope === UnifiedInjectionScope.GLOBAL ? 'global' : 'project';
+    const results: InjectionResult[] = [];
+
     const openCodeScope = unifiedScope === UnifiedInjectionScope.GLOBAL
       ? OpenCodeInjectionScope.GLOBAL
       : OpenCodeInjectionScope.PROJECT;
@@ -184,8 +242,8 @@ program
     }
 
     for (const platform of platforms) {
-      console.log(chalk.yellow(`\nConfiguring ${platform}...`));
-
+      const displayName = platformDisplayName(platform);
+      process.stdout.write(`  ${displayName}...`);
       try {
         let platformDest = '';
         let skillsSubDir = 'skills';
@@ -199,10 +257,6 @@ program
             const globalSkillsDir = getCopilotGlobalSkillsDir();
             await fs.ensureDir(globalSkillsDir);
             await fs.copy(universalSkillsDir, globalSkillsDir, { overwrite: true });
-            
-            console.log(chalk.green('✅ GitHub Copilot for VS Code configured globally'));
-            console.log(chalk.cyan(`   Prompts: ${globalPromptsDir}/`));
-            console.log(chalk.cyan(`   Skills: ${globalSkillsDir}/`));
           } else {
             platformDest = path.join(targetDir, '.github');
             transformDestDir = platformDest;
@@ -227,8 +281,6 @@ program
             const globalSkillsDir = path.join(globalOpencodeDir, 'skills');
             await fs.ensureDir(globalSkillsDir);
             await fs.copy(universalSkillsDir, globalSkillsDir, { overwrite: true });
-            
-            console.log(chalk.green(`✅ OpenCode configured globally at ${globalOpencodeDir}`));
           } else {
             platformDest = path.join(targetDir, '.opencode');
             transformDestDir = platformDest;
@@ -253,8 +305,6 @@ program
             platformDest = globalConfigDir;
             transformDestDir = globalConfigDir;
             skillsSubDir = 'skills';
-
-            console.log(chalk.green('✅ GitHub Copilot CLI configured at user level'));
           } else {
             platformDest = path.join(targetDir, '.github');
             transformDestDir = platformDest;
@@ -265,11 +315,6 @@ program
           if (geminiCliScope === GeminiCliInjectionScope.USER) {
             platformDest = path.join(os.homedir(), '.gemini');
             transformDestDir = platformDest;
-
-            console.log(chalk.green('✅ Gemini CLI configured at user level'));
-            console.log(chalk.cyan(`   Agents: ${getGeminiCliUserAgentsDir()}/`));
-            console.log(chalk.cyan(`   Commands: ${getGeminiCliUserCommandsDir()}/`));
-            console.log(chalk.cyan(`   Skills: ${getGeminiCliUserSkillsDir()}/`));
           } else {
             platformDest = path.join(targetDir, '.gemini');
             transformDestDir = platformDest;
@@ -280,9 +325,6 @@ program
           if (qwenCodeScope === QwenCodeInjectionScope.USER) {
             platformDest = path.join(os.homedir(), '.qwen');
             transformDestDir = platformDest;
-
-            console.log(chalk.green('✅ Qwen Code configured at user level'));
-            console.log(chalk.cyan(`   Skills: ${getQwenCodeUserSkillsDir()}/`));
           } else {
             platformDest = path.join(targetDir, '.qwen');
             transformDestDir = platformDest;
@@ -294,23 +336,12 @@ program
             ? ['inject-guidelines-command']
             : undefined;
 
-          const transformResults = await transformTemplates(
+          await transformTemplates(
             [platform],
             standardsDir,
             () => transformDestDir,
             { skipOutputTypes }
           );
-          
-          for (const result of transformResults) {
-            if (result.success) {
-              console.log(chalk.green(`  Transformed: ${result.sourcePath} -> ${result.outputPath}`));
-              if (!result.bodyPreserved) {
-                console.log(chalk.yellow(`  Warning: transformed prompt body preservation could not be verified for ${result.outputPath}`));
-              }
-            } else {
-              console.error(chalk.red(`  Transform failed: ${result.sourcePath} - ${result.error}`));
-            }
-          }
 
           if (platform === 'github-vscode' && githubScope === GitHubCopilotInjectionScope.GLOBAL) {
             await flattenVSCodeGlobalPrompts(transformDestDir);
@@ -321,7 +352,6 @@ program
           const destSkillsDir = path.join(platformDest, skillsSubDir);
           await fs.ensureDir(destSkillsDir);
           await fs.copy(universalSkillsDir, destSkillsDir, { overwrite: true });
-          console.log(chalk.green(`✅ ${platform} config and universal skills injected.`));
         }
 
         if (platform === 'gemini-cli' && geminiCliScope === GeminiCliInjectionScope.USER) {
@@ -331,12 +361,20 @@ program
           await fs.copy(nativeSkillsDir, aliasDir, { overwrite: true });
         }
 
+        results.push({ platform, displayName, scope: scopeLabel, ok: true, error: '' });
+        console.log(chalk.green(` ok (${scopeLabel})`));
+
       } catch (err) {
-        console.error(chalk.red(`❌ Failed to inject ${platform} config:`, err));
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        results.push({ platform, displayName, scope: scopeLabel, ok: false, error: errorMsg });
+        console.log(chalk.red(` fail (${scopeLabel})`));
       }
     }
 
-    console.log(chalk.bold.cyan('\n🚀 Injection Complete!'));
+    renderInjectionSummary(results, templateSource, scopeLabel);
+    if (results.some(r => !r.ok)) {
+      process.exitCode = 1;
+    }
   });
 
 program

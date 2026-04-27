@@ -1,110 +1,64 @@
-# CONTRIBUTING.md
-
-> Contribution guidelines, git workflow, and PR process for Spec-Driven Steroids.
-
 <!-- SpecDriven:managed:start -->
 
-## Getting Started
-
-1. Clone the repository
-2. Install dependencies: `pnpm install`
-3. Build the project: `pnpm build`
-4. Run tests: `pnpm test`
+# CONTRIBUTING.md
 
 ## Git Workflow
 
-### Branch Naming
+- **Branch naming**: Use descriptive branch names prefixed by change type: `feat/`, `fix/`, `refactor/`, `docs/`, `chore/`.
+- **Commits**: Keep commits focused. Reference a spec slug when a change is spec-driven (e.g., `feat: add unified scope prompt (expand-platform-support)`).
+- **Base branch**: All PRs target `main`. Rebase onto `main` before opening a PR.
+- **Signoff**: Commits must be signed (verified). Use `-S` or configure `commit.gpgsign true`.
 
-| Type | Pattern | Example |
-|------|---------|---------|
-| Feature | `feat/<slug>` | `feat/add-qwen-support` |
-| Fix | `fix/<slug>` | `fix/validate-ears-error` |
-| Hotfix | `hotfix/<slug>` | `hotfix/release-tag-format` |
-| Refactor | `refactor/<slug>` | `refactor/injection-pipeline` |
+## Pull Request Process
 
-### Commit Messages
-
-Use conventional commits:
-
-```
-<type>(<scope>): <description>
-
-[optional body]
-```
-
-Types: `feat`, `fix`, `hotfix`, `refactor`, `docs`, `test`, `chore`
-
-Example:
-
-```
-feat(validation): add EARS pattern detection
-
-- Detect SHALL, MUST, SHOULD patterns
-- Add error context for missing patterns
-```
-
-## PR Process
-
-### Before Submitting
-
-1. Run `pnpm test` - all tests must pass
-2. Run `pnpm typecheck` - no type errors
-3. Run `pnpm lint` - no lint errors
-4. Update [CHANGELOG.md](packages/cli/CHANGELOG.md) if applicable
-
-### PR Description
-
-Include:
-- Summary of changes
-- Related issue or context
-- Testing performed
-
-### Review Process
-
-- At least one approval required
-- Address all review comments
-- Re-run tests before merge
+1. Open a PR against `main` with a clear description of the change.
+2. Ensure CI passes: builds, tests, typecheck, and lint must all succeed.
+3. The PR title should follow the conventional commit format (`feat:`, `fix:`, `refactor:`, etc.).
+4. Request review from a maintainer.
+5. Merge only after approval and all status checks pass.
 
 ## Repository Structure
 
 ```
-.
+spec-driven-steroids/
+├── .changeset/          # Changesets for versioning
+├── .github/workflows/   # CI/CD pipelines
 ├── packages/
-│   ├── cli/           # Main CLI package
+│   ├── cli/             # Main CLI (public, published to npm)
 │   │   ├── src/
-│   │   │   ├── cli/        # Injection commands
-│   │   │   ├── core/        # Validation modules
-│   │   │   └── context-stewardship/  # Knowledge graph
-│   │   ├── templates/   # Platform templates
-│   │   ├── tests/      # CLI tests
-│   │   └── package.json
-│   ├── test-utils/    # Test utilities
-│   └── landing-page/  # Documentation site
-├── specs/            # Spec-driven specs
-│   └── changes/       # Change specs
-├── .specs/            # Repository spec
-└── vitest.config.ts    # Root test config
+│   │   │   ├── cli/          # Injection commands & platform configs
+│   │   │   ├── core/validate/ # Validation modules
+│   │   │   └── context-stewardship/ # Knowledge graph system
+│   │   ├── templates/   # Platform templates and universal skills
+│   │   └── tests/       # Integration and unit tests
+│   ├── test-utils/      # Shared testing utilities (private)
+│   └── landing-page/    # Documentation site (private, Vite)
+├── scripts/             # Build and release utilities
+└── specs/               # Spec artifacts for this repo's own features
 ```
 
-## Release Process
+## Documentation Workflow
 
-Uses Changesets for versioning and publishing:
+- Generated guideline documents ([AGENTS.md](AGENTS.md), [STYLEGUIDE.md](STYLEGUIDE.md), [TESTING.md](TESTING.md), [ARCHITECTURE.md](ARCHITECTURE.md), [SECURITY.md](SECURITY.md), and this file) contain managed sections wrapped in `<!-- SpecDriven:managed -->` markers. Do not edit content between `SpecDriven:managed:start` and `SpecDriven:managed:end` markers manually — regenerate them with `/inject-guidelines` instead.
+- Product-level documentation lives in `README.md` and `packages/cli/README.md`.
+- Spec-driven change artifacts follow the `.specs/changes/<slug>/` convention (requirements.md, design.md, tasks.md).
+
+### Changesets
+
+This project uses [Changesets](https://github.com/changesets/changesets) for version management:
 
 ```bash
-pnpm changeset
-pnpm changeset:version
-pnpm test && pnpm build
-git push origin main
-pnpm release:tag
-pnpm release:push-tags
+pnpm changeset          # Create a new changeset entry
+pnpm changeset:version  # Consume changesets and bump versions
+pnpm changeset:publish  # Publish updated packages
 ```
 
-See [AGENTS.md](AGENTS.md) for build commands.
+## Development Setup
+
+```bash
+pnpm install
+pnpm build
+pnpm test
+```
 
 <!-- SpecDriven:managed:end -->
-
-## See Also
-
-- [AGENTS.md](AGENTS.md) - Build commands and project structure
-- [TESTING.md](TESTING.md) - Testing patterns and utilities
-- [STYLEGUIDE.md](STYLEGUIDE.md) - Code conventions

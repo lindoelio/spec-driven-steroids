@@ -1,260 +1,110 @@
-# TESTING.md
-
-> Testing strategy and patterns for Spec-Driven Steroids.
-
 <!-- SpecDriven:managed:start -->
 
-## Testing Strategy
+# TESTING.md
 
-This project follows the **Testing Trophy** approach:
+## Testing Trophy Strategy
 
-```
-        ╱╲
-       ╱  ╲  E2E Tests (Critical paths only)
-      ╱────╲
-     ╱      ╲
-    ╱────────╲ Integration Tests (Primary confidence layer)
-   ╱          ╲
-  ╱────────────╲
- ╱              ╲
-╱────────────────╲ Unit Tests (Selective, high-risk logic)
-╱                  ╲
-```
+This project's testing mix (integration/E2E alongside unit tests, no declared hierarchy) defaults to the **Testing Trophy** approach:
 
-### Priority Order
+1. **Integration tests are the main confidence layer** — they verify that full CLI workflows behave correctly end-to-end.
+2. **E2E tests cover critical user journeys** — platform injection, validation pipelines, and cross-system flows.
+3. **Unit tests are secondary and selective** — reserved for isolated, high-risk logic where fast feedback is essential.
 
-1. **Integration Tests** - Primary confidence layer
-   - MCP tool validation against real file structures
-   - CLI command execution with actual file system
-   - Cross-package interactions
+## Frameworks and Tooling
 
-2. **E2E Tests** - Critical user journeys
-   - Full spec workflow validation
-   - Platform injection complete flow
+- **Test runner**: [Vitest](https://vitest.dev/) 2.x
+- **Coverage**: `@vitest/coverage-v8`
+- **Assertions**: Vitest's built-in `expect` (global)
+- **Mocks**: `vi.spyOn`, `vi.stubGlobal`, `vi.fn`
+- **File system mocks**: `@spec-driven-steroids/test-utils` provides `mockFs` (see [Test Utilities](#test-utilities))
 
-3. **Unit Tests** - Selective and targeted
-   - Pure functions with complex logic
-   - Input validation and error formatting
-   - Parser implementations (Mermaid, EARS)
-
----
-
-## Test Framework
-
-| Aspect | Tool |
-|--------|------|
-| Framework | Vitest 2.1.0 |
-| Coverage | @vitest/coverage-v8 |
-| Environment | Node.js |
-| UI | @vitest/ui |
-
----
-
-## Commands
+## Running Tests
 
 ```bash
-# Run all tests
-pnpm test
-
-# Run tests with UI
-pnpm test:ui
+# Run all tests (requires prior build for integration tests)
+pnpm build && pnpm test
 
 # Run tests with coverage
 pnpm test:coverage
 
-# Run specific test file
-pnpm vitest run tests/unit/mermaid-validator.test.ts
+# Run tests with Vitest UI
+pnpm test:ui
 
-# Run tests in watch mode
-pnpm vitest watch
+# Run a specific test file
+npx vitest run tests/integration/inject-validate.e2e.test.ts
 ```
 
----
+**Important**: Integration tests import compiled output from `dist/`, so run `pnpm build` (or `tsc`) before executing tests when source has changed.
 
-## Directory Structure
+## Test Organization
 
 ```
 packages/cli/tests/
-├── unit/                    # Unit tests (*.test.ts)
-│   ├── mermaid-validator.test.ts
-│   ├── verify-requirements-file.test.ts
-│   ├── verify-design-file.test.ts
-│   ├── verify-tasks-file.test.ts
-│   └── error-formatter.test.ts
-└── integration/             # Integration tests (*.e2e.test.ts)
-    ├── inject-validate.e2e.test.ts
-    └── verify-complete-spec.e2e.test.ts
+├── integration/           # E2E tests: full CLI workflows
+│   ├── inject-validate.e2e.test.ts
+│   ├── gemini-cli-inject.e2e.test.ts
+│   ├── clean-global.e2e.test.ts
+│   └── transformation-pipeline.test.ts
+├── unit/                  # Isolated component tests
+│   ├── platform-config.test.ts
+│   ├── format-transformer.test.ts
+│   ├── error-formatter.test.ts
+│   ├── gemini-cli-scope.test.ts
+│   ├── template-validation-guidance.test.ts
+│   ├── universal-agent-prompt.test.ts
+│   ├── context-stewardship-acceptance.test.ts
+│   └── validate/
+└── helpers/               # Shared test helpers
+    └── template-test-helpers.ts
 ```
 
----
+## Integration Tests (Primary)
 
-## Test Patterns
+Integration tests verify end-to-end CLI behavior by:
+- Creating temporary directories with `mockFs.createTempDir()`
+- Mocking user input via `vi.spyOn(inquirer, 'prompt')`
+- Running CLI commands programmatically via `program.parseAsync()`
+- Asserting filesystem side effects (directory structure, file content)
+- Cleaning up with `mockFs.cleanup()` in `afterEach`
 
-### Unit Test Pattern
+These tests are the primary confidence layer. Every CLI command and platform injection should have corresponding integration coverage.
 
-```typescript
-import { describe, it, expect } from 'vitest';
-import { functionToTest } from '../src/module.js';
+## Unit Tests (Selective)
 
-describe('Unit: functionToTest', () => {
-    describe('valid inputs', () => {
-        it('returns expected result for valid input', () => {
-            const result = functionToTest('valid input');
-            expect(result).toBe('expected output');
-        });
-    });
+Unit tests validate isolated, high-risk logic:
+- Platform configuration resolution
+- Format transformation rules
+- Validation module logic
+- Pure utility functions
 
-    describe('edge cases', () => {
-        it('handles empty input', () => {
-            const result = functionToTest('');
-            expect(result).toBe('default');
-        });
-    });
-});
-```
-
-### Integration Test Pattern
-
-```typescript
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { MockFileSystem } from '@spec-driven-steroids/test-utils';
-
-describe('Integration: verifySpecStructure', () => {
-    let mockFs: MockFileSystem;
-
-    beforeEach(() => {
-        mockFs = new MockFileSystem('/test-dir');
-    });
-
-    afterEach(() => {
-        mockFs.cleanup();
-    });
-
-    it('validates complete spec structure', async () => {
-        await mockFs.createStructure({
-            '.specs/changes/test-spec/requirements.md': '...',
-            '.specs/changes/test-spec/design.md': '...',
-            '.specs/changes/test-spec/tasks.md': '...'
-        });
-
-        const result = await verifySpecStructure('test-spec', mockFs.root);
-        expect(result.valid).toBe(true);
-    });
-});
-```
-
----
+Unit tests import directly from `src/` and run without a build step.
 
 ## Coverage Targets
 
-| Metric | Target |
-|--------|--------|
-| Statements | 80% |
-| Branches | 80% |
-| Functions | 80% |
-| Lines | 80% |
-
-### Coverage Exclusions
-
-- `node_modules/`
-- `**/*.test.ts`, `**/*.spec.ts`
-- `**/dist/**`
-- `**/fixtures/**`
-- `**/types/**`
-- `**/*.config.ts`
-- `packages/test-utils/**`
-
----
+| Package | Statements | Branches | Functions | Lines |
+|---|---|---|---|---|
+| `packages/cli` | 75% | 75% | 75% | 75% |
+| `packages/test-utils` | 60% | 60% | 60% | 60% |
 
 ## Test Utilities
 
-### MockFileSystem
+Shared testing utilities are in `@spec-driven-steroids/test-utils`:
 
-Located in `packages/test-utils/src/mocks/mock-fs.ts`:
-
-```typescript
-import { MockFileSystem } from '@spec-driven-steroids/test-utils';
-
-const mockFs = new MockFileSystem('/test-dir');
-await mockFs.createStructure({
-    '.specs/changes/test/requirements.md': '# Requirements',
-    '.specs/changes/test/design.md': '# Design',
-    '.specs/changes/test/tasks.md': '# Tasks'
-});
+```ts
+import { mockFs } from '@spec-driven-steroids/test-utils';
 ```
 
-### Fixtures
+- `mockFs.createTempDir()` — Creates a temporary filesystem directory
+- `mockFs.cleanup()` — Cleans up all temporary directories
+- `getFixtureContent(name)` — Loads fixture files for validation testing
+- `getFixtureFiles()` — Lists available fixture names
 
-Located in `packages/test-utils/src/fixtures/`:
+## Writing New Tests
 
-```typescript
-import { getFixtureContent, FIXTURES } from '@spec-driven-steroids/test-utils';
-
-const validSpec = getFixtureContent(FIXTURES.VALID_COMPLETE_SPEC, 'requirements.md');
-```
-
-### Available Fixtures
-
-| Fixture | Description |
-|---------|-------------|
-| `VALID_COMPLETE_SPEC` | Valid spec with all 3 files |
-| `INVALID_TRACEABILITY` | Spec with missing traceability |
-| `INVALID_EARS_SYNTAX` | Spec with EARS syntax errors |
-| `INVALID_MISSING_FILES` | Spec with missing required files |
-
----
-
-## Validation Module Testing
-
-### Testing Validation Modules
-
-```typescript
-import { verifyRequirementsFile } from '../src/core/validate/requirements.js';
-
-describe('Unit: verifyRequirementsFile', () => {
-    it('detects EARS patterns', () => {
-        const content = `
-## Requirements
-
-### Requirement 1: Test
-
-1. THE system SHALL test. _(Ubiquitous)_
-2. WHEN triggered, THE system SHALL respond. _(Event-driven)_
-`;
-        const result = verifyRequirementsFile(content);
-        expect(result.earsPatterns).toContain('SHALL');
-        expect(result.earsPatterns).toContain('WHEN');
-    });
-});
-```
-
-### Import Pattern for Validation Tests
-
-Tests import directly from source to validate the validation logic:
-
-```typescript
-// Import from source for unit testing
-import { verifyRequirementsFile } from '../src/core/validate/requirements.js';
-import { verifyDesignFile } from '../src/core/validate/design.js';
-import { validateMermaidDiagram } from '../src/core/validate/shared/mermaid.js';
-```
-
----
-
-## Test Naming Convention
-
-| Type | Pattern | Example |
-|------|---------|---------|
-| Unit | `*.test.ts` | `mermaid-validator.test.ts` |
-| Integration | `*.e2e.test.ts` | `inject-validate.e2e.test.ts` |
-
----
-
-## See Also
-
-- [AGENTS.md](AGENTS.md) - Test commands
-- [STYLEGUIDE.md](STYLEGUIDE.md) - Code conventions
-- [ARCHITECTURE.md](ARCHITECTURE.md) - Package structure
-- [CONTRIBUTING.md](CONTRIBUTING.md) - PR requirements
+1. For new CLI commands or platform integrations: add an **integration test** in `tests/integration/`.
+2. For new validation logic or utility functions: add a **selective unit test** in `tests/unit/` only if the logic is complex or error-prone.
+3. Use `descriptive test names` that state expected behavior (`it('inject command with GitHub platform creates .github directory structure'`).
+4. Always clean up temporary directories in `afterEach` hooks.
+5. When asserting template content, use `process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES = 'true'` to avoid remote template fetching during tests.
 
 <!-- SpecDriven:managed:end -->

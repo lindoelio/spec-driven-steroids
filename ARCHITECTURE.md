@@ -1,233 +1,143 @@
-# ARCHITECTURE.md
-
-> High-level architecture, system boundaries, and design decisions for Spec-Driven Steroids.
-
 <!-- SpecDriven:managed:start -->
 
-## System Overview
+# ARCHITECTURE.md
 
-Spec-Driven Steroids injects a structured spec-driven workflow (requirements → design → tasks → implementation) into AI coding platforms without requiring a new UI.
+## High-Level Architecture
 
-## Package Architecture
+Spec-Driven Steroids is a **monorepo CLI tool and template bundle** that injects a Spec-Driven Development workflow into multiple AI coding platforms. It consists of three packages, with the CLI as the single public entry point.
 
 ```mermaid
-graph TB
-    subgraph "packages/cli"
-        CLI[CLI Entry<br/>(index.ts)]
-        TRANSFORM[Transformation<br/>Pipeline]
-        VALIDATE[Validation Modules]
-        KNOWLEDGE[Knowledge Graph<br/>System]
-
-        CLI -->|injects| PLATFORMS[Platform Scopes]
-        CLI -->|validates| VALIDATE
-        CLI -->|manages| KNOWLEDGE
+flowchart TB
+    CLI["CLI (sds / spec-driven-steroids)"]
+    subgraph Commands
+        INJECT["inject"]
+        VALIDATE["validate"]
+        STEWARD["stewardship"]
+        CLEAN["clean"]
     end
-
-    subgraph "packages/test-utils"
-        MOCKS[MockFileSystem]
-        FIXTURES[Fixtures]
+    subgraph Injection
+        TP["Transformation Pipeline"]
+        PST["Platform-Specific Targets"]
     end
-
-    subgraph "packages/landing-page"
-        DOCS[Documentation Site]
+    subgraph Validation
+        VS["Structure Validator"]
+        VR["Requirements Validator"]
+        VD["Design Validator"]
+        VT["Tasks Validator"]
+        VX["Cross-File Validator"]
     end
-
-    VALIDATE -.->|uses| MOCKS
-    KNOWLEDGE -.->|stores| MOCKS
+    subgraph Stewardship
+        KG["Knowledge Graph Store"]
+        PM["Phase Context Injector"]
+        EXT["Decision Extractor"]
+    end
+    subgraph Platforms
+        GH["GitHub Copilot"]
+        GCLI["GitHub Copilot CLI"]
+        GEM["Gemini CLI"]
+        OC["OpenCode"]
+        AG["Antigravity"]
+        CDX["Codex"]
+        CC["Claude Code"]
+        QC["Qwen Code"]
+    end
+    CLI --> Commands
+    INJECT --> TP --> PST --> Platforms
+    VALIDATE --> VS & VR & VD & VT & VX
+    STEWARD --> KG & PM & EXT
+    CLEAN --> Platforms
 ```
 
-## Core Packages
+## Package Boundaries
 
-### packages/cli
+| Package | Scope | Visibility | Key Responsibility |
+|---|---|---|---|
+| `packages/cli` | Main CLI + templates | **Public** (published to npm) | CLI commands, template injection, validation, knowledge graph |
+| `packages/test-utils` | Shared test utilities | **Private** | Mock filesystem, test fixtures |
+| `packages/landing-page` | Documentation site | **Private** | Marketing/landing page (Vite) |
 
-Main CLI package providing injection and validation.
+## Component Design
 
-| Module | Responsibility |
-|--------|---------------|
-| `src/cli/` | CLI entry points, platform injection |
-| `src/core/validate/` | Requirements, design, tasks, structure validation |
-| `src/context-stewardship/` | Knowledge graph and semantic retrieval |
-| `templates/` | Platform-specific agents, commands, skills |
+### CLI Entry Point (`packages/cli/src/cli/index.ts`)
 
-### packages/test-utils
+The CLI uses `Commander.js` for command routing. Commands are registered as subcommands:
+- `sds inject` — Interactive platform selection and template injection
+- `sds validate <subcommand>` — Spec validation pipeline
+- `sds stewardship <subcommand>` — Knowledge graph management
+- `sds clean` — Remove globally injected files
 
-Shared testing utilities.
-
-| Module | Responsibility |
-|--------|---------------|
-| `src/mocks/mock-fs.ts` | Mock file system for tests |
-| `src/fixtures/` | Test fixtures for validation |
-
-### packages/landing-page
-
-Documentation site built with Vite/Svelte.
-
-## Injection Architecture
-
-### Platform Injection Flow
+### Platform Injection Pipeline
 
 ```mermaid
-sequenceDiagram
-    User->>CLI: spec-driven inject
-    CLI->>CLI: Detect platform
-    CLI->>Platform: Load platform scope
-    Platform-->>CLI: Return injection paths
-    CLI->>CLI: Transform templates
-    CLI->>FileSystem: Write platform files
-    FileSystem-->>CLI: Confirm
-    CLI->>User: Success message
+flowchart LR
+    TS["Template Source\n(bundled or remote)"] --> TP["Transformation Pipeline"]
+    TP --> FMT["Format Transformer\n(Markdown / TOML)"]
+    FMT --> PSC["Platform Scope\n(Global / Project)"]
+    PSC --> OUT["Platform Output Dir\n(.github, .opencode, etc.)"]
 ```
 
-### Supported Platforms
+**Key decision**: Platform configs are centralized in `platform-config.ts` as a static registry (`PLATFORM_CONFIGS`). Each platform defines its output format, directory layout, and frontmatter fields. Adding a new platform means adding a new entry to this registry and updating the injection logic in `index.ts`.
 
-| Platform | Scope Type | Injection Target |
-|----------|-----------|------------------|
-| Antigravity | project | `/spec-driven` agent |
-| Claude Code | project | `CLAUDE.md` |
-| Gemini CLI | global | MCP servers, agents, commands |
-| GitHub Copilot CLI | global | MCP servers, skills |
-| GitHub Copilot VS Code | global | MCP config |
-| GitHub Copilot JetBrains | global | MCP config |
-| OpenCode | global | MCP config, skills |
-| OpenAI Codex | project | Agent instructions |
-| Qwen Code | global | MCP config, skills |
+### Validation Pipeline
 
-## Validation Architecture
+The validation system (`packages/cli/src/core/validate/`) provides progressive, composable validation:
 
-### Validation Layers
-
-```mermaid
-graph TD
-    INPUT[CLI Input<br/>or File] --> STRUCTURE[Structure<br/>Validation]
-
-    STRUCTURE --> REQ[Requirements<br/>Validation]
-
-    REQ --> DESIGN[Design<br/>Validation]
-
-    DESIGN --> TASKS[Tasks<br/>Validation]
-
-    TASKS --> RESULT[Validation<br/>Result]
-
-    REQ -->|EARS patterns| REQ
-    DESIGN -->|Mermaid| DESIGN
-    TASKS -->|Traceability| TASKS
+```
+sds validate structure   → Verify required files exist
+sds validate requirements → Validate EARS syntax and REQ-X numbering
+sds validate design      → Validate Mermaid syntax and DES-X traceability
+sds validate tasks       → Validate phase structure and _Implements tags
+sds validate spec        → Cross-file traceability matrix
 ```
 
-### Validation Modules
+### Knowledge Graph (Context Stewardship)
 
-| Module | Validates |
-|--------|-----------|
-| `structure.ts` | Spec folder structure, required files |
-| `requirements.ts` | EARS syntax, REQ-ID format |
-| `design.ts` | Mermaid diagrams, architecture sections |
-| `tasks.ts` | Task structure, traceability links |
-| `spec.ts` | Full spec end-to-end |
-
-## Context Stewardship
-
-Knowledge graph system for persisting architectural decisions.
-
-```mermaid
-graph LR
-    EXTRACT[Spec Decision<br/>Extractor] --> GRAPH[Knowledge<br/>Graph]
-    GRAPH --> RETRIEVE[Semantic<br/>Retrieval]
-    RETRIEVE --> INJECT[Context<br/>Injector]
-    INJECT --> AGENT[AI Agent<br/>Context]
-```
-
-### Components
+The stewardship system (`packages/cli/src/context-stewardship/`) is a file-based JSON knowledge graph for architectural decisions:
 
 | Component | Responsibility |
-|-----------|---------------|
-| `knowledge-graph-store.ts` | JSON graph persistence |
-| `semantic-retrieval-engine.ts` | Semantic search |
-| `spec-decision-extractor.ts` | Extract decisions from specs |
-| `orchestrator.ts` | Coordinate components |
-| `domain-taxonomy.ts` | Categorize decisions |
+|---|---|
+| `KnowledgeGraphStore` | CRUD operations, conflict detection, version history |
+| `ProjectScopedResolver` | Scoped rule resolution with out-of-domain fallback |
+| `LifecycleManager` | Rule state transitions (active → deprecated → archived) |
+| `SemanticRetrievalEngine` | Token-overlap ranking for retrieval |
+| `GracefulDegradationRouter` | Fallback strategy when semantic engine is unavailable |
+| `SpecDecisionExtractor` | Extract decision candidates from spec files |
+| `PhaseContextInjector` | Inject relevant rules into prompt context per phase |
 
-## Design Decisions
+Rules are stored as JSON files under `~/.agents/stewardship/` with scope isolation (global / orgs / projects).
 
-### Technology Choices
+## Architectural Decisions
 
-| Decision | Rationale |
-|----------|-----------|
-| TypeScript ESM | Modern Node.js support, tree-shaking |
-| Commander for CLI | Simple CLI framework, subcommands |
-| Vitest for testing | Fast, near Jest compatibility |
-| fs-extra | Promise-based file operations |
-| Changesets | Semantic versioning, changelog auto-generation |
+### AD-1: Monorepo with Single Public Package
 
-### Module Resolution
+The CLI, test utilities, and landing page share a workspace, but only `packages/cli` is published to npm. This keeps toolchain concerns (test fixtures, marketing site) out of the published artifact.
 
-Uses `.js` extension for runtime compatibility:
+### AD-2: Template Injection Over Plugin Architecture
 
-```typescript
-// Source (.ts)
-import { validateRequirements } from './requirements.js';
+Rather than requiring each platform to implement an adapter, the CLI transforms universal templates into platform-specific formats at injection time. This centralizes the workflow logic and reduces per-platform maintenance.
 
-// Bundler resolves .ts → .js at build time
-```
+### AD-3: File-Based Knowledge Graph
 
-### Error Handling Strategy
+The stewardship store uses flat JSON files instead of a database. This avoids runtime dependencies and keeps the knowledge graph portable, inspectable, and version-controllable. Write-lock serialization prevents concurrent-write corruption within a single process.
 
-- Typed validation errors with context
-- Suggested fixes in error messages
-- Skill documentation links
-- Exit codes for CLI integration
+### AD-4: Integration-Test-First Strategy
 
-## File Structure
+Full CLI workflows are verified through integration tests that exercise real file systems with mocked user input. Unit tests are reserved for isolated, high-risk logic. See [TESTING.md](TESTING.md) for details.
 
-```
-packages/cli/
-├── src/
-│   ├── cli/
-│   │   ├── index.ts           # Main CLI entry
-│   │   ├── transformation-pipeline.ts
-│   │   ├── format-transformer.ts
-│   │   ├── template-source.ts
-│   │   └── platform-scopes/
-│   │       ├── antigravity-scope.ts
-│   │       ├── opencode-scope.ts
-│   │       ├── github-copilot-scope.ts
-│   │       ├── github-copilot-cli-scope.ts
-│   │       ├── gemini-cli-scope.ts
-│   │       └── qwen-code-scope.ts
-│   ├── core/
-│   │   └── validate/
-│   │       ├── index.ts
-│   │       ├── structure.ts
-│   │       ├── requirements.ts
-│   │       ├── design.ts
-│   │       ├── tasks.ts
-│   │       ├── spec.ts
-│   │       └── shared/
-│   │           ├── formatter.ts
-│   │           ├── traceability.ts
-│   │           ├── ids.ts
-│   │           ├── ears.ts
-│   │           └── mermaid.ts
-│   └── context-stewardship/
-│       ├── orchestrator.ts
-│       ├── knowledge-graph-store.ts
-│       ├── semantic-retrieval-engine.ts
-│       ├── spec-decision-extractor.ts
-│       ├── domain-taxonomy.ts
-│       ├── graceful-degradation-router.ts
-│       └── lifecycle-manager.ts
-├── templates/
-│   └── universal/
-│       ├── agents/
-│       ├── commands/
-│       └── skills/
-└── tests/
-    ├── unit/
-    └── integration/
+### AD-5: Remote Template Support with Bundled Fallback
+
+The CLI prefers fetching the latest templates from a remote source but falls back to bundled templates when remote retrieval fails. This enables template updates without new releases while ensuring offline capability.
+
+## Data Flow
+
+```mermaid
+flowchart TD
+    USER["User: sds inject"] --> PROMPT["Platform + Scope Prompt"]
+    PROMPT --> SRC["Template Source\n(bundled or remote)"]
+    SRC --> TRANSFORM["Transform to Platform Format"]
+    TRANSFORM --> WRITE["Write to Target Directory"]
+    WRITE --> SKILLS["Copy Universal Skills"]
+    SKILLS --> DONE["Injection Complete"]
 ```
 
 <!-- SpecDriven:managed:end -->
-
-## See Also
-
-- [AGENTS.md](AGENTS.md) - Project structure and build commands
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Developer workflow
-- [TESTING.md](TESTING.md) - Testing patterns

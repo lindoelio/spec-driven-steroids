@@ -474,4 +474,130 @@ describe('CLI E2E: inject command', () => {
         expect(await fs.pathExists(path.join(claudeDir, 'commands'))).toBe(true);
         expect(await fs.pathExists(path.join(claudeDir, 'skills'))).toBe(true);
     });
+
+    describe('inject output format', () => {
+        // Helper: collect all console.log call arguments as plain strings
+        function collectOutput(spy: ReturnType<typeof vi.spyOn>): string {
+            return spy.mock.calls.map(call => {
+                const arg = call[0];
+                if (arg && typeof arg.toString === 'function') {
+                    // Strip ANSI escape codes
+                    return String(arg).replace(/\x1B\[[0-9;]*m/g, '');
+                }
+                return String(arg);
+            }).join('\n');
+        }
+
+        it('output contains no emoji characters', async () => {
+            const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+            vi.spyOn(inquirer, 'prompt')
+                .mockResolvedValueOnce({ platforms: ['opencode'] })
+                .mockResolvedValueOnce({ scope: 'project' });
+
+            const program = (await import('../../dist/cli/index.js')).default;
+            await program.parseAsync(['inject'], { from: 'user' } as any);
+
+            const output = collectOutput(consoleSpy);
+            const emojiPattern = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
+            expect(output).not.toMatch(emojiPattern);
+            consoleSpy.mockRestore();
+        });
+
+        it('emits one status line per platform', async () => {
+            const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+            vi.spyOn(inquirer, 'prompt')
+                .mockResolvedValueOnce({ platforms: ['opencode', 'gemini-cli'] })
+                .mockResolvedValueOnce({ scope: 'global' });
+
+            const program = (await import('../../dist/cli/index.js')).default;
+            await program.parseAsync(['inject'], { from: 'user' } as any);
+
+            const output = collectOutput(consoleSpy);
+            const statusLines = output.match(/ok \(/g);
+            expect(statusLines).toBeTruthy();
+            expect(statusLines!.length).toBe(2);
+            consoleSpy.mockRestore();
+        });
+
+        it('summary includes all platforms with scope and final count', async () => {
+            const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+            vi.spyOn(inquirer, 'prompt')
+                .mockResolvedValueOnce({ platforms: ['opencode', 'gemini-cli', 'qwen-code'] })
+                .mockResolvedValueOnce({ scope: 'global' });
+
+            const program = (await import('../../dist/cli/index.js')).default;
+            await program.parseAsync(['inject'], { from: 'user' } as any);
+
+            const output = collectOutput(consoleSpy);
+            expect(output).toContain('3 platforms configured (global)');
+            expect(output).toContain('OpenCode');
+            expect(output).toContain('Gemini CLI');
+            expect(output).toContain('Qwen Code');
+            consoleSpy.mockRestore();
+        });
+
+        it('remote template version appears in summary', async () => {
+            const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+            vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+                const url = String(input);
+                if (url.endsWith('/templates-manifest.json')) {
+                    return {
+                        ok: true,
+                        json: async () => ({
+                            version: 'test-version-abc',
+                            bundleUrl: 'https://example.test/templates-bundle.json'
+                        })
+                    } as Response;
+                }
+                if (url.endsWith('/templates-bundle.json')) {
+                    return {
+                        ok: true,
+                        json: async () => ({
+                            version: 'test-version-abc',
+                            files: {
+                                'universal/agents/spec-driven.agent.md': '---\nname: Spec-Driven\n---\n\ncontent',
+                                'universal/commands/spec-driven.command.md': '---\ndescription: Test\n---\n\ncontent'
+                            }
+                        })
+                    } as Response;
+                }
+                throw new Error(`Unexpected fetch: ${url}`);
+            }));
+
+            vi.spyOn(inquirer, 'prompt')
+                .mockResolvedValueOnce({ platforms: ['opencode'] })
+                .mockResolvedValueOnce({ scope: 'project' });
+
+            const program = (await import('../../dist/cli/index.js')).default;
+            await program.parseAsync(['inject'], { from: 'user' } as any);
+
+            const output = collectOutput(consoleSpy);
+            expect(output).toContain('Templates: remote (test-version-abc)');
+            vi.unstubAllGlobals();
+            consoleSpy.mockRestore();
+        });
+
+        it('bundled fallback warning appears in summary', async () => {
+            const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+            vi.stubGlobal('fetch', vi.fn(async () => ({
+                ok: false,
+                status: 503
+            }) as Response));
+
+            process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES = 'true';
+
+            vi.spyOn(inquirer, 'prompt')
+                .mockResolvedValueOnce({ platforms: ['opencode'] })
+                .mockResolvedValueOnce({ scope: 'project' });
+
+            const program = (await import('../../dist/cli/index.js')).default;
+            await program.parseAsync(['inject'], { from: 'user' } as any);
+
+            const output = collectOutput(consoleSpy);
+            expect(output).toContain('fallback');
+            delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
+            vi.unstubAllGlobals();
+            consoleSpy.mockRestore();
+        });
+    });
 });
