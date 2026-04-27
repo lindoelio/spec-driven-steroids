@@ -1,5 +1,11 @@
 # spec-driven-steroids
 
+## 0.11.0
+
+### Minor Changes
+
+- Remove MCP config injection from all platforms. Integrate context-stewardship knowledge graph as `sds stewardship` CLI command. Delete antigravity-scope, dead exports, no-op validators, barrel file. Rename mcp-context-injector to phase-context-injector. Deduplicate formatError. Update spec-driven skills with richer stewardship references.
+
 ## 0.10.0
 
 ### Minor Changes
