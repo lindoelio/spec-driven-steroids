@@ -1,0 +1,8 @@
+{
+  "packages": {
+    "spec-driven-steroids": {
+      "version": "0.11.0",
+      "type": "minor"
+    }
+  }
+}

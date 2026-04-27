@@ -23,7 +23,7 @@ If `long-running-work-planning` is available, load it at the start of this phase
 
 1. **Read Requirements**: Read `.specs/changes/<slug>/requirements.md` as the source of truth.
 2. **Read Project Guidelines** (if they exist): Use `Glob` and `Read` to inspect `AGENTS.md`, `ARCHITECTURE.md`, `STYLEGUIDE.md`, and `TESTING.md`.
-3. **Retrieve Contextual Memory**: Invoke the `contextual-stewardship` skill to retrieve `architecture` rules.
+3. **Retrieve Contextual Memory**: Invoke the `contextual-stewardship` skill in `retrieve` or `inject design` mode to retrieve `architecture`, `security`, `performance`, and `technical-debt` rules.
 4. **Inspect Existing Patterns**: Use targeted `Grep` to find related modules, interfaces, diagrams, and naming conventions, then `Read` at most 5 relevant files before drafting.
 5. **Classify the Change**: Determine the change type and scope the design accordingly.
 6. **Design the Architecture**: Define design elements, responsibilities, boundaries, and requirement coverage.
@@ -157,6 +157,15 @@ flowchart LR
 | src/example/service.ts | Existing | Verified by Glob/Read | Core orchestration for the feature | DES-1 |
 | src/example/handler.ts | New | Proposed by DES-2 | Entry point for the request flow | DES-2 |
 
+## Repository Context Evidence
+
+| Source | Evidence | Applied Constraint |
+|--------|----------|--------------------|
+| AGENTS.md | Read before design | Follow repository agent constraints and validation commands |
+| ARCHITECTURE.md | Read before design | Preserve documented package boundaries |
+| src/example/service.ts | Verified by Glob/Read | Reuse existing service naming and module placement |
+| contextual-stewardship:architecture | Retrieved before design | Apply active architecture rules |
+
 ## Data Models
 
 _Include only when the change introduces or modifies data structures._
@@ -233,6 +242,7 @@ These sections must always be present in a full design document:
 - `## Overview`
 - `## System Architecture`
 - `## Code Anatomy`
+- `## Repository Context Evidence`
 - `## Traceability Matrix`
 
 ## Optional Section Rules
@@ -264,6 +274,7 @@ If `## Impact Analysis` is included:
   - an `_Implements: REQ-X.Y_` line with one or more requirement references
 - Every referenced requirement must exist in `requirements.md`.
 - Use `## Code Anatomy` to map files or directories to `DES-*` elements. Existing paths must be verified by `Glob` or `Read`; proposed paths must be labeled `New` and must not be presented as existing.
+- Use `## Repository Context Evidence` to list guideline files read, contextual-memory domains retrieved, and targeted code files inspected. Each row must state how the evidence shaped the design.
 - Use `## Traceability Matrix` to map every `DES-*` element to the requirements it implements.
 - Prefer architecture decisions and system behavior over implementation details.
 - Do not include task breakdowns, code patches, large code samples, or step-by-step implementation instructions.
@@ -384,6 +395,7 @@ If project guideline files do not exist:
 - follow established naming and file placement patterns
 - default to simpler architecture rather than introducing new abstractions
 - treat `TESTING.md` as optional input, not a blocker for design work
+- record the missing guideline files and fallback evidence in `## Repository Context Evidence`
 
 ### Design Revision
 
@@ -452,12 +464,13 @@ The audit verdict (Approve / Request Changes / Approval with Notes) determines w
 Before returning the design, verify:
 
 - [ ] Document starts with `# Design Document`
-- [ ] `## Overview`, `## System Architecture`, `## Code Anatomy`, and `## Traceability Matrix` are present
+- [ ] `## Overview`, `## System Architecture`, `## Code Anatomy`, `## Repository Context Evidence`, and `## Traceability Matrix` are present
 - [ ] Every design element uses `### DES-N: Title`
 - [ ] Every design element includes a Mermaid diagram
 - [ ] Every design element includes `_Implements: REQ-X.Y_`
 - [ ] All requirement references exist in `requirements.md`
 - [ ] `## Code Anatomy` maps files/directories to `DES-*`
+- [ ] `## Repository Context Evidence` names guideline files, contextual-memory domains, and code evidence used
 - [ ] `## Traceability Matrix` includes every `DES-*`
 - [ ] Optional sections are included only when useful
 - [ ] Mermaid diagrams are simple and syntactically safe

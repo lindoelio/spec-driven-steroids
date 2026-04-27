@@ -1,11 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
-  getGeminiCliGlobalMcpPath,
   getGeminiCliGlobalConfigDir,
   getGeminiCliUserSkillsDir,
   getGeminiCliAgentsAliasDir,
   getGeminiCliProjectSkillsDir,
-  getGeminiCliProjectMcpPath,
   getGeminiCliUserAgentsDir,
   getGeminiCliUserCommandsDir,
   getGeminiCliProjectAgentsDir,
@@ -65,13 +63,7 @@ describe('Unit: Gemini CLI Scope Path Helpers', () => {
     });
   });
 
-  describe('existing path helpers', () => {
-    it('getGeminiCliGlobalMcpPath returns global MCP config path', () => {
-      const result = getGeminiCliGlobalMcpPath();
-      expect(result).toContain('.gemini');
-      expect(result).toContain('settings.json');
-    });
-
+  describe('path helpers', () => {
     it('getGeminiCliGlobalConfigDir returns global config directory', () => {
       const result = getGeminiCliGlobalConfigDir();
       expect(result).toContain('.gemini');
@@ -92,11 +84,6 @@ describe('Unit: Gemini CLI Scope Path Helpers', () => {
     it('getGeminiCliProjectSkillsDir returns project-level skills directory', () => {
       const result = getGeminiCliProjectSkillsDir('/some/project');
       expect(result).toContain('/some/project/.gemini/skills');
-    });
-
-    it('getGeminiCliProjectMcpPath returns project-level MCP config path', () => {
-      const result = getGeminiCliProjectMcpPath('/some/project');
-      expect(result).toContain('/some/project/.gemini/settings.json');
     });
   });
 });

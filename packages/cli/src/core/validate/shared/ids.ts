@@ -12,10 +12,6 @@ export function findLineNumber(content: string, pattern: RegExp): number {
   return -1;
 }
 
-export function extractRequirementIds(content: string): string[] {
-  return extractDeclaredRequirementIds(content);
-}
-
 export function extractDeclaredRequirementIds(content: string): string[] {
   const fromHeadings = Array.from(content.matchAll(/^###\s+Requirement\s+(\d+)\s*:/gmi), (match) => `REQ-${match[1]}`);
   const explicitHeadings = Array.from(content.matchAll(/^###\s+(REQ-\d+)\b/gmi), (match) => match[1]);

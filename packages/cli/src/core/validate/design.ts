@@ -7,7 +7,8 @@ import {
   createValidationResult,
   formatValidationResult,
   getExitCode,
-  ValidationError
+  ValidationError,
+  formatError
 } from './shared/formatter.js';
 import {
   extractDesignElementIds,
@@ -35,14 +36,6 @@ interface DesignValidationResult extends ValidationResult {
     diagramCount: number;
     diagramTypes: string[];
   };
-}
-
-function formatError(error: ValidationError): string {
-  let message = `[${error.errorType}] → ${error.context || error.message} → ${error.suggestedFix || ''}`;
-  if (error.skillDocLink) {
-    message += `\n   See: ${error.skillDocLink}`;
-  }
-  return message;
 }
 
 function verifyDesignFile(content: string, requirementsContent?: string): DesignValidationResult {

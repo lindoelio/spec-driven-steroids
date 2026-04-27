@@ -13,7 +13,7 @@ export interface SkillPhaseContext {
   relevantDomains: string[];
 }
 
-export class McpContextInjector {
+export class PhaseContextInjector {
   private resolver: ProjectScopedResolver;
   private sessionInjectedContext: Map<string, InjectedContext[]> = new Map();
 

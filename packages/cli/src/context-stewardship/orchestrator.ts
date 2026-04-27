@@ -3,7 +3,7 @@ import { ProjectScopedResolver } from './project-scoped-resolver.js';
 import { LifecycleManager } from './lifecycle-manager.js';
 import { GracefulDegradationRouter, defaultRouter } from './graceful-degradation-router.js';
 import { SpecDecisionExtractor } from './spec-decision-extractor.js';
-import { McpContextInjector } from './mcp-context-injector.js';
+import { PhaseContextInjector } from './phase-context-injector.js';
 import type { RetrievalQuery, Domain } from './types.js';
 
 export type Command =
@@ -27,7 +27,7 @@ export class ContextStewardshipOrchestrator {
   private lifecycle: LifecycleManager;
   private router: GracefulDegradationRouter;
   private extractor: SpecDecisionExtractor;
-  private injector: McpContextInjector;
+  private injector: PhaseContextInjector;
 
   constructor(router?: GracefulDegradationRouter) {
     this.router = router ?? defaultRouter;
@@ -35,7 +35,7 @@ export class ContextStewardshipOrchestrator {
     this.resolver = new ProjectScopedResolver(this.globalStore);
     this.lifecycle = new LifecycleManager(this.globalStore);
     this.extractor = new SpecDecisionExtractor(this.globalStore);
-    this.injector = new McpContextInjector(this.resolver, this.router);
+    this.injector = new PhaseContextInjector(this.resolver, this.router);
   }
 
   async initialize(): Promise<void> {

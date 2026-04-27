@@ -7,7 +7,8 @@ import {
   createValidationResult,
   formatValidationResult,
   getExitCode,
-  ValidationError
+  ValidationError,
+  formatError
 } from './shared/formatter.js';
 import {
   extractAcceptanceCriteriaRefs,
@@ -27,14 +28,6 @@ interface TasksValidationResult extends ValidationResult {
     linked: string[];
     missingTraces: string[];
   };
-}
-
-function formatError(error: ValidationError): string {
-  let message = `[${error.errorType}] → ${error.context || error.message} → ${error.suggestedFix || ''}`;
-  if (error.skillDocLink) {
-    message += `\n   See: ${error.skillDocLink}`;
-  }
-  return message;
 }
 
 function verifyTasksFile(content: string, designContent?: string, requirementsContent?: string): TasksValidationResult {

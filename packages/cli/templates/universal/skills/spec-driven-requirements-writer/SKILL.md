@@ -22,10 +22,10 @@ Read `references/requirements-patterns.md` when you need example EARS phrasing, 
 If `long-running-work-planning` is available, load it at the start of this phase before drafting requirements. Use it to keep the phase artifact durable, checkpoint progress, and avoid relying on unstored analysis for long-running work.
 
 1. **Read Project Guidelines** (if they exist):
-   - Use `Glob` to find `AGENTS.md`, `STYLEGUIDE.md`, `ARCHITECTURE.md`
-   - Use `Read` to understand existing patterns, naming conventions, and architecture
-   - Context budget: do not perform broad code searches unless the request requires repository-specific behavior
-2. **Retrieve Contextual Memory**: Invoke the `contextual-stewardship` skill to retrieve `business` rules.
+    - Use `Glob` to find `AGENTS.md`, `STYLEGUIDE.md`, `ARCHITECTURE.md`
+    - Use `Read` to understand existing patterns, naming conventions, and architecture
+    - Context budget: do not perform broad code searches unless the request requires repository-specific behavior
+2. **Retrieve Contextual Memory**: Invoke the `contextual-stewardship` skill in `retrieve` or `inject requirements` mode to retrieve `business` and `workflow` rules.
 3. Analyze user description and any issue context
 4. Extract actors, actions, and constraints
 5. Write requirements using valid EARS syntax
@@ -204,6 +204,7 @@ Avoid weak verbs:
 - Do not include editorial comments, HTML comments, TODO markers, or drafting notes.
 - Include `## Glossary` only if domain-specific terms need definition.
 - Include `## Assumptions` only if assumptions materially affect scope or interpretation.
+- If project guidelines or contextual memory materially shape scope, terminology, or constraints, include a concise `## Project Context` section naming the source files or memory domains used and the adopted constraints.
 
 ## Clarification Policy
 

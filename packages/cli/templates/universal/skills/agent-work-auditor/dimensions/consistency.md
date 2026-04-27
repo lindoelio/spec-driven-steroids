@@ -34,6 +34,8 @@ Measures whether naming matches codebase conventions and patterns are uniform.
 - [ ] Template structures are followed
 - [ ] Section organization matches conventions
 - [ ] Import/module patterns are consistent
+- [ ] Spec artifacts include evidence of guideline files read, contextual-memory domains retrieved, and existing code patterns inspected
+- [ ] Proposed files and abstractions are justified by repository evidence rather than generic defaults
 
 ## Auto-Fix Prompts
 
@@ -43,6 +45,13 @@ If naming doesn't match conventions:
 1. Identify the convention from project guidelines
 2. If clear, rename to match convention
 3. If ambiguous, mark as author-required
+
+### Missing Repository Evidence
+
+If a spec-driven design or implementation lacks repository evidence:
+1. Check for `Repository Context Evidence` or equivalent implementation notes
+2. If missing, add a finding requiring guideline/context/code-pattern evidence before approval
+3. If evidence conflicts with the artifact, mark the conflict as blocking
 
 ### Formatting Issues
 

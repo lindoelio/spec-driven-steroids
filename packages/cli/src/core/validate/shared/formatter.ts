@@ -86,14 +86,14 @@ export function createValidationResult(
 }
 
 export function formatError(error: ValidationError): string {
-  const { errorType, context, suggestedFix, skillDocLink } = error;
-  let message = `[${errorType}] → ${context || ''} → ${suggestedFix || ''}`;
+  const { errorType, context, suggestedFix, skillDocLink, message } = error;
+  let formattedMessage = `[${errorType}] → ${context || message || ''} → ${suggestedFix || ''}`;
 
   if (skillDocLink) {
-    message += `\n   See: ${skillDocLink}`;
+    formattedMessage += `\n   See: ${skillDocLink}`;
   }
 
-  return message;
+  return formattedMessage;
 }
 
 export function addLineInfo(error: string, line: number): string {

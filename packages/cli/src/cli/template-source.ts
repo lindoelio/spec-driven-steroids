@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';
 
-export const DEFAULT_TEMPLATE_MANIFEST_URL = 'https://github.com/lindoelio/spec-driven-steroids/releases/download/templates-latest/templates-manifest.json';
+const DEFAULT_TEMPLATE_MANIFEST_URL = 'https://github.com/lindoelio/spec-driven-steroids/releases/download/templates-latest/templates-manifest.json';
 
 export type TemplateSourceKind = 'bundled' | 'remote';
 
@@ -13,13 +13,13 @@ export interface TemplateSourceResolution {
   fallbackReason?: string;
 }
 
-export interface RemoteTemplateManifest {
+interface RemoteTemplateManifest {
   version: string;
   bundleUrl: string;
   publishedAt?: string;
 }
 
-export interface RemoteTemplateBundle {
+interface RemoteTemplateBundle {
   version: string;
   files: Record<string, string>;
 }

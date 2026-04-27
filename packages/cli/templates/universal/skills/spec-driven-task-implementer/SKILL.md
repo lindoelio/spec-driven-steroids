@@ -22,11 +22,12 @@ Read `references/task-execution-patterns.md` when you need examples for resuming
 
 1. **Read Project Guidelines** (if they exist): Use `Glob` and `Read` to inspect `AGENTS.md`, `ARCHITECTURE.md`, `STYLEGUIDE.md`, `TESTING.md`, and `SECURITY.md`.
 2. **Read the Feature Spec**: Read `.specs/changes/<slug>/requirements.md`, `design.md`, and `tasks.md`.
-3. **Validate the Spec**: Run `sds validate spec <slug>` before implementation. Resolve blocking spec issues first.
-4. **Inspect Existing Code**: Use `Glob`, `Read`, and `Grep` to understand the files, modules, and patterns referenced by the active task. Context budget: load only the active task block, linked REQ/DES sections, and relevant code files.
-5. **Select the Next Eligible Task**: Choose the requested task, requested phase, or the next pending task whose dependencies are satisfied.
-6. **Execute the Task Loop**: Mark the task in progress, implement it, verify it, then mark it complete.
-7. **Repeat**: Continue sequentially only when implementing an explicitly requested phase or broader feature scope.
+3. **Retrieve Contextual Memory**: Invoke the `contextual-stewardship` skill in `retrieve` or `inject implementation` mode to retrieve `architecture`, `business`, and `workflow` rules.
+4. **Validate the Spec**: Run `sds validate spec <slug>` before implementation. Resolve blocking spec issues first.
+5. **Inspect Existing Code**: Use `Glob`, `Read`, and `Grep` to understand the files, modules, and patterns referenced by the active task. Context budget: load only the active task block, linked REQ/DES sections, repository context evidence, and relevant code files.
+6. **Select the Next Eligible Task**: Choose the requested task, requested phase, or the next pending task whose dependencies are satisfied.
+7. **Execute the Task Loop**: Mark the task in progress, implement it, verify it, then mark it complete.
+8. **Repeat**: Continue sequentially only when implementing an explicitly requested phase or broader feature scope.
 
 ## Per-Phase Todo List
 
@@ -53,6 +54,7 @@ Use these files in this order:
 2. `design.md` for architectural boundaries and file placement
 3. `tasks.md` for execution order and task scope
 4. project guideline files for local conventions
+5. contextual-stewardship rules for active project decisions
 
 If these inputs conflict, stop and resolve the conflict before continuing.
 
@@ -111,6 +113,7 @@ For each task:
 ## Implementation Rules
 
 - Follow `design.md` for architecture and file placement.
+- Follow `design.md` `Repository Context Evidence` when choosing files, names, abstractions, and boundaries.
 - Follow `STYLEGUIDE.md` and surrounding code for naming, structure, and patterns.
 - Prefer the strongest local convention that is both current and consistent with repository guidance.
 - Keep changes minimal and scoped to the active task.

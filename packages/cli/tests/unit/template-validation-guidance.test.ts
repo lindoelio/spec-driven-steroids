@@ -105,6 +105,35 @@ describe('Unit: template validation guidance', () => {
         expect(implementerContent).toContain('Implement one task by default');
     });
 
+    it('requires mandatory repository context preflight in the spec-driven planner', async () => {
+        const content = await readTemplate('universal/agents/spec-driven.agent.md');
+
+        expect(content).toContain('### Mandatory Context Preflight');
+        expect(content).toContain('Read available project guideline files relevant to the phase');
+        expect(content).toContain('Invoke `contextual-stewardship` in `inject` or `retrieve` mode');
+        expect(content).toContain('pass repository context into that skill invocation');
+        expect(content).toContain('Run the mandatory context preflight for `implementation`');
+    });
+
+    it('requires repository-context evidence across spec-driven phase skills and audits', async () => {
+        const requirementsContent = await readTemplate('universal/skills/spec-driven-requirements-writer/SKILL.md');
+        const designerContent = await readTemplate('universal/skills/spec-driven-technical-designer/SKILL.md');
+        const decomposerContent = await readTemplate('universal/skills/spec-driven-task-decomposer/SKILL.md');
+        const implementerContent = await readTemplate('universal/skills/spec-driven-task-implementer/SKILL.md');
+        const auditDesignContent = await readTemplate('universal/skills/agent-work-auditor/artifacts/design.md');
+        const auditConsistencyContent = await readTemplate('universal/skills/agent-work-auditor/dimensions/consistency.md');
+
+        expect(requirementsContent).toContain('include a concise `## Project Context` section');
+        expect(designerContent).toContain('## Repository Context Evidence');
+        expect(designerContent).toContain('Each row must state how the evidence shaped the design');
+        expect(decomposerContent).toContain('## Repository Constraints');
+        expect(decomposerContent).toContain('design document\'s `Repository Context Evidence`');
+        expect(implementerContent).toContain('Retrieve Contextual Memory');
+        expect(implementerContent).toContain('Follow `design.md` `Repository Context Evidence`');
+        expect(auditDesignContent).toContain('Repository Context Evidence shows guidelines');
+        expect(auditConsistencyContent).toContain('Missing Repository Evidence');
+    });
+
     it('requires Testing Trophy fallback guidance for inject-guidelines templates', async () => {
         const targets = [
             'universal/skills/project-guidelines-writer/SKILL.md',

@@ -24,8 +24,8 @@ If `long-running-work-planning` is available, load it at the start of this phase
 1. **Read Requirements**: Read `.specs/changes/<slug>/requirements.md`.
 2. **Read Design**: Read `.specs/changes/<slug>/design.md`.
 3. **Read Project Guidelines** (if they exist): Use `Glob` and `Read` to inspect `TESTING.md` and `STYLEGUIDE.md`.
-4. **Retrieve Contextual Memory**: Invoke the `contextual-stewardship` skill to retrieve `workflow` rules.
-5. **Inspect Existing Patterns**: Use `Grep` to find similar task structures in existing specs only when helpful; context budget is requirements, design, testing guidance, and targeted examples only.
+4. **Retrieve Contextual Memory**: Invoke the `contextual-stewardship` skill in `retrieve` or `inject tasks` mode to retrieve `workflow` and `team-structure` rules.
+5. **Inspect Existing Patterns**: Use `Grep` to find similar task structures in existing specs when planning comparable work; context budget is requirements, design, testing guidance, repository context evidence, and targeted examples only.
 6. **Define Phases**: Group work into a small number of phases that follow implementation dependencies.
 7. **Create Atomic Tasks**: Break each design element into tasks that are concrete and usually completable within one focused session.
 8. **Add Acceptance Criteria Testing**: Create a dedicated penultimate testing phase covering every acceptance criterion.
@@ -98,6 +98,12 @@ This implementation is organized into 4 phases:
 
 **Estimated Effort**: Medium (3-5 sessions)
 
+## Repository Constraints
+
+- Follow `TESTING.md` for test placement and command selection.
+- Follow `STYLEGUIDE.md` and the design document's `Repository Context Evidence` for naming, file placement, and package boundaries.
+- Apply contextual-stewardship workflow rules retrieved for this phase.
+
 ## Phase 1: Foundation
 
 - [ ] 1.1 Add request entry point
@@ -160,6 +166,7 @@ This implementation is organized into 4 phases:
 - Use `_Depends:` only when the dependency is real and useful.
 - Resolve all placeholders before returning output.
 - Do not include HTML comments, TODO markers, or drafting notes in the final artifact.
+- Include `## Repository Constraints` when guidelines, contextual memory, or design evidence affects task ordering, test placement, naming, package boundaries, or verification commands.
 
 ## Task Types
 

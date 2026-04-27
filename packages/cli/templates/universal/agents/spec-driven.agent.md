@@ -42,14 +42,25 @@ If you just completed a planning phase, end with a direct approval question such
 
 At the start of each planning phase, load the `long-running-work-planning` skill when it is available before invoking the phase-specific skill. Use it to checkpoint progress, keep work aligned with durable artifacts, and make long-running phases resumable.
 
+### Mandatory Context Preflight
+
+Before invoking any phase-specific skill, you MUST collect and pass repository context into that skill invocation:
+
+- Read available project guideline files relevant to the phase (`AGENTS.md`, `ARCHITECTURE.md`, `STYLEGUIDE.md`, `TESTING.md`, `SECURITY.md`).
+- Invoke `contextual-stewardship` in `inject` or `retrieve` mode for the current phase (`requirements`, `design`, `tasks`, or `implementation`).
+- For design and implementation phases, inspect targeted existing code patterns with `Glob`, `Grep`, and `Read` before proposing file placement, abstractions, naming, or tests.
+- Summarize the applicable constraints and pattern evidence in the phase artifact or implementation notes.
+- If guidelines, contextual memory, and code evidence conflict, stop and resolve the conflict before continuing.
+
 **Critical: Skill Invocation Guard**
 When invoking any spec-driven skill, you MUST follow this exact sequence:
 1. Invoke the skill
-2. Wait for the skill to produce its artifact
-3. Write the artifact to the appropriate file path
-4. Run the validator against the written file, fix failures in the file, and re-run validation until it passes or a real blocker is reported
-5. **STOP** — Do NOT invoke the next skill or continue to the next phase
-6. Summarize the artifact and ask for explicit human approval
+2. Provide the collected guideline, contextual-memory, and pattern evidence as input to the skill
+3. Wait for the skill to produce its artifact
+4. Write the artifact to the appropriate file path
+5. Run the validator against the written file, fix failures in the file, and re-run validation until it passes or a real blocker is reported
+6. **STOP** — Do NOT invoke the next skill or continue to the next phase
+7. Summarize the artifact and ask for explicit human approval
 
 The skill's output or "direct" production of content does NOT mean the phase is complete. You MUST stop after writing the artifact and await approval before proceeding.
 
@@ -60,13 +71,14 @@ Invoke the `spec-driven-requirements-writer` skill.
 1. Propose a short, URL-friendly slug.
 2. Use the user request as input for `.specs/changes/<slug>/requirements.md`.
 3. Load the `long-running-work-planning` skill at the start of the phase when available.
-4. Invoke the `spec-driven-requirements-writer` skill.
-5. Wait for the skill to produce requirements content.
-6. Write `.specs/changes/<slug>/requirements.md`.
-7. Validate with `sds validate requirements .specs/changes/<slug>/requirements.md`.
-8. If validation fails, fix the written file and re-run the validator before requesting approval.
-9. **STOP**. Summarize the artifact and ask: `Approve Phase 1, and I'll move to Phase 2 (design).`
-10. Do not begin design work until the user explicitly approves Phase 1.
+4. Run the mandatory context preflight for `requirements` and pass the results to the skill.
+5. Invoke the `spec-driven-requirements-writer` skill.
+6. Wait for the skill to produce requirements content.
+7. Write `.specs/changes/<slug>/requirements.md`.
+8. Validate with `sds validate requirements .specs/changes/<slug>/requirements.md`.
+9. If validation fails, fix the written file and re-run the validator before requesting approval.
+10. **STOP**. Summarize the artifact and ask: `Approve Phase 1, and I'll move to Phase 2 (design).`
+11. Do not begin design work until the user explicitly approves Phase 1.
 
 ### Phase 2: Design
 
@@ -74,13 +86,14 @@ Invoke the `spec-driven-technical-designer` skill.
 
 1. Use approved `requirements.md` as the source of truth.
 2. Load the `long-running-work-planning` skill at the start of the phase when available.
-3. Invoke the `spec-driven-technical-designer` skill.
-4. Wait for the skill to produce design content.
-5. Write `.specs/changes/<slug>/design.md`.
-6. Validate with `sds validate design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md`.
-7. If validation fails, fix the written file and re-run the validator before requesting approval.
-8. **STOP**. Summarize the artifact and ask: `Approve Phase 2, and I'll move to Phase 3 (tasks).`
-9. Do not begin task decomposition until the user explicitly approves Phase 2.
+3. Run the mandatory context preflight for `design` and pass the results to the skill.
+4. Invoke the `spec-driven-technical-designer` skill.
+5. Wait for the skill to produce design content.
+6. Write `.specs/changes/<slug>/design.md`.
+7. Validate with `sds validate design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md`.
+8. If validation fails, fix the written file and re-run the validator before requesting approval.
+9. **STOP**. Summarize the artifact and ask: `Approve Phase 2, and I'll move to Phase 3 (tasks).`
+10. Do not begin task decomposition until the user explicitly approves Phase 2.
 
 ### Phase 3: Tasks
 
@@ -88,14 +101,15 @@ Invoke the `spec-driven-task-decomposer` skill.
 
 1. Use approved `requirements.md` and `design.md`.
 2. Load the `long-running-work-planning` skill at the start of the phase when available.
-3. Invoke the `spec-driven-task-decomposer` skill.
-4. Wait for the skill to produce tasks content.
-5. Write `.specs/changes/<slug>/tasks.md`.
-6. Validate with `sds validate tasks .specs/changes/<slug>/tasks.md --design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md`.
-7. Validate the full spec with `sds validate spec <slug>`.
-8. If either validation fails, fix the written file and re-run the validator before requesting approval.
-9. **STOP**. Summarize the artifact and ask: `Approve Phase 3, and I'll move to Phase 4 (implementation), which includes Phase 5 (code review) before final validation.`
-10. Do not begin implementation until the user explicitly approves Phase 3 and Phase 4 entry.
+3. Run the mandatory context preflight for `tasks` and pass the results to the skill.
+4. Invoke the `spec-driven-task-decomposer` skill.
+5. Wait for the skill to produce tasks content.
+6. Write `.specs/changes/<slug>/tasks.md`.
+7. Validate with `sds validate tasks .specs/changes/<slug>/tasks.md --design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md`.
+8. Validate the full spec with `sds validate spec <slug>`.
+9. If either validation fails, fix the written file and re-run the validator before requesting approval.
+10. **STOP**. Summarize the artifact and ask: `Approve Phase 3, and I'll move to Phase 4 (implementation), which includes Phase 5 (code review) before final validation.`
+11. Do not begin implementation until the user explicitly approves Phase 3 and Phase 4 entry.
 
 ### Phase 4: Implementation
 
@@ -104,6 +118,7 @@ Invoke the `spec-driven-task-decomposer` skill.
 Invoke the `spec-driven-task-implementer` skill.
 
 - Use `requirements.md`, `design.md`, and `tasks.md` as the source of truth.
+- Run the mandatory context preflight for `implementation` before selecting the first task.
 - Execute the requested task, requested phase, or next eligible pending task.
 - Update task status in `tasks.md` per task:
   - mark `[~]` when starting

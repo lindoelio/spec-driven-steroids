@@ -7,7 +7,8 @@ import {
   createValidationResult,
   formatValidationResult,
   getExitCode,
-  ValidationError
+  ValidationError,
+  formatError
 } from './shared/formatter.js';
 import {
   extractDeclaredRequirementIds
@@ -23,14 +24,6 @@ const SKILL_DOCS = {
 interface RequirementsValidationResult extends ValidationResult {
   requirementsFound: string[];
   earsPatterns: string[];
-}
-
-function formatError(error: ValidationError): string {
-  let message = `[${error.errorType}] → ${error.context || error.message} → ${error.suggestedFix || ''}`;
-  if (error.skillDocLink) {
-    message += `\n   See: ${error.skillDocLink}`;
-  }
-  return message;
 }
 
 function verifyRequirementsFile(content: string): RequirementsValidationResult {

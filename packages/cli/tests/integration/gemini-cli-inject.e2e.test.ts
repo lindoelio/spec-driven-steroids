@@ -40,7 +40,6 @@ describe('CLI E2E: Gemini CLI injection', () => {
       expect(await fs.pathExists(path.join(geminiDir, 'agents'))).toBe(true);
       expect(await fs.pathExists(path.join(geminiDir, 'commands'))).toBe(true);
       expect(await fs.pathExists(path.join(geminiDir, 'skills'))).toBe(true);
-      expect(await fs.pathExists(path.join(geminiDir, 'settings.json'))).toBe(true);
       expect(await fs.pathExists(path.join(targetDir, '.gemini'))).toBe(false);
     });
 
