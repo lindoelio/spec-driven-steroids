@@ -17,20 +17,21 @@ It injects:
 - Platform-specific agents, commands, or workflows
 - Universal writing/implementation skills
 - CLI validation commands for spec structure and traceability
+- A knowledge graph for architectural decisions and business rules
 
 ## Supported Platforms
 
 | Platform | Scope | Injection Type |
 |----------|-------|-------------|
-| Antigravity | project | `/spec-driven` command |
-| Claude Code | project | `CLAUDE.md` |
-| Gemini CLI | global | MCP servers, agents, commands |
-| GitHub Copilot CLI | global | MCP servers, skills |
-| GitHub Copilot for VS Code | global | MCP configuration |
-| GitHub Copilot for JetBrains | global | MCP configuration |
-| OpenCode | global | MCP configuration, skills |
-| OpenAI Codex | project | Agent instructions |
-| Qwen Code | global | MCP configuration, skills |
+| Antigravity | project | `/spec-driven` workflow |
+| Claude Code | project | Agents, commands, skills |
+| Gemini CLI | global / project | Agents, commands, skills |
+| GitHub Copilot CLI | user / project | Agents, commands, skills |
+| GitHub Copilot for VS Code | global / project | Agents, prompts, skills |
+| GitHub Copilot for JetBrains | project | Agents, prompts, skills |
+| OpenCode | global / project | Agents, commands, skills |
+| OpenAI Codex | project | Agents, commands, skills |
+| Qwen Code | user / project | Agents, commands, skills |
 
 ## Installation
 
@@ -51,12 +52,8 @@ The CLI provides two command names:
 ### Inject Command
 
 ```bash
-# Interactive injection (prompts for platform and options)
+# Interactive injection (prompts for platform and scope)
 sds inject
-
-# With flags
-sds inject -p opencode
-sds inject -p github-copilot --scope global
 ```
 
 ### Validate Commands
@@ -81,12 +78,45 @@ sds validate spec <slug>
 ### Other Commands
 
 ```bash
+# Clean globally injected steroids
+sds clean --global
+
 # Show version
 sds --version
 
 # Show help
 sds --help
 ```
+
+### Stewardship Commands
+
+Manage a knowledge graph of architectural decisions, business rules, and workflow conventions extracted from spec files:
+
+```bash
+# Report available stewardship capabilities
+sds stewardship capabilities
+
+# Search for rules in the knowledge graph
+sds stewardship retrieve <query> --domain architecture
+
+# Persist a new rule
+sds stewardship store architecture --content "Use hexagonal architecture"
+
+# Extract decision candidates from a design.md or requirements.md
+sds stewardship extract .specs/changes/my-feature/design.md
+
+# Show rule provenance and version history
+sds stewardship trace <ruleId>
+
+# Retrieve context for a spec phase
+sds stewardship inject design
+
+# List, deprecate, or archive rules
+sds stewardship manage list
+sds stewardship manage deprecate --ruleId <ruleId>
+```
+
+These rules are automatically referenced by each spec-driven skill to give agents awareness of established project patterns.
 
 ## Skills Injected
 
@@ -166,7 +196,7 @@ This creates: `AGENTS.md`, `CONTRIBUTING.md`, `STYLEGUIDE.md`, `TESTING.md`, `AR
 
 ## Long-Running Work
 
-For complex long-running tasks, SDS injects `long-running-work-planning`. It keeps agents working through durable artifacts, task status updates, checkpoints, and verification instead of relying on an external reasoning MCP server.
+For complex long-running tasks, SDS injects `long-running-work-planning`. It keeps agents working through durable artifacts, task status updates, checkpoints, and verification.
 
 ## Package Layout
 
