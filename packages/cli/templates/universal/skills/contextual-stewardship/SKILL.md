@@ -44,9 +44,13 @@ The system uses JSON file storage for all rule persistence:
 
 ---
 
-## Modes
+## CLI Commands
 
-The skill operates in four modes, selected via the `mode` parameter. Always include `mode` in your skill invocation.
+All stewardship operations use the `sds stewardship` CLI command. Ensure `sds` (spec-driven-steroids) is installed and available in PATH.
+
+```bash
+sds stewardship <subcommand> [options]
+```
 
 ### `retrieve` — Pre-flight Context Retrieval
 
@@ -62,7 +66,7 @@ The skill operates in four modes, selected via the `mode` parameter. Always incl
 
 **Command:**
 ```bash
-node packages/cli/dist/context-stewardship/orchestrator.js retrieve <query> [--domain <domain>] [--scope <project-id>]
+sds stewardship retrieve <query> [--domain <domain>] [--scope <scope>]
 ```
 
 **Retrieval confirmation format:**
@@ -86,7 +90,7 @@ node packages/cli/dist/context-stewardship/orchestrator.js retrieve <query> [--d
 
 **Command:**
 ```bash
-node packages/cli/dist/context-stewardship/orchestrator.js store <domain> "<content>" [--author <name>]
+sds stewardship store <domain> --content "<content>" [--author <name>]
 ```
 
 **Persistence confirmation format:**
@@ -110,7 +114,7 @@ node packages/cli/dist/context-stewardship/orchestrator.js store <domain> "<cont
 
 **Command:**
 ```bash
-node packages/cli/dist/context-stewardship/orchestrator.js extract <file-path> [--author <name>]
+sds stewardship extract <file-path> [--author <name>]
 ```
 
 **Extraction confirmation format:**
@@ -120,9 +124,9 @@ node packages/cli/dist/context-stewardship/orchestrator.js extract <file-path> [
 
 ---
 
-### `inject` — MCP Phase Context Injection
+### `inject` — Phase Context Injection
 
-**When to use:** Before entering a new spec-driven phase (requirements, design, tasks, implementation). Automatically retrieve and inject relevant context into the skill prompt.
+**When to use:** Before entering a new spec-driven phase (requirements, design, tasks, implementation). Automatically retrieve and inject relevant context.
 
 **Behavior:**
 1. Map phase to relevant domains:
@@ -131,16 +135,15 @@ node packages/cli/dist/context-stewardship/orchestrator.js extract <file-path> [
    - `tasks` → `workflow`, `team-structure`
    - `implementation` → `architecture`, `technical-debt`
 2. Query semantic engine for phase-relevant rules
-3. Format as injected context block for the skill prompt
+3. Format as injected context block
 4. Offer-to-capture: if a decision is made mid-phase, prompt to store it
 
 **Command:**
 ```bash
-node packages/cli/dist/context-stewardship/orchestrator.js inject <phase>
+sds stewardship inject <phase>
 ```
 
 **Injection format:**
-- Injects a structured context block into the skill prompt listing active rules by domain
 - "Phase `{phase}` context injected: {n} rules available from {domains}."
 
 ---
@@ -149,16 +152,11 @@ node packages/cli/dist/context-stewardship/orchestrator.js inject <phase>
 
 **When to use:** When explicitly asked to list, deprecate, or archive rules.
 
-**Behavior:**
-- `list`: Return all rules grouped by lifecycle state (active / deprecated / archived)
-- `deprecate`: Transition a rule to `deprecated`, set `supersededBy` link
-- `archive`: Transition a rule to `archived` (historical retention)
-
 **Commands:**
 ```bash
-node packages/cli/dist/context-stewardship/orchestrator.js manage list [--scope <project-id>]
-node packages/cli/dist/context-stewardship/orchestrator.js manage deprecate <rule-id>
-node packages/cli/dist/context-stewardship/orchestrator.js manage archive <rule-id>
+sds stewardship manage list [--scope <scope>]
+sds stewardship manage deprecate --ruleId <rule-id>
+sds stewardship manage archive --ruleId <rule-id>
 ```
 
 ---
@@ -168,7 +166,7 @@ node packages/cli/dist/context-stewardship/orchestrator.js manage archive <rule-
 **When to use:** Debugging or verifying why a certain feature is unavailable.
 
 ```bash
-node packages/cli/dist/context-stewardship/orchestrator.js capabilities
+sds stewardship capabilities
 ```
 
 Output example:
@@ -185,7 +183,7 @@ Enabled Features: json-graph, semantic-retrieval, versioning, conflict-detection
 **When to use:** When investigating the history or provenance of a specific rule.
 
 ```bash
-node packages/cli/dist/context-stewardship/orchestrator.js trace <rule-id>
+sds stewardship trace <rule-id>
 ```
 
 Returns: rule content, domain, state, full provenance, `supersededBy` link, and version history with timestamps and diffs.
@@ -196,11 +194,11 @@ Returns: rule content, domain, state, full provenance, `supersededBy` link, and 
 
 Before every implementation task, run through this checklist:
 
-- [ ] **retrieve** with task keywords — do we have existing rules?
-- [ ] Check scope chain — are there project-specific overrides?
+- [ ] `sds stewardship retrieve "<task keywords>"` — do we have existing rules?
+- [ ] Check scope chain — are there project-specific overrides? (`--scope <project-id>`)
 - [ ] Check for conflicts — does the new decision contradict an existing rule?
 - [ ] Check deprecated rules — is there a `supersededBy` link to follow?
-- [ ] **extract** from spec files if reading `design.md` or `requirements.md`
+- [ ] `sds stewardship extract <spec-file>` if reading `design.md` or `requirements.md`
 
 ---
 
