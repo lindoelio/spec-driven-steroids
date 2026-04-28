@@ -54,9 +54,14 @@ export function extractAcceptanceCriteriaRefs(content: string): string[] {
       continue;
     }
 
-    const criteria = line.match(/^\s*(\d+)(?:\.\d+)?(?:\.)?\s+/);
+    const criteria = line.match(/^\s*(\d+)\.(\d+)\s+/);
     if (criteria) {
-      refs.push(`REQ-${currentReq}.${criteria[1]}`);
+      refs.push(`REQ-${criteria[1]}.${criteria[2]}`);
+    } else {
+      const simpleCriteria = line.match(/^\s*(\d+)\s+/);
+      if (simpleCriteria) {
+        refs.push(`REQ-${currentReq}.${simpleCriteria[1]}`);
+      }
     }
   }
 

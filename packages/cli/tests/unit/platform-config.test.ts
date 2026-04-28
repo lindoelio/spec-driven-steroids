@@ -79,8 +79,9 @@ describe('Unit: Platform Config', () => {
       const config = getPlatformConfig('qwen-code');
       expect(config).toBeDefined();
       expect(config?.format).toBe(FormatType.MARKDOWN);
-      expect(config?.agentDirectory).toBe('skills');
-      expect(config?.agentFilename).toBe('spec-driven.md');
+      expect(config?.agentDirectory).toBe('agents');
+      expect(config?.agentFilename).toBe('spec-driven.agent.md');
+      expect(config?.commandDirectory).toBe('commands');
     });
   });
 

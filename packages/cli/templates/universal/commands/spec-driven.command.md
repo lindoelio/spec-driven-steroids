@@ -5,17 +5,10 @@ agent: Spec-Driven
 
 Start Spec-Driven planning for this request:
 
-$ARGUMENTS
+{{args}}
 
-Use the `spec-driven` agent for this request.
-
-Command behavior:
-- Begin at Phase 1 (requirements).
-- Enforce the full lifecycle: `requirements -> design -> tasks -> implementation`.
-- Load `long-running-work-planning` at the start of each planning phase when it is available, using it for durable checkpoints and resumable progress.
-- Do not implement code yet.
-- Propose a slug and draft `.specs/changes/<slug>/requirements.md`.
-- Write `.specs/changes/<slug>/requirements.md` first, validate it, then ask for human approval before moving to design.
-- After Phase 1 is written, stop immediately.
-- Do not start Phase 2, Phase 3, or Phase 4 in the same turn.
-- Wait for explicit approval before continuing to the next phase.
+Delegate this to the "Spec-Driven" agent. Begin at Phase 1 (requirements).
+Enforce the full lifecycle: requirements → design → tasks → implementation.
+Do not implement code yet. Propose a slug, draft requirements.md, validate it, then stop for approval.
+After Phase 1 is written, stop immediately. Do not continue to Phase 2, 3, or 4 in the same turn.
+Wait for explicit approval before continuing to the next phase.

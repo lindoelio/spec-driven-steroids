@@ -488,7 +488,8 @@ function buildCleanPreview(): string {
     `    • skills/`,
     '',
     `  ${chalk.bold('Qwen Code')} (${formatDir(qwenDir)}):`,
-    `    • skills/spec-driven.md, skills/inject-guidelines.md`,
+    `    • agents/spec-driven.agent.md`,
+    `    • commands/spec-driven.md, commands/inject-guidelines.md`,
     `    • skills/${STEROIDS_SKILL_DIRS.join('/, skills/')}/`,
     '',
     `  ${chalk.bold('OpenCode')} (${formatDir(opencodeDir)}):`,
@@ -638,12 +639,23 @@ async function removeGeminiCliGlobalFiles(): Promise<void> {
 
 async function removeQwenCodeGlobalFiles(): Promise<void> {
   const qwenDir = path.join(os.homedir(), '.qwen');
+  const agentsDir = path.join(qwenDir, 'agents');
+  const commandsDir = path.join(qwenDir, 'commands');
   const skillsDir = path.join(qwenDir, 'skills');
-  const filesToRemove = [
+
+  const agentsFiles = [
+    path.join(agentsDir, 'spec-driven.agent.md')
+  ];
+  const commandsFiles = [
+    path.join(commandsDir, 'spec-driven.md'),
+    path.join(commandsDir, 'inject-guidelines.md')
+  ];
+  const skillsFiles = [
     path.join(skillsDir, 'spec-driven.md'),
     path.join(skillsDir, 'inject-guidelines.md')
   ];
-  for (const file of filesToRemove) {
+
+  for (const file of [...agentsFiles, ...commandsFiles, ...skillsFiles]) {
     if (await fs.pathExists(file)) {
       await fs.remove(file);
     }
