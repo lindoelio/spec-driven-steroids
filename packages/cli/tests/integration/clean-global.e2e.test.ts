@@ -62,6 +62,54 @@ describe('CLI E2E: clean --global command', () => {
         expect(await fs.pathExists(path.join(geminiDir, 'skills', 'long-running-work-planning'))).toBe(false);
     });
 
+    it('clean --global removes GitHub Copilot CLI global artifacts', async () => {
+        const copilotCliDir = path.join(os.homedir(), '.config', 'github-copilot');
+
+        await fs.outputFile(path.join(copilotCliDir, 'agents', 'spec-driven.agent.md'), 'agent');
+        await fs.outputFile(path.join(copilotCliDir, 'commands', 'spec-driven.md'), 'command');
+        await fs.outputFile(path.join(copilotCliDir, 'commands', 'inject-guidelines.md'), 'command');
+        await fs.outputFile(path.join(copilotCliDir, 'skills', 'long-running-work-planning', 'SKILL.md'), 'skill');
+
+        const program = (await import('../../dist/cli/index.js')).default;
+        await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
+
+        expect(await fs.pathExists(path.join(copilotCliDir, 'agents', 'spec-driven.agent.md'))).toBe(false);
+        expect(await fs.pathExists(path.join(copilotCliDir, 'commands', 'spec-driven.md'))).toBe(false);
+        expect(await fs.pathExists(path.join(copilotCliDir, 'commands', 'inject-guidelines.md'))).toBe(false);
+        expect(await fs.pathExists(path.join(copilotCliDir, 'skills', 'long-running-work-planning'))).toBe(false);
+    });
+
+    it('clean --global removes Qwen Code global artifacts', async () => {
+        const qwenDir = path.join(os.homedir(), '.qwen');
+
+        await fs.outputFile(path.join(qwenDir, 'skills', 'spec-driven.md'), 'agent');
+        await fs.outputFile(path.join(qwenDir, 'skills', 'inject-guidelines.md'), 'command');
+        await fs.outputFile(path.join(qwenDir, 'skills', 'long-running-work-planning', 'SKILL.md'), 'skill');
+
+        const program = (await import('../../dist/cli/index.js')).default;
+        await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
+
+        expect(await fs.pathExists(path.join(qwenDir, 'skills', 'spec-driven.md'))).toBe(false);
+        expect(await fs.pathExists(path.join(qwenDir, 'skills', 'inject-guidelines.md'))).toBe(false);
+        expect(await fs.pathExists(path.join(qwenDir, 'skills', 'long-running-work-planning'))).toBe(false);
+    });
+
+    it('clean --global removes GitHub Copilot for VS Code global artifacts', async () => {
+        const promptsDir = path.join(os.homedir(), 'Library', 'Application Support', 'Code', 'User', 'prompts');
+        const skillsDir = path.join(os.homedir(), '.copilot', 'skills');
+
+        await fs.outputFile(path.join(promptsDir, 'spec-driven.agent.md'), 'agent');
+        await fs.outputFile(path.join(promptsDir, 'spec-driven.prompt.md'), 'prompt');
+        await fs.outputFile(path.join(skillsDir, 'long-running-work-planning', 'SKILL.md'), 'skill');
+
+        const program = (await import('../../dist/cli/index.js')).default;
+        await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
+
+        expect(await fs.pathExists(path.join(promptsDir, 'spec-driven.agent.md'))).toBe(false);
+        expect(await fs.pathExists(path.join(promptsDir, 'spec-driven.prompt.md'))).toBe(false);
+        expect(await fs.pathExists(path.join(skillsDir, 'long-running-work-planning'))).toBe(false);
+    });
+
     it('clean --global handles missing directories gracefully', async () => {
         const program = (await import('../../dist/cli/index.js')).default;
 

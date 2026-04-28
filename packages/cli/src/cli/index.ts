@@ -19,7 +19,6 @@ import {
 } from './github-copilot-scope.js';
 import {
   GitHubCopilotCliInjectionScope,
-  getGitHubCopilotCliUserSkillsDir,
   getGitHubCopilotCliGlobalConfigDir
 } from './github-copilot-cli-scope.js';
 import {
@@ -28,8 +27,7 @@ import {
   getGeminiCliAgentsAliasDir
 } from './gemini-cli-scope.js';
 import {
-  QwenCodeInjectionScope,
-  getQwenCodeUserSkillsDir
+  QwenCodeInjectionScope
 } from './qwen-code-scope.js';
 import { transformTemplates } from './transformation-pipeline.js';
 import { createValidateCommand } from '../core/validate/index.js';
@@ -465,26 +463,33 @@ function buildCleanPreview(): string {
   const vscodePromptsDir = getVSCodeGlobalPromptsDir();
   const vscodeSkillsDir = getCopilotGlobalSkillsDir();
   const opencodeDir = getOpenCodeGlobalConfigDir();
-  const githubCopilotCliSkillsDir = getGitHubCopilotCliUserSkillsDir();
-  const geminiCliSkillsDir = getGeminiCliUserSkillsDir();
-  const qwenCodeSkillsDir = getQwenCodeUserSkillsDir();
+  const copilotCliDir = getGitHubCopilotCliGlobalConfigDir();
+  const geminiDir = path.join(os.homedir(), '.gemini');
+  const qwenDir = path.join(os.homedir(), '.qwen');
 
   const formatDir = (d: string) => d.replace(os.homedir(), '~');
 
   const lines = [
     chalk.bold.cyan('🔍 Preview of --global clean:\n'),
     `  ${chalk.bold('GitHub Copilot for VS Code')}:`,
-    `    • Prompts: ${formatDir(vscodePromptsDir)}/`,
-    `    • Skills: ${formatDir(vscodeSkillsDir)}/`,
+    `    • ${formatDir(vscodePromptsDir)}/spec-driven.agent.md`,
+    `    • ${formatDir(vscodePromptsDir)}/spec-driven.prompt.md`,
+    `    • skills/ under ${formatDir(vscodeSkillsDir)}/`,
     '',
-    `  ${chalk.bold('GitHub Copilot CLI')}:`,
-    `    • Skills: ${formatDir(githubCopilotCliSkillsDir)}/`,
+    `  ${chalk.bold('GitHub Copilot CLI')} (${formatDir(copilotCliDir)}):`,
+    `    • agents/spec-driven.agent.md`,
+    `    • commands/spec-driven.md, commands/inject-guidelines.md`,
+    `    • skills/`,
     '',
-    `  ${chalk.bold('Gemini CLI')}:`,
-    `    • Skills: ${formatDir(geminiCliSkillsDir)}/`,
+    `  ${chalk.bold('Gemini CLI')} (${formatDir(geminiDir)}):`,
+    `    • agents/spec-driven.md`,
+    `    • commands/spec-driven.toml, commands/inject-guidelines.toml`,
+    `    • commands/spec-driven.md, commands/inject-guidelines.md`,
+    `    • skills/`,
     '',
-    `  ${chalk.bold('Qwen Code')}:`,
-    `    • Skills: ${formatDir(qwenCodeSkillsDir)}/`,
+    `  ${chalk.bold('Qwen Code')} (${formatDir(qwenDir)}):`,
+    `    • skills/spec-driven.md, skills/inject-guidelines.md`,
+    `    • skills/${STEROIDS_SKILL_DIRS.join('/, skills/')}/`,
     '',
     `  ${chalk.bold('OpenCode')} (${formatDir(opencodeDir)}):`,
     `    • agents/${STEROIDS_FILES.agents.join(', ')}`,
@@ -576,6 +581,7 @@ async function removeOpenCodeGlobalSteroids(): Promise<boolean> {
 
 async function removeGitHubCopilotCliSteroids(): Promise<boolean> {
   try {
+    await removeSteroidsFiles(getGitHubCopilotCliGlobalConfigDir());
     await removeSteroidsSkillDirs(getGitHubCopilotCliGlobalConfigDir());
     console.log(chalk.green('  ✅ GitHub Copilot CLI cleaned.'));
     return true;
@@ -630,8 +636,23 @@ async function removeGeminiCliGlobalFiles(): Promise<void> {
   }
 }
 
+async function removeQwenCodeGlobalFiles(): Promise<void> {
+  const qwenDir = path.join(os.homedir(), '.qwen');
+  const skillsDir = path.join(qwenDir, 'skills');
+  const filesToRemove = [
+    path.join(skillsDir, 'spec-driven.md'),
+    path.join(skillsDir, 'inject-guidelines.md')
+  ];
+  for (const file of filesToRemove) {
+    if (await fs.pathExists(file)) {
+      await fs.remove(file);
+    }
+  }
+}
+
 async function removeQwenCodeSteroids(): Promise<boolean> {
   try {
+    await removeQwenCodeGlobalFiles();
     await removeSteroidsSkillDirs(path.join(os.homedir(), '.qwen'));
     console.log(chalk.green('  ✅ Qwen Code cleaned.'));
     return true;
