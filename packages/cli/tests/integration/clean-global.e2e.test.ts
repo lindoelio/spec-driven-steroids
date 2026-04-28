@@ -95,7 +95,9 @@ describe('CLI E2E: clean --global command', () => {
     });
 
     it('clean --global removes GitHub Copilot for VS Code global artifacts', async () => {
-        const promptsDir = path.join(os.homedir(), 'Library', 'Application Support', 'Code', 'User', 'prompts');
+        const promptsDir = process.platform === 'darwin'
+            ? path.join(os.homedir(), 'Library', 'Application Support', 'Code', 'User', 'prompts')
+            : path.join(os.homedir(), '.config', 'Code', 'User', 'prompts');
         const skillsDir = path.join(os.homedir(), '.copilot', 'skills');
 
         await fs.outputFile(path.join(promptsDir, 'spec-driven.agent.md'), 'agent');
