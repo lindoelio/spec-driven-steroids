@@ -405,3 +405,7 @@ Query: workflow
 ```
 
 This ensures the task breakdown aligns with team processes, testing rules, and naming conventions.
+
+## Things To Avoid
+
+- Creating additional files in `.specs/changes/<slug>/`. Only write tasks.md for this phase.

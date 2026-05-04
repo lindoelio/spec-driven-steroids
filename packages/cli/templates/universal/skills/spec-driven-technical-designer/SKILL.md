@@ -501,3 +501,7 @@ Query: architecture
 ```
 
 This ensures the new design aligns with existing tech stack choices, design patterns, and tooling decisions.
+
+## Things To Avoid
+
+- Creating additional files in `.specs/changes/<slug>/`. Only write design.md for this phase.

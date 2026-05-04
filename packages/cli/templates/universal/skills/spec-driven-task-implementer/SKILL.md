@@ -234,6 +234,7 @@ If work resumes after interruption:
 - marking tasks complete without verification
 - batching multiple task status updates after the fact
 - introducing secrets or sensitive data into the repository
+- creating additional files in `.specs/changes/<slug>/`. Only write to tasks.md for status updates.
 
 ## Quality Bar (Self-Check)
 

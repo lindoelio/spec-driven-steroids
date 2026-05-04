@@ -86,7 +86,3 @@ The inventory must satisfy:
 3. **Interfaces documented** — All external APIs captured
 4. **Side effects logged** — All observable side effects recorded
 5. **Assumptions documented** — No critical assumption left unstated
-
-## Output Location
-
-Inventory is saved to `.specs/changes/{slug}/codebase-inventory.md`

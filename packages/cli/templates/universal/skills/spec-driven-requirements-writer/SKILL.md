@@ -370,3 +370,7 @@ This ensures the requirements document meets quality standards across:
 - **Functionality**: Complete requirements, clear acceptance criteria, no gaps
 
 The quality-grading skill will auto-fix issues scoring below 4 and provide actionable suggestions for remaining gaps.
+
+## Things To Avoid
+
+- Creating additional files in `.specs/changes/<slug>/`. Only write requirements.md for this phase.

@@ -13,6 +13,7 @@ import { extractDeclaredDesignElementIds } from './shared/ids.js';
 import { verifyDesignFile } from './design.js';
 import { verifyTasksFile } from './tasks.js';
 import { verifyRequirementsFile } from './requirements.js';
+import { verifySpecStructure } from './structure.js';
 
 const SKILL_DOCS = {
   requirements: 'skills/spec-driven-requirements-writer/SKILL.md',
@@ -31,13 +32,29 @@ interface SpecValidationResult extends ValidationResult {
   };
 }
 
-function verifyCompleteSpec(slug: string, targetDir: string): SpecValidationResult {
+async function verifyCompleteSpec(slug: string, targetDir: string): Promise<SpecValidationResult> {
   const errors: ValidationError[] = [];
   const requirementsErrors: string[] = [];
   const designErrors: string[] = [];
   const tasksErrors: string[] = [];
   
   const specDir = path.join(targetDir, '.specs', 'changes', slug);
+  
+  const structureResult = await verifySpecStructure(slug, targetDir);
+  if (!structureResult.valid) {
+    for (const err of structureResult.errors) {
+      errors.push(err);
+    }
+  }
+  
+  if (structureResult.unexpectedFiles.length > 0) {
+    errors.push({
+      errorType: 'Structure Error',
+      context: `Unexpected files found: ${structureResult.unexpectedFiles.join(', ')}`,
+      message: `Unexpected files found`,
+      suggestedFix: 'Only requirements.md, design.md, and tasks.md are allowed. Remove or rename extra files'
+    });
+  }
   
   let requirementsContent = '';
   let designContent = '';
@@ -156,7 +173,7 @@ export function createSpecCommand(): Command {
     .option('--target-dir <path>', 'Project root directory', process.cwd())
     .option('--format <text|json>', 'Output format (text or json)', 'text')
     .action(async (slug: string, opts: { targetDir: string; format: string }) => {
-      const result = verifyCompleteSpec(slug, opts.targetDir);
+      const result = await verifyCompleteSpec(slug, opts.targetDir);
       
       if (opts.format === 'json') {
         console.log(formatValidationResult(result, 'json'));

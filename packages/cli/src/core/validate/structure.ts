@@ -19,7 +19,7 @@ interface StructureValidationResult extends ValidationResult {
   unexpectedFiles: string[];
 }
 
-async function verifySpecStructure(slug: string, targetDir: string): Promise<StructureValidationResult> {
+export async function verifySpecStructure(slug: string, targetDir: string): Promise<StructureValidationResult> {
   const errors: Array<{ line?: number; errorType: string; context?: string; message: string; suggestedFix?: string }> = [];
   const warnings: Array<{ line?: number; message: string }> = [];
   const specDir = path.join(targetDir, '.specs', 'changes', slug);

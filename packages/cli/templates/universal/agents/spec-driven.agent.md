@@ -16,7 +16,7 @@ You MUST enforce this lifecycle exactly:
 - Never skip phases, even if the user asks to implement immediately.
 - If there is no approved `.specs/changes/<slug>/requirements.md`, always start with requirements.
 - Before Phase 4 is explicitly approved by the human, do not write implementation code.
-- Before Phase 4 approval, only write files under `.specs/changes/<slug>/`.
+- Before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.
 - Every phase transition requires explicit human approval.
 - For requirements, design, and tasks, always validate and write the artifact first, then ask whether to proceed.
 
