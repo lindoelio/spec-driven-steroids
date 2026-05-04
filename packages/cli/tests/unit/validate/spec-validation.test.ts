@@ -111,7 +111,7 @@ describe('Unit: hallucination-resistant spec validation', () => {
     expect(result.errors.some(error => error.errorType === 'Dependency Error')).toBe(true);
   });
 
-  it('fails complete spec validation when a sub-artifact is invalid', () => {
+  it('fails complete spec validation when a sub-artifact is invalid', async () => {
     tempDir = mkdtempSync(path.join(tmpdir(), 'sds-spec-'));
     const specDir = path.join(tempDir, '.specs', 'changes', 'login');
     mkdirSync(specDir, { recursive: true });
@@ -119,7 +119,7 @@ describe('Unit: hallucination-resistant spec validation', () => {
     writeFileSync(path.join(specDir, 'design.md'), validDesign);
     writeFileSync(path.join(specDir, 'tasks.md'), validTasks);
 
-    const result = verifyCompleteSpec('login', tempDir);
+    const result = await verifyCompleteSpec('login', tempDir);
 
     expect(result.valid).toBe(false);
     expect(result.requirementsErrors.length).toBeGreaterThan(0);

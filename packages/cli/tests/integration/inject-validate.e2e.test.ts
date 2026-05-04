@@ -175,7 +175,7 @@ describe('CLI E2E: inject command', () => {
 
         expect(agentContent.includes('## Phase Gatekeeper')).toBe(true);
         expect(agentContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
-        expect(agentContent.includes('Before Phase 4 approval, only write files under `.specs/changes/<slug>/`.')).toBe(true);
+        expect(agentContent.includes('Before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
         expect(agentContent.includes('I can implement this, but per Spec-Driven flow I must start with Phase 1 (requirements) first.')).toBe(true);
         expect(agentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
 
@@ -200,14 +200,14 @@ describe('CLI E2E: inject command', () => {
         const githubAgentContent = await fs.readFile(githubAgentPath, 'utf-8');
         expect(githubAgentContent.includes('## Phase Gatekeeper')).toBe(true);
         expect(githubAgentContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
-        expect(githubAgentContent.includes('Before Phase 4 approval, only write files under `.specs/changes/<slug>/`.')).toBe(true);
+        expect(githubAgentContent.includes('Before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
         expect(githubAgentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
 
         const antigravityWorkflowPath = path.join(targetDir, '.agents', 'workflows', 'spec-driven.md');
         const antigravityWorkflowContent = await fs.readFile(antigravityWorkflowPath, 'utf-8');
         expect(antigravityWorkflowContent.includes('## Phase Gatekeeper')).toBe(true);
         expect(antigravityWorkflowContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
-        expect(antigravityWorkflowContent.includes('Before Phase 4 approval, only write files under `.specs/changes/<slug>/`.')).toBe(true);
+        expect(antigravityWorkflowContent.includes('Before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
         expect(antigravityWorkflowContent.includes('### Non-Skippable Stop Rule')).toBe(true);
         delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
     });
