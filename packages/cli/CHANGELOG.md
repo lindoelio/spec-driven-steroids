@@ -1,5 +1,31 @@
 # spec-driven-steroids
 
+## 0.12.0
+
+### Minor Changes
+
+- 671ab34: feat: Extract shared protocols and templates from phase skills
+
+  Refactored the 4 spec-driven phase skills to reference shared content instead of duplicating it inline. This reduces redundancy and improves maintainability.
+
+  - Created `universal/skills/shared/` skill with externalized document templates and shared protocols
+  - Extracted Context Preflight, Phase Gate, Validation CLI, and Todo List protocols to `shared/references/shared-protocol.md`
+  - Extracted requirements.md, design.md, and tasks.md templates to `shared/references/document-templates.md`
+  - Refactored phase skills to reference shared content (requirements-writer: 217 lines, technical-designer: 203 lines, task-decomposer: 228 lines, task-implementer: 232 lines)
+  - Added Behavioral Guidelines section to AGENTS.md (Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution)
+  - Updated project-guidelines-writer to generate Behavioral Guidelines when creating AGENTS.md
+  - Updated unit tests to reflect the refactored structure
+
+### Patch Changes
+
+- 82cebbc: fix: Prevent skill copy and clean operations on ~/.agents/skills/ alias path
+
+  The CLI was incorrectly copying skills to ~/.agents/skills/ during Gemini CLI user-level injection and incorrectly attempting to clean skills from that path. This path is an alias/discovery path and must never be modified by the CLI.
+
+  - Removed buggy code that copied skills to ~/.agents/skills/ during Gemini CLI USER injection
+  - Removed buggy code that attempted to remove skills from ~/.agents/skills/ during clean
+  - Added integration tests to verify the fix
+
 ## 0.11.0
 
 ### Minor Changes
