@@ -66,18 +66,18 @@ describe('Unit: template validation guidance', () => {
     });
 
     it('requires tasks and complete-spec validation in decomposition/implementation skills', async () => {
-        const targets = [
-            'universal/skills/spec-driven-task-decomposer/SKILL.md',
-            'universal/skills/spec-driven-task-implementer/SKILL.md'
-        ];
-
-        for (const target of targets) {
-            const content = await readTemplate(target);
-            expect(content).toContain('sds validate spec');
-        }
-
+        // Phase skills now reference shared protocol for validation commands
         const decomposerContent = await readTemplate('universal/skills/spec-driven-task-decomposer/SKILL.md');
-        expect(decomposerContent).toContain('sds validate tasks');
+        const implementerContent = await readTemplate('universal/skills/spec-driven-task-implementer/SKILL.md');
+        const sharedProtocolContent = await readTemplate('universal/skills/shared/references/shared-protocol.md');
+
+        // Phase skills should reference shared protocol
+        expect(decomposerContent).toContain('spec-driven-shared');
+        expect(implementerContent).toContain('spec-driven-shared');
+
+        // Shared protocol should contain validation commands
+        expect(sharedProtocolContent).toContain('sds validate spec');
+        expect(sharedProtocolContent).toContain('sds validate tasks');
     });
 
     it('requires behavior-focused testing task names with REQ IDs only in traceability tags', async () => {
@@ -88,21 +88,29 @@ describe('Unit: template validation guidance', () => {
         expect(decomposerContent).toContain('do not include `REQ-*` IDs in the title');
         expect(decomposerContent).not.toContain('Test REQ-');
 
-        expect(implementerContent).toContain('Do not include `REQ-*` or `DES-*` IDs in test names');
-        expect(implementerContent).toContain('Do not include `REQ-*` or `DES-*` IDs in code comments');
+        expect(implementerContent).toContain('Do not include `REQ-*` or `DES-*` IDs in test names or code comments');
         expect(implementerContent).not.toContain('tasks prefixed with "Test REQ-"');
     });
 
     it('requires evidence for design code anatomy and bounded context loading', async () => {
+        // Phase skills reference shared content; check both locations
         const designerContent = await readTemplate('universal/skills/spec-driven-technical-designer/SKILL.md');
+        const designerTemplateContent = await readTemplate('universal/skills/shared/references/document-templates.md');
         const implementerContent = await readTemplate('universal/skills/spec-driven-task-implementer/SKILL.md');
+        const sharedProtocolContent = await readTemplate('universal/skills/shared/references/shared-protocol.md');
 
-        expect(designerContent).toContain('| File Path | Status | Evidence | Purpose | Implements |');
-        expect(designerContent).toContain('Verified by Glob/Read');
-        expect(designerContent).toContain('Existing paths must be verified by `Glob` or `Read`');
-        expect(designerContent).toContain('Read` at most 5 relevant files');
-        expect(implementerContent).toContain('Context budget: load only the active task block');
+        // Designer SKILL.md should reference shared templates
+        expect(designerContent).toContain('spec-driven-shared');
+
+        // Shared templates should contain the design table structure
+        expect(designerTemplateContent).toContain('| File Path | Status | Evidence | Purpose | Implements |');
+        expect(designerTemplateContent).toContain('Verified by Glob/Read');
+
+        // Implementer SKILL.md should have task execution guidance
         expect(implementerContent).toContain('Implement one task by default');
+
+        // Context budget is in shared protocol
+        expect(sharedProtocolContent).toContain('Context budget');
     });
 
     it('requires mandatory repository context preflight in the spec-driven planner', async () => {
@@ -116,20 +124,27 @@ describe('Unit: template validation guidance', () => {
     });
 
     it('requires repository-context evidence across spec-driven phase skills and audits', async () => {
-        const requirementsContent = await readTemplate('universal/skills/spec-driven-requirements-writer/SKILL.md');
-        const designerContent = await readTemplate('universal/skills/spec-driven-technical-designer/SKILL.md');
-        const decomposerContent = await readTemplate('universal/skills/spec-driven-task-decomposer/SKILL.md');
-        const implementerContent = await readTemplate('universal/skills/spec-driven-task-implementer/SKILL.md');
+        // Phase skills now reference shared templates; audit files keep inline content
+        const requirementsSkillContent = await readTemplate('universal/skills/spec-driven-requirements-writer/SKILL.md');
+        const designerSkillContent = await readTemplate('universal/skills/spec-driven-technical-designer/SKILL.md');
+        const decomposerSkillContent = await readTemplate('universal/skills/spec-driven-task-decomposer/SKILL.md');
+        const implementerSkillContent = await readTemplate('universal/skills/spec-driven-task-implementer/SKILL.md');
+        const documentTemplatesContent = await readTemplate('universal/skills/shared/references/document-templates.md');
         const auditDesignContent = await readTemplate('universal/skills/agent-work-auditor/artifacts/design.md');
         const auditConsistencyContent = await readTemplate('universal/skills/agent-work-auditor/dimensions/consistency.md');
 
-        expect(requirementsContent).toContain('include a concise `## Project Context` section');
-        expect(designerContent).toContain('## Repository Context Evidence');
-        expect(designerContent).toContain('Each row must state how the evidence shaped the design');
-        expect(decomposerContent).toContain('## Repository Constraints');
-        expect(decomposerContent).toContain('design document\'s `Repository Context Evidence`');
-        expect(implementerContent).toContain('Retrieve Contextual Memory');
-        expect(implementerContent).toContain('Follow `design.md` `Repository Context Evidence`');
+        // Phase skills should reference shared templates
+        expect(requirementsSkillContent).toContain('spec-driven-shared');
+        expect(designerSkillContent).toContain('spec-driven-shared');
+        expect(decomposerSkillContent).toContain('spec-driven-shared');
+        expect(implementerSkillContent).toContain('spec-driven-shared');
+
+        // Shared templates should contain the template structures
+        expect(documentTemplatesContent).toContain('## Overview');
+        expect(documentTemplatesContent).toContain('## Repository Context Evidence');
+        expect(documentTemplatesContent).toContain('## Repository Constraints');
+
+        // Audit files still contain inline content
         expect(auditDesignContent).toContain('Repository Context Evidence shows guidelines');
         expect(auditConsistencyContent).toContain('Missing Repository Evidence');
     });

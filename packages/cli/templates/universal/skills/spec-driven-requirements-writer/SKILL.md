@@ -17,21 +17,9 @@ Default path: analyze the request, extract actors and constraints, write concise
 
 Read `references/requirements-patterns.md` when you need example EARS phrasing, stronger observable verbs, or recovery examples for invalid requirement wording.
 
-## Process
+## Shared Protocol
 
-If `long-running-work-planning` is available, load it at the start of this phase before drafting requirements. Use it to keep the phase artifact durable, checkpoint progress, and avoid relying on unstored analysis for long-running work.
-
-1. **Read Project Guidelines** (if they exist):
-    - Use `Glob` to find `AGENTS.md`, `STYLEGUIDE.md`, `ARCHITECTURE.md`
-    - Use `Read` to understand existing patterns, naming conventions, and architecture
-    - Context budget: do not perform broad code searches unless the request requires repository-specific behavior
-2. **Retrieve Contextual Memory**: Invoke the `contextual-stewardship` skill in `retrieve` or `inject requirements` mode to retrieve `business` and `workflow` rules.
-3. Analyze user description and any issue context
-4. Extract actors, actions, and constraints
-5. Write requirements using valid EARS syntax
-6. Define glossary terms if domain-specific terminology is needed
-7. **Write Before Validation**: Save to `.specs/changes/<slug>/requirements.md` before validating
-8. **Validate**: Run `sds validate requirements .specs/changes/<slug>/requirements.md` against the written file, fix failures in the file, and re-run validation before asking for approval
+Follow the Context Preflight and Phase Gate protocols in the `spec-driven-shared` skill's `references/shared-protocol.md`.
 
 ## Per-Phase Todo List
 
@@ -57,58 +45,11 @@ When this skill begins execution, create a todo list containing the following it
 
 `.specs/changes/<slug>/requirements.md`
 
-**IMPORTANT:** Only `requirements.md` is a valid spec document name for requirements. Do NOT create `spec.md`, `overview.md`, `architecture.md`, or any other document name. The spec-driven workflow strictly requires exactly three document types: `requirements.md`, `design.md`, and `tasks.md`.
-
-## CLI Validation Discovery
-
-After writing the requirements file, validate it using the CLI. Do not claim validation passed unless this command was actually run and its output was observed:
-
-```bash
-sds validate requirements .specs/changes/<slug>/requirements.md
-```
-
-Example:
-```bash
-sds validate requirements .specs/changes/my-feature/requirements.md
-```
-
-**Note:** Both `sds` and `spec-driven-steroids` work interchangeably as the CLI command name.
+**IMPORTANT:** Only `requirements.md` is a valid spec document name for requirements. The spec-driven workflow strictly requires exactly three document types: `requirements.md`, `design.md`, and `tasks.md`.
 
 ## Required Document Structure
 
-```markdown
-# Requirements
-
-## Overview
-<1-3 short paragraphs describing the problem, user value, and scope>
-
-## Glossary
-| Term | Definition |
-|------|------------|
-| <Term> | <Clear, unambiguous definition> |
-
-## Assumptions
-- <assumption 1>
-- <assumption 2>
-
-## Requirements
-
-### REQ-1: <short requirement title>
-
-**User Story:** As a <role>, I want <capability>, so that <benefit>.
-
-#### Acceptance Criteria
-1.1 WHEN <trigger>, THEN the <system name> SHALL <response>.
-1.2 IF <undesired condition>, THEN the <system name> SHALL <response>.
-
-### REQ-2: <short requirement title>
-
-**User Story:** As a <role>, I want <capability>, so that <benefit>.
-
-#### Acceptance Criteria
-2.1 THE <system name> SHALL <response>.
-2.2 WHILE <precondition>, the <system name> SHALL <response>.
-```
+See the `spec-driven-shared` skill's `references/document-templates.md` for the requirements document template.
 
 ## EARS Syntax (Canonical)
 
@@ -133,40 +74,31 @@ WHILE <optional precondition>, WHEN <optional trigger>, the <system name> SHALL 
 
 ### Rules
 
-- Every acceptance criterion must use uppercase EARS keywords exactly as shown in the allowed patterns.
-- Every acceptance criterion must use exactly one valid EARS pattern (or a valid complex combination).
-- Every acceptance criterion must include a named system subject (e.g., `the application`, `the auth service`, `the product catalog`).
+- Every acceptance criterion must use uppercase EARS keywords exactly as shown.
+- Every acceptance criterion must use exactly one valid EARS pattern.
+- Every acceptance criterion must include a named system subject.
 - Every acceptance criterion must include exactly one `shall`.
 - Every acceptance criterion must be a single sentence.
-- Clauses must appear in canonical order: `WHILE` → `WHEN`/`WHERE`/`IF` → `THEN` when applicable → `the <system>` → `SHALL` → `<response>`.
+- Clauses must appear in canonical order.
 
 ### Invalid Forms (Avoid These)
 
 Do not write:
-
 - `The system should ...` (use `SHALL`)
 - `The system must be able to ...` (weak, vague)
 - `When X, the user can ...` (not a system requirement)
-- `If X, the system should ...` (use `SHALL`)
-- `When X then ...` (missing system subject)
-- `The system shall, when X, ...` (non-canonical clause order)
 - `shall support`, `shall handle`, `shall allow`, `shall manage` (vague verbs)
 
 ### Strong Verbs
 
 Prefer observable, testable verbs:
-
-- `display`, `show`, `hide`
-- `create`, `delete`, `update`, `store`
+- `display`, `create`, `delete`, `update`, `store`
 - `validate`, `reject`, `accept`
 - `send`, `receive`, `notify`
-- `calculate`, `compute`, `determine`
 - `log`, `record`, `track`
-- `prevent`, `block`, `allow`
-- `require`, `enforce`
+- `prevent`, `block`, `require`, `enforce`
 
 Avoid weak verbs:
-
 - `support`, `handle`, `manage`
 - `be able to`, `have the ability to`
 - `provide`, `offer` (without specific behavior)
@@ -174,103 +106,60 @@ Avoid weak verbs:
 ## Scope Rules
 
 ### Include
-
 - user-visible behavior
 - business rules
 - validation and error handling expectations
 - security and privacy requirements when they affect observable behavior
-- accessibility requirements when they affect observable behavior
-- performance requirements only if explicitly requested or clearly necessary
 
 ### Exclude
-
 - implementation steps
 - code-level details
 - class/module/package structure
 - database schema design
 - internal algorithms unless externally observable
 - test plans or test cases
-- task breakdowns
 
 ## Output Rules
 
-- Use `REQ-<number>` identifiers in ascending order starting at `REQ-1`.
+- Use `REQ-<number>` identifiers starting at `REQ-1`.
 - Give each requirement a short, specific title.
 - Every requirement must include exactly one user story in `As a <role>, I want <capability>, so that <benefit>` format.
-- Number acceptance criteria as `<requirement-number>.<criterion-number>` (e.g., `1.1`, `1.2`, `2.1`).
+- Number acceptance criteria as `<requirement-number>.<criterion-number>` (e.g., `1.1`, `1.2`).
 - Each acceptance criterion must be testable and use valid EARS syntax.
-- Keep requirements implementation-agnostic.
 - Resolve all placeholders before returning output.
 - Do not include editorial comments, HTML comments, TODO markers, or drafting notes.
 - Include `## Glossary` only if domain-specific terms need definition.
 - Include `## Assumptions` only if assumptions materially affect scope or interpretation.
-- If project guidelines or contextual memory materially shape scope, terminology, or constraints, include a concise `## Project Context` section naming the source files or memory domains used and the adopted constraints.
 
 ## Clarification Policy
 
-Ask a clarifying question only if the ambiguity would materially change one or more of:
-
-- scope
-- user roles
-- required behavior
-- success criteria
-- compliance/security posture
+Ask a clarifying question only if the ambiguity would materially change scope, user roles, required behavior, success criteria, or compliance/security posture.
 
 ### When to Ask
-
 - No clear user role or stakeholder
 - No discernible goal or outcome
 - Conflicting or contradictory requirements
-- Scope is too broad to fit one requirements document
 
 ### When NOT to Ask
-
 - The request contains enough context to write meaningful requirements
 - Reasonable assumptions can be made
-- The ambiguity is about implementation details (not requirements)
-- The user provided examples or references
-
-Instead: proceed with reasonable assumptions and document them in `## Assumptions`.
-
-### How to Ask
-
-- Present no more than 3 focused questions at a time
-- Make each question specific and actionable
-- Prefer multiple-choice when possible
-- Allow the user to skip questions
 
 ## Validation and Error Recovery
-
-### CLI Validation Failures
 
 When `sds validate requirements` returns errors:
 
 1. Fix missing or invalid sections
 2. Rewrite acceptance criteria with correct EARS syntax
 3. Add or correct `REQ-*` numbering
-4. Add or correct acceptance criterion numbering
-5. Remove empty sections or add meaningful content
 
 After 3 failed validation attempts:
-
 1. Present all errors in a summary
 2. Ask: "Should I proceed with best-effort corrections?"
 3. If yes: make corrections, document assumptions in `## Assumptions`, proceed
-4. If no: request specific guidance
-
-### Corrupted Files
-
-If `requirements.md` is corrupted:
-
-1. Read existing content to salvage valid portions
-2. Identify recoverable requirements
-3. Rewrite invalid sections with correct EARS syntax
-4. Re-validate
-5. Document what was recovered vs rewritten
 
 ## Auditing Integration
 
-After completing requirements and before requesting approval, invoke the `agent-work-auditor` skill to perform a unified audit:
+After completing requirements and before requesting approval, invoke the `agent-work-auditor` skill:
 
 ```
 Invoke: agent-work-auditor skill
@@ -280,60 +169,20 @@ Mode: standard
 Extensions: spec-driven
 ```
 
-The `agent-work-auditor` provides a three-layer audit:
-
-### Layer 1: Core Dimensions (Always Evaluated)
-
-| Dimension | Focus | Auto-Fix |
-|-----------|-------|----------|
-| Completeness | All requirements present? | Yes |
-| Correctness | Valid EARS syntax? | Yes |
-| Consistency | Consistent terminology? | Yes |
-| Traceability | REQ-* numbering? | Partial |
-| Safety | No harmful side effects? | No |
-| Maintainability | Clear and readable? | Partial |
-
-### Layer 2: Change-Type Module
-
-- `feat` module provides thorough review of design and scalability aspects
-
-### Layer 3: Spec-Driven Extension
-
-- **Rigorous Against Prompt/Spec**: Verifies requirements align with original user request and spec structure
-- **Traceability Matrix**: Links requirements to original intent
-- **Phase Gate Verification**: Confirms this phase completed before approval
-
-### Composition: quality-grading (Originality Dimension)
-
-The agent-work-auditor internally composes `quality-grading` for the **Originality** dimension:
-- **Originality**: Tailored requirements vs boilerplate language
-
-This composition ensures comprehensive quality assessment without requiring separate skill invocation.
-
-### Self-Fix Loop
-
-agent-work-auditor will:
-1. Auto-fix direct-fix findings (up to 3 passes)
-2. Escalate remaining issues to author-required
-3. Output a structured audit report with verdict
-
 The audit verdict (Approve / Request Changes / Approval with Notes) determines whether to proceed to Phase 2.
 
 ## Quality Bar (Self-Check)
 
 Before returning the requirements, verify:
-
 - [ ] Document starts with `# Requirements`
 - [ ] Each requirement uses `### REQ-N: Title` format
 - [ ] Each requirement has exactly one user story
 - [ ] Each acceptance criterion uses valid EARS syntax
 - [ ] Each acceptance criterion includes a named system subject
 - [ ] Each acceptance criterion includes exactly one `shall`
-- [ ] Acceptance criterion numbering matches its parent requirement
 - [ ] No placeholders remain
 - [ ] No design or implementation details present
-- [ ] No `should`, `may`, `might`, or `can` in acceptance criteria
-- [ ] No vague verbs (`support`, `handle`, `manage`, `be able to`)
+- [ ] No vague verbs in acceptance criteria
 
 ## Response Behavior
 
@@ -343,7 +192,7 @@ If material ambiguity blocks a good requirements document, ask a short clarifica
 
 ## Contextual Stewardship Integration
 
-At the start of this phase, before analyzing requirements, invoke the `contextual-stewardship` skill to retrieve established business and domain rules:
+At the start of this phase, invoke the `contextual-stewardship` skill to retrieve established business and domain rules:
 
 ```text
 Invoke: contextual-stewardship skill
@@ -351,11 +200,9 @@ Action: retrieve
 Query: business
 ```
 
-This ensures the new requirements align with existing product rules, target audience constraints, and domain logic.
-
 ## Quality Grading Integration
 
-After completing requirements and before requesting approval, invoke the `quality-grading` skill to assess and improve specification quality:
+After completing requirements and before requesting approval, invoke the `quality-grading` skill:
 
 ```
 Invoke: quality-grading skill
@@ -363,13 +210,7 @@ Artifact: .specs/changes/<slug>/requirements.md
 Mode: grade-and-fix
 ```
 
-This ensures the requirements document meets quality standards across:
-- **Design Quality**: Logical organization, traceability, clarity of structure
-- **Originality**: Tailored requirements vs boilerplate language
-- **Craft**: Clear writing, consistent terminology, proper EARS syntax
-- **Functionality**: Complete requirements, clear acceptance criteria, no gaps
-
-The quality-grading skill will auto-fix issues scoring below 4 and provide actionable suggestions for remaining gaps.
+The quality-grading skill will auto-fix issues scoring below 4.
 
 ## Things To Avoid
 

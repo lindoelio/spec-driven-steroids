@@ -17,19 +17,9 @@ Default path: read approved requirements, classify the change, design only the s
 
 Read `references/design-section-guide.md` when you need help selecting optional sections, keeping diagrams minimal, or correcting weak traceability coverage.
 
-## Process
+## Shared Protocol
 
-If `long-running-work-planning` is available, load it at the start of this phase before shaping the design. Use it to keep design decisions checkpointed, preserve validation-ready progress, and avoid relying on unstored analysis for long-running work.
-
-1. **Read Requirements**: Read `.specs/changes/<slug>/requirements.md` as the source of truth.
-2. **Read Project Guidelines** (if they exist): Use `Glob` and `Read` to inspect `AGENTS.md`, `ARCHITECTURE.md`, `STYLEGUIDE.md`, and `TESTING.md`.
-3. **Retrieve Contextual Memory**: Invoke the `contextual-stewardship` skill in `retrieve` or `inject design` mode to retrieve `architecture`, `security`, `performance`, and `technical-debt` rules.
-4. **Inspect Existing Patterns**: Use targeted `Grep` to find related modules, interfaces, diagrams, and naming conventions, then `Read` at most 5 relevant files before drafting.
-5. **Classify the Change**: Determine the change type and scope the design accordingly.
-6. **Design the Architecture**: Define design elements, responsibilities, boundaries, and requirement coverage.
-7. **Select Optional Sections**: Include only the sections that add design value for this change.
-8. **Write Before Validation**: Save to `.specs/changes/<slug>/design.md` before validating.
-9. **Validate**: Run `sds validate design .specs/changes/<slug>/design.md` against the written file, fix failures in the file, and re-run validation before asking for approval.
+Follow the Context Preflight and Phase Gate protocols in the `spec-driven-shared` skill's `references/shared-protocol.md`.
 
 ## Per-Phase Todo List
 
@@ -56,22 +46,11 @@ When this skill begins execution, create a todo list containing the following it
 
 `.specs/changes/<slug>/design.md`
 
-**IMPORTANT:** Only `design.md` is a valid spec document name for design. Do NOT create `architecture.md`, `spec.md`, `overview.md`, or any other document name. The spec-driven workflow strictly requires exactly three document types: `requirements.md`, `design.md`, and `tasks.md`.
+**IMPORTANT:** Only `design.md` is a valid spec document name for design. The spec-driven workflow strictly requires exactly three document types: `requirements.md`, `design.md`, and `tasks.md`.
 
-## CLI Validation Discovery
+## Required Document Structure
 
-After writing the design file, validate it using the CLI. Do not claim validation passed unless this command was actually run and its output was observed:
-
-```bash
-sds validate design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md
-```
-
-Example:
-```bash
-sds validate design .specs/changes/my-feature/design.md --requirements .specs/changes/my-feature/requirements.md
-```
-
-**Note:** Both `sds` and `spec-driven-steroids` work interchangeably as the CLI command name.
+See the `spec-driven-shared` skill's `references/document-templates.md` for the design document template.
 
 ## Change Type Classification
 
@@ -87,158 +66,9 @@ Choose one primary change type and use it to determine depth and section inclusi
 | `infrastructure` | Tooling, CI/CD, deployment, or configuration changes | Operational design and configuration anatomy |
 | `documentation` | Docs-only change | Lightweight design focused on affected documentation files |
 
-## Required Document Structure
-
-Your output must use this structure. Include optional sections only when they are applicable.
-
-```markdown
-# Design Document
-
-## Overview
-
-<1-3 short paragraphs describing the technical approach, boundaries, and important constraints>
-
-### Change Type
-
-<new-feature | enhancement | refactoring | bug-fix | performance | infrastructure | documentation>
-
-### Design Goals
-
-1. <goal one>
-2. <goal two>
-
-### References
-
-- **REQ-1**: <requirement title>
-- **REQ-2**: <requirement title>
-
-## System Architecture
-
-### DES-1: <design element title>
-
-<1-2 short paragraphs describing responsibility, boundaries, and behavior>
-
-```mermaid
-flowchart TD
-    A[Client] --> B[Application Service]
-    B --> C[(Data Store)]
-```
-
-_Implements: REQ-1.1, REQ-1.2_
-
-### DES-2: <design element title>
-
-<short description>
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant App
-    User->>App: Request
-    App-->>User: Response
-```
-
-_Implements: REQ-2.1_
-
-## Data Flow
-
-_Include only when the change transforms data across multiple steps, services, or boundaries._
-
-```mermaid
-flowchart LR
-    A[Input] -->|validated| B[Processor]
-    B -->|result| C[Output]
-```
-
-## Code Anatomy
-
-| File Path | Status | Evidence | Purpose | Implements |
-|-----------|--------|----------|---------|------------|
-| src/example/service.ts | Existing | Verified by Glob/Read | Core orchestration for the feature | DES-1 |
-| src/example/handler.ts | New | Proposed by DES-2 | Entry point for the request flow | DES-2 |
-
-## Repository Context Evidence
-
-| Source | Evidence | Applied Constraint |
-|--------|----------|--------------------|
-| AGENTS.md | Read before design | Follow repository agent constraints and validation commands |
-| ARCHITECTURE.md | Read before design | Preserve documented package boundaries |
-| src/example/service.ts | Verified by Glob/Read | Reuse existing service naming and module placement |
-| contextual-stewardship:architecture | Retrieved before design | Apply active architecture rules |
-
-## Data Models
-
-_Include only when the change introduces or modifies data structures._
-
-```mermaid
-classDiagram
-    class ExampleEntity {
-        +id: string
-        +status: string
-    }
-```
-
-## Error Handling
-
-_Include only when the change introduces or changes failure behavior._
-
-| Error Condition | Response | Recovery |
-|-----------------|----------|----------|
-| Invalid input | Reject request | Return validation message |
-| Dependency failure | Surface service error | Retry or fail safely |
-
-## Impact Analysis
-
-_Include only when modifying existing features, shared code, contracts, or operational behavior._
-
-| Affected Area | Impact Level | Notes |
-|---------------|--------------|-------|
-| src/example/api.ts | High | Shared request contract changes |
-| src/example/store.ts | Medium | Persistence logic update |
-
-### Breaking Changes
-
-| Change | Description | Mitigation |
-|--------|-------------|------------|
-| API contract | Response shape changes | Preserve compatibility layer |
-
-### Dependencies
-
-| Dependency | Type | Impact |
-|------------|------|--------|
-| External API | Runtime | Requires updated request mapping |
-
-### Risk Assessment
-
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Invalid migration | Medium | High | Validate data before rollout |
-
-### Testing Requirements
-
-| Test Type | Coverage Goal | Notes |
-|-----------|---------------|-------|
-| Integration | Critical flow | Verify service boundary behavior |
-| E2E | User-visible path | Confirm end-to-end success and failure cases |
-
-### Rollback Plan
-
-| Scenario | Rollback Steps | Time to Recovery |
-|----------|----------------|------------------|
-| Deployment issue | Revert release and restore config | < 15 minutes |
-
-## Traceability Matrix
-
-| Design Element | Requirements |
-|----------------|--------------|
-| DES-1 | REQ-1.1, REQ-1.2 |
-| DES-2 | REQ-2.1 |
-```
-
 ## Required Sections
 
 These sections must always be present in a full design document:
-
 - `## Overview`
 - `## System Architecture`
 - `## Code Anatomy`
@@ -251,35 +81,27 @@ Include a section only when it adds design value. Do not add empty placeholders.
 
 | Section | Include When | Skip When |
 |---------|--------------|-----------|
-| `## Data Flow` | The change involves multi-step processing, transformation, orchestration, or cross-service movement | The change is local, structural, or a single-step interaction |
-| `## Data Models` | Data structures, contracts, state shapes, or schemas are added or changed | No meaningful data structure changes are involved |
-| `## Error Handling` | New failure modes, recovery paths, or user-visible errors are introduced | Existing error behavior remains unchanged |
-| `## Impact Analysis` | Existing features, shared code, contracts, migrations, or operations are affected | The change is isolated and additive with negligible blast radius |
+| `## Data Flow` | Multi-step processing, transformation, orchestration | Local, structural, or single-step interaction |
+| `## Data Models` | Data structures, contracts, state shapes, or schemas added/changed | No meaningful data structure changes |
+| `## Error Handling` | New failure modes, recovery paths, or user-visible errors introduced | Existing error behavior unchanged |
+| `## Impact Analysis` | Existing features, shared code, contracts, migrations, or operations affected | Change is isolated and additive |
 
-If `## Impact Analysis` is included:
-
-- Include `### Testing Requirements`.
-- Include `### Breaking Changes` only when contracts change.
-- Include `### Dependencies` only when dependency relationships matter.
-- Include `### Risk Assessment` for medium/high-risk changes.
-- Include `### Rollback Plan` for deployments, migrations, or operational changes.
+If `## Impact Analysis` is included, include `### Testing Requirements`. Add `### Breaking Changes` only when contracts change, `### Dependencies` only when relevant, `### Risk Assessment` for medium/high-risk changes, and `### Rollback Plan` for deployments/migrations.
 
 ## Design Rules
 
-- Use `DES-<number>` identifiers in ascending order starting at `DES-1`.
+- Use `DES-<number>` identifiers starting at `DES-1`.
 - Every design element must have:
   - a `### DES-N: Title` heading
   - a short description of responsibility and boundaries
   - at least one Mermaid diagram
-  - an `_Implements: REQ-X.Y_` line with one or more requirement references
+  - an `_Implements: REQ-X.Y_` line
 - Every referenced requirement must exist in `requirements.md`.
-- Use `## Code Anatomy` to map files or directories to `DES-*` elements. Existing paths must be verified by `Glob` or `Read`; proposed paths must be labeled `New` and must not be presented as existing.
-- Use `## Repository Context Evidence` to list guideline files read, contextual-memory domains retrieved, and targeted code files inspected. Each row must state how the evidence shaped the design.
-- Use `## Traceability Matrix` to map every `DES-*` element to the requirements it implements.
-- Prefer architecture decisions and system behavior over implementation details.
-- Do not include task breakdowns, code patches, large code samples, or step-by-step implementation instructions.
+- Use `## Code Anatomy` to map files/directories to `DES-*`. Existing paths must be verified by `Glob` or `Read`; proposed paths must be labeled `New`.
+- Use `## Traceability Matrix` to map every `DES-*` element to requirements.
+- Prefer architecture decisions over implementation details.
+- Do not include task breakdowns, code patches, or step-by-step instructions.
 - Resolve all placeholders before returning output.
-- Omit optional sections that are not needed.
 
 ## Mermaid Rules
 
@@ -287,129 +109,52 @@ Prefer simple, valid Mermaid over visually rich diagrams.
 
 ### Safe Defaults
 
-- Prefer these diagram types:
-  - `flowchart`
-  - `sequenceDiagram`
-  - `classDiagram`
-  - `erDiagram`
-- Use the simplest diagram type that communicates the design.
-- Keep one primary concern per diagram.
-- Split large diagrams into multiple smaller diagrams instead of increasing complexity.
-- Use short labels and clear edge text.
+Prefer diagram types: `flowchart`, `sequenceDiagram`, `classDiagram`, `erDiagram`. Use the simplest diagram type that communicates the design. Keep one primary concern per diagram. Use short labels and clear edge text.
 
 ### Avoid Breakage
 
 - Start every diagram with the diagram type declaration on the first non-empty line.
-- Avoid advanced directives, frontmatter config, themes, or layout tuning unless absolutely necessary.
-- Avoid unsupported or experimental Mermaid features.
-- Avoid comments or stray text inside Mermaid blocks.
-- Quote risky labels like `"End"` if used in flowcharts or sequence diagrams.
+- Avoid advanced directives, frontmatter config, themes, or layout tuning unless necessary.
+- Avoid unsupported features, comments inside Mermaid blocks, or unquoted risky labels like `"End"`.
 - If syntax is uncertain, simplify the diagram instead of adding more detail.
-
-### Preferred Examples
-
-Simple architecture diagram:
-
-```mermaid
-flowchart TD
-    A[Client] --> B[API Handler]
-    B --> C[Domain Service]
-    C --> D[(Database)]
-```
-
-Simple interaction diagram:
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant Service
-    Client->>Service: Submit request
-    Service-->>Client: Return result
-```
-
-Simple model diagram:
-
-```mermaid
-classDiagram
-    class Order {
-        +id: string
-        +status: string
-    }
-```
 
 ## Clarification Policy
 
-Ask a clarifying question only if the ambiguity would materially change:
-
-- system boundaries
-- integration design
-- security or compliance posture
-- data model or contract design
-- scaling or performance approach
+Ask a clarifying question only if ambiguity would materially change system boundaries, integration design, security posture, data model design, or scaling approach.
 
 ### When to Ask
-
 - External integration details are missing
 - Security constraints materially affect architecture
 - Data persistence or contract shape is unclear
-- The requirements imply conflicting architectural directions
-- The scope is too broad for one coherent design document
+- Scope is too broad for one coherent design document
 
 ### When NOT to Ask
-
 - Existing code patterns provide a reasonable default
-- The ambiguity is implementation-level rather than architectural
-- A low-risk assumption can be made and documented in the design
-
-### How to Ask
-
-- Ask no more than 3 focused questions at a time
-- Explain why the answer affects the design
-- Prefer specific, decision-oriented questions
+- Ambiguity is implementation-level rather than architectural
 
 ## Validation and Recovery
 
-### CLI Validation Failures
-
 When `sds validate design` returns errors:
-
-1. Add any missing required sections.
-2. Fix Mermaid syntax by simplifying diagrams first.
-3. Add missing `DES-*` headings.
-4. Add or fix `_Implements: REQ-X.Y_` links.
-5. Ensure all referenced requirements exist in `requirements.md`.
-6. Add or correct the `## Traceability Matrix`.
+1. Add missing required sections
+2. Fix Mermaid syntax by simplifying diagrams first
+3. Add missing `DES-*` headings
+4. Add or fix `_Implements: REQ-X.Y_` links
+5. Ensure all referenced requirements exist
 
 After 3 failed validation attempts:
-
-1. Summarize the remaining errors.
+1. Summarize remaining errors
 2. Ask: "Should I proceed with best-effort corrections?"
-3. If yes: make corrections and document assumptions in the design prose.
-4. If no: request focused guidance on the blocking issues.
 
 ### Missing Guidelines Fallback
 
 If project guideline files do not exist:
-
-- infer conventions from nearby code and existing repository structure
-- follow established naming and file placement patterns
-- default to simpler architecture rather than introducing new abstractions
-- treat `TESTING.md` as optional input, not a blocker for design work
-- record the missing guideline files and fallback evidence in `## Repository Context Evidence`
-
-### Design Revision
-
-If revising an existing `design.md`:
-
-1. Read the current document first.
-2. Preserve valid sections that still match the requirements.
-3. Update only the affected sections.
-4. Re-run validation.
-5. Reconfirm traceability consistency.
+- Infer conventions from nearby code and existing repository structure
+- Default to simpler architecture rather than introducing new abstractions
+- Record the missing guideline files in `## Repository Context Evidence`
 
 ## Auditing Integration
 
-After completing design and before requesting approval, invoke the `agent-work-auditor` skill to perform a unified audit:
+After completing design and before requesting approval, invoke the `agent-work-auditor` skill:
 
 ```
 Invoke: agent-work-auditor skill
@@ -419,70 +164,23 @@ Mode: standard
 Extensions: spec-driven
 ```
 
-The `agent-work-auditor` provides a three-layer audit:
-
-### Layer 1: Core Dimensions (Always Evaluated)
-
-| Dimension | Focus | Auto-Fix |
-|-----------|-------|----------|
-| Completeness | All design elements present? | Yes |
-| Correctness | Valid Mermaid syntax, proper DES-* structure? | Yes |
-| Consistency | Consistent with existing patterns? | Yes |
-| Traceability | DES-* → REQ-* links complete? | Partial |
-| Safety | No harmful side effects? | No |
-| Maintainability | Clear and maintainable diagrams? | Partial |
-
-### Layer 2: Change-Type Module
-
-Based on classified change type (new-feature, enhancement, refactoring, etc.):
-- Applies appropriate rigor level for the design depth required
-
-### Layer 3: Spec-Driven Extension
-
-- **Rigorous Against Prompt/Spec**: Verifies design aligns with approved requirements
-- **Traceability Matrix**: Confirms all DES-* elements trace to REQ-* requirements
-- **Phase Gate Verification**: Confirms requirements phase passed before design approval
-
-### Composition: quality-grading (Originality Dimension)
-
-The agent-work-auditor internally composes `quality-grading` for the **Originality** dimension:
-- **Originality**: Domain-specific architecture vs generic templates
-
-This composition ensures comprehensive quality assessment without requiring separate skill invocation.
-
-### Self-Fix Loop
-
-agent-work-auditor will:
-1. Auto-fix direct-fix findings (up to 3 passes)
-2. Escalate remaining issues to author-required
-3. Output a structured audit report with verdict
-
 The audit verdict (Approve / Request Changes / Approval with Notes) determines whether to proceed to Phase 3.
 
 ## Quality Bar (Self-Check)
 
 Before returning the design, verify:
-
 - [ ] Document starts with `# Design Document`
 - [ ] `## Overview`, `## System Architecture`, `## Code Anatomy`, `## Repository Context Evidence`, and `## Traceability Matrix` are present
 - [ ] Every design element uses `### DES-N: Title`
 - [ ] Every design element includes a Mermaid diagram
 - [ ] Every design element includes `_Implements: REQ-X.Y_`
 - [ ] All requirement references exist in `requirements.md`
-- [ ] `## Code Anatomy` maps files/directories to `DES-*`
-- [ ] `## Repository Context Evidence` names guideline files, contextual-memory domains, and code evidence used
-- [ ] `## Traceability Matrix` includes every `DES-*`
-- [ ] Optional sections are included only when useful
 - [ ] Mermaid diagrams are simple and syntactically safe
 - [ ] No placeholders remain
-- [ ] No implementation-task prose or code-patch instructions slipped in
 
 ## Output Requirements
 
-- Write `.specs/changes/<slug>/design.md` before requesting review
-- Keep the design concise but complete enough for task decomposition
-- Prefer validator-compatible structure over decorative formatting
-- Return ordinary prose summary after the file is written; do not wrap the artifact in XML
+Write `.specs/changes/<slug>/design.md` before requesting review. Keep the design concise but complete enough for task decomposition. Prefer validator-compatible structure over decorative formatting.
 
 ## Response Behavior
 
@@ -492,15 +190,13 @@ If material ambiguity blocks a sound design, ask a short clarification first. Do
 
 ## Contextual Stewardship Integration
 
-At the start of this phase, before shaping the design, invoke the `contextual-stewardship` skill to retrieve established architectural patterns:
+At the start of this phase, invoke the `contextual-stewardship` skill to retrieve established architectural patterns:
 
 ```text
 Invoke: contextual-stewardship skill
 Action: retrieve
 Query: architecture
 ```
-
-This ensures the new design aligns with existing tech stack choices, design patterns, and tooling decisions.
 
 ## Things To Avoid
 
