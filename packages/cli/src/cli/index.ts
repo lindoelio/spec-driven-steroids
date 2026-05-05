@@ -22,9 +22,7 @@ import {
   getGitHubCopilotCliGlobalConfigDir
 } from './github-copilot-cli-scope.js';
 import {
-  GeminiCliInjectionScope,
-  getGeminiCliUserSkillsDir,
-  getGeminiCliAgentsAliasDir
+  GeminiCliInjectionScope
 } from './gemini-cli-scope.js';
 import {
   QwenCodeInjectionScope
@@ -352,13 +350,6 @@ program
           await fs.copy(universalSkillsDir, destSkillsDir, { overwrite: true });
         }
 
-        if (platform === 'gemini-cli' && geminiCliScope === GeminiCliInjectionScope.USER) {
-          const nativeSkillsDir = getGeminiCliUserSkillsDir();
-          const aliasDir = getGeminiCliAgentsAliasDir();
-          await fs.ensureDir(aliasDir);
-          await fs.copy(nativeSkillsDir, aliasDir, { overwrite: true });
-        }
-
         results.push({ platform, displayName, scope: scopeLabel, ok: true, error: '' });
         console.log(chalk.green(` ok (${scopeLabel})`));
 
@@ -596,15 +587,6 @@ async function removeGeminiCliSteroids(): Promise<boolean> {
   try {
     await removeGeminiCliGlobalFiles();
     await removeSteroidsSkillDirs(path.join(os.homedir(), '.gemini'));
-    const aliasDir = path.join(os.homedir(), '.agents', 'skills');
-    if (await fs.pathExists(aliasDir)) {
-      for (const skill of STEROIDS_SKILL_DIRS) {
-        const skillPath = path.join(aliasDir, skill);
-        if (await fs.pathExists(skillPath)) {
-          await fs.remove(skillPath);
-        }
-      }
-    }
     console.log(chalk.green('  ✅ Gemini CLI cleaned.'));
     return true;
   } catch (err) {

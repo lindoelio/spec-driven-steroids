@@ -100,6 +100,18 @@ describe('CLI E2E: Gemini CLI injection', () => {
       const skillsPath = path.join(mockHomeDir, '.gemini', 'skills', 'long-running-work-planning', 'SKILL.md');
       expect(await fs.pathExists(skillsPath)).toBe(true);
     });
+
+    it('does NOT create ~/.agents/skills/ during Gemini CLI user-level injection', async () => {
+      vi.spyOn(inquirer, 'prompt')
+        .mockResolvedValueOnce({ platforms: ['gemini-cli'] })
+        .mockResolvedValueOnce({ scope: 'global' });
+
+      const program = (await import('../../dist/cli/index.js')).default;
+      await program.parseAsync(['inject'], { from: 'user' } as any);
+
+      const aliasDir = path.join(mockHomeDir, '.agents', 'skills');
+      expect(await fs.pathExists(aliasDir)).toBe(false);
+    });
   });
 
   describe('project-level injection', () => {

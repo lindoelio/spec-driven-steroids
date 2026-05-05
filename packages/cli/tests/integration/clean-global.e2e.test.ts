@@ -119,4 +119,17 @@ describe('CLI E2E: clean --global command', () => {
 
         // Should not throw
     });
+
+    it('clean --global does NOT modify ~/.agents/skills/', async () => {
+        const aliasDir = path.join(os.homedir(), '.agents', 'skills');
+        await fs.ensureDir(aliasDir);
+        await fs.outputFile(path.join(aliasDir, 'some-external-skill', 'SKILL.md'), 'external skill content');
+
+        const program = (await import('../../dist/cli/index.js')).default;
+        await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
+
+        expect(await fs.pathExists(path.join(aliasDir, 'some-external-skill', 'SKILL.md'))).toBe(true);
+        const content = await fs.readFile(path.join(aliasDir, 'some-external-skill', 'SKILL.md'), 'utf-8');
+        expect(content).toBe('external skill content');
+    });
 });
