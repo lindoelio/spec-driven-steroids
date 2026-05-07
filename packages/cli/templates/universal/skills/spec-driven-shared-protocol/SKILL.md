@@ -1,9 +1,9 @@
 ---
-name: spec-driven-shared
+name: spec-driven-shared-protocol
 description: Shared protocols and templates for Spec-Driven phases. Auto-loaded by phase skills via references.
 ---
 
-# Spec-Driven Shared
+# Spec-Driven Shared Protocol
 
 This skill provides shared content referenced by the four phase skills.
 

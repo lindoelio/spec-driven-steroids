@@ -19,7 +19,7 @@ Read `references/task-patterns.md` when you need examples of atomic task sizing,
 
 ## Shared Protocol
 
-Follow the Context Preflight and Phase Gate protocols in the `spec-driven-shared` skill's `references/shared-protocol.md`.
+Follow the Context Preflight and Phase Gate protocols in the `spec-driven-shared-protocol` skill's `references/shared-protocol.md`.
 
 ## Per-Phase Todo List
 
@@ -55,7 +55,7 @@ When this skill begins execution, create a todo list containing the following it
 
 ## Required Document Structure
 
-See the `spec-driven-shared` skill's `references/document-templates.md` for the tasks document template.
+See the `spec-driven-shared-protocol` skill's `references/document-templates.md` for the tasks document template.
 
 ## Task Rules
 

@@ -20,7 +20,7 @@ Read `references/task-execution-patterns.md` when you need examples for resuming
 
 ## Shared Protocol
 
-Follow the Context Preflight and Phase Gate protocols in the `spec-driven-shared` skill's `references/shared-protocol.md`.
+Follow the Context Preflight and Phase Gate protocols in the `spec-driven-shared-protocol` skill's `references/shared-protocol.md`.
 
 ## Per-Phase Todo List
 

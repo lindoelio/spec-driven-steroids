@@ -19,7 +19,7 @@ Read `references/requirements-patterns.md` when you need example EARS phrasing, 
 
 ## Shared Protocol
 
-Follow the Context Preflight and Phase Gate protocols in the `spec-driven-shared` skill's `references/shared-protocol.md`.
+Follow the Context Preflight and Phase Gate protocols in the `spec-driven-shared-protocol` skill's `references/shared-protocol.md`.
 
 ## Per-Phase Todo List
 
@@ -52,7 +52,7 @@ When this skill begins execution, create a todo list containing the following it
 
 ## Required Document Structure
 
-See the `spec-driven-shared` skill's `references/document-templates.md` for the requirements document template.
+See the `spec-driven-shared-protocol` skill's `references/document-templates.md` for the requirements document template.
 
 ## EARS Syntax (Canonical)
 

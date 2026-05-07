@@ -69,11 +69,11 @@ describe('Unit: template validation guidance', () => {
         // Phase skills now reference shared protocol for validation commands
         const decomposerContent = await readTemplate('universal/skills/spec-driven-task-decomposer/SKILL.md');
         const implementerContent = await readTemplate('universal/skills/spec-driven-task-implementer/SKILL.md');
-        const sharedProtocolContent = await readTemplate('universal/skills/shared/references/shared-protocol.md');
+        const sharedProtocolContent = await readTemplate('universal/skills/spec-driven-shared-protocol/references/shared-protocol.md');
 
         // Phase skills should reference shared protocol
-        expect(decomposerContent).toContain('spec-driven-shared');
-        expect(implementerContent).toContain('spec-driven-shared');
+        expect(decomposerContent).toContain('spec-driven-shared-protocol');
+        expect(implementerContent).toContain('spec-driven-shared-protocol');
 
         // Shared protocol should contain validation commands
         expect(sharedProtocolContent).toContain('sds validate spec');
@@ -95,12 +95,12 @@ describe('Unit: template validation guidance', () => {
     it('requires evidence for design code anatomy and bounded context loading', async () => {
         // Phase skills reference shared content; check both locations
         const designerContent = await readTemplate('universal/skills/spec-driven-technical-designer/SKILL.md');
-        const designerTemplateContent = await readTemplate('universal/skills/shared/references/document-templates.md');
+        const designerTemplateContent = await readTemplate('universal/skills/spec-driven-shared-protocol/references/document-templates.md');
         const implementerContent = await readTemplate('universal/skills/spec-driven-task-implementer/SKILL.md');
-        const sharedProtocolContent = await readTemplate('universal/skills/shared/references/shared-protocol.md');
+        const sharedProtocolContent = await readTemplate('universal/skills/spec-driven-shared-protocol/references/shared-protocol.md');
 
         // Designer SKILL.md should reference shared templates
-        expect(designerContent).toContain('spec-driven-shared');
+        expect(designerContent).toContain('spec-driven-shared-protocol');
 
         // Shared templates should contain the design table structure
         expect(designerTemplateContent).toContain('| File Path | Status | Evidence | Purpose | Implements |');
@@ -129,15 +129,15 @@ describe('Unit: template validation guidance', () => {
         const designerSkillContent = await readTemplate('universal/skills/spec-driven-technical-designer/SKILL.md');
         const decomposerSkillContent = await readTemplate('universal/skills/spec-driven-task-decomposer/SKILL.md');
         const implementerSkillContent = await readTemplate('universal/skills/spec-driven-task-implementer/SKILL.md');
-        const documentTemplatesContent = await readTemplate('universal/skills/shared/references/document-templates.md');
+        const documentTemplatesContent = await readTemplate('universal/skills/spec-driven-shared-protocol/references/document-templates.md');
         const auditDesignContent = await readTemplate('universal/skills/agent-work-auditor/artifacts/design.md');
         const auditConsistencyContent = await readTemplate('universal/skills/agent-work-auditor/dimensions/consistency.md');
 
         // Phase skills should reference shared templates
-        expect(requirementsSkillContent).toContain('spec-driven-shared');
-        expect(designerSkillContent).toContain('spec-driven-shared');
-        expect(decomposerSkillContent).toContain('spec-driven-shared');
-        expect(implementerSkillContent).toContain('spec-driven-shared');
+        expect(requirementsSkillContent).toContain('spec-driven-shared-protocol');
+        expect(designerSkillContent).toContain('spec-driven-shared-protocol');
+        expect(decomposerSkillContent).toContain('spec-driven-shared-protocol');
+        expect(implementerSkillContent).toContain('spec-driven-shared-protocol');
 
         // Shared templates should contain the template structures
         expect(documentTemplatesContent).toContain('## Overview');
@@ -197,7 +197,7 @@ describe('Unit: template validation guidance', () => {
     });
 
     it('requires Confidence Gate Protocol in shared protocol', async () => {
-        const content = await readTemplate('universal/skills/shared/references/shared-protocol.md');
+        const content = await readTemplate('universal/skills/spec-driven-shared-protocol/references/shared-protocol.md');
         expect(content).toContain('## Confidence Gate Protocol');
         expect(content).toContain('Red Team Challenge');
         expect(content).toContain('Confidence: X%');
