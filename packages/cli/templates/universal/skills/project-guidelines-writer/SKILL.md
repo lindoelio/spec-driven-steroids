@@ -154,6 +154,9 @@ When generating `AGENTS.md`, always include:
 
 2. The Behavioral Guidelines section (see below) inserted after "Agent Constraints"
 
+3. The Spec Artifact Exclusion rule under "Agent Constraints":
+   - Never read `.specs/changes/<slug>/` artifacts (requirements.md, design.md, tasks.md) as context for any task unless you are explicitly in a spec-driven workflow for that specific `<slug>` or the user explicitly references that specific spec artifact
+
 ## Behavioral Guidelines Specification
 
 When generating `AGENTS.md`, include this Behavioral Guidelines section after "Agent Constraints":

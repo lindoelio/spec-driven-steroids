@@ -41,6 +41,10 @@ When writing code here, always run `pnpm typecheck` before considering a change 
 - **Platform template changes**: When editing template files under `packages/cli/templates/`, ensure corresponding E2E tests in `packages/cli/tests/integration/` are updated because many tests verify template content assertions.
 - **Template source**: When adding or modifying template files, update `STEROIDS_SKILL_DIRS` and `STEROIDS_FILES` in `packages/cli/src/cli/index.ts` if the new files must be tracked for clean and injection.
 - **No direct implementation requests**: Agents must never skip the Spec-Driven phases. Implementation must always follow the full flow (`requirements → design → tasks → implementation`). See [CONTRIBUTING.md](CONTRIBUTING.md) for the PR process.
+- **Spec artifact exclusion**: Never read `.specs/changes/<slug>/` artifacts (requirements.md, design.md, tasks.md) as context for any task unless:
+  - You are explicitly in a spec-driven workflow for that specific `<slug>`, OR
+  - The user explicitly references or asks about that specific spec artifact
+  - Treat spec artifacts as ephemeral snapshots of past intent — they do not reflect current codebase state and must never be used as implementation reference outside their own spec-driven flow.
 
 ## Behavioral Guidelines
 
