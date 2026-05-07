@@ -1,6 +1,5 @@
 ---
 description: Start the spec-driven workflow at Phase 1 requirements
-agent: Spec-Driven
 ---
 
 Start Spec-Driven planning for this request:

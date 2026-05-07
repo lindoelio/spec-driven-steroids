@@ -36,6 +36,11 @@ export interface PlatformConfig {
   specDrivenCommandFilename: string;
   /** Inject-guidelines command output filename */
   injectGuidelinesCommandFilename: string;
+  /** Per-command agent mapping for platforms that support agent delegation */
+  commandAgents?: {
+    'spec-driven-command'?: string;
+    'inject-guidelines-command'?: string;
+  };
 }
 
 /**
@@ -55,7 +60,10 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     agentFilename: 'spec-driven.agent.md',
     commandDirectory: 'prompts',
     specDrivenCommandFilename: 'spec-driven.prompt.md',
-    injectGuidelinesCommandFilename: 'inject-guidelines.prompt.md'
+    injectGuidelinesCommandFilename: 'inject-guidelines.prompt.md',
+    commandAgents: {
+      'spec-driven-command': 'Spec-Driven'
+    }
   },
   'github-jetbrains': {
     id: 'github-jetbrains',
@@ -70,7 +78,10 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     agentFilename: 'spec-driven.agent.md',
     commandDirectory: 'prompts',
     specDrivenCommandFilename: 'spec-driven.prompt.md',
-    injectGuidelinesCommandFilename: 'inject-guidelines.prompt.md'
+    injectGuidelinesCommandFilename: 'inject-guidelines.prompt.md',
+    commandAgents: {
+      'spec-driven-command': 'Spec-Driven'
+    }
   },
   'claudecode': {
     id: 'claudecode',
@@ -85,7 +96,10 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     agentFilename: 'spec-driven.md',
     commandDirectory: 'commands',
     specDrivenCommandFilename: 'spec-driven.md',
-    injectGuidelinesCommandFilename: 'inject-guidelines.md'
+    injectGuidelinesCommandFilename: 'inject-guidelines.md',
+    commandAgents: {
+      'spec-driven-command': 'Spec-Driven'
+    }
   },
     'opencode': {
     id: 'opencode',
@@ -103,7 +117,11 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     agentFilename: 'spec-driven.agent.md',
     commandDirectory: 'commands',
     specDrivenCommandFilename: 'spec-driven.md',
-    injectGuidelinesCommandFilename: 'inject-guidelines.md'
+    injectGuidelinesCommandFilename: 'inject-guidelines.md',
+    commandAgents: {
+      'spec-driven-command': 'Spec-Driven',
+      'inject-guidelines-command': 'build'
+    }
   },
   'codex': {
     id: 'codex',
@@ -148,7 +166,10 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     agentFilename: 'spec-driven.agent.md',
     commandDirectory: 'commands',
     specDrivenCommandFilename: 'spec-driven.md',
-    injectGuidelinesCommandFilename: 'inject-guidelines.md'
+    injectGuidelinesCommandFilename: 'inject-guidelines.md',
+    commandAgents: {
+      'spec-driven-command': 'Spec-Driven'
+    }
   },
   'gemini-cli': {
     id: 'gemini-cli',
@@ -178,7 +199,10 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     agentFilename: 'spec-driven.agent.md',
     commandDirectory: 'commands',
     specDrivenCommandFilename: 'spec-driven.md',
-    injectGuidelinesCommandFilename: 'inject-guidelines.md'
+    injectGuidelinesCommandFilename: 'inject-guidelines.md',
+    commandAgents: {
+      'spec-driven-command': 'Spec-Driven'
+    }
   }
 };
 

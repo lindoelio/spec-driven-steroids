@@ -19,6 +19,7 @@ describe('Unit: Platform Config', () => {
       expect(config?.frontmatter.fields.name).toBe('Spec-Driven');
       expect(config?.agentDirectory).toBe('agents');
       expect(config?.agentFilename).toBe('spec-driven.agent.md');
+      expect(config?.commandAgents?.['spec-driven-command']).toBe('Spec-Driven');
     });
 
     it('returns config for github-jetbrains', () => {
@@ -39,6 +40,8 @@ describe('Unit: Platform Config', () => {
       expect(config).toBeDefined();
       expect(config?.format).toBe(FormatType.MARKDOWN);
       expect(config?.frontmatter.additionalFields?.mode).toBe('primary');
+      expect(config?.commandAgents?.['spec-driven-command']).toBe('Spec-Driven');
+      expect(config?.commandAgents?.['inject-guidelines-command']).toBe('build');
     });
 
     it('returns config for codex', () => {

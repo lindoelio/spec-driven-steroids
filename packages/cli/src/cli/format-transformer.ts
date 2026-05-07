@@ -23,17 +23,25 @@ export function transformToMarkdown(body: string, config: PlatformConfig, source
   if (name) frontmatterLines.push(`name: ${escapeYamlString(name)}`);
   if (description) frontmatterLines.push(`description: ${escapeYamlString(description)}`);
 
-  // Add standard fields not already added
+  // Add standard fields not already added (skip agent — it is platform-mapped below)
   for (const [key, value] of Object.entries(sourceFrontmatter)) {
-    if (key !== 'name' && key !== 'description' && !config.frontmatter.additionalFields?.[key]) {
+    if (key !== 'name' && key !== 'description' && key !== 'agent' && !config.frontmatter.additionalFields?.[key]) {
       frontmatterLines.push(`${key}: ${escapeYamlString(value)}`);
     }
   }
-  
+
   // Add additional fields if present
   if (config.frontmatter.additionalFields) {
     for (const [key, value] of Object.entries(config.frontmatter.additionalFields)) {
       frontmatterLines.push(`${key}: ${escapeYamlString(value)}`);
+    }
+  }
+
+  // Add platform-mapped agent field for commands when configured
+  if (outputType && outputType !== 'agent') {
+    const mappedAgent = config.commandAgents?.[outputType as 'spec-driven-command' | 'inject-guidelines-command'];
+    if (mappedAgent) {
+      frontmatterLines.push(`agent: ${escapeYamlString(mappedAgent)}`);
     }
   }
   
@@ -108,11 +116,19 @@ export function transformToToml(body: string, config: PlatformConfig, sourceFron
   // Add description field
   lines.push(`description = "${escapeTomlString(description)}"`);
   
+  // Add platform-mapped agent field for commands when configured
+  if (outputType && outputType !== 'agent') {
+    const mappedAgent = config.commandAgents?.[outputType as 'spec-driven-command' | 'inject-guidelines-command'];
+    if (mappedAgent) {
+      lines.push(`agent = "${escapeTomlString(mappedAgent)}"`);
+    }
+  }
+
   // Add developer_instructions as multi-line string
   lines.push('developer_instructions = """');
   lines.push(escapeTomlMultilineBody(body));
   lines.push('"""');
-  
+
   // Add sandbox_mode
   lines.push('sandbox_mode = "workspace-write"');
   

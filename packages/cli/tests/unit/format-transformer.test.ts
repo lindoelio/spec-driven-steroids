@@ -38,8 +38,52 @@ You MUST enforce this lifecycle exactly.`;
     it('includes additional fields for OpenCode', () => {
       const config = PLATFORM_CONFIGS['opencode'];
       const result = transformToMarkdown(testBody, config);
-      
+
       expect(result).toContain('mode: primary');
+    });
+
+    it('emits platform-mapped agent for spec-driven command on OpenCode', () => {
+      const config = PLATFORM_CONFIGS['opencode'];
+      const result = transformToMarkdown(testBody, config, {}, 'spec-driven-command');
+
+      expect(result).toContain('agent: Spec-Driven');
+    });
+
+    it('emits platform-mapped agent for inject-guidelines command on OpenCode', () => {
+      const config = PLATFORM_CONFIGS['opencode'];
+      const result = transformToMarkdown(testBody, config, {}, 'inject-guidelines-command');
+
+      expect(result).toContain('agent: build');
+    });
+
+    it('emits platform-mapped agent for spec-driven command on VSCode', () => {
+      const config = PLATFORM_CONFIGS['github-vscode'];
+      const result = transformToMarkdown(testBody, config, {}, 'spec-driven-command');
+
+      expect(result).toContain('agent: Spec-Driven');
+    });
+
+    it('omits agent field for inject-guidelines command on VSCode', () => {
+      const config = PLATFORM_CONFIGS['github-vscode'];
+      const result = transformToMarkdown(testBody, config, {}, 'inject-guidelines-command');
+
+      expect(result).not.toContain('agent:');
+    });
+
+    it('omits agent field for commands on antigravity', () => {
+      const config = PLATFORM_CONFIGS['antigravity'];
+      const result = transformToMarkdown(testBody, config, {}, 'inject-guidelines-command');
+
+      expect(result).not.toContain('agent:');
+    });
+
+    it('ignores agent in source frontmatter and uses platform mapping instead', () => {
+      const config = PLATFORM_CONFIGS['github-vscode'];
+      const sourceFrontmatter = { agent: 'build' };
+      const result = transformToMarkdown(testBody, config, sourceFrontmatter, 'spec-driven-command');
+
+      expect(result).toContain('agent: Spec-Driven');
+      expect(result).not.toContain('agent: build');
     });
   });
 

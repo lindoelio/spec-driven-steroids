@@ -338,6 +338,7 @@ describe('CLI E2E: inject command', () => {
         expect(githubPromptContent.includes('Do not treat missing guideline files as optional.')).toBe(true);
         expect(githubPromptContent.includes('Testing Trophy')).toBe(true);
         expect(githubPromptContent.includes('default generated `TESTING.md` to Testing Trophy guidance')).toBe(true);
+        expect(githubPromptContent.includes('agent:')).toBe(false);
         expect(await fs.pathExists(path.join(targetDir, '.github', 'agents', 'inject-guidelines.agent.md'))).toBe(false);
 
         const antigravityGuidelinesPath = path.join(targetDir, '.agents', 'workflows', 'inject-guidelines.md');
@@ -346,6 +347,7 @@ describe('CLI E2E: inject command', () => {
         expect(antigravityGuidelinesContent.includes('Do not treat missing guideline files as optional.')).toBe(true);
         expect(antigravityGuidelinesContent.includes('Testing Trophy')).toBe(true);
         expect(antigravityGuidelinesContent.includes('default generated `TESTING.md` to Testing Trophy guidance')).toBe(true);
+        expect(antigravityGuidelinesContent.includes('agent:')).toBe(false);
 
         const opencodeGuidelinesPath = path.join(targetDir, '.opencode', 'commands', 'inject-guidelines.md');
         const opencodeGuidelinesContent = await fs.readFile(opencodeGuidelinesPath, 'utf-8');
@@ -353,7 +355,8 @@ describe('CLI E2E: inject command', () => {
         expect(opencodeGuidelinesContent.includes('Do not treat missing guideline files as optional.')).toBe(true);
         expect(opencodeGuidelinesContent.includes('Testing Trophy')).toBe(true);
         expect(opencodeGuidelinesContent.includes('default generated `TESTING.md` to Testing Trophy guidance')).toBe(true);
-        
+        expect(opencodeGuidelinesContent.includes('agent: build')).toBe(true);
+
         expect(await fs.pathExists(path.join(targetDir, '.opencode', 'commands', 'inject-guidelines.command.md'))).toBe(false);
     });
 

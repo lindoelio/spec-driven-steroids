@@ -1,5 +1,11 @@
 # spec-driven-steroids
 
+## 0.12.1
+
+### Patch Changes
+
+- Fix cross-platform agent field injection: remove hardcoded `agent` from universal templates and map it per-platform via `PlatformConfig.commandAgents`. VSCode/JetBrains inject-guidelines no longer incorrectly emits `agent: build`. OpenCode retains `agent: build` for inject-guidelines and `agent: Spec-Driven` for spec-driven commands.
+
 ## 0.12.0
 
 ### Minor Changes
