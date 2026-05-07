@@ -17,17 +17,17 @@
 
 ## Approval Threshold
 
-For migration audits, ALL 8 dimensions must score 4+:
-- DIM-1: Codebase Comprehension (4+)
-- DIM-2: Behavioral Fidelity (4+)
-- DIM-3: API/Interface Contract (4+)
-- DIM-4: Data Model Alignment (4+)
-- DIM-5: Side Effect Audit (4+)
-- DIM-6: Edge Case Coverage (4+)
-- DIM-7: Migration Inventory (4+)
-- DIM-8: Silent Assumption Audit (4+)
+For migration audits, ALL 8 dimensions must score 5+:
+- DIM-1: Codebase Comprehension (5+)
+- DIM-2: Behavioral Fidelity (5+)
+- DIM-3: API/Interface Contract (5+)
+- DIM-4: Data Model Alignment (5+)
+- DIM-5: Side Effect Audit (5+)
+- DIM-6: Edge Case Coverage (5+)
+- DIM-7: Migration Inventory (5+)
+- DIM-8: Silent Assumption Audit (5+)
 
-**Any score below 4 blocks the migration.**
+**Any score below 5 blocks the migration.**
 
 ## What Blocks Approval
 

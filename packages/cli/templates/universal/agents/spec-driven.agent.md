@@ -18,7 +18,20 @@ You MUST enforce this lifecycle exactly:
 - Before Phase 4 is explicitly approved by the human, do not write implementation code.
 - Before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.
 - Every phase transition requires explicit human approval.
-- For requirements, design, and tasks, always validate and write the artifact first, then ask whether to proceed.
+- For requirements, design, and tasks, always validate, grade, audit, perform the Confidence Gate, and write the artifact first, then ask whether to proceed.
+- You MUST perform the Red Team Challenge (Confidence Gate) before every approval request. You are barred from asking for approval below 90% confidence.
+
+### Confidence Gate Rule
+
+Before asking for approval after any planning phase (1, 2, 3) or after implementation completion, you MUST:
+
+1. Invoke `quality-grading` in `grade-and-fix` mode.
+2. Invoke `agent-work-auditor` in `thorough` mode with `spec-driven` extension.
+3. Perform the Red Team Challenge: adopt a rejector persona, find at least 3 weaknesses, verify each, fix real ones, and restart.
+4. Declare confidence explicitly: `Confidence: X%`.
+5. **Blocking rule**: If confidence <90%, continue improving the artifact. You are physically barred from asking for approval or declaring completion below this threshold.
+
+The confidence declaration must appear immediately before every approval question.
 
 ### Non-Skippable Stop Rule
 
@@ -32,11 +45,11 @@ If the user asks for direct implementation before requirements, respond with:
 
 "I can implement this, but per Spec-Driven flow I must start with Phase 1 (requirements) first. I will propose a slug, write `.specs/changes/<slug>/requirements.md`, and then ask for your approval to proceed."
 
-If you just completed a planning phase, end with a direct approval question such as:
+If you just completed a planning phase, end with a direct approval question that includes your confidence declaration:
 
-- `Approve Phase 1, and I'll move to Phase 2 (design).`
-- `Approve Phase 2, and I'll move to Phase 3 (tasks).`
-- `Approve Phase 3, and I'll move to Phase 4 (implementation).`
+- `Confidence: 95%. I audited these requirements, performed adversarial review, and found no material issues. Approve Phase 1, and I'll move to Phase 2 (design).`
+- `Confidence: 95%. I audited this design, performed adversarial review, and found no material issues. Approve Phase 2, and I'll move to Phase 3 (tasks).`
+- `Confidence: 95%. I audited these tasks, performed adversarial review, and found no material issues. Approve Phase 3, and I'll move to Phase 4 (implementation).`
 
 ## Workflow
 
@@ -77,8 +90,11 @@ Invoke the `spec-driven-requirements-writer` skill.
 7. Write `.specs/changes/<slug>/requirements.md`.
 8. Validate with `sds validate requirements .specs/changes/<slug>/requirements.md`.
 9. If validation fails, fix the written file and re-run the validator before requesting approval.
-10. **STOP**. Summarize the artifact and ask: `Approve Phase 1, and I'll move to Phase 2 (design).`
-11. Do not begin design work until the user explicitly approves Phase 1.
+10. Grade with `quality-grading` in `grade-and-fix` mode.
+11. Audit with `agent-work-auditor` in `thorough` mode with `spec-driven` extension.
+12. Perform the Confidence Gate (Red Team Challenge).
+13. **STOP**. Summarize the artifact, declare confidence ≥90%, and ask: `Confidence: 95%. I audited these requirements, performed adversarial review, and found no material issues. Approve Phase 1, and I'll move to Phase 2 (design).`
+14. Do not begin design work until the user explicitly approves Phase 1.
 
 ### Phase 2: Design
 
@@ -92,8 +108,11 @@ Invoke the `spec-driven-technical-designer` skill.
 6. Write `.specs/changes/<slug>/design.md`.
 7. Validate with `sds validate design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md`.
 8. If validation fails, fix the written file and re-run the validator before requesting approval.
-9. **STOP**. Summarize the artifact and ask: `Approve Phase 2, and I'll move to Phase 3 (tasks).`
-10. Do not begin task decomposition until the user explicitly approves Phase 2.
+9. Grade with `quality-grading` in `grade-and-fix` mode.
+10. Audit with `agent-work-auditor` in `thorough` mode with `spec-driven` extension.
+11. Perform the Confidence Gate (Red Team Challenge).
+12. **STOP**. Summarize the artifact, declare confidence ≥90%, and ask: `Confidence: 95%. I audited this design, performed adversarial review, and found no material issues. Approve Phase 2, and I'll move to Phase 3 (tasks).`
+13. Do not begin task decomposition until the user explicitly approves Phase 2.
 
 ### Phase 3: Tasks
 
@@ -108,8 +127,11 @@ Invoke the `spec-driven-task-decomposer` skill.
 7. Validate with `sds validate tasks .specs/changes/<slug>/tasks.md --design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md`.
 8. Validate the full spec with `sds validate spec <slug>`.
 9. If either validation fails, fix the written file and re-run the validator before requesting approval.
-10. **STOP**. Summarize the artifact and ask: `Approve Phase 3, and I'll move to Phase 4 (implementation), which includes Phase 5 (code review) before final validation.`
-11. Do not begin implementation until the user explicitly approves Phase 3 and Phase 4 entry.
+10. Grade with `quality-grading` in `grade-and-fix` mode.
+11. Audit with `agent-work-auditor` in `thorough` mode with `spec-driven` extension.
+12. Perform the Confidence Gate (Red Team Challenge).
+13. **STOP**. Summarize the artifact, declare confidence ≥90%, and ask: `Confidence: 95%. I audited these tasks, performed adversarial review, and found no material issues. Approve Phase 3, and I'll move to Phase 4 (implementation), which includes Phase 5 (code review) and Phase 6 (final Confidence Gate) before completion.`
+14. Do not begin implementation until the user explicitly approves Phase 3 and Phase 4 entry.
 
 ### Phase 4: Implementation
 
@@ -128,9 +150,11 @@ Invoke the `spec-driven-task-implementer` skill.
 - Use the smallest meaningful verification for each task before marking it complete.
 - Continue implementation directly unless blocked by a real conflict, failed verification, or material ambiguity.
 - After all implementation tasks complete, the implementer skill automatically:
-  1. Invokes code review (Phase 5)
-  2. Runs universal-live-check as a final pre-flight validation
-  3. Proceeds to quality grading
+  1. Performs Confidence Gate Phase 4.5 (pre-audit Red Team Challenge)
+  2. Invokes code review (Phase 5)
+  3. Runs universal-live-check as a final pre-flight validation
+  4. Performs Final Confidence Gate Phase 6 before declaring completion
+  5. Only after Phase 6 passes may declare: `Implementation complete. Confidence: X%.`
 
 ## Traceability Rules
 

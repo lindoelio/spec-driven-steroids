@@ -33,7 +33,10 @@ When this skill begins execution, create a todo list containing the following it
 6. Design architecture with design elements
 7. Save design.md
 8. Validate design
-9. Audit design (agent-work-auditor)
+9. Grade design (quality-grading, grade-and-fix)
+10. Audit design (agent-work-auditor, thorough, spec-driven)
+11. Perform Confidence Gate (Red Team Challenge)
+12. Declare confidence level ≥90%
 
 ### Progress Rules
 
@@ -187,6 +190,18 @@ Write `.specs/changes/<slug>/design.md` before requesting review. Keep the desig
 If enough information is available, produce the full `design.md` content directly.
 
 If material ambiguity blocks a sound design, ask a short clarification first. Do not produce a low-confidence architecture.
+
+## Quality Grading Integration
+
+After completing design and before requesting approval, invoke the `quality-grading` skill:
+
+```
+Invoke: quality-grading skill
+Artifact: .specs/changes/<slug>/design.md
+Mode: grade-and-fix
+```
+
+The quality-grading skill will auto-fix issues scoring below 5. Re-grade after fixes. No dimension may score below 5. If any dimension scores below 5 after auto-fix, continue improving the artifact until all dimensions score 5 or higher.
 
 ## Contextual Stewardship Integration
 

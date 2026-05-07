@@ -35,7 +35,10 @@ When this skill begins execution, create a todo list containing the following it
 8. Add final checkpoint phase
 9. Save tasks.md
 10. Validate tasks
-11. Audit tasks (agent-work-auditor)
+11. Grade tasks (quality-grading, grade-and-fix)
+12. Audit tasks (agent-work-auditor, thorough, spec-driven)
+13. Perform Confidence Gate (Red Team Challenge)
+14. Declare confidence level ≥90%
 
 ### Progress Rules
 
@@ -212,6 +215,18 @@ Write `.specs/changes/<slug>/tasks.md` before requesting review. Prefer validato
 If enough information is available, produce the full `tasks.md` content directly.
 
 If material ambiguity blocks a sound task plan, ask a short clarification first. Do not produce a low-confidence decomposition.
+
+## Quality Grading Integration
+
+After completing tasks and before requesting approval, invoke the `quality-grading` skill:
+
+```
+Invoke: quality-grading skill
+Artifact: .specs/changes/<slug>/tasks.md
+Mode: grade-and-fix
+```
+
+The quality-grading skill will auto-fix issues scoring below 5. Re-grade after fixes. No dimension may score below 5. If any dimension scores below 5 after auto-fix, continue improving the artifact until all dimensions score 5 or higher.
 
 ## Contextual Stewardship Integration
 

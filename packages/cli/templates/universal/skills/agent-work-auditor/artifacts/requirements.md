@@ -42,3 +42,14 @@ Guidance for auditing requirements documents (specifications, acceptance criteri
 - Requirements are unambiguous
 - Scope is clear
 - Assumptions are documented
+
+## Red Team Questions (Confidence Gate)
+
+When auditing requirements, adopt a rejector persona and answer these adversarial questions. You must find at least 3 plausible weaknesses before declaring confidence.
+
+1. **Did I miss edge cases that make these untestable?** Would a developer know exactly what NOT to build? What hidden assumptions are unstated?
+2. **Are the acceptance criteria truly testable?** Could an independent tester verify each criterion without asking clarifying questions? Is every criterion a single, observable behavior?
+3. **Is scope creep already hiding in the requirements?** Are there vague verbs (`support`, `handle`, `manage`) that could expand the scope indefinitely?
+4. **Would a malicious reader misinterpret any requirement?** Are there ambiguous terms that lack glossary definitions? Are boundary conditions (null, empty, max values) specified?
+5. **Do the requirements collectively solve the user's stated problem?** Is there a requirement that does not trace to the original user need? Is there a user need with no requirement covering it?
+6. **Are error handling and recovery requirements complete?** What happens when every upstream dependency fails? Are failure modes specified with EARS syntax?

@@ -27,11 +27,32 @@ Before invoking the phase-specific skill, you MUST collect and pass repository c
 
 ### Approval Questions
 
-After completing a planning phase, end with a direct approval question:
+After completing a planning phase, end with a direct approval question that includes your confidence declaration:
 
-- `Approve Phase 1, and I'll move to Phase 2 (design).`
-- `Approve Phase 2, and I'll move to Phase 3 (tasks).`
-- `Approve Phase 3, and I'll move to Phase 4 (implementation).`
+- `Confidence: 95%. I audited these requirements, performed adversarial review, and found no material issues. Approve Phase 1, and I'll move to Phase 2 (design).`
+- `Confidence: 95%. I audited this design, performed adversarial review, and found no material issues. Approve Phase 2, and I'll move to Phase 3 (tasks).`
+- `Confidence: 95%. I audited these tasks, performed adversarial review, and found no material issues. Approve Phase 3, and I'll move to Phase 4 (implementation).`
+
+## Confidence Gate Protocol
+
+**Before asking the user for approval, you MUST perform a Red Team Challenge.**
+
+The Red Team Challenge is a mandatory adversarial self-review. You are not allowed to ask for human approval until you have completed it and declared a confidence level of 90% or higher.
+
+### Steps
+
+1. **Adopt the persona** of a skeptical senior engineer who wants to **REJECT** this artifact.
+2. **Find at least 3 specific weaknesses, gaps, or errors** that would justify rejection. Use the artifact-specific Red Team questions in the `agent-work-auditor` skill's artifact guides.
+3. **For each finding**: verify if it is real. If real, fix it and restart the Confidence Gate from step 1. If not real, document why in your reasoning.
+4. **Declare your confidence level explicitly** using this exact format: `Confidence: X%` where X is your honest assessment (e.g., 90%, 95%, 100%).
+5. **Blocking rule**: If confidence is below 90%, you MUST continue improving the artifact until it reaches 90% or higher. You are physically barred from asking for approval below this threshold.
+
+### Confidence Declaration Rules
+
+- Be honest. Do not inflate confidence to bypass the gate.
+- If you found real issues and fixed them, confidence can rise. If you found none but feel uneasy, confidence stays low until you investigate further.
+- The confidence declaration must appear in the same response as the approval request, immediately before it.
+- Example: `Confidence: 92%. I found and fixed 2 traceability gaps and verified EARS syntax. Approve Phase 1?`
 
 ### Skill Invocation Guard
 
@@ -42,8 +63,11 @@ When invoking any spec-driven skill, you MUST follow this exact sequence:
 3. Wait for the skill to produce its artifact
 4. Write the artifact to the appropriate file path
 5. Run the validator against the written file, fix failures in the file, and re-run validation until it passes or a real blocker is reported
-6. **STOP** — Do NOT invoke the next skill or continue to the next phase
-7. Summarize the artifact and ask for explicit human approval
+6. Invoke `quality-grading` skill in `grade-and-fix` mode on the artifact
+7. Invoke `agent-work-auditor` skill in `thorough` mode with `spec-driven` extension
+8. Perform the Confidence Gate Protocol (Red Team Challenge) on the artifact
+9. **STOP** — Do NOT invoke the next skill or continue to the next phase
+10. Summarize the artifact, declare confidence ≥90%, and ask for explicit human approval
 
 The skill's output or "direct" production of content does NOT mean the phase is complete. You MUST stop after writing the artifact and await approval before proceeding.
 
@@ -110,7 +134,10 @@ Create a todo list containing the following items in `pending` state:
 3. Analyze/Design/Decompose based on phase
 4. Write artifact
 5. Validate artifact
-6. Audit artifact (agent-work-auditor)
+6. Grade artifact (quality-grading, grade-and-fix)
+7. Audit artifact (agent-work-auditor, thorough, spec-driven)
+8. Perform Confidence Gate (Red Team Challenge)
+9. Declare confidence level ≥90%
 
 ### Progress Rules
 

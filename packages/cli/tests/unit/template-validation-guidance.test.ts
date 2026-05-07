@@ -40,7 +40,7 @@ describe('Unit: template validation guidance', () => {
         expect(content.indexOf('Write `.specs/changes/<slug>/requirements.md`.')).toBeLessThan(
             content.indexOf('Validate with `sds validate requirements .specs/changes/<slug>/requirements.md`.')
         );
-        expect(content).not.toContain('Invoke the `quality-grading` skill in `grade-and-fix` mode');
+        expect(content).toContain('Grade with `quality-grading` in `grade-and-fix` mode');
     });
 
     it('hardens Codex planner templates against phase-skipping', async () => {
@@ -194,6 +194,62 @@ describe('Unit: template validation guidance', () => {
             const content = await readTemplate(target);
             expect(content.length).toBeGreaterThan(0);
         }
+    });
+
+    it('requires Confidence Gate Protocol in shared protocol', async () => {
+        const content = await readTemplate('universal/skills/shared/references/shared-protocol.md');
+        expect(content).toContain('## Confidence Gate Protocol');
+        expect(content).toContain('Red Team Challenge');
+        expect(content).toContain('Confidence: X%');
+        expect(content).toContain('If confidence is below 90%');
+        expect(content).toContain('Grade artifact (quality-grading, grade-and-fix)');
+        expect(content).toContain('Audit artifact (agent-work-auditor, thorough, spec-driven)');
+        expect(content).toContain('Perform Confidence Gate (Red Team Challenge)');
+        expect(content).toContain('Declare confidence level ≥90%');
+    });
+
+    it('requires Red Team questions in auditor artifact guides', async () => {
+        const requirementsAudit = await readTemplate('universal/skills/agent-work-auditor/artifacts/requirements.md');
+        const designAudit = await readTemplate('universal/skills/agent-work-auditor/artifacts/design.md');
+        const tasksAudit = await readTemplate('universal/skills/agent-work-auditor/artifacts/tasks.md');
+
+        expect(requirementsAudit).toContain('## Red Team Questions (Confidence Gate)');
+        expect(designAudit).toContain('## Red Team Questions (Confidence Gate)');
+        expect(tasksAudit).toContain('## Red Team Questions (Confidence Gate)');
+
+        expect(requirementsAudit).toContain('Did I miss edge cases that make these untestable?');
+        expect(designAudit).toContain('Does this design actually solve the requirements');
+        expect(tasksAudit).toContain('Are any tasks too large for one focused session?');
+    });
+
+    it('requires Confidence Gate Rule in spec-driven planner', async () => {
+        const content = await readTemplate('universal/agents/spec-driven.agent.md');
+        expect(content).toContain('### Confidence Gate Rule');
+        expect(content).toContain('Red Team Challenge');
+        expect(content).toContain('confidence <90%');
+        expect(content).toContain('physically barred');
+        expect(content).toContain('Confidence: 95%');
+    });
+
+    it('requires quality-grading integration in all planning phase skills', async () => {
+        const requirementsSkill = await readTemplate('universal/skills/spec-driven-requirements-writer/SKILL.md');
+        const designerSkill = await readTemplate('universal/skills/spec-driven-technical-designer/SKILL.md');
+        const decomposerSkill = await readTemplate('universal/skills/spec-driven-task-decomposer/SKILL.md');
+
+        expect(requirementsSkill).toContain('Grade requirements (quality-grading, grade-and-fix)');
+        expect(designerSkill).toContain('Grade design (quality-grading, grade-and-fix)');
+        expect(decomposerSkill).toContain('Grade tasks (quality-grading, grade-and-fix)');
+
+        expect(requirementsSkill).toContain('## Quality Grading Integration');
+        expect(designerSkill).toContain('## Quality Grading Integration');
+        expect(decomposerSkill).toContain('## Quality Grading Integration');
+    });
+
+    it('requires Confidence Gate phases in task implementer skill', async () => {
+        const content = await readTemplate('universal/skills/spec-driven-task-implementer/SKILL.md');
+        expect(content).toContain('## Phase 4.5: Confidence Gate (Pre-Audit)');
+        expect(content).toContain('## Phase 6: Final Confidence Gate');
+        expect(content).toContain('You may not proceed to Phase 5 until confidence is ≥90%');
     });
 
     it('publishes templates independently from the npm package release flow', async () => {

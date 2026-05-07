@@ -170,9 +170,20 @@ If the requested task or phase is implementable, execute it directly.
 
 If material ambiguity or a blocking spec conflict prevents safe implementation, ask a short clarification instead.
 
+## Phase 4.5: Confidence Gate (Pre-Audit)
+
+Before invoking Phase 5 auditing, perform a Red Team Challenge on the completed implementation:
+
+1. **Adopt rejector persona**: You are a code reviewer who wants to reject this change.
+2. **Find 3 weaknesses**: Look for untested edge cases, missing error handling, scope creep, or deviations from the design.
+3. **Verify and fix**: If real, fix before proceeding. If not real, document why.
+4. **Declare confidence**: State `Confidence: X%`. If <90%, continue improving before audit.
+
+You may not proceed to Phase 5 until confidence is ≥90%.
+
 ## Phase 5: Unified Auditing
 
-After all Phase 4 implementation tasks are complete, invoke the `agent-work-auditor` skill:
+After all Phase 4 implementation tasks are complete and the Phase 4.5 Confidence Gate is passed, invoke the `agent-work-auditor` skill:
 
 ```
 Invoke: agent-work-auditor skill
@@ -230,3 +241,15 @@ Output: Structured check report with pass/fail per check category
 The universal-live-check skill will classify affected domains, detect cross-domain contamination, run domain-specific checks, execute hierarchical validation, and perform self-healing loop.
 
 **Performance target:** Full live check run completes in <5s. If exceeded, abort and report partial results.
+
+## Phase 6: Final Confidence Gate
+
+After Phase 5 (Unified Auditing) and Live Check complete, perform a final Red Team Challenge before declaring the implementation finished:
+
+1. **Adopt rejector persona**: You are a senior engineer performing final sign-off. You want to reject the change.
+2. **Find 3 weaknesses**: Review the audit findings, live-check results, and implementation against the original requirements. Look for any gap between what was asked and what was built.
+3. **Verify and fix**: If real, fix before declaring finished. If not real, document why.
+4. **Declare final confidence**: State `Confidence: X%`.
+5. **Blocking rule**: If confidence <90%, you MUST NOT declare the implementation finished. Continue fixing or escalate to the user.
+
+Only after passing Phase 6 may you declare: `Implementation complete. Confidence: X%. All tasks verified.`

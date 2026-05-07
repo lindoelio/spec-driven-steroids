@@ -32,7 +32,10 @@ When this skill begins execution, create a todo list containing the following it
 5. Write EARS requirements
 6. Save requirements.md
 7. Validate requirements
-8. Audit requirements (agent-work-auditor)
+8. Grade requirements (quality-grading, grade-and-fix)
+9. Audit requirements (agent-work-auditor, thorough, spec-driven)
+10. Perform Confidence Gate (Red Team Challenge)
+11. Declare confidence level ≥90%
 
 ### Progress Rules
 
@@ -210,7 +213,7 @@ Artifact: .specs/changes/<slug>/requirements.md
 Mode: grade-and-fix
 ```
 
-The quality-grading skill will auto-fix issues scoring below 4.
+The quality-grading skill will auto-fix issues scoring below 5. Re-grade after fixes. No dimension may score below 5. If any dimension scores below 5 after auto-fix, continue improving the artifact until all dimensions score 5 or higher.
 
 ## Things To Avoid
 

@@ -1,6 +1,6 @@
 ---
 name: quality-grading
-description: Use this skill to grade code, specifications, or design documents across four quality dimensions using a 1-5 scoring scale. In grade-and-fix mode, the skill auto-improves artifacts scoring below 4 without prompting. Invoke when you want consistent quality assessment on design, implementation, or specification with actionable feedback and self-healing improvements.
+description: Use this skill to grade code, specifications, or design documents across four quality dimensions using a 1-5 scoring scale. In grade-and-fix mode, the skill auto-improves artifacts scoring below 5 without prompting. Invoke when you want consistent quality assessment on design, implementation, or specification with actionable feedback and self-healing improvements.
 ---
 
 # Quality Grading Skill
@@ -17,9 +17,9 @@ This skill provides a multi-dimensional quality grading system for any artifact 
 It supports two invocation modes:
 
 - **evaluate**: Score the artifact and return structured JSON results
-- **grade-and-fix**: Score the artifact, then auto-fix dimensions scoring below 4, re-grade, and provide final results
+- **grade-and-fix**: Score the artifact, then auto-fix dimensions scoring below 5, re-grade, and provide final results
 
-The skill targets score 4+ as the quality bar. Auto-fix attempts are limited to 3 per dimension to keep improvements pragmatic and avoid unnecessary complexity.
+The skill targets score 5+ as the quality bar. Auto-fix attempts are limited to 3 per dimension to keep improvements pragmatic and avoid unnecessary complexity.
 
 ## Invocation
 
@@ -27,7 +27,7 @@ Load this skill when:
 - You want quality feedback on code or implementation
 - You want quality feedback on design or architecture documents
 - You want quality feedback on specifications or requirements
-- You want to improve artifacts scoring below 4 automatically
+- You want to improve artifacts scoring below 5 automatically
 - You need consistent, calibrated quality assessments
 
 ### Input
@@ -41,7 +41,7 @@ Load this skill when:
 2. **Detect artifact type**: Determine if this is code, a specification, or a design document
 3. **Apply dimension rubrics**: Score each of the four dimensions independently, adapting criteria to artifact type
 4. **Use calibration examples**: Compare against few-shot examples for consistency
-5. **If grade-and-fix mode and score < 4**: Apply targeted auto-fix, re-grade, repeat up to 3 times
+5. **If grade-and-fix mode and score < 5**: Apply targeted auto-fix, re-grade, repeat up to 3 times
 6. **Generate JSON output**: Return structured results with scores, justifications, and suggestions
 
 ## Grading Dimensions
@@ -70,7 +70,7 @@ Load this skill when:
 | 2 | Weak architecture with unclear module boundaries, limited separation of concerns |
 | 1 | Poor architecture with tangled dependencies, no clear modules, intermingled concerns |
 
-**Auto-Fix (score < 4)**:
+**Auto-Fix (score < 5)**:
 - Add missing module boundaries or clear separation between concerns
 - Consolidate tangled dependencies into logical modules
 - Simplify overly complex architectural patterns
@@ -99,7 +99,7 @@ Load this skill when:
 | 2 | Mostly generic with minimal adaptation to the problem |
 | 1 | Generic, copy-paste solution with no adaptation to the specific problem |
 
-**Auto-Fix (score < 4)**:
+**Auto-Fix (score < 5)**:
 - Replace generic boilerplate with problem-specific terminology
 - Add context-specific examples or patterns
 - Remove irrelevant template content
@@ -128,7 +128,7 @@ Load this skill when:
 | 2 | Messy code with limited error handling and minimal documentation |
 | 1 | Messy, error-prone code with little to no documentation |
 
-**Auto-Fix (score < 4)**:
+**Auto-Fix (score < 5)**:
 - Add missing error handling for edge cases
 - Clean up inconsistent formatting or naming
 - Add doc comments to undocumented functions
@@ -157,7 +157,7 @@ Load this skill when:
 | 2 | Partial implementation with several unhandled edge cases |
 | 1 | Missing features and unhandled edge cases causing frequent failures |
 
-**Auto-Fix (score < 4)**:
+**Auto-Fix (score < 5)**:
 - Add missing functionality or requirements coverage
 - Address identified edge cases in the implementation
 - Fix broken references or incomplete specifications
@@ -166,11 +166,11 @@ Load this skill when:
 
 When invoked in `grade-and-fix` mode:
 
-1. **Trigger**: Auto-fix activates for any dimension scoring below 4
+1. **Trigger**: Auto-fix activates for any dimension scoring below 5
 2. **Fix Strategy**: Apply minimal, targeted changes that address the specific gap without introducing unnecessary complexity
 3. **Re-grade**: After each fix, re-score to verify improvement
 4. **Attempts**: Maximum 2 auto-fix attempts per dimension
-5. **Fallback**: If auto-fix fails to achieve score 4+, record actionable suggestions instead of blocking
+5. **Fallback**: If auto-fix fails to achieve score 5+, record actionable suggestions instead of blocking
 6. **Principle**: Prioritize pragmatic simplicity over exhaustive perfection
 
 ## Few-Shot Calibration
@@ -219,7 +219,7 @@ The skill produces JSON output:
   "overallScore": "<average of dimensions, displayed as X.Y>",
   "summary": "<overall assessment text>",
   "suggestions": {
-    "<dimension>": "<actionable improvement if score < 4 and auto-fix failed>"
+    "<dimension>": "<actionable improvement if score < 5 and auto-fix failed>"
   }
 }
 ```

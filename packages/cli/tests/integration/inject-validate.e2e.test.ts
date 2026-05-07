@@ -464,6 +464,35 @@ describe('CLI E2E: inject command', () => {
         expect(await fs.pathExists(path.join(targetDir, '.agents'))).toBe(true);
     });
 
+    it('inject command includes Confidence Gate Rule in planner templates', async () => {
+        process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES = 'true';
+        vi.spyOn(inquirer, 'prompt')
+            .mockResolvedValueOnce({ platforms: ['opencode', 'github-vscode', 'antigravity'] })
+            .mockResolvedValueOnce({ scope: 'project' });
+
+        const program = (await import('../../dist/cli/index.js')).default;
+        await program.parseAsync(['inject'], { from: 'user' } as any);
+
+        const opencodeAgentPath = path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md');
+        const opencodeAgentContent = await fs.readFile(opencodeAgentPath, 'utf-8');
+        expect(opencodeAgentContent).toContain('### Confidence Gate Rule');
+        expect(opencodeAgentContent).toContain('Red Team Challenge');
+        expect(opencodeAgentContent).toContain('confidence <90%');
+        expect(opencodeAgentContent).toContain('Confidence: 95%');
+
+        const githubAgentPath = path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md');
+        const githubAgentContent = await fs.readFile(githubAgentPath, 'utf-8');
+        expect(githubAgentContent).toContain('### Confidence Gate Rule');
+        expect(githubAgentContent).toContain('Red Team Challenge');
+
+        const antigravityWorkflowPath = path.join(targetDir, '.agents', 'workflows', 'spec-driven.md');
+        const antigravityWorkflowContent = await fs.readFile(antigravityWorkflowPath, 'utf-8');
+        expect(antigravityWorkflowContent).toContain('### Confidence Gate Rule');
+        expect(antigravityWorkflowContent).toContain('Red Team Challenge');
+
+        delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
+    });
+
     it('inject command with Claude Code platform creates .claude directory structure', async () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['claudecode'] });

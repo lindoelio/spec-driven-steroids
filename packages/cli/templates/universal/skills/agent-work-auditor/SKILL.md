@@ -9,9 +9,7 @@ description: >
 
 # agent-work-auditor
 
-A unified, modular auditing framework for AI agent workflows. Provides consistent,
-comparable audits across any change type with adversarial questioning that probes
-for gaps rather than merely validating form.
+A unified, modular auditing framework for AI agent workflows. Provides adversarial audits designed to find gaps and block premature approval. Every audit must switch the agent from author mode to critic mode and force specific, named weaknesses to be surfaced.
 
 ## Activation
 
@@ -102,6 +100,12 @@ Activated when relevant context is detected:
 
 5. EVALUATE dimensions
    └─ Universal (7) → Type-specific → Extension-specific
+
+5.5 RED TEAM PASS (Confidence Gate)
+   └─ Adopt rejector persona
+   └─ Find at least 3 specific weaknesses that justify rejection
+   └─ Verify each: real → fix and restart; not real → document why
+   └─ Declare confidence level (must be ≥90% to proceed)
 
 6. CLASSIFY findings
    └─ Severity (blocking, warning, info)
@@ -213,6 +217,26 @@ Activated when relevant context is detected:
 }
 ```
 
+## Confidence Gate Integration
+
+When this skill is invoked during a spec-driven phase (requirements, design, tasks, or implementation), the audit is not complete until the Red Team Pass is performed.
+
+### Red Team Pass Steps
+
+1. **Switch persona**: Stop being the author. Become a skeptical senior engineer whose goal is to reject the artifact.
+2. **Find 3 weaknesses**: Use the artifact-specific Red Team questions in the `artifacts/` directory (requirements.md, design.md, tasks.md) to identify at least 3 plausible flaws.
+3. **Verify each**:
+   - If the flaw is real, apply the fix (or mark `author-required` if ambiguous), then restart the Red Team Pass.
+   - If the flaw is not real, document why in your reasoning.
+4. **Declare confidence**: After exhausting rejectable flaws, state `Confidence: X%`.
+5. **Block if <90%**: Do not return an `Approve` verdict or ask for human approval if confidence is below 90%. Continue improving the artifact.
+
+### Verdict Rules with Confidence Gate
+
+- `Approve` — Only if confidence ≥90% AND no blocking findings remain.
+- `Approval with Notes` — Only if confidence ≥90% AND remaining findings are non-blocking.
+- `Request Changes` — If confidence <90% OR blocking findings remain.
+
 ## Context Detection
 
 Detection happens in priority order:
@@ -249,6 +273,6 @@ When `migrate` type is detected:
 1. **Phase 0 (Gating)**: Codebase Inventory must complete before requirements
 2. **Eight Dimensions**: DIM-1 through DIM-8 with 1-5 scoring
 3. **Prove-It Challenges**: Agent must demonstrate comprehension
-4. **Approval Threshold**: ALL 8 dimensions must score 4+ (any <4 blocks)
+4. **Approval Threshold**: ALL 8 dimensions must score 5+ (any <5 blocks)
 
 See `references/migration/` for detailed migration auditing.
