@@ -71,9 +71,12 @@ When invoking any spec-driven skill, you MUST follow this exact sequence:
 2. Provide the collected guideline, contextual-memory, and pattern evidence as input to the skill
 3. Wait for the skill to produce its artifact
 4. Write the artifact to the appropriate file path
-5. Run the validator against the written file, fix failures in the file, and re-run validation until it passes or a real blocker is reported
-6. **STOP** — Do NOT invoke the next skill or continue to the next phase
-7. Summarize the artifact and ask for explicit human approval
+5. Invoke `quality-grading` in `grade-and-fix` mode on the artifact
+6. Invoke `agent-work-auditor` in `thorough` mode with `spec-driven` extension
+7. Perform the Confidence Gate Protocol (Red Team Challenge) on the artifact
+8. Run the validator against the written file, fix failures in the file, and re-run validation until it passes or a real blocker is reported
+9. **STOP** — Do NOT invoke the next skill or continue to the next phase
+10. Summarize the artifact and ask for explicit human approval
 
 The skill's output or "direct" production of content does NOT mean the phase is complete. You MUST stop after writing the artifact and await approval before proceeding.
 
@@ -88,13 +91,12 @@ Invoke the `spec-driven-requirements-writer` skill.
 5. Invoke the `spec-driven-requirements-writer` skill.
 6. Wait for the skill to produce requirements content.
 7. Write `.specs/changes/<slug>/requirements.md`.
-8. Validate with `sds validate requirements .specs/changes/<slug>/requirements.md`.
-9. If validation fails, fix the written file and re-run the validator before requesting approval.
-10. Grade with `quality-grading` in `grade-and-fix` mode.
-11. Audit with `agent-work-auditor` in `thorough` mode with `spec-driven` extension.
-12. Perform the Confidence Gate (Red Team Challenge).
-13. **STOP**. Summarize the artifact, declare confidence ≥90%, and ask: `Confidence: 95%. I audited these requirements, performed adversarial review, and found no material issues. Approve Phase 1, and I'll move to Phase 2 (design).`
-14. Do not begin design work until the user explicitly approves Phase 1.
+8. Grade with `quality-grading` in `grade-and-fix` mode.
+9. Audit with `agent-work-auditor` in `thorough` mode with `spec-driven` extension.
+10. Perform the Confidence Gate (Red Team Challenge).
+11. Validate with `sds validate requirements .specs/changes/<slug>/requirements.md`. If validation fails, fix the written file and re-run.
+12. **STOP**. Summarize the artifact, declare confidence ≥90%, and ask: `Confidence: 95%. I audited these requirements, performed adversarial review, and found no material issues. Approve Phase 1, and I'll move to Phase 2 (design).`
+13. Do not begin design work until the user explicitly approves Phase 1.
 
 ### Phase 2: Design
 
@@ -106,13 +108,12 @@ Invoke the `spec-driven-technical-designer` skill.
 4. Invoke the `spec-driven-technical-designer` skill.
 5. Wait for the skill to produce design content.
 6. Write `.specs/changes/<slug>/design.md`.
-7. Validate with `sds validate design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md`.
-8. If validation fails, fix the written file and re-run the validator before requesting approval.
-9. Grade with `quality-grading` in `grade-and-fix` mode.
-10. Audit with `agent-work-auditor` in `thorough` mode with `spec-driven` extension.
-11. Perform the Confidence Gate (Red Team Challenge).
-12. **STOP**. Summarize the artifact, declare confidence ≥90%, and ask: `Confidence: 95%. I audited this design, performed adversarial review, and found no material issues. Approve Phase 2, and I'll move to Phase 3 (tasks).`
-13. Do not begin task decomposition until the user explicitly approves Phase 2.
+7. Grade with `quality-grading` in `grade-and-fix` mode.
+8. Audit with `agent-work-auditor` in `thorough` mode with `spec-driven` extension.
+9. Perform the Confidence Gate (Red Team Challenge).
+10. Validate with `sds validate design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md`. If validation fails, fix and re-run.
+11. **STOP**. Summarize the artifact, declare confidence ≥90%, and ask: `Confidence: 95%. I audited this design, performed adversarial review, and found no material issues. Approve Phase 2, and I'll move to Phase 3 (tasks).`
+12. Do not begin task decomposition until the user explicitly approves Phase 2.
 
 ### Phase 3: Tasks
 
@@ -124,14 +125,13 @@ Invoke the `spec-driven-task-decomposer` skill.
 4. Invoke the `spec-driven-task-decomposer` skill.
 5. Wait for the skill to produce tasks content.
 6. Write `.specs/changes/<slug>/tasks.md`.
-7. Validate with `sds validate tasks .specs/changes/<slug>/tasks.md --design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md`.
-8. Validate the full spec with `sds validate spec <slug>`.
-9. If either validation fails, fix the written file and re-run the validator before requesting approval.
-10. Grade with `quality-grading` in `grade-and-fix` mode.
-11. Audit with `agent-work-auditor` in `thorough` mode with `spec-driven` extension.
-12. Perform the Confidence Gate (Red Team Challenge).
-13. **STOP**. Summarize the artifact, declare confidence ≥90%, and ask: `Confidence: 95%. I audited these tasks, performed adversarial review, and found no material issues. Approve Phase 3, and I'll move to Phase 4 (implementation), which includes Phase 5 (code review) and Phase 6 (final Confidence Gate) before completion.`
-14. Do not begin implementation until the user explicitly approves Phase 3 and Phase 4 entry.
+7. Grade with `quality-grading` in `grade-and-fix` mode.
+8. Audit with `agent-work-auditor` in `thorough` mode with `spec-driven` extension.
+9. Perform the Confidence Gate (Red Team Challenge).
+10. Validate with `sds validate tasks .specs/changes/<slug>/tasks.md --design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md`.
+11. Validate the full spec with `sds validate spec <slug>`. If either validation fails, fix and re-run.
+12. **STOP**. Summarize the artifact, declare confidence ≥90%, and ask: `Confidence: 95%. I audited these tasks, performed adversarial review, and found no material issues. Approve Phase 3, and I'll move to Phase 4 (implementation), which includes Phase 5 (code review) and Phase 6 (final Confidence Gate) before completion.`
+13. Do not begin implementation until the user explicitly approves Phase 3 and Phase 4 entry.
 
 ### Phase 4: Implementation
 

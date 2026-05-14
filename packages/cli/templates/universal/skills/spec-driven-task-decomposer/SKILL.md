@@ -34,10 +34,10 @@ When this skill begins execution, create a todo list containing the following it
 7. Add acceptance criteria testing phase
 8. Add final checkpoint phase
 9. Save tasks.md
-10. Validate tasks
-11. Grade tasks (quality-grading, grade-and-fix)
-12. Audit tasks (agent-work-auditor, thorough, spec-driven)
-13. Perform Confidence Gate (Red Team Challenge)
+10. Grade tasks (quality-grading, grade-and-fix)
+11. Audit tasks (agent-work-auditor, thorough, spec-driven)
+12. Perform Confidence Gate (Red Team Challenge)
+13. Validate tasks
 14. Declare confidence level ≥90%
 
 ### Progress Rules

@@ -32,10 +32,10 @@ When this skill begins execution, create a todo list containing the following it
 5. Classify change type
 6. Design architecture with design elements
 7. Save design.md
-8. Validate design
-9. Grade design (quality-grading, grade-and-fix)
-10. Audit design (agent-work-auditor, thorough, spec-driven)
-11. Perform Confidence Gate (Red Team Challenge)
+8. Grade design (quality-grading, grade-and-fix)
+9. Audit design (agent-work-auditor, thorough, spec-driven)
+10. Perform Confidence Gate (Red Team Challenge)
+11. Validate design
 12. Declare confidence level ≥90%
 
 ### Progress Rules

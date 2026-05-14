@@ -62,10 +62,10 @@ When invoking any spec-driven skill, you MUST follow this exact sequence:
 2. Provide the collected guideline, contextual-memory, and pattern evidence as input to the skill
 3. Wait for the skill to produce its artifact
 4. Write the artifact to the appropriate file path
-5. Run the validator against the written file, fix failures in the file, and re-run validation until it passes or a real blocker is reported
-6. Invoke `quality-grading` skill in `grade-and-fix` mode on the artifact
-7. Invoke `agent-work-auditor` skill in `thorough` mode with `spec-driven` extension
-8. Perform the Confidence Gate Protocol (Red Team Challenge) on the artifact
+5. Invoke `quality-grading` skill in `grade-and-fix` mode on the artifact
+6. Invoke `agent-work-auditor` skill in `thorough` mode with `spec-driven` extension
+7. Perform the Confidence Gate Protocol (Red Team Challenge) on the artifact
+8. Run the validator against the written file, fix failures in the file, and re-run validation until it passes or a real blocker is reported
 9. **STOP** — Do NOT invoke the next skill or continue to the next phase
 10. Summarize the artifact, declare confidence ≥90%, and ask for explicit human approval
 
@@ -133,10 +133,10 @@ Create a todo list containing the following items in `pending` state:
 2. Retrieve contextual memory
 3. Analyze/Design/Decompose based on phase
 4. Write artifact
-5. Validate artifact
-6. Grade artifact (quality-grading, grade-and-fix)
-7. Audit artifact (agent-work-auditor, thorough, spec-driven)
-8. Perform Confidence Gate (Red Team Challenge)
+5. Grade artifact (quality-grading, grade-and-fix)
+6. Audit artifact (agent-work-auditor, thorough, spec-driven)
+7. Perform Confidence Gate (Red Team Challenge)
+8. Validate artifact
 9. Declare confidence level ≥90%
 
 ### Progress Rules

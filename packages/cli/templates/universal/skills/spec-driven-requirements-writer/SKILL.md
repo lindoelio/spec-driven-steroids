@@ -31,10 +31,10 @@ When this skill begins execution, create a todo list containing the following it
 4. Extract actors, actions, and constraints
 5. Write EARS requirements
 6. Save requirements.md
-7. Validate requirements
-8. Grade requirements (quality-grading, grade-and-fix)
-9. Audit requirements (agent-work-auditor, thorough, spec-driven)
-10. Perform Confidence Gate (Red Team Challenge)
+7. Grade requirements (quality-grading, grade-and-fix)
+8. Audit requirements (agent-work-auditor, thorough, spec-driven)
+9. Perform Confidence Gate (Red Team Challenge)
+10. Validate requirements
 11. Declare confidence level ≥90%
 
 ### Progress Rules
