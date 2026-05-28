@@ -1,5 +1,22 @@
 # spec-driven-steroids
 
+## 0.14.0
+
+### Minor Changes
+
+- Add Cline platform support, enhance context stewardship orchestrator, strengthen design/tasks validation, and expand skill templates with execution patterns
+
+  ### Features
+
+  - **Cline Platform Support**: `sds inject` now supports Cline as a target platform with user/project scope injection. Agents, commands, and skills are injected into `~/.cline` (global) or `<project>/.cline` (project). Includes `cline-scope` module, platform config, and clean support.
+  - **Context Stewardship Orchestrator**: Enhanced orchestrator with richer context resolution, improved phase injection, and project-scoped resolver updates.
+  - **Stronger Validation**: Design and tasks validators now enforce stricter guidance checks for higher-quality spec artifacts.
+  - **Expanded Skill Templates**: Document-templates, task-patterns, and task-execution-patterns references expanded with execution patterns and richer guidance.
+
+  ### Tests
+
+  - Added unit tests for `cline-scope` module and updated platform-config, context-stewardship acceptance, and spec-validation tests.
+
 ## 0.13.1
 
 ### Patch Changes
