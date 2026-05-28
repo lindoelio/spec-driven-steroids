@@ -46,6 +46,8 @@ coverage/
 !.github/workflows/
 !.github/workflows/*.yml
 !.github/workflows/*.yaml
-.opencode/
+.opencode/*
+!.opencode/commands/
+!.opencode/commands/release.md
 opencode.json
 opencode.jsonc

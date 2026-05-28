@@ -49,7 +49,7 @@ function extractDesignCoverage(designContent?: string): string | undefined {
 
 function extractRequirementImplementationCoverage(content: string): Map<string, { coverage: string; detail: string; line: number }> {
   const coverageRows = new Map<string, { coverage: string; detail: string; line: number }>();
-  const sectionHeading = /^##\s+Requirement Implementation Coverage\b.*$/mi.exec(content);
+  const sectionHeading = /^##\s+Requirement(?:s)?\b(?:\s+\w+){0,2}\s+Implementation\b(?:\s+\w+){0,2}\s+Coverage\b.*$/mi.exec(content);
   if (!sectionHeading || sectionHeading.index === undefined) {
     return coverageRows;
   }
@@ -65,7 +65,7 @@ function extractRequirementImplementationCoverage(content: string): Map<string, 
   const lines = section.split('\n');
   for (let index = 0; index < lines.length; index++) {
     const line = lines[index];
-    if (!/^\s*\|/.test(line) || /^\s*\|\s*-+/.test(line) || /Requirement\s*\|\s*Implementation Coverage/i.test(line)) {
+    if (!/^\s*\|/.test(line) || /^\s*\|\s*:?-+/.test(line)) {
       continue;
     }
 

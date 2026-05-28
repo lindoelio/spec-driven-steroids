@@ -178,6 +178,50 @@ describe('Unit: hallucination-resistant spec validation', () => {
     expect(result.valid).toBe(true);
   });
 
+  it('recognizes coverage heading with extra words between Requirement and Implementation Coverage', () => {
+    const tasks = validTasks.replace(
+      '## Requirement Implementation Coverage',
+      '## Requirement Traceability Implementation Coverage'
+    );
+
+    const result = verifyTasksFile(tasks, validDesign, validRequirements);
+
+    expect(result.errors.some(error => error.context?.includes('Requirement Implementation Coverage section not found'))).toBe(false);
+  });
+
+  it('recognizes coverage heading with plural Requirements', () => {
+    const tasks = validTasks.replace(
+      '## Requirement Implementation Coverage',
+      '## Requirements Implementation Coverage'
+    );
+
+    const result = verifyTasksFile(tasks, validDesign, validRequirements);
+
+    expect(result.errors.some(error => error.context?.includes('Requirement Implementation Coverage section not found'))).toBe(false);
+  });
+
+  it('parses coverage table with different column header names', () => {
+    const tasks = validTasks.replace(
+      '| Requirement | Implementation Coverage | Task or Rationale |',
+      '| REQ | Coverage Type | Details |'
+    );
+
+    const result = verifyTasksFile(tasks, validDesign, validRequirements);
+
+    expect(result.errors.some(error => error.context?.includes('Requirement Implementation Coverage section not found'))).toBe(false);
+  });
+
+  it('parses coverage table with alignment markers in separator row', () => {
+    const tasks = validTasks.replace(
+      '|-------------|-------------------------|-------------------|',
+      '|:------------|:-----------------------:|------------------:|'
+    );
+
+    const result = verifyTasksFile(tasks, validDesign, validRequirements);
+
+    expect(result.errors.some(error => error.context?.includes('Requirement Implementation Coverage section not found'))).toBe(false);
+  });
+
   it('fails complete spec validation when a sub-artifact is invalid', async () => {
     tempDir = mkdtempSync(path.join(tmpdir(), 'sds-spec-'));
     const specDir = path.join(tempDir, '.specs', 'changes', 'login');
