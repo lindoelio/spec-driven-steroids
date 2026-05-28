@@ -47,7 +47,7 @@ Guidance for auditing design documents (architecture, technical specifications).
 - Technical debt is minimal
 - New abstractions are justified by repository evidence, not generic defaults
 
-## Red Team Questions (Confidence Gate)
+## Red Team Questions
 
 When auditing design, adopt a rejector persona and answer these adversarial questions. You must find at least 3 plausible weaknesses before declaring confidence.
 

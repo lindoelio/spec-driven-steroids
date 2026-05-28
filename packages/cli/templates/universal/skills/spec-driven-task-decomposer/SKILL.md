@@ -34,11 +34,10 @@ When this skill begins execution, create a todo list containing the following it
 7. Add acceptance criteria testing phase
 8. Add final checkpoint phase
 9. Save tasks.md
-10. Grade tasks (quality-grading, grade-and-fix)
-11. Audit tasks (agent-work-auditor, thorough, spec-driven)
-12. Perform Confidence Gate (Red Team Challenge)
-13. Validate tasks
-14. Declare confidence level ≥90%
+10. Run CLI validation (`sds validate tasks` + `sds validate spec`)
+11. Complete quality bar self-check
+12. Fix validation failures (if any)
+13. Declare verdict
 
 ### Progress Rules
 
@@ -199,20 +198,6 @@ If `requirements.md` or `design.md` is incomplete but still usable:
 2. Infer the smallest reasonable task plan from available structure
 3. Avoid inventing major new architecture
 
-## Auditing Integration
-
-After completing tasks and before requesting approval, invoke the `agent-work-auditor` skill:
-
-```
-Invoke: agent-work-auditor skill
-Artifact: .specs/changes/<slug>/tasks.md
-ChangeType: feat
-Mode: standard
-Extensions: spec-driven
-```
-
-The audit verdict (Approve / Request Changes / Approval with Notes) determines whether to proceed to Phase 4.
-
 ## Quality Bar (Self-Check)
 
 Before returning the tasks, verify:
@@ -238,18 +223,6 @@ Write `.specs/changes/<slug>/tasks.md` before requesting review. Prefer validato
 If enough information is available, produce the full `tasks.md` content directly.
 
 If material ambiguity blocks a sound task plan, ask a short clarification first. Do not produce a low-confidence decomposition.
-
-## Quality Grading Integration
-
-After completing tasks and before requesting approval, invoke the `quality-grading` skill:
-
-```
-Invoke: quality-grading skill
-Artifact: .specs/changes/<slug>/tasks.md
-Mode: grade-and-fix
-```
-
-The quality-grading skill will auto-fix issues scoring below 5. Re-grade after fixes. No dimension may score below 5. If any dimension scores below 5 after auto-fix, continue improving the artifact until all dimensions score 5 or higher.
 
 ## Contextual Stewardship Integration
 

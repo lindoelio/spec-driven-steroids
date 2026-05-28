@@ -15,12 +15,14 @@ describe('CLI E2E: Gemini CLI injection', () => {
     targetDir = await mockFs.createTempDir();
     mockHomeDir = await mockFs.createTempDir();
     process.chdir(targetDir);
+    process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES = 'true';
     vi.clearAllMocks();
     vi.spyOn(os, 'homedir').mockReturnValue(mockHomeDir);
   });
 
   afterEach(async () => {
     process.chdir(originalCwd);
+    delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
     await mockFs.cleanup();
@@ -55,7 +57,7 @@ describe('CLI E2E: Gemini CLI injection', () => {
       expect(await fs.pathExists(agentPath)).toBe(true);
       const content = await fs.readFile(agentPath, 'utf-8');
       expect(content).toContain('name: spec-driven');
-      expect(content).toContain('## Phase Gatekeeper');
+      expect(content).toContain('## Lifecycle');
     });
 
     it('creates inject-guidelines command as TOML in ./.gemini/commands/', async () => {
@@ -141,7 +143,7 @@ describe('CLI E2E: Gemini CLI injection', () => {
       const agentPath = path.join(targetDir, '.gemini', 'agents', 'spec-driven.md');
       expect(await fs.pathExists(agentPath)).toBe(true);
       const content = await fs.readFile(agentPath, 'utf-8');
-      expect(content).toContain('## Phase Gatekeeper');
+      expect(content).toContain('## Lifecycle');
     });
 
     it('creates inject-guidelines command as TOML in ./.gemini/commands/', async () => {

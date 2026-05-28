@@ -32,11 +32,10 @@ When this skill begins execution, create a todo list containing the following it
 5. Classify change type
 6. Design architecture with design elements
 7. Save design.md
-8. Grade design (quality-grading, grade-and-fix)
-9. Audit design (agent-work-auditor, thorough, spec-driven)
-10. Perform Confidence Gate (Red Team Challenge)
-11. Validate design
-12. Declare confidence level ≥90%
+8. Run CLI validation (`sds validate design`)
+9. Complete quality bar self-check
+10. Fix validation failures (if any)
+11. Declare verdict
 
 ### Progress Rules
 
@@ -63,7 +62,7 @@ Choose one primary change type and use it to determine depth and section inclusi
 |-------------|----------|--------------|
 | `new-feature` | Adding new capability | Full architecture plus all relevant optional sections |
 | `enhancement` | Extending existing behavior | Focused architecture delta and affected areas |
-| `refactoring` | Restructuring without behavior change | Structural design, file movement, dependency impact |
+| `refactoring` | Restructuring without behavior change | Structural design, file moving, dependency impact |
 | `bug-fix` | Correcting incorrect behavior | Minimal targeted design of root cause and fix path |
 | `performance` | Improving latency, throughput, or resource usage | Bottleneck-focused architecture and impact analysis |
 | `infrastructure` | Tooling, CI/CD, deployment, or configuration changes | Operational design and configuration anatomy |
@@ -162,20 +161,6 @@ If project guideline files do not exist:
 - Default to simpler architecture rather than introducing new abstractions
 - Record the missing guideline files in `## Repository Context Evidence`
 
-## Auditing Integration
-
-After completing design and before requesting approval, invoke the `agent-work-auditor` skill:
-
-```
-Invoke: agent-work-auditor skill
-Artifact: .specs/changes/<slug>/design.md
-ChangeType: feat
-Mode: standard
-Extensions: spec-driven
-```
-
-The audit verdict (Approve / Request Changes / Approval with Notes) determines whether to proceed to Phase 3.
-
 ## Quality Bar (Self-Check)
 
 Before returning the design, verify:
@@ -199,18 +184,6 @@ Write `.specs/changes/<slug>/design.md` before requesting review. Keep the desig
 If enough information is available, produce the full `design.md` content directly.
 
 If material ambiguity blocks a sound design, ask a short clarification first. Do not produce a low-confidence architecture.
-
-## Quality Grading Integration
-
-After completing design and before requesting approval, invoke the `quality-grading` skill:
-
-```
-Invoke: quality-grading skill
-Artifact: .specs/changes/<slug>/design.md
-Mode: grade-and-fix
-```
-
-The quality-grading skill will auto-fix issues scoring below 5. Re-grade after fixes. No dimension may score below 5. If any dimension scores below 5 after auto-fix, continue improving the artifact until all dimensions score 5 or higher.
 
 ## Contextual Stewardship Integration
 

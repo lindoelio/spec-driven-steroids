@@ -1,6 +1,6 @@
 # Shared Protocols
 
-This file contains shared protocols referenced by all four phase skills. These protocols are duplicated across phase skills and are extracted here to reduce redundancy.
+This file contains shared protocols referenced by all phase skills. These protocols define the common workflow steps, quality gates, and validation rules shared across phases.
 
 ## Context Preflight Protocol
 
@@ -25,51 +25,48 @@ Before invoking the phase-specific skill, you MUST collect and pass repository c
 - Treat approval as explicit only when the user clearly says to proceed, continue, or approve the next phase.
 - If approval is missing or ambiguous, stop and wait.
 
+### Verdict Declaration
+
+After completing the Unified Quality Gate for a planning phase, declare the verdict explicitly:
+
+- `PASS` — All validations passed, quality bar met, no blocking findings.
+- `PASS WITH NOTES` — All validations passed, non-blocking concerns documented.
+- `FAIL` — Blocking issues remain. Cannot ask for approval.
+
 ### Approval Questions
 
-After completing a planning phase, end with a direct approval question that includes your confidence declaration:
+After completing a planning phase with a PASS or PASS WITH NOTES verdict, end with a direct approval question:
 
-- `Confidence: 95%. I audited these requirements, performed adversarial review, and found no material issues. Approve Phase 1, and I'll move to Phase 2 (design).`
-- `Confidence: 95%. I audited this design, performed adversarial review, and found no material issues. Approve Phase 2, and I'll move to Phase 3 (tasks).`
-- `Confidence: 95%. I audited these tasks, performed adversarial review, and found no material issues. Approve Phase 3, and I'll move to Phase 4 (implementation).`
+- `Verdict: PASS. Approve Phase 1, and I'll move to Phase 2 (design).`
+- `Verdict: PASS. Approve Phase 2, and I'll move to Phase 3 (tasks).`
+- `Verdict: PASS. Approve Phase 3, and I'll proceed to Red Team Review.`
 
-## Confidence Gate Protocol
+## Unified Quality Gate Protocol
 
-**Before asking the user for approval, you MUST perform a Red Team Challenge.**
-
-The Red Team Challenge is a mandatory adversarial self-review. You are not allowed to ask for human approval until you have completed it and declared a confidence level of 90% or higher.
+Each spec phase (Requirements, Design, Tasks) uses a single unified quality gate after writing the artifact. This replaces multiple separate evaluations with one consolidated gate.
 
 ### Steps
 
-1. **Adopt the persona** of a skeptical senior engineer who wants to **REJECT** this artifact.
-2. **Find at least 3 specific weaknesses, gaps, or errors** that would justify rejection. Use the artifact-specific Red Team questions in the `agent-work-auditor` skill's artifact guides.
-3. **For each finding**: verify if it is real. If real, fix it and restart the Confidence Gate from step 1. If not real, document why in your reasoning.
-4. **Declare your confidence level explicitly** using this exact format: `Confidence: X%` where X is your honest assessment (e.g., 90%, 95%, 100%).
-5. **Blocking rule**: If confidence is below 90%, you MUST continue improving the artifact until it reaches 90% or higher. You are physically barred from asking for approval below this threshold.
+1. **CLI Validation** — Run the appropriate `sds validate` command against the written artifact.
+2. **Quality Bar Self-Check** — Complete the skill's quality bar checklist (each skill defines its own checklist).
+3. **Fix Failures** — If validation fails or self-check items are not met, fix the artifact and re-run validation.
+4. **Declare Verdict** — Based on evidence:
+   - `PASS` if all validations pass and all quality bar items are checked.
+   - `PASS WITH NOTES` if all validations pass but non-blocking concerns exist (document them).
+   - `FAIL` if any validation fails or blocking issues remain after fix attempts.
 
-### Confidence Declaration Rules
+### Fix Loop Rules
 
-- Be honest. Do not inflate confidence to bypass the gate.
-- If you found real issues and fixed them, confidence can rise. If you found none but feel uneasy, confidence stays low until you investigate further.
-- The confidence declaration must appear in the same response as the approval request, immediately before it.
-- Example: `Confidence: 92%. I found and fixed 2 traceability gaps and verified EARS syntax. Approve Phase 1?`
+- After each fix attempt, re-run the validation command.
+- After 3 failed validation attempts, summarize remaining errors and ask: "Should I proceed with best-effort corrections?"
+- If yes: make corrections, document assumptions, proceed with `PASS WITH NOTES`.
+- Never declare `PASS` or `PASS WITH NOTES` unless the validation command was actually run and its output observed.
 
-### Skill Invocation Guard
+### Evidence Required for PASS
 
-When invoking any spec-driven skill, you MUST follow this exact sequence:
-
-1. Invoke the skill
-2. Provide the collected guideline, contextual-memory, and pattern evidence as input to the skill
-3. Wait for the skill to produce its artifact
-4. Write the artifact to the appropriate file path
-5. Invoke `quality-grading` skill in `grade-and-fix` mode on the artifact
-6. Invoke `agent-work-auditor` skill in `thorough` mode with `spec-driven` extension
-7. Perform the Confidence Gate Protocol (Red Team Challenge) on the artifact
-8. Run the validator against the written file, fix failures in the file, and re-run validation until it passes or a real blocker is reported
-9. **STOP** — Do NOT invoke the next skill or continue to the next phase
-10. Summarize the artifact, declare confidence ≥90%, and ask for explicit human approval
-
-The skill's output or "direct" production of content does NOT mean the phase is complete. You MUST stop after writing the artifact and await approval before proceeding.
+- CLI validation passed (actual command output observed)
+- All quality bar self-check items verified
+- No blocking findings from self-review
 
 ## Validation CLI Commands
 
@@ -81,20 +78,10 @@ After writing a spec artifact, validate it using the CLI. Do not claim validatio
 sds validate requirements .specs/changes/<slug>/requirements.md
 ```
 
-Example:
-```bash
-sds validate requirements .specs/changes/my-feature/requirements.md
-```
-
 ### Design Validation
 
 ```bash
 sds validate design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md
-```
-
-Example:
-```bash
-sds validate design .specs/changes/my-feature/design.md --requirements .specs/changes/my-feature/requirements.md
 ```
 
 ### Tasks Validation
@@ -103,20 +90,10 @@ sds validate design .specs/changes/my-feature/design.md --requirements .specs/ch
 sds validate tasks .specs/changes/<slug>/tasks.md --design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md
 ```
 
-Example:
-```bash
-sds validate tasks .specs/changes/my-feature/tasks.md --design .specs/changes/my-feature/design.md --requirements .specs/changes/my-feature/requirements.md
-```
-
 ### Full Spec Validation
 
 ```bash
 sds validate spec <slug>
-```
-
-Example:
-```bash
-sds validate spec my-feature
 ```
 
 **Note:** Both `sds` and `spec-driven-steroids` work interchangeably as the CLI command name.
@@ -133,11 +110,10 @@ Create a todo list containing the following items in `pending` state:
 2. Retrieve contextual memory
 3. Analyze/Design/Decompose based on phase
 4. Write artifact
-5. Grade artifact (quality-grading, grade-and-fix)
-6. Audit artifact (agent-work-auditor, thorough, spec-driven)
-7. Perform Confidence Gate (Red Team Challenge)
-8. Validate artifact
-9. Declare confidence level ≥90%
+5. Run CLI validation
+6. Complete quality bar self-check
+7. Fix validation failures (if any)
+8. Declare verdict
 
 ### Progress Rules
 

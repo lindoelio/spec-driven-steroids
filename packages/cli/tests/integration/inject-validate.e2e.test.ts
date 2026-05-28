@@ -15,12 +15,14 @@ describe('CLI E2E: inject command', () => {
         targetDir = await mockFs.createTempDir();
         mockHomeDir = await mockFs.createTempDir();
         process.chdir(targetDir);
+        process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES = 'true';
         vi.clearAllMocks();
         vi.spyOn(os, 'homedir').mockReturnValue(mockHomeDir);
     });
 
     afterEach(async () => {
         process.chdir(originalCwd);
+        delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
         vi.unstubAllGlobals();
         await mockFs.cleanup();
     });
@@ -53,7 +55,7 @@ describe('CLI E2E: inject command', () => {
 
         const jetbrainsAgentContent = await fs.readFile(path.join(githubDir, 'agents', 'spec-driven.agent.md'), 'utf-8');
         const jetbrainsPromptContent = await fs.readFile(path.join(githubDir, 'prompts', 'inject-guidelines.prompt.md'), 'utf-8');
-        expect(jetbrainsAgentContent.includes('## Phase Gatekeeper')).toBe(true);
+        expect(jetbrainsAgentContent.includes('## Lifecycle')).toBe(true);
         expect(jetbrainsPromptContent.includes('Generate all six guideline documents by default unless the user explicitly skips named files.')).toBe(true);
     });
 
@@ -173,8 +175,8 @@ describe('CLI E2E: inject command', () => {
         const agentPath = path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md');
         const agentContent = await fs.readFile(agentPath, 'utf-8');
 
-        expect(agentContent.includes('## Phase Gatekeeper')).toBe(true);
-        expect(agentContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
+        expect(agentContent.includes('## Lifecycle')).toBe(true);
+        expect(agentContent.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
         expect(agentContent.includes('Before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
         expect(agentContent.includes('I can implement this, but per Spec-Driven flow I must start with Phase 1 (requirements) first.')).toBe(true);
         expect(agentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
@@ -198,15 +200,15 @@ describe('CLI E2E: inject command', () => {
 
         const githubAgentPath = path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md');
         const githubAgentContent = await fs.readFile(githubAgentPath, 'utf-8');
-        expect(githubAgentContent.includes('## Phase Gatekeeper')).toBe(true);
-        expect(githubAgentContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
+        expect(githubAgentContent.includes('## Lifecycle')).toBe(true);
+        expect(githubAgentContent.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
         expect(githubAgentContent.includes('Before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
         expect(githubAgentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
 
         const antigravityWorkflowPath = path.join(targetDir, '.agents', 'workflows', 'spec-driven.md');
         const antigravityWorkflowContent = await fs.readFile(antigravityWorkflowPath, 'utf-8');
-        expect(antigravityWorkflowContent.includes('## Phase Gatekeeper')).toBe(true);
-        expect(antigravityWorkflowContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
+        expect(antigravityWorkflowContent.includes('## Lifecycle')).toBe(true);
+        expect(antigravityWorkflowContent.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
         expect(antigravityWorkflowContent.includes('Before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
         expect(antigravityWorkflowContent.includes('### Non-Skippable Stop Rule')).toBe(true);
         delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
@@ -229,14 +231,13 @@ describe('CLI E2E: inject command', () => {
 
         for (const plannerFile of plannerFiles) {
             const content = await fs.readFile(plannerFile, 'utf-8');
-            expect(content.includes('requirements -> design -> tasks -> implementation')).toBe(true);
-            expect(content.includes('Approve Phase 1, and I\'ll move to Phase 2 (design).')).toBe(true);
-            expect(content.includes('Approve Phase 2, and I\'ll move to Phase 3 (tasks).')).toBe(true);
-            expect(content.includes('Approve Phase 3, and I\'ll move to Phase 4 (implementation).')).toBe(true);
+            expect(content.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
+            expect(content.includes('Non-Skippable Stop Rule')).toBe(true);
         }
     });
 
     it('inject command prefers remote templates when they are available', async () => {
+        delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
         vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
             const url = String(input);
 
@@ -299,7 +300,7 @@ describe('CLI E2E: inject command', () => {
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const injectedAgent = await fs.readFile(path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md'), 'utf-8');
-        expect(injectedAgent.includes('## Phase Gatekeeper')).toBe(true);
+        expect(injectedAgent.includes('## Lifecycle')).toBe(true);
     });
 
     it('inject command loads continuity guidance at the start of planning phases', async () => {
@@ -426,8 +427,8 @@ describe('CLI E2E: inject command', () => {
 
         const agentContent = await fs.readFile(agentPath, 'utf-8');
         expect(agentContent.includes('name = "spec-driven"')).toBe(true);
-        expect(agentContent.includes('## Phase Gatekeeper')).toBe(true);
-        expect(agentContent.includes('requirements -> design -> tasks -> implementation')).toBe(true);
+        expect(agentContent.includes('## Lifecycle')).toBe(true);
+        expect(agentContent.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
         expect(agentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
 
         const commandPath = path.join(targetDir, '.codex', 'commands', 'spec-driven.md');
@@ -464,7 +465,7 @@ describe('CLI E2E: inject command', () => {
         expect(await fs.pathExists(path.join(targetDir, '.agents'))).toBe(true);
     });
 
-    it('inject command includes Confidence Gate Rule in planner templates', async () => {
+    it('inject command includes Red Team Review and Code Review in planner templates', async () => {
         process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES = 'true';
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['opencode', 'github-vscode', 'antigravity'] })
@@ -475,20 +476,20 @@ describe('CLI E2E: inject command', () => {
 
         const opencodeAgentPath = path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md');
         const opencodeAgentContent = await fs.readFile(opencodeAgentPath, 'utf-8');
-        expect(opencodeAgentContent).toContain('### Confidence Gate Rule');
-        expect(opencodeAgentContent).toContain('Red Team Challenge');
-        expect(opencodeAgentContent).toContain('confidence <90%');
-        expect(opencodeAgentContent).toContain('Confidence: 95%');
+        expect(opencodeAgentContent).toContain('Red Team Review');
+        expect(opencodeAgentContent).toContain('Code Review');
+        expect(opencodeAgentContent).toContain('Unified Quality Gate');
+        expect(opencodeAgentContent).toContain('Red Team Review: PASS');
 
         const githubAgentPath = path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md');
         const githubAgentContent = await fs.readFile(githubAgentPath, 'utf-8');
-        expect(githubAgentContent).toContain('### Confidence Gate Rule');
-        expect(githubAgentContent).toContain('Red Team Challenge');
+        expect(githubAgentContent).toContain('Red Team Review');
+        expect(githubAgentContent).toContain('Code Review');
 
         const antigravityWorkflowPath = path.join(targetDir, '.agents', 'workflows', 'spec-driven.md');
         const antigravityWorkflowContent = await fs.readFile(antigravityWorkflowPath, 'utf-8');
-        expect(antigravityWorkflowContent).toContain('### Confidence Gate Rule');
-        expect(antigravityWorkflowContent).toContain('Red Team Challenge');
+        expect(antigravityWorkflowContent).toContain('Red Team Review');
+        expect(antigravityWorkflowContent).toContain('Code Review');
 
         delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
     });
@@ -598,6 +599,7 @@ describe('CLI E2E: inject command', () => {
         });
 
         it('remote template version appears in summary', async () => {
+            delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
             const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
             vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
                 const url = String(input);

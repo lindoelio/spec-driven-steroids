@@ -19,8 +19,8 @@ describe('Unit: Universal Agent Prompt', () => {
     const content = await fs.readFile(universalPath, 'utf-8');
     
     // Check for key sections
-    expect(content).toContain('Phase Gatekeeper');
-    expect(content).toContain('requirements -> design -> tasks -> implementation');
+    expect(content).toContain('## Lifecycle');
+    expect(content).toContain('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review');
     expect(content).toContain('Non-Skippable Stop Rule');
     expect(content).toContain('Phase 1: Requirements');
     expect(content).toContain('Phase 2: Design');
@@ -45,14 +45,20 @@ describe('Unit: Universal Agent Prompt', () => {
     expect(content).not.toContain('subagent');
   });
 
-  it('uses consistent CLI invocation syntax', async () => {
+  it('delegates CLI validation to shared protocol via Unified Quality Gate', async () => {
     const universalPath = path.join(templatesDir, 'universal/agents/spec-driven.agent.md');
     const content = await fs.readFile(universalPath, 'utf-8');
 
-    // Should use CLI commands for validation with sds alias
-    expect(content).toContain('sds validate requirements');
-    expect(content).toContain('sds validate design');
-    expect(content).toContain('sds validate tasks');
-    expect(content).toContain('sds validate spec');
+    // Agent prompt references Unified Quality Gate and shared protocol
+    expect(content).toContain('Unified Quality Gate');
+    expect(content).toContain('shared protocol');
+
+    // Shared protocol contains the actual CLI commands
+    const sharedProtocolPath = path.join(templatesDir, 'universal/skills/spec-driven-shared-protocol/references/shared-protocol.md');
+    const sharedContent = await fs.readFile(sharedProtocolPath, 'utf-8');
+    expect(sharedContent).toContain('sds validate requirements');
+    expect(sharedContent).toContain('sds validate design');
+    expect(sharedContent).toContain('sds validate tasks');
+    expect(sharedContent).toContain('sds validate spec');
   });
 });

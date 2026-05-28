@@ -31,11 +31,10 @@ When this skill begins execution, create a todo list containing the following it
 4. Extract actors, actions, and constraints
 5. Write EARS requirements
 6. Save requirements.md
-7. Grade requirements (quality-grading, grade-and-fix)
-8. Audit requirements (agent-work-auditor, thorough, spec-driven)
-9. Perform Confidence Gate (Red Team Challenge)
-10. Validate requirements
-11. Declare confidence level ≥90%
+7. Run CLI validation (`sds validate requirements`)
+8. Complete quality bar self-check
+9. Fix validation failures (if any)
+10. Declare verdict
 
 ### Progress Rules
 
@@ -158,21 +157,7 @@ When `sds validate requirements` returns errors:
 After 3 failed validation attempts:
 1. Present all errors in a summary
 2. Ask: "Should I proceed with best-effort corrections?"
-3. If yes: make corrections, document assumptions in `## Assumptions`, proceed
-
-## Auditing Integration
-
-After completing requirements and before requesting approval, invoke the `agent-work-auditor` skill:
-
-```
-Invoke: agent-work-auditor skill
-Artifact: .specs/changes/<slug>/requirements.md
-ChangeType: feat
-Mode: standard
-Extensions: spec-driven
-```
-
-The audit verdict (Approve / Request Changes / Approval with Notes) determines whether to proceed to Phase 2.
+3. If yes: make corrections, document assumptions in `## Assumptions`, proceed with `PASS WITH NOTES`
 
 ## Quality Bar (Self-Check)
 
@@ -202,18 +187,6 @@ Invoke: contextual-stewardship skill
 Action: retrieve
 Query: business
 ```
-
-## Quality Grading Integration
-
-After completing requirements and before requesting approval, invoke the `quality-grading` skill:
-
-```
-Invoke: quality-grading skill
-Artifact: .specs/changes/<slug>/requirements.md
-Mode: grade-and-fix
-```
-
-The quality-grading skill will auto-fix issues scoring below 5. Re-grade after fixes. No dimension may score below 5. If any dimension scores below 5 after auto-fix, continue improving the artifact until all dimensions score 5 or higher.
 
 ## Things To Avoid
 

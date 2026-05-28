@@ -13,8 +13,8 @@ export async function readTemplate(relativePath: string): Promise<string> {
 }
 
 export function expectSharedPlannerContract(content: string): void {
-  expect(content).toContain('## Phase Gatekeeper');
-  expect(content).toContain('requirements -> design -> tasks -> implementation');
+  expect(content).toContain('## Lifecycle');
+  expect(content).toContain('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review');
   expect(content).toContain('### Non-Skippable Stop Rule');
 }
 

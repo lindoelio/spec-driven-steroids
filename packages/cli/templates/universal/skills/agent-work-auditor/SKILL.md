@@ -15,10 +15,10 @@ A unified, modular auditing framework for AI agent workflows. Provides adversari
 
 Load this skill when:
 
-- User asks to audit code, a PR, a change set, or a specification
+- User asks to audit code, a PR, or a change set
+- Spec-driven Code Review requires auditing
 - User mentions "are you sure?" after producing work
 - User wants verification of completeness or correctness
-- Spec-driven phase requires auditing before approval
 
 ## Three-Layer Architecture
 
@@ -100,12 +100,6 @@ Activated when relevant context is detected:
 
 5. EVALUATE dimensions
    └─ Universal (7) → Type-specific → Extension-specific
-
-5.5 RED TEAM PASS (Confidence Gate)
-   └─ Adopt rejector persona
-   └─ Find at least 3 specific weaknesses that justify rejection
-   └─ Verify each: real → fix and restart; not real → document why
-   └─ Declare confidence level (must be ≥90% to proceed)
 
 6. CLASSIFY findings
    └─ Severity (blocking, warning, info)
@@ -217,25 +211,11 @@ Activated when relevant context is detected:
 }
 ```
 
-## Confidence Gate Integration
+## Verdict Rules
 
-When this skill is invoked during a spec-driven phase (requirements, design, tasks, or implementation), the audit is not complete until the Red Team Pass is performed.
-
-### Red Team Pass Steps
-
-1. **Switch persona**: Stop being the author. Become a skeptical senior engineer whose goal is to reject the artifact.
-2. **Find 3 weaknesses**: Use the artifact-specific Red Team questions in the `artifacts/` directory (requirements.md, design.md, tasks.md) to identify at least 3 plausible flaws.
-3. **Verify each**:
-   - If the flaw is real, apply the fix (or mark `author-required` if ambiguous), then restart the Red Team Pass.
-   - If the flaw is not real, document why in your reasoning.
-4. **Declare confidence**: After exhausting rejectable flaws, state `Confidence: X%`.
-5. **Block if <90%**: Do not return an `Approve` verdict or ask for human approval if confidence is below 90%. Continue improving the artifact.
-
-### Verdict Rules with Confidence Gate
-
-- `Approve` — Only if confidence ≥90% AND no blocking findings remain.
-- `Approval with Notes` — Only if confidence ≥90% AND remaining findings are non-blocking.
-- `Request Changes` — If confidence <90% OR blocking findings remain.
+- `Approve` — No blocking findings remain.
+- `Approval with Notes` — No blocking findings, non-blocking concerns documented.
+- `Request Changes` — Blocking findings remain.
 
 ## Context Detection
 

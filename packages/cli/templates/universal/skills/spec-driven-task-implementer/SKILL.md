@@ -162,16 +162,6 @@ If verification fails:
 2. Fix the implementation or test as appropriate
 3. Re-run the relevant verification
 
-## Things To Avoid
-
-- adding HTML comments such as `<!-- TBD -->`, `<!-- KNOWN ISSUE -->`
-- adding scope that is not requested
-- silently diverging from the design
-- marking tasks complete without verification
-- batching multiple task status updates after the fact
-- treating non-exhaustive Code Anatomy as a closed file list
-- creating additional files in `.specs/changes/<slug>/`. Only write to tasks.md for status updates and task amendments allowed by the Task Amendment Protocol
-
 ## Quality Bar (Self-Check)
 
 Before marking a task complete, verify:
@@ -187,87 +177,12 @@ If the requested task or phase is implementable, execute it directly.
 
 If material ambiguity or a blocking spec conflict prevents safe implementation, ask a short clarification instead.
 
-## Phase 4.5: Confidence Gate (Pre-Audit)
+## Things To Avoid
 
-Before invoking Phase 5 auditing, perform a Red Team Challenge on the completed implementation:
-
-1. **Adopt rejector persona**: You are a code reviewer who wants to reject this change.
-2. **Find 3 weaknesses**: Look for untested edge cases, missing error handling, scope creep, deviations from the design, or missed touchpoints hidden by non-exhaustive Code Anatomy.
-3. **Verify and fix**: If real, fix before proceeding. If not real, document why.
-4. **Declare confidence**: State `Confidence: X%`. If <90%, continue improving before audit.
-
-You may not proceed to Phase 5 until confidence is ≥90%.
-
-## Phase 5: Unified Auditing
-
-After all Phase 4 implementation tasks are complete and the Phase 4.5 Confidence Gate is passed, invoke the `agent-work-auditor` skill:
-
-```
-Invoke: agent-work-auditor skill
-Artifact: <implementation-directory-or-files>
-ChangeType: <detected-from-branch-commit-context>
-Mode: standard
-Extensions: spec-driven
-```
-
-### Layer 1: Core Dimensions
-
-| Dimension | Focus | Auto-Fix |
-|-----------|-------|----------|
-| Completeness | All required elements present? | Yes |
-| Correctness | Implementation matches spec? | Yes |
-| Consistency | Consistent with codebase patterns? | Yes |
-| Traceability | Implementation traces to DES-*/REQ-*? | Partial |
-| Safety | No harmful side effects? | No |
-
-### Layer 2: Change-Type Module
-
-- `feat` → Thorough design and scalability review
-- `fix` → Focused bug reproduction and verification
-- `hotfix` → Compressed scope minimization and correctness
-- `refactor` → Rigorous behavioral parity
-- `general` → Balanced review across dimensions
-
-### Layer 3: Spec-Driven Extension
-
-- **Rigorous Against Prompt/Spec**: Verifies implementation aligns with approved requirements, design, and tasks
-- **Traceability Matrix**: Confirms all DES-* and REQ-* are implemented
-- **Phase Gate Verification**: Confirms all prior phases passed
-
-### Record Verdict
-
-- If verdict is `Approve` or `Approval with Notes`, proceed to Live Check
-- If `Request Changes`, flag findings but still proceed to Live Check
-- Do not block on author-required findings
-
-## Live Check Integration
-
-After completing Phase 5 (Unified Auditing):
-
-1. **Invoke universal-live-check**: Run a final live validation pass on the files changed in Phase 4
-2. **Detect domains**: Classify affected domains from file paths
-3. **Execute checks**: Run hierarchical validation (file → module → project)
-4. **Self-healing loop**: Attempt auto-fix for fixable issues, re-verify, report remaining
-
-```
-Invoke: universal-live-check skill
-Input: Files/directories changed in Phase 4, change type
-Output: Structured check report with pass/fail per check category
-```
-
-The universal-live-check skill will classify affected domains, detect cross-domain contamination, run domain-specific checks, execute hierarchical validation, and perform self-healing loop.
-
-**Performance target:** Full live check run completes in <5s. If exceeded, abort and report partial results.
-
-## Phase 6: Final Confidence Gate
-
-After Phase 5 (Unified Auditing) and Live Check complete, perform a final Red Team Challenge before declaring the implementation finished:
-
-1. **Adopt rejector persona**: You are a senior engineer performing final sign-off. You want to reject the change.
-2. **Find 3 weaknesses**: Review the audit findings, live-check results, implementation, task amendments, and original requirements. Look for any gap between what was asked and what was built.
-3. **Build the final requirement coverage matrix**: For each `REQ-X.Y`, list implemented behavior, files changed, covering test, verification command, and gap/rationale.
-4. **Verify and fix**: If real, fix before declaring finished. If not real, document why.
-5. **Declare final confidence**: State `Confidence: X%`.
-6. **Blocking rule**: If confidence <90%, you MUST NOT declare the implementation finished. Continue fixing or escalate to the user.
-
-Only after passing Phase 6 may you declare: `Implementation complete. Confidence: X%. All tasks verified.`
+- adding HTML comments such as `<!-- TBD -->`, `<!-- KNOWN ISSUE -->`
+- adding scope that is not requested
+- silently diverging from the design
+- marking tasks complete without verification
+- batching multiple task status updates after the fact
+- treating non-exhaustive Code Anatomy as a closed file list
+- creating additional files in `.specs/changes/<slug>/`. Only write to tasks.md for status updates and task amendments allowed by the Task Amendment Protocol

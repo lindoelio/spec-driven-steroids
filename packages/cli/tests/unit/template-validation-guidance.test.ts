@@ -25,22 +25,29 @@ async function readRepositoryFile(relativePath: string): Promise<string> {
 
 describe('Unit: template validation guidance', () => {
     it('requires tasks and complete-spec validation in planner templates', async () => {
-        // Universal template is the source of truth
+        // Agent prompt delegates validation to shared protocol
         const content = await readTemplate('universal/agents/spec-driven.agent.md');
-        expect(content).toContain('sds validate tasks');
-        expect(content).toContain('sds validate spec');
+        expect(content).toContain('Unified Quality Gate');
         expect(content).toContain('Never claim validation passed unless the command was actually run against the written file');
+
+        // Shared protocol contains the actual validation commands
+        const sharedContent = await readTemplate('universal/skills/spec-driven-shared-protocol/references/shared-protocol.md');
+        expect(sharedContent).toContain('sds validate tasks');
+        expect(sharedContent).toContain('sds validate spec');
     });
 
     it('uses write-before-validate sequencing for planning artifacts', async () => {
         const content = await readTemplate('universal/agents/spec-driven.agent.md');
 
         expect(content).toContain('Write `.specs/changes/<slug>/requirements.md`.');
-        expect(content).toContain('Validate with `sds validate requirements .specs/changes/<slug>/requirements.md`.');
-        expect(content.indexOf('Write `.specs/changes/<slug>/requirements.md`.')).toBeLessThan(
-            content.indexOf('Validate with `sds validate requirements .specs/changes/<slug>/requirements.md`.')
+        expect(content).toContain('Run the Unified Quality Gate');
+        // Within Phase 1, write (step 7) comes before quality gate (step 8)
+        const phase1Start = content.indexOf('### Phase 1: Requirements');
+        const phase2Start = content.indexOf('### Phase 2: Design');
+        const phase1Content = content.substring(phase1Start, phase2Start);
+        expect(phase1Content.indexOf('Write `.specs/changes/<slug>/requirements.md`.')).toBeLessThan(
+            phase1Content.indexOf('Run the Unified Quality Gate')
         );
-        expect(content).toContain('Grade with `quality-grading` in `grade-and-fix` mode');
     });
 
     it('hardens Codex planner templates against phase-skipping', async () => {
@@ -203,16 +210,16 @@ describe('Unit: template validation guidance', () => {
         }
     });
 
-    it('requires Confidence Gate Protocol in shared protocol', async () => {
+    it('requires Unified Quality Gate Protocol in shared protocol', async () => {
         const content = await readTemplate('universal/skills/spec-driven-shared-protocol/references/shared-protocol.md');
-        expect(content).toContain('## Confidence Gate Protocol');
-        expect(content).toContain('Red Team Challenge');
-        expect(content).toContain('Confidence: X%');
-        expect(content).toContain('If confidence is below 90%');
-        expect(content).toContain('Grade artifact (quality-grading, grade-and-fix)');
-        expect(content).toContain('Audit artifact (agent-work-auditor, thorough, spec-driven)');
-        expect(content).toContain('Perform Confidence Gate (Red Team Challenge)');
-        expect(content).toContain('Declare confidence level ≥90%');
+        expect(content).toContain('## Unified Quality Gate Protocol');
+        expect(content).toContain('CLI Validation');
+        expect(content).toContain('Quality Bar Self-Check');
+        expect(content).toContain('Fix Failures');
+        expect(content).toContain('Declare Verdict');
+        expect(content).toContain('PASS');
+        expect(content).toContain('PASS WITH NOTES');
+        expect(content).toContain('FAIL');
     });
 
     it('requires Red Team questions in auditor artifact guides', async () => {
@@ -220,9 +227,9 @@ describe('Unit: template validation guidance', () => {
         const designAudit = await readTemplate('universal/skills/agent-work-auditor/artifacts/design.md');
         const tasksAudit = await readTemplate('universal/skills/agent-work-auditor/artifacts/tasks.md');
 
-        expect(requirementsAudit).toContain('## Red Team Questions (Confidence Gate)');
-        expect(designAudit).toContain('## Red Team Questions (Confidence Gate)');
-        expect(tasksAudit).toContain('## Red Team Questions (Confidence Gate)');
+        expect(requirementsAudit).toContain('## Red Team Questions');
+        expect(designAudit).toContain('## Red Team Questions');
+        expect(tasksAudit).toContain('## Red Team Questions');
 
         expect(requirementsAudit).toContain('Did I miss edge cases that make these untestable?');
         expect(designAudit).toContain('Does this design actually solve the requirements');
@@ -231,36 +238,41 @@ describe('Unit: template validation guidance', () => {
         expect(tasksAudit).toContain('Ignore the Code Anatomy');
     });
 
-    it('requires Confidence Gate Rule in spec-driven planner', async () => {
+    it('requires Red Team Review and Code Review in spec-driven planner', async () => {
         const content = await readTemplate('universal/agents/spec-driven.agent.md');
-        expect(content).toContain('### Confidence Gate Rule');
-        expect(content).toContain('Red Team Challenge');
-        expect(content).toContain('confidence <90%');
-        expect(content).toContain('physically barred');
-        expect(content).toContain('Confidence: 95%');
+        expect(content).toContain('Red Team Review');
+        expect(content).toContain('Code Review');
+        expect(content).toContain('Unified Quality Gate');
+        expect(content).toContain('Sub-agent automation');
+        expect(content).toContain('Red Team Review: PASS');
     });
 
-    it('requires quality-grading integration in all planning phase skills', async () => {
+    it('requires Unified Quality Gate in all planning phase skills', async () => {
         const requirementsSkill = await readTemplate('universal/skills/spec-driven-requirements-writer/SKILL.md');
         const designerSkill = await readTemplate('universal/skills/spec-driven-technical-designer/SKILL.md');
         const decomposerSkill = await readTemplate('universal/skills/spec-driven-task-decomposer/SKILL.md');
 
-        expect(requirementsSkill).toContain('Grade requirements (quality-grading, grade-and-fix)');
-        expect(designerSkill).toContain('Grade design (quality-grading, grade-and-fix)');
-        expect(decomposerSkill).toContain('Grade tasks (quality-grading, grade-and-fix)');
+        expect(requirementsSkill).toContain('Run CLI validation');
+        expect(designerSkill).toContain('Run CLI validation');
+        expect(decomposerSkill).toContain('Run CLI validation');
 
-        expect(requirementsSkill).toContain('## Quality Grading Integration');
-        expect(designerSkill).toContain('## Quality Grading Integration');
-        expect(decomposerSkill).toContain('## Quality Grading Integration');
+        expect(requirementsSkill).toContain('Complete quality bar self-check');
+        expect(designerSkill).toContain('Complete quality bar self-check');
+        expect(decomposerSkill).toContain('Complete quality bar self-check');
+
+        expect(requirementsSkill).toContain('Declare verdict');
+        expect(designerSkill).toContain('Declare verdict');
+        expect(decomposerSkill).toContain('Declare verdict');
     });
 
-    it('requires Confidence Gate phases in task implementer skill', async () => {
+    it('requires task execution and amendment protocol in task implementer skill', async () => {
         const content = await readTemplate('universal/skills/spec-driven-task-implementer/SKILL.md');
-        expect(content).toContain('## Phase 4.5: Confidence Gate (Pre-Audit)');
-        expect(content).toContain('## Phase 6: Final Confidence Gate');
         expect(content).toContain('## Task Amendment Protocol');
-        expect(content).toContain('final requirement coverage matrix');
-        expect(content).toContain('You may not proceed to Phase 5 until confidence is ≥90%');
+        expect(content).toContain('## Execution Loop');
+        expect(content).toContain('## Verification Rules');
+        expect(content).not.toContain('## Phase 4.5');
+        expect(content).not.toContain('## Phase 5');
+        expect(content).not.toContain('## Phase 6');
     });
 
     it('publishes templates independently from the npm package release flow', async () => {
