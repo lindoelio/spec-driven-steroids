@@ -25,6 +25,7 @@ It injects:
 |----------|-------|-------------|
 | Antigravity | project | `/spec-driven` workflow |
 | Claude Code | project | Agents, commands, skills |
+| Cline | user / project | Agents, commands, skills |
 | Gemini CLI | global / project | Agents, commands, skills |
 | GitHub Copilot CLI | user / project | Agents, commands, skills |
 | GitHub Copilot for VS Code | global / project | Agents, prompts, skills |
@@ -96,26 +97,30 @@ Manage a knowledge graph of architectural decisions, business rules, and workflo
 sds stewardship capabilities
 
 # Search for rules in the knowledge graph
-sds stewardship retrieve <query> --domain architecture
+sds stewardship retrieve <query> --domain architecture [--scope <project-id>] [--global]
 
-# Persist a new rule
+# Persist a project-scoped rule by default
 sds stewardship store architecture --content "Use hexagonal architecture"
+
+# Persist a truly universal rule
+sds stewardship store workflow --content "Run typecheck before completion" --global
 
 # Extract decision candidates from a design.md or requirements.md
 sds stewardship extract .specs/changes/my-feature/design.md
 
 # Show rule provenance and version history
-sds stewardship trace <ruleId>
+sds stewardship trace <ruleId> [--scope <project-id>] [--global]
 
 # Retrieve context for a spec phase
-sds stewardship inject design
+sds stewardship inject design [--scope <project-id>] [--global]
 
-# List, deprecate, or archive rules
+# List, deprecate, archive, or move rules
 sds stewardship manage list
-sds stewardship manage deprecate --ruleId <ruleId>
+sds stewardship manage deprecate --ruleId <ruleId> [--scope <project-id>] [--global]
+sds stewardship manage move --ruleId <ruleId> --scope <project-id>
 ```
 
-These rules are automatically referenced by each spec-driven skill to give agents awareness of established project patterns.
+Rules are project-scoped by default and only fall back to global rules during retrieval. Use `--global` only for memories that are safe across unrelated repositories.
 
 ## Skills Injected
 
@@ -188,6 +193,7 @@ This creates: `AGENTS.md`, `CONTRIBUTING.md`, `STYLEGUIDE.md`, `TESTING.md`, `AR
 
 - GitHub Copilot: `@spec-driven Add a rate limiter`
 - OpenCode: use the `Spec-Driven` agent
+- Cline: use the `Spec-Driven` agent or `/spec-driven`
 - Antigravity: `/spec-driven`
 - Codex: `/spec-driven Add a rate limiter`
 

@@ -92,10 +92,9 @@ export class SemanticRetrievalEngine {
     domainFilterResults.sort((a, b) => b.score - a.score);
     crossDomainResults.sort((a, b) => b.score - a.score);
 
-    // If no domain-filtered results, fall back to cross-domain
     const finalResults =
-      domainFilterResults.length > 0
-        ? [...domainFilterResults, ...crossDomainResults.map(r => ({ ...r, isOutOfDomain: true }))]
+      queryDomains.length === 0 || domainFilterResults.length > 0
+        ? domainFilterResults
         : crossDomainResults.map(r => ({ ...r, isOutOfDomain: true }));
 
     const limit = query.limit ?? 20;

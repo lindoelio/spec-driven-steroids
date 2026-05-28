@@ -40,7 +40,7 @@ The system uses JSON file storage for all rule persistence:
 
 | Backend | Storage Location |
 |---------|-----------------|
-| `json-graph` | `~/.agents/stewardship/{scope}/{state}/` JSON files |
+| `json-graph` | `~/.agents/stewardship/global/{state}/` and `~/.agents/stewardship/projects/{project-id}/{state}/` JSON files |
 
 ---
 
@@ -59,15 +59,17 @@ sds stewardship <subcommand> [options]
 **Behavior:**
 1. Verify file system storage is available
 2. Query the semantic retrieval engine with the current task keywords
-3. Apply scope chain priority: **session → project → org → global**
+3. Apply scope chain priority: **session → project → global**. Project scope defaults to the current project directory name.
 4. Return rules scored by weighted keyword match (50%) + recency (30%) + confidence (20%)
 5. Filter to `active` rules by default; surface `deprecated` rules with `supersededBy` link
-6. Flag out-of-domain matches when no in-domain results exist
+6. Flag out-of-domain matches only when no in-domain results exist
 
 **Command:**
 ```bash
-sds stewardship retrieve <query> [--domain <domain>] [--scope <scope>]
+sds stewardship retrieve <query> [--domain <domain>] [--scope <project-id>] [--global]
 ```
+
+Use `--scope <project-id>` when working outside the project directory. Use `--global` only for rules that should apply to every project.
 
 **Retrieval confirmation format:**
 - "Retrieved N rules from `{domain}` domain via {tier}. Score breakdown: keyword={k}, recency={r}, confidence={c}."
@@ -82,19 +84,25 @@ sds stewardship retrieve <query> [--domain <domain>] [--scope <scope>]
 
 **Behavior:**
 1. Validate domain (must be standard or accepted custom domain)
-2. Auto-assign default expiration: **2 years** from now
-3. Run conflict detection — flag rules with similarity > 0.85
-4. If conflict: surface to agent for `override` / `merge` / `cancel` decision
-5. On confirm: write rule node with full provenance (`source`, `sourceFile`, `decisionDate`, `author`, `originalText`)
-6. Archive previous version on every update
+2. Persist to project scope by default, using the current project directory name
+3. Require `--global` for rules that are truly universal across all projects
+4. Auto-assign default expiration: **2 years** from now
+5. Run conflict detection — flag rules with similarity > 0.85
+6. If conflict: surface to agent for `override` / `merge` / `cancel` decision
+7. On confirm: write rule node with full provenance (`source`, `sourceFile`, `decisionDate`, `author`, `originalText`)
+8. Archive previous version on every update
 
 **Command:**
 ```bash
-sds stewardship store <domain> --content "<content>" [--author <name>]
+sds stewardship store <domain> --content "<content>" [--author <name>] [--scope <project-id>] [--global]
 ```
 
+Before storing, classify scope explicitly:
+- Use project scope for repository-specific architecture, business rules, implementation details, naming, validation, or workflow nuances.
+- Use global scope only for durable preferences that are safe across unrelated repositories.
+
 **Persistence confirmation format:**
-- "Rule `{ruleId}` saved to `{domain}` domain via {tier}. Expires: {date}. Provenance: {source}."
+- "Rule created: `{ruleId}` (`project:{project-id}` or `global`)."
 - "Conflict detected — similarity {score} with rule `{conflictId}`. Choose: override / merge / cancel."
 - "Rule superseded link set: `{oldId}` → `supersededBy` → `{newId}`."
 
@@ -135,12 +143,13 @@ sds stewardship extract <file-path> [--author <name>]
    - `tasks` → `workflow`, `team-structure`
    - `implementation` → `architecture`, `technical-debt`
 2. Query semantic engine for phase-relevant rules
-3. Format as injected context block
-4. Offer-to-capture: if a decision is made mid-phase, prompt to store it
+3. Resolve project-scoped rules before global rules unless `--global` is passed
+4. Format as injected context block
+5. Offer-to-capture: if a decision is made mid-phase, prompt to store it
 
 **Command:**
 ```bash
-sds stewardship inject <phase>
+sds stewardship inject <phase> [--scope <project-id>] [--global]
 ```
 
 **Injection format:**
@@ -150,14 +159,18 @@ sds stewardship inject <phase>
 
 ### `manage` — Lifecycle and Rule Management
 
-**When to use:** When explicitly asked to list, deprecate, or archive rules.
+**When to use:** When explicitly asked to list, deprecate, archive, or reclassify rules.
 
 **Commands:**
 ```bash
 sds stewardship manage list [--scope <scope>]
-sds stewardship manage deprecate --ruleId <rule-id>
-sds stewardship manage archive --ruleId <rule-id>
+sds stewardship manage list --global
+sds stewardship manage deprecate --ruleId <rule-id> [--scope <project-id>] [--global]
+sds stewardship manage archive --ruleId <rule-id> [--scope <project-id>] [--global]
+sds stewardship manage move --ruleId <rule-id> --scope <project-id>
 ```
+
+Use `move` to reclassify an active global rule into a project scope. The source global rule is archived after the project-scoped copy is saved.
 
 ---
 
@@ -183,7 +196,7 @@ Enabled Features: json-graph, semantic-retrieval, versioning, conflict-detection
 **When to use:** When investigating the history or provenance of a specific rule.
 
 ```bash
-sds stewardship trace <rule-id>
+sds stewardship trace <rule-id> [--scope <project-id>] [--global]
 ```
 
 Returns: rule content, domain, state, full provenance, `supersededBy` link, and version history with timestamps and diffs.
@@ -194,10 +207,11 @@ Returns: rule content, domain, state, full provenance, `supersededBy` link, and 
 
 Before every implementation task, run through this checklist:
 
-- [ ] `sds stewardship retrieve "<task keywords>"` — do we have existing rules?
-- [ ] Check scope chain — are there project-specific overrides? (`--scope <project-id>`)
+- [ ] `sds stewardship retrieve "<task keywords>"` — do we have project rules or global fallback rules?
+- [ ] Check scope chain — project rules should override global rules. Use `--scope <project-id>` if the current directory is not the target project.
 - [ ] Check for conflicts — does the new decision contradict an existing rule?
 - [ ] Check deprecated rules — is there a `supersededBy` link to follow?
+- [ ] Store new repository-specific decisions without `--global`; reserve `--global` for universal rules only.
 - [ ] `sds stewardship extract <spec-file>` if reading `design.md` or `requirements.md`
 
 ---
@@ -206,8 +220,8 @@ Before every implementation task, run through this checklist:
 
 The system uses a single, file-based JSON graph storage backend:
 
-- **Storage location**: `~/.agents/stewardship/{scope}/{state}/` where `{scope}` is `global`, `org`, or `project`, and `{state}` is `active`, `deprecated`, or `archived`
-- **Version history**: `~/.agents/stewardship/{scope}/.versions/{ruleId}.json`
+- **Storage location**: `~/.agents/stewardship/global/{state}/` and `~/.agents/stewardship/projects/{project-id}/{state}/`, where `{state}` is `active`, `deprecated`, or `archived`
+- **Version history**: Stored under the matching scope directory in `.versions/{ruleId}.json`
 - **Format**: Individual JSON files per rule for easy inspection and version control
 - **Conflict detection**: Enabled with similarity threshold of 0.85
 
@@ -219,9 +233,10 @@ The system uses a single, file-based JSON graph storage backend:
 |-----------|--------|
 | retrieve (hit) | "Retrieved {n} rules from `{domain}` via {tier}." |
 | retrieve (miss) | "No rules found for `{query}`. No context loaded." |
-| store success | "Rule `{id}` saved to `{domain}` via {tier}. Expires: {date}." |
+| store success | "Rule created: `{id}` (`project:{project-id}` or `global`)." |
 | store conflict | "Conflict ({score}) with `{id}`. Choose: override / merge / cancel." |
 | extract | "Found {n} candidates from `{file}`. Review required." |
 | inject | "Phase `{phase}` context injected: {n} rules from {domains}." |
 | deprecate | "Rule `{id}` deprecated. Superseded by `{newId}`." |
 | archive | "Rule `{id}` archived." |
+| move | "Moved: `{id}` global -> project:{project-id}." |

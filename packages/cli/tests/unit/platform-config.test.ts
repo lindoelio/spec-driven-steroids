@@ -86,6 +86,16 @@ describe('Unit: Platform Config', () => {
       expect(config?.agentFilename).toBe('spec-driven.agent.md');
       expect(config?.commandDirectory).toBe('commands');
     });
+
+    it('returns config for cline', () => {
+      const config = getPlatformConfig('cline');
+      expect(config).toBeDefined();
+      expect(config?.format).toBe(FormatType.MARKDOWN);
+      expect(config?.agentDirectory).toBe('agents');
+      expect(config?.agentFilename).toBe('spec-driven.agent.md');
+      expect(config?.commandDirectory).toBe('commands');
+      expect(config?.commandAgents?.['spec-driven-command']).toBe('Spec-Driven');
+    });
   });
 
   describe('PLATFORM_CONFIGS', () => {
@@ -99,7 +109,8 @@ describe('Unit: Platform Config', () => {
         'claudecode',
         'opencode',
         'codex',
-        'antigravity'
+        'antigravity',
+        'cline'
       ];
       
       for (const platform of expectedPlatforms) {

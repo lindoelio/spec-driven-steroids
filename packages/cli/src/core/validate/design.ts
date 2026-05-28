@@ -38,6 +38,31 @@ interface DesignValidationResult extends ValidationResult {
   };
 }
 
+const CODE_ANATOMY_REQUIRED_SUBSECTIONS = [
+  'Coverage Declaration',
+  'Required Touchpoints',
+  'Known Impact Surface',
+  'Discovery Targets',
+  'Out of Scope'
+] as const;
+
+const VALID_COVERAGE_VALUES = ['Exhaustive', 'Representative', 'Initial Discovery Only'] as const;
+
+function extractCodeAnatomySection(content: string): string {
+  const match = /^##\s+Code Anatomy\b.*$/mi.exec(content);
+  if (!match || match.index === undefined) {
+    return '';
+  }
+
+  const afterHeading = content.slice(match.index + match[0].length);
+  const nextSectionIndex = afterHeading.search(/\n##\s+/);
+  return content.slice(match.index, nextSectionIndex === -1 ? undefined : match.index + match[0].length + nextSectionIndex);
+}
+
+function extractCoverageValue(codeAnatomy: string): string | undefined {
+  return codeAnatomy.match(/^\s*Coverage:\s*(.+?)\s*$/im)?.[1]?.trim();
+}
+
 function verifyDesignFile(content: string, requirementsContent?: string): DesignValidationResult {
   const errors: ValidationError[] = [];
   const warnings: Array<{ line?: number; errorType?: string; message: string }> = [];
@@ -67,6 +92,61 @@ function verifyDesignFile(content: string, requirementsContent?: string): Design
       suggestedFix: 'Add ## Code Anatomy section with file paths and details',
       skillDocLink: SKILL_DOCS.design
     });
+  }
+
+  const codeAnatomy = extractCodeAnatomySection(content);
+  if (enforceDocumentSections && codeAnatomy) {
+    for (const subsection of CODE_ANATOMY_REQUIRED_SUBSECTIONS) {
+      if (!new RegExp(`^###\\s+${subsection}\\b`, 'im').test(codeAnatomy)) {
+        errors.push({
+          errorType: 'Structure Error',
+          context: `Code Anatomy missing ${subsection} subsection`,
+          suggestedFix: `Add ### ${subsection} under ## Code Anatomy`,
+          line: findLineNumber(content, /^##\s+Code Anatomy\b/im),
+          skillDocLink: SKILL_DOCS.design
+        });
+      }
+    }
+
+    const coverage = extractCoverageValue(codeAnatomy);
+    if (!coverage || !VALID_COVERAGE_VALUES.some(value => value === coverage)) {
+      errors.push({
+        errorType: 'Structure Error',
+        context: 'Code Anatomy coverage declaration is missing or invalid',
+        suggestedFix: 'Add Coverage: Exhaustive, Coverage: Representative, or Coverage: Initial Discovery Only under ### Coverage Declaration',
+        line: findLineNumber(content, /^###\s+Coverage Declaration\b/im),
+        skillDocLink: SKILL_DOCS.design
+      });
+    }
+
+    if (coverage && coverage !== 'Exhaustive') {
+      const discoveryStart = /^###\s+Discovery Targets\b.*$/im.exec(codeAnatomy);
+      const afterDiscoveryHeading = discoveryStart ? codeAnatomy.slice(discoveryStart.index + discoveryStart[0].length) : '';
+      const nextSubsectionIndex = afterDiscoveryHeading.search(/\n###\s+/);
+      const discoverySection = discoveryStart
+        ? codeAnatomy.slice(discoveryStart.index, nextSubsectionIndex === -1 ? undefined : discoveryStart.index + discoveryStart[0].length + nextSubsectionIndex)
+        : '';
+      const hasActionableDiscoveryTarget = /\|[^\n]*\|[^\n]*\|/.test(discoverySection) || /^-\s+\S+/m.test(discoverySection);
+      const warnsNotChecklist = /not\s+(?:a\s+)?(?:closed\s+)?(?:completion\s+)?checklist|not\s+exhaustive/i.test(codeAnatomy);
+
+      if (!hasActionableDiscoveryTarget) {
+        errors.push({
+          errorType: 'Structure Error',
+          context: 'Non-exhaustive Code Anatomy must include actionable Discovery Targets',
+          suggestedFix: 'Add concrete grep patterns, commands, directories, entrypoints, exports, tests, or integrations under ### Discovery Targets',
+          line: findLineNumber(content, /^###\s+Discovery Targets\b/im),
+          skillDocLink: SKILL_DOCS.design
+        });
+      }
+
+      if (!warnsNotChecklist) {
+        warnings.push({
+          errorType: 'Structure Warning',
+          message: 'Non-exhaustive Code Anatomy should state that it is not a completion checklist',
+          line: findLineNumber(content, /^###\s+Coverage Declaration\b/im)
+        });
+      }
+    }
   }
   
   if (!content.includes('```mermaid')) {

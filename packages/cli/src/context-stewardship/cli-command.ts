@@ -23,7 +23,7 @@ Subcommands:
   extract        - Extract decision candidates from spec files
   trace          - Show rule provenance and version history
   inject         - Retrieve context for a spec phase
-  manage         - List, deprecate, or archive rules
+  manage         - List, deprecate, archive, or move rules
 
 Use --help with any subcommand for specific options and examples.`
     )
@@ -62,8 +62,9 @@ function createRetrieveCommand(): Command {
     .description('Search for rules in the knowledge graph')
     .argument('<query>', 'Search query text')
     .option('--domain <domain>', 'Filter by domain (architecture, business, workflow, security, performance, legal, team-structure, technical-debt)')
-    .option('--scope <scope>', 'Project scope identifier')
-    .action(async (query: string, opts: { domain?: string; scope?: string }) => {
+    .option('--scope <scope>', 'Project scope identifier (defaults to current project)')
+    .option('--global', 'Search only global stewardship rules')
+    .action(async (query: string, opts: { domain?: string; scope?: string; global?: boolean }) => {
       const orch = new ContextStewardshipOrchestrator();
       await orch.initialize();
 
@@ -74,7 +75,8 @@ function createRetrieveCommand(): Command {
       const result = await orch.executeCommand('retrieve' as OrchCommand, {
         query,
         domain: opts.domain,
-        scope: opts.scope
+        scope: opts.scope,
+        global: opts.global
       });
       console.log(result.output);
     });
@@ -91,7 +93,9 @@ function createStoreCommand(): Command {
     .argument('<domain>', 'Rule domain (architecture, business, workflow, security, performance, legal, team-structure, technical-debt)')
     .option('--content <content>', 'Rule content text')
     .option('--author <author>', 'Author name')
-    .action(async (domain: string, opts: { content?: string; author?: string }) => {
+    .option('--scope <scope>', 'Project scope identifier (defaults to current project)')
+    .option('--global', 'Persist as a global rule instead of a project rule')
+    .action(async (domain: string, opts: { content?: string; author?: string; scope?: string; global?: boolean }) => {
       if (!opts.content) {
         console.error(chalk.red('Error: --content is required for store command.'));
         process.exit(1);
@@ -106,7 +110,9 @@ function createStoreCommand(): Command {
       const result = await orch.executeCommand('store' as OrchCommand, {
         domain,
         content: opts.content,
-        author: opts.author
+        author: opts.author,
+        scope: opts.scope,
+        global: opts.global
       });
 
       if (result.success) {
@@ -158,10 +164,16 @@ function createTraceCommand(): Command {
     .name('trace')
     .description('Show full provenance and version history for a rule')
     .argument('<ruleId>', 'Rule identifier')
-    .action(async (ruleId: string) => {
+    .option('--scope <scope>', 'Project scope identifier (defaults to current project)')
+    .option('--global', 'Trace only the global rule store')
+    .action(async (ruleId: string, opts: { scope?: string; global?: boolean }) => {
       const orch = new ContextStewardshipOrchestrator();
       await orch.initialize();
-      const result = await orch.executeCommand('trace' as OrchCommand, { ruleId });
+      const result = await orch.executeCommand('trace' as OrchCommand, {
+        ruleId,
+        scope: opts.scope,
+        global: opts.global
+      });
 
       if (result.success) {
         console.log(result.output);
@@ -180,7 +192,9 @@ function createInjectCommand(): Command {
     .name('inject')
     .description('Retrieve and format relevant context for a spec phase')
     .argument('<phase>', 'Spec phase: requirements, design, tasks, or implementation')
-    .action(async (phase: string) => {
+    .option('--scope <scope>', 'Project scope identifier (defaults to current project)')
+    .option('--global', 'Inject only global stewardship context')
+    .action(async (phase: string, opts: { scope?: string; global?: boolean }) => {
       const validPhases = ['requirements', 'design', 'tasks', 'implementation'];
       if (!validPhases.includes(phase)) {
         console.error(chalk.red(`Error: Invalid phase '${phase}'. Must be one of: ${validPhases.join(', ')}`));
@@ -190,7 +204,9 @@ function createInjectCommand(): Command {
       const orch = new ContextStewardshipOrchestrator();
       await orch.initialize();
       const result = await orch.executeCommand('inject' as OrchCommand, {
-        phase: phase as 'requirements' | 'design' | 'tasks' | 'implementation'
+        phase: phase as 'requirements' | 'design' | 'tasks' | 'implementation',
+        scope: opts.scope,
+        global: opts.global
       });
 
       if (result.output) {
@@ -208,18 +224,30 @@ function createManageCommand(): Command {
 
   sub
     .name('manage')
-    .description('List, deprecate, or archive rules')
-    .argument('<action>', 'Action: list, deprecate, or archive')
-    .option('--ruleId <ruleId>', 'Rule identifier (required for deprecate and archive)')
-    .action(async (action: string, opts: { ruleId?: string }) => {
-      const validActions = ['list', 'deprecate', 'archive'];
+    .description('List, deprecate, archive, or move rules')
+    .argument('<action>', 'Action: list, deprecate, archive, or move')
+    .option('--ruleId <ruleId>', 'Rule identifier (required for deprecate, archive, and move)')
+    .option('--scope <scope>', 'Project scope identifier (defaults to current project; required target for move)')
+    .option('--global', 'Manage only global rules')
+    .action(async (action: string, opts: { ruleId?: string; scope?: string; global?: boolean }) => {
+      const validActions = ['list', 'deprecate', 'archive', 'move'];
       if (!validActions.includes(action)) {
         console.error(chalk.red(`Error: Invalid action '${action}'. Must be one of: ${validActions.join(', ')}`));
         process.exit(1);
       }
 
-      if ((action === 'deprecate' || action === 'archive') && !opts.ruleId) {
+      if ((action === 'deprecate' || action === 'archive' || action === 'move') && !opts.ruleId) {
         console.error(chalk.red(`Error: --ruleId is required for '${action}' action.`));
+        process.exit(1);
+      }
+
+      if (action === 'move' && !opts.scope) {
+        console.error(chalk.red("Error: --scope is required for 'move' action."));
+        process.exit(1);
+      }
+
+      if (action === 'move' && opts.global) {
+        console.error(chalk.red("Error: 'move' uses --scope as the target project and cannot be combined with --global."));
         process.exit(1);
       }
 
@@ -227,7 +255,9 @@ function createManageCommand(): Command {
       await orch.initialize();
       const result = await orch.executeCommand('manage' as OrchCommand, {
         action,
-        ruleId: opts.ruleId
+        ruleId: opts.ruleId,
+        scope: opts.scope,
+        global: opts.global
       });
 
       if (result.success) {

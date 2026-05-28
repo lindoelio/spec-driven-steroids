@@ -507,6 +507,35 @@ describe('CLI E2E: inject command', () => {
         expect(await fs.pathExists(path.join(claudeDir, 'skills'))).toBe(true);
     });
 
+    it('inject command with Cline platform creates .cline directory structure (project scope)', async () => {
+        vi.spyOn(inquirer, 'prompt')
+            .mockResolvedValueOnce({ platforms: ['cline'] })
+            .mockResolvedValueOnce({ scope: 'project' });
+
+        const program = (await import('../../dist/cli/index.js')).default;
+        await program.parseAsync(['inject'], { from: 'user' } as any);
+
+        const clineDir = path.join(targetDir, '.cline');
+        expect(await fs.pathExists(clineDir)).toBe(true);
+        expect(await fs.pathExists(path.join(clineDir, 'agents'))).toBe(true);
+        expect(await fs.pathExists(path.join(clineDir, 'commands'))).toBe(true);
+        expect(await fs.pathExists(path.join(clineDir, 'skills'))).toBe(true);
+    });
+
+    it('inject command with Cline platform global scope creates artifacts globally', async () => {
+        vi.spyOn(inquirer, 'prompt')
+            .mockResolvedValueOnce({ platforms: ['cline'] })
+            .mockResolvedValueOnce({ scope: 'global' });
+
+        const program = (await import('../../dist/cli/index.js')).default;
+        await program.parseAsync(['inject'], { from: 'user' } as any);
+
+        const globalClineDir = path.join(os.homedir(), '.cline');
+        expect(await fs.pathExists(path.join(globalClineDir, 'agents'))).toBe(true);
+        expect(await fs.pathExists(path.join(globalClineDir, 'commands'))).toBe(true);
+        expect(await fs.pathExists(path.join(globalClineDir, 'skills'))).toBe(true);
+    });
+
     describe('inject output format', () => {
         // Helper: collect all console.log call arguments as plain strings
         function collectOutput(spy: ReturnType<typeof vi.spyOn>): string {

@@ -24,6 +24,8 @@ Verify the complete REQ → DES → TASK → CODE chain:
 | DES coverage | Every DES-* implements at least one REQ-* |
 | TASK coverage | Every DES-* has at least one TASK implementing it |
 | CODE coverage | Every TASK has corresponding code changes |
+| REQ implementation coverage | Every REQ-* acceptance criterion has an implementation task or explicit allowed rationale |
+| Discovery coverage | Non-exhaustive Code Anatomy has inventory tasks and amendments for discovered in-scope work |
 
 ### 2. Phase Gate Compliance
 
@@ -43,6 +45,8 @@ Additional spec-driven checks beyond CORE "Rigorous Against Prompt/Spec":
 - Code changes match TASK descriptions
 - No scope creep (changes outside spec scope)
 - No descoping without explicit approval
+- Non-exhaustive Code Anatomy is not treated as a closed completion checklist
+- Task amendments are present for newly discovered in-scope files, entrypoints, exports, tests, or integrations
 - Phase gate sequencing is correct
 
 ### 4. Scope Creep Detection
@@ -58,6 +62,8 @@ Flag changes that are:
 |---------|----------|------------|
 | Missing REQ→DES trace | blocking | direct-fix |
 | Missing DES→TASK trace | blocking | direct-fix |
+| Missing REQ implementation coverage | blocking | direct-fix |
+| Missing discovery task for non-exhaustive Code Anatomy | blocking | direct-fix |
 | Phase gate violation | blocking | author-required |
 | Implementation mismatch | blocking | author-required |
 | Scope creep | warning | author-required |

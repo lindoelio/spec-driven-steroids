@@ -101,10 +101,36 @@ flowchart LR
 
 ## Code Anatomy
 
+### Coverage Declaration
+
+Coverage: Representative
+
+Code Anatomy is not exhaustive unless explicitly marked `Coverage: Exhaustive`. Non-exhaustive coverage requires a discovery/inventory task before implementation tasks.
+
+### Required Touchpoints
+
 | File Path | Status | Evidence | Purpose | Implements |
 |-----------|--------|----------|---------|------------|
 | src/example/service.ts | Existing | Verified by Glob/Read | Core orchestration for the feature | DES-1 |
 | src/example/handler.ts | New | Proposed by DES-2 | Entry point for the request flow | DES-2 |
+
+### Known Impact Surface
+
+| Path or Area | Evidence | Why It Matters | Related DES |
+|--------------|----------|----------------|-------------|
+| src/example/tests/ | Verified by Glob | Existing integration tests may need updates | DES-1, DES-2 |
+
+### Discovery Targets
+
+| Target | Method | Purpose | Related Requirements |
+|--------|--------|---------|----------------------|
+| Existing request handlers | Grep for `handleExample` and related exports | Find entrypoints not listed above | REQ-1.1 |
+
+### Out of Scope
+
+| Path or Area | Rationale |
+|--------------|-----------|
+| src/legacy/ | Legacy flow is not used by this feature |
 
 ## Repository Context Evidence
 
@@ -205,28 +231,42 @@ This implementation is organized into 4 phases:
 - Follow `TESTING.md` for test placement and command selection.
 - Follow `STYLEGUIDE.md` and the design document's `Repository Context Evidence` for naming, file placement, and package boundaries.
 - Apply contextual-stewardship workflow rules retrieved for this phase.
+- If design Code Anatomy coverage is not `Exhaustive`, complete the discovery/inventory task before other implementation tasks.
+
+## Requirement Implementation Coverage
+
+| Requirement | Implementation Coverage | Task or Rationale |
+|-------------|-------------------------|-------------------|
+| REQ-1.1 | task | 1.2 |
+| REQ-1.2 | task | 1.2 |
+| REQ-2.1 | task | 2.1 |
 
 ## Phase 1: Foundation
 
-- [ ] 1.1 Add request entry point
+- [ ] 1.1 Inventory implementation touchpoints
+  - Execute the design's `Discovery Targets` and update this task plan if additional in-scope files, entrypoints, exports, tests, or integrations are found.
+  - _Implements: DES-1, REQ-1.1_
+
+- [ ] 1.2 Add request entry point
   - Create the main request handler for protected operations.
+  - _Depends: 1.1_
   - _Implements: DES-1_
 
-- [ ] 1.2 Add authorization service
+- [ ] 1.3 Add authorization service
   - Implement the shared authorization decision logic used by protected operations.
-  - _Depends: 1.1_
+  - _Depends: 1.2_
   - _Implements: DES-1, REQ-1.1, REQ-1.2_
 
 ## Phase 2: Feature Delivery
 
 - [ ] 2.1 Add denial feedback path
   - Return a user-visible denial response when authorization fails.
-  - _Depends: 1.2_
+  - _Depends: 1.3_
   - _Implements: DES-1, REQ-2.1_
 
 - [ ] 2.2 Add audit logging for denied actions
   - Record authorization failures when audit logging is enabled.
-  - _Depends: 1.2_
+  - _Depends: 1.3_
   - _Implements: DES-2, REQ-3.1, REQ-3.2_
 
 ## Phase 3: Acceptance Criteria Testing
@@ -234,13 +274,13 @@ This implementation is organized into 4 phases:
 - [ ] 3.1 Test: reject non-administrator protected actions
   - Verify protected actions are rejected for non-administrator users.
   - Test type: integration
-  - _Depends: 1.2_
+  - _Depends: 1.3_
   - _Implements: REQ-1.1_
 
 - [ ] 3.2 Test: allow administrator protected actions
   - Verify protected actions succeed for administrator users.
   - Test type: integration
-  - _Depends: 1.2_
+  - _Depends: 1.3_
   - _Implements: REQ-1.2_
 
 - [ ] 3.3 Test: show denial feedback and record denied attempts
@@ -255,6 +295,6 @@ This implementation is organized into 4 phases:
   - REQ-1: Confirm protected actions enforce authentication and administrator authorization.
   - REQ-2: Confirm denied access returns clear feedback.
   - REQ-3: Confirm denied actions are recorded when logging is enabled.
-  - Run the relevant test suite and resolve any remaining traceability gaps.
+  - For each REQ-X.Y, list implemented behavior, files changed, covering test, verification command, and any gap/rationale before declaring completion.
   - _Implements: All requirements_
 ```

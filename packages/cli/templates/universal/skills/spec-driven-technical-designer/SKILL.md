@@ -100,7 +100,14 @@ If `## Impact Analysis` is included, include `### Testing Requirements`. Add `##
   - at least one Mermaid diagram
   - an `_Implements: REQ-X.Y_` line
 - Every referenced requirement must exist in `requirements.md`.
-- Use `## Code Anatomy` to map files/directories to `DES-*`. Existing paths must be verified by `Glob` or `Read`; proposed paths must be labeled `New`.
+- Use `## Code Anatomy` to describe implementation touchpoints and discovery scope, not a closed inventory unless explicitly marked `Coverage: Exhaustive`.
+- `## Code Anatomy` must include `### Coverage Declaration`, `### Required Touchpoints`, `### Known Impact Surface`, `### Discovery Targets`, and `### Out of Scope`.
+- `### Coverage Declaration` must use exactly one value: `Coverage: Exhaustive`, `Coverage: Representative`, or `Coverage: Initial Discovery Only`.
+- Use `### Required Touchpoints` for files/directories that must change. Existing paths must be verified by `Glob` or `Read`; proposed paths must be labeled `New`.
+- Use `### Known Impact Surface` for files/directories that must be considered but may not change.
+- Use `### Discovery Targets` for searches, patterns, commands, or areas that must be investigated during task decomposition or implementation.
+- Use `### Out of Scope` for areas explicitly excluded from the change.
+- If coverage is not `Exhaustive`, state that Code Anatomy is not a completion checklist and must produce a discovery/inventory task in Phase 3.
 - Use `## Traceability Matrix` to map every `DES-*` element to requirements.
 - Prefer architecture decisions over implementation details.
 - Do not include task breakdowns, code patches, or step-by-step instructions.
@@ -174,6 +181,8 @@ The audit verdict (Approve / Request Changes / Approval with Notes) determines w
 Before returning the design, verify:
 - [ ] Document starts with `# Design Document`
 - [ ] `## Overview`, `## System Architecture`, `## Code Anatomy`, `## Repository Context Evidence`, and `## Traceability Matrix` are present
+- [ ] `## Code Anatomy` declares `Coverage: Exhaustive`, `Coverage: Representative`, or `Coverage: Initial Discovery Only`
+- [ ] Non-exhaustive Code Anatomy includes actionable discovery targets and warns that the list is not a completion checklist
 - [ ] Every design element uses `### DES-N: Title`
 - [ ] Every design element includes a Mermaid diagram
 - [ ] Every design element includes `_Implements: REQ-X.Y_`

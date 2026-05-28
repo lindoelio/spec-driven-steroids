@@ -67,6 +67,8 @@ See the `spec-driven-shared-protocol` skill's `references/document-templates.md`
 - Resolve all placeholders before returning output.
 - Do not include HTML comments, TODO markers, or drafting notes.
 - Include `## Repository Constraints` when guidelines, contextual memory, or design evidence affects task ordering, test placement, naming, package boundaries, or verification commands.
+- Include `## Requirement Implementation Coverage` mapping every `REQ-X.Y` acceptance criterion to an implementation task or an explicit rationale.
+- If `design.md` Code Anatomy uses `Coverage: Representative` or `Coverage: Initial Discovery Only`, Phase 1 must include a discovery/inventory task before other implementation tasks.
 
 ## Task Types
 
@@ -84,7 +86,24 @@ Use implementation tasks for building or modifying design elements:
 Rules:
 - Every implementation task must reference at least one `DES-*` element.
 - Add `REQ-*` references when the task clearly delivers a specific requirement behavior.
+- Every `REQ-X.Y` acceptance criterion must have an implementation task unless `## Requirement Implementation Coverage` explicitly marks it as `existing-behavior`, `test-only`, or `no-code-change` with a rationale.
 - Keep titles action-oriented: `Add`, `Update`, `Refactor`, `Wire`, `Create`, `Remove`.
+
+### Discovery Tasks
+
+Use a discovery/inventory task when the design does not claim exhaustive Code Anatomy coverage:
+
+```markdown
+- [ ] 1.1 Inventory implementation touchpoints
+  - Execute the design's `Discovery Targets` and update this task plan if additional in-scope files, entrypoints, exports, tests, or integrations are found.
+  - _Implements: DES-1, REQ-1.1_
+```
+
+Rules:
+- Place the discovery task before implementation tasks that depend on the inventory.
+- Reference the `DES-*` and `REQ-*` elements most likely to be affected by the discovery.
+- State that task amendments are allowed for newly discovered in-scope work.
+- Do not use a discovery task to postpone known implementation work.
 
 ### Test Tasks
 
@@ -141,6 +160,7 @@ Prefer 3-6 phases for most changes.
 
 - Every `DES-*` element from `design.md` should be implemented by at least one implementation task.
 - Every `REQ-*` acceptance criterion from `requirements.md` must be covered by at least one test task.
+- Every `REQ-*` acceptance criterion from `requirements.md` must be covered by at least one implementation task or a justified `existing-behavior`, `test-only`, or `no-code-change` rationale in `## Requirement Implementation Coverage`.
 - Use `_Implements: DES-X_` or `_Implements: DES-X, REQ-Y.Z_` for implementation tasks.
 - Use `_Implements: REQ-Y.Z_` or grouped `_Implements: REQ-Y.Z, REQ-A.B_` for test tasks.
 - Use `_Implements: All requirements_` only for the Final Checkpoint task.
@@ -166,6 +186,7 @@ When `sds validate tasks` or `sds validate spec` returns errors:
 3. Add missing `_Implements:` lines to non-checkpoint tasks
 4. Add or fix `DES-*` references so they match `design.md`
 5. Add or fix test tasks so every acceptance criterion is covered
+6. Add or fix requirement implementation coverage rows and discovery tasks required by non-exhaustive Code Anatomy
 
 After 3 failed validation attempts:
 1. Summarize remaining errors
@@ -202,6 +223,8 @@ Before returning the tasks, verify:
 - [ ] `Final Checkpoint` is the last phase
 - [ ] Every task uses checkbox format
 - [ ] Every non-checkpoint task includes `_Implements:`
+- [ ] `## Requirement Implementation Coverage` maps every `REQ-X.Y` to an implementation task or an allowed rationale
+- [ ] Non-exhaustive Code Anatomy has a discovery/inventory task before other implementation tasks
 - [ ] Every `DES-*` from `design.md` is covered by implementation tasks
 - [ ] Every `REQ-*` acceptance criterion is covered by at least one test task
 - [ ] No HTML comments or drafting notes remain

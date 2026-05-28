@@ -104,7 +104,7 @@ The stewardship system (`packages/cli/src/context-stewardship/`) is a file-based
 | `SpecDecisionExtractor` | Extract decision candidates from spec files |
 | `PhaseContextInjector` | Inject relevant rules into prompt context per phase |
 
-Rules are stored as JSON files under `~/.agents/stewardship/` with scope isolation (global / orgs / projects).
+Rules are stored as JSON files under `~/.agents/stewardship/` with scope isolation. New rules default to `projects/<project-id>` and `global` is an explicit opt-in for rules that are safe across unrelated repositories.
 
 ## Architectural Decisions
 
@@ -118,7 +118,7 @@ Rather than requiring each platform to implement an adapter, the CLI transforms 
 
 ### AD-3: File-Based Knowledge Graph
 
-The stewardship store uses flat JSON files instead of a database. This avoids runtime dependencies and keeps the knowledge graph portable, inspectable, and version-controllable. Write-lock serialization prevents concurrent-write corruption within a single process.
+The stewardship store uses flat JSON files instead of a database. This avoids runtime dependencies and keeps the knowledge graph portable, inspectable, and version-controllable. Retrieval resolves project rules before global fallback rules, and write-lock serialization prevents concurrent-write corruption within a single process.
 
 ### AD-4: Integration-Test-First Strategy
 

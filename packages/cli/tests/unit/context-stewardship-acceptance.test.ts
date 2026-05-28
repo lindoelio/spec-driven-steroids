@@ -12,6 +12,7 @@ interface TestModules {
   ProjectScopedResolver: typeof import('../../dist/context-stewardship/project-scoped-resolver.js')['ProjectScopedResolver'];
   SpecDecisionExtractor: typeof import('../../dist/context-stewardship/spec-decision-extractor.js')['SpecDecisionExtractor'];
   GracefulDegradationRouter: typeof import('../../dist/context-stewardship/graceful-degradation-router.js')['GracefulDegradationRouter'];
+  ContextStewardshipOrchestrator: typeof import('../../dist/context-stewardship/orchestrator.js')['ContextStewardshipOrchestrator'];
   DEFAULT_EXPIRATION_YEARS: number;
   CONFLICT_SIMILARITY_THRESHOLD: number;
 }
@@ -23,13 +24,14 @@ async function withTempHome<T>(fn: (mods: TestModules) => Promise<T>): Promise<T
   process.env.HOME = tempHome;
   try {
     // Import modules AFTER setting temp HOME so BASE_DIR uses correct path
-    const [kgModule, lmModule, sreModule, psrModule, sdeModule, gdrModule, typesModule] = await Promise.all([
+    const [kgModule, lmModule, sreModule, psrModule, sdeModule, gdrModule, orchModule, typesModule] = await Promise.all([
       import('../../dist/context-stewardship/knowledge-graph-store.js'),
       import('../../dist/context-stewardship/lifecycle-manager.js'),
       import('../../dist/context-stewardship/semantic-retrieval-engine.js'),
       import('../../dist/context-stewardship/project-scoped-resolver.js'),
       import('../../dist/context-stewardship/spec-decision-extractor.js'),
       import('../../dist/context-stewardship/graceful-degradation-router.js'),
+      import('../../dist/context-stewardship/orchestrator.js'),
       import('../../dist/context-stewardship/types.js'),
     ]);
     const mods: TestModules = {
@@ -39,6 +41,7 @@ async function withTempHome<T>(fn: (mods: TestModules) => Promise<T>): Promise<T
       ProjectScopedResolver: psrModule.ProjectScopedResolver,
       SpecDecisionExtractor: sdeModule.SpecDecisionExtractor,
       GracefulDegradationRouter: gdrModule.GracefulDegradationRouter,
+      ContextStewardshipOrchestrator: orchModule.ContextStewardshipOrchestrator,
       DEFAULT_EXPIRATION_YEARS: typesModule.DEFAULT_EXPIRATION_YEARS,
       CONFLICT_SIMILARITY_THRESHOLD: typesModule.CONFLICT_SIMILARITY_THRESHOLD,
     };
@@ -244,9 +247,34 @@ describe('Context Stewardship Acceptance Tests', () => {
         expect(outOfDomain[0].rule.domain).toBe('workflow');
       });
     });
+
+    it('does not include cross-domain matches when domain-matched results exist', async () => {
+      await withTempHome(async ({ KnowledgeGraphStore, SemanticRetrievalEngine }) => {
+        const store = new KnowledgeGraphStore('global');
+
+        const architectureRule = store.createRule({
+          domain: 'architecture',
+          content: 'Testing quality belongs to the architecture validation rule',
+        });
+        const workflowRule = store.createRule({
+          domain: 'workflow',
+          content: 'Testing quality belongs to the workflow validation rule',
+        });
+
+        await store.saveRule(architectureRule);
+        await store.saveRule(workflowRule);
+
+        const engine = new SemanticRetrievalEngine(store);
+        const results = await engine.retrieve({ query: 'testing quality validation', domain: 'architecture' });
+
+        expect(results.rules.length).toBeGreaterThan(0);
+        expect(results.rules.every(r => r.rule.domain === 'architecture')).toBe(true);
+        expect(results.rules.every(r => !r.isOutOfDomain)).toBe(true);
+      });
+    });
   });
 
-  describe('7.6 - Scope chain resolution priority (session, project, org, global)', () => {
+  describe('7.6 - Scope chain resolution priority (session, project, global)', () => {
     it('resolves project rules before global rules', async () => {
       await withTempHome(async ({ KnowledgeGraphStore, ProjectScopedResolver }) => {
         const globalStore = new KnowledgeGraphStore('global');
@@ -274,6 +302,112 @@ describe('Context Stewardship Acceptance Tests', () => {
         expect(results.scopesResolved).toContain('global');
         const projectRules = results.rules.filter(r => r.rule.projectScope === 'test-project');
         expect(projectRules.length).toBeGreaterThan(0);
+      });
+    });
+
+    it('ranks current project rules before matching global rules', async () => {
+      await withTempHome(async ({ KnowledgeGraphStore, ProjectScopedResolver }) => {
+        const globalStore = new KnowledgeGraphStore('global');
+        const projectStore = new KnowledgeGraphStore('project', 'priority-project');
+
+        const globalRule = globalStore.createRule({
+          domain: 'architecture',
+          content: 'Database priority regression uses GlobalDB for matching storage',
+        });
+        const projectRule = projectStore.createRule({
+          domain: 'architecture',
+          content: 'Database priority regression uses ProjectDB for matching storage',
+        });
+
+        await globalStore.saveRule(globalRule);
+        await projectStore.saveRule(projectRule);
+
+        const resolver = new ProjectScopedResolver(globalStore);
+        resolver.setProjectScope('priority-project');
+
+        const results = await resolver.resolve({ query: 'database priority regression storage' });
+
+        expect(results.rules[0].rule.content).toContain('ProjectDB');
+      });
+    });
+
+    it('stores rules in the current project scope by default', async () => {
+      await withTempHome(async ({ KnowledgeGraphStore, ContextStewardshipOrchestrator }) => {
+        const oldCwd = process.cwd();
+        const projectId = `scoped-memory-${Date.now()}`;
+        const projectDir = path.join(tmpdir(), projectId);
+        await fs.mkdir(projectDir, { recursive: true });
+
+        try {
+          process.chdir(projectDir);
+          const content = `Project scoped memory ${Date.now()}`;
+          const orchestrator = new ContextStewardshipOrchestrator();
+          await orchestrator.initialize();
+
+          const result = await orchestrator.executeCommand('store', {
+            domain: 'workflow',
+            content,
+          });
+
+          const projectStore = new KnowledgeGraphStore('project', projectId);
+          const globalStore = new KnowledgeGraphStore('global');
+          const projectRules = await projectStore.listRules({ state: 'active' });
+          const globalRules = await globalStore.listRules({ state: 'active' });
+
+          expect(result.success).toBe(true);
+          expect(projectRules.some(rule => rule.content === content)).toBe(true);
+          expect(globalRules.some(rule => rule.content === content)).toBe(false);
+        } finally {
+          process.chdir(oldCwd);
+          await fs.rm(projectDir, { recursive: true, force: true });
+        }
+      });
+    });
+
+    it('stores rules globally only when global scope is explicit', async () => {
+      await withTempHome(async ({ KnowledgeGraphStore, ContextStewardshipOrchestrator }) => {
+        const content = `Global scoped memory ${Date.now()}`;
+        const orchestrator = new ContextStewardshipOrchestrator();
+        await orchestrator.initialize();
+
+        const result = await orchestrator.executeCommand('store', {
+          domain: 'workflow',
+          content,
+          global: true,
+        });
+
+        const globalStore = new KnowledgeGraphStore('global');
+        const globalRules = await globalStore.listRules({ state: 'active' });
+
+        expect(result.success).toBe(true);
+        expect(globalRules.some(rule => rule.content === content)).toBe(true);
+      });
+    });
+
+    it('moves active global rules into project scope and archives the source', async () => {
+      await withTempHome(async ({ KnowledgeGraphStore, ContextStewardshipOrchestrator }) => {
+        const globalStore = new KnowledgeGraphStore('global');
+        const globalRule = globalStore.createRule({
+          domain: 'business',
+          content: `Move global memory ${Date.now()}`,
+        });
+        await globalStore.saveRule(globalRule);
+
+        const orchestrator = new ContextStewardshipOrchestrator();
+        await orchestrator.initialize();
+        const result = await orchestrator.executeCommand('manage', {
+          action: 'move',
+          ruleId: globalRule.id,
+          scope: 'moved-project',
+        });
+
+        const projectStore = new KnowledgeGraphStore('project', 'moved-project');
+        const movedRule = await projectStore.readRule(globalRule.id, 'active');
+        const archivedSource = await globalStore.readRule(globalRule.id, 'archived');
+
+        expect(result.success).toBe(true);
+        expect(movedRule?.projectScope).toBe('moved-project');
+        expect(archivedSource?.state.value).toBe('archived');
       });
     });
   });

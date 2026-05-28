@@ -30,6 +30,65 @@ interface TasksValidationResult extends ValidationResult {
   };
 }
 
+const ALLOWED_REQUIREMENT_COVERAGE = ['task', 'existing-behavior', 'test-only', 'no-code-change'] as const;
+
+function extractDesignCoverage(designContent?: string): string | undefined {
+  const codeAnatomyHeading = designContent ? /^##\s+Code Anatomy\b.*$/mi.exec(designContent) : undefined;
+  if (!designContent || !codeAnatomyHeading || codeAnatomyHeading.index === undefined) {
+    return undefined;
+  }
+
+  const afterHeading = designContent.slice(codeAnatomyHeading.index + codeAnatomyHeading[0].length);
+  const nextSectionIndex = afterHeading.search(/\n##\s+/);
+  const codeAnatomy = designContent.slice(
+    codeAnatomyHeading.index,
+    nextSectionIndex === -1 ? undefined : codeAnatomyHeading.index + codeAnatomyHeading[0].length + nextSectionIndex
+  );
+  return codeAnatomy?.match(/^\s*Coverage:\s*(.+?)\s*$/im)?.[1]?.trim();
+}
+
+function extractRequirementImplementationCoverage(content: string): Map<string, { coverage: string; detail: string; line: number }> {
+  const coverageRows = new Map<string, { coverage: string; detail: string; line: number }>();
+  const sectionHeading = /^##\s+Requirement Implementation Coverage\b.*$/mi.exec(content);
+  if (!sectionHeading || sectionHeading.index === undefined) {
+    return coverageRows;
+  }
+
+  const afterHeading = content.slice(sectionHeading.index + sectionHeading[0].length);
+  const nextSectionIndex = afterHeading.search(/\n##\s+/);
+  const section = content.slice(
+    sectionHeading.index,
+    nextSectionIndex === -1 ? undefined : sectionHeading.index + sectionHeading[0].length + nextSectionIndex
+  );
+
+  const sectionStart = content.slice(0, sectionHeading.index).split('\n').length;
+  const lines = section.split('\n');
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index];
+    if (!/^\s*\|/.test(line) || /^\s*\|\s*-+/.test(line) || /Requirement\s*\|\s*Implementation Coverage/i.test(line)) {
+      continue;
+    }
+
+    const cells = line.split('|').slice(1, -1).map(cell => cell.trim());
+    if (cells.length < 3) {
+      continue;
+    }
+
+    const reqRef = cells[0].match(/REQ-\d+\.\d+/)?.[0];
+    if (!reqRef) {
+      continue;
+    }
+
+    coverageRows.set(reqRef, {
+      coverage: cells[1].toLowerCase(),
+      detail: cells.slice(2).join(' | '),
+      line: sectionStart + index
+    });
+  }
+
+  return coverageRows;
+}
+
 function verifyTasksFile(content: string, designContent?: string, requirementsContent?: string): TasksValidationResult {
   const errors: ValidationError[] = [];
   const warnings: Array<{ line?: number; message: string }> = [];
@@ -94,6 +153,8 @@ function verifyTasksFile(content: string, designContent?: string, requirementsCo
   const dependencyRefs: Array<{ ref: string; line: number }> = [];
   const declaredDesIds = designContent ? extractDeclaredDesignElementIds(designContent) : [];
   const validAcceptanceRefs = requirementsContent ? extractAcceptanceCriteriaRefs(requirementsContent) : [];
+  const implementationReqRefs = new Set<string>();
+  const implementationTasks: Array<{ id: string; title: string; text: string; phase: string; line: number }> = [];
   
   if (!taskMatches || taskMatches.length === 0) {
     errors.push({
@@ -201,6 +262,17 @@ function verifyTasksFile(content: string, designContent?: string, requirementsCo
           line: lineNumber,
           skillDocLink: SKILL_DOCS.tasks
         });
+      } else {
+        implementationTasks.push({
+          id: taskId,
+          title: taskLabel,
+          text: taskText,
+          phase: currentPhase || '',
+          line: lineNumber
+        });
+        for (const acceptanceRef of acceptanceRefs) {
+          implementationReqRefs.add(acceptanceRef);
+        }
       }
 
       if (requirementsContent) {
@@ -251,6 +323,80 @@ function verifyTasksFile(content: string, designContent?: string, requirementsCo
           context: `${implementedDesId} is referenced in tasks but not defined in design.md`,
           suggestedFix: `Fix task traceability reference or add ${implementedDesId} to design.md`,
           line: line > 0 ? line : undefined,
+          skillDocLink: SKILL_DOCS.tasks
+        });
+      }
+    }
+  }
+
+  const designCoverage = extractDesignCoverage(designContent);
+  if (designCoverage && designCoverage !== 'Exhaustive') {
+    const firstImplementationTask = implementationTasks[0];
+    const isDiscoveryFirst = firstImplementationTask &&
+      firstImplementationTask.phase === '1' &&
+      /\b(discovery|discover|inventory|inventor(?:y|ies)|touchpoints?)\b/i.test(`${firstImplementationTask.title}\n${firstImplementationTask.text}`);
+
+    if (!isDiscoveryFirst) {
+      errors.push({
+        errorType: 'Traceability Error',
+        context: `Code Anatomy coverage is ${designCoverage}; Phase 1 must start with a discovery/inventory implementation task`,
+        suggestedFix: 'Add a Phase 1 discovery/inventory task before other implementation tasks and link it with _Implements: DES-X, REQ-Y.Z_',
+        line: firstImplementationTask?.line,
+        skillDocLink: SKILL_DOCS.tasks
+      });
+    }
+  }
+
+  if (requirementsContent && validAcceptanceRefs.length > 0) {
+    const coverageRows = extractRequirementImplementationCoverage(content);
+    if (coverageRows.size === 0) {
+      errors.push({
+        errorType: 'Structure Error',
+        context: 'Requirement Implementation Coverage section not found or empty',
+        suggestedFix: 'Add ## Requirement Implementation Coverage with one row per REQ-X.Y acceptance criterion',
+        skillDocLink: SKILL_DOCS.tasks
+      });
+    }
+
+    for (const reqRef of validAcceptanceRefs) {
+      const coverageRow = coverageRows.get(reqRef);
+      if (!coverageRow) {
+        errors.push({
+          errorType: 'Traceability Error',
+          context: `${reqRef} is missing implementation coverage`,
+          suggestedFix: `Add ${reqRef} to ## Requirement Implementation Coverage as task, existing-behavior, test-only, or no-code-change`,
+          skillDocLink: SKILL_DOCS.tasks
+        });
+        continue;
+      }
+
+      if (!ALLOWED_REQUIREMENT_COVERAGE.some(value => value === coverageRow.coverage)) {
+        errors.push({
+          errorType: 'Traceability Error',
+          context: `${reqRef} has invalid implementation coverage: ${coverageRow.coverage}`,
+          suggestedFix: 'Use task, existing-behavior, test-only, or no-code-change',
+          line: coverageRow.line,
+          skillDocLink: SKILL_DOCS.tasks
+        });
+        continue;
+      }
+
+      if (coverageRow.coverage === 'task' && !implementationReqRefs.has(reqRef)) {
+        errors.push({
+          errorType: 'Traceability Error',
+          context: `${reqRef} is marked as task but no implementation task references it`,
+          suggestedFix: `Add ${reqRef} to an implementation task _Implements: DES-X, ${reqRef}_ line or change the coverage rationale`,
+          line: coverageRow.line,
+          skillDocLink: SKILL_DOCS.tasks
+        });
+      }
+
+      if (coverageRow.coverage !== 'task' && coverageRow.detail.length < 10) {
+        errors.push({
+          errorType: 'Traceability Error',
+          context: `${reqRef} implementation coverage rationale is too vague`,
+          suggestedFix: 'Provide a concrete rationale for existing-behavior, test-only, or no-code-change coverage',
+          line: coverageRow.line,
           skillDocLink: SKILL_DOCS.tasks
         });
       }

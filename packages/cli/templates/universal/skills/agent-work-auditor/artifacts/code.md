@@ -30,6 +30,8 @@ Guidance for auditing code artifacts (implementation files, modules, functions).
 - Code traces to design element
 - Implementation matches specification
 - Tests cover the code
+- Non-exhaustive Code Anatomy discoveries are reflected as task amendments or documented no-amendment rationales
+- Final requirement coverage matrix maps every `REQ-X.Y` to behavior, files, tests, verification, and gap/rationale
 
 ### Safety
 

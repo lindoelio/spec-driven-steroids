@@ -3,6 +3,7 @@ import { KnowledgeGraphStore } from './knowledge-graph-store.js';
 import { SemanticRetrievalEngine } from './semantic-retrieval-engine.js';
 import { computeSimilarity } from './utils.js';
 import { cwd } from 'process';
+import { basename } from 'path';
 
 export interface ScopeResolutionResult {
   rules: ScoredRule[];
@@ -50,12 +51,7 @@ export class ProjectScopedResolver {
   }
 
   detectCurrentProject(): string | undefined {
-    // Best-effort heuristic: uses cwd folder name as project identifier.
-    // This may collide for unrelated projects with the same directory name.
-    // A more robust approach would use a project marker file or git remote.
-    const path = cwd();
-    const parts = path.split('/');
-    return parts[parts.length - 1] || undefined;
+    return basename(cwd()) || undefined;
   }
 
   async resolve(query: RetrievalQuery): Promise<ScopeResolutionResult> {
@@ -110,7 +106,7 @@ export class ProjectScopedResolver {
 
     // Merge and dedupe
     const deduped = this.dedupeRules(allRules);
-    const ranked = this.engine.rankResults(deduped);
+    const ranked = this.rankScopedResults(deduped);
 
     // Cache results with timestamp
     this.sessionCache.set(cacheKey, { rules: ranked, timestamp: Date.now() });
@@ -132,6 +128,24 @@ export class ProjectScopedResolver {
       }
     }
     return Array.from(seen.values());
+  }
+
+  private rankScopedResults(rules: ScoredRule[]): ScoredRule[] {
+    const ranked = this.engine.rankResults(rules);
+    if (!this.currentProjectScope) return ranked;
+
+    return ranked.sort((a, b) => {
+      if (a.rule.state.value !== b.rule.state.value) {
+        if (a.rule.state.value === 'active') return -1;
+        if (b.rule.state.value === 'active') return 1;
+      }
+
+      const aProject = a.rule.projectScope === this.currentProjectScope;
+      const bProject = b.rule.projectScope === this.currentProjectScope;
+      if (aProject !== bProject) return aProject ? -1 : 1;
+
+      return b.score - a.score;
+    });
   }
 
   clearSessionCache(): void {

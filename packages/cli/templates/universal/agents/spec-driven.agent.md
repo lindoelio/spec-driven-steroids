@@ -125,13 +125,15 @@ Invoke the `spec-driven-task-decomposer` skill.
 4. Invoke the `spec-driven-task-decomposer` skill.
 5. Wait for the skill to produce tasks content.
 6. Write `.specs/changes/<slug>/tasks.md`.
-7. Grade with `quality-grading` in `grade-and-fix` mode.
-8. Audit with `agent-work-auditor` in `thorough` mode with `spec-driven` extension.
-9. Perform the Confidence Gate (Red Team Challenge).
-10. Validate with `sds validate tasks .specs/changes/<slug>/tasks.md --design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md`.
-11. Validate the full spec with `sds validate spec <slug>`. If either validation fails, fix and re-run.
-12. **STOP**. Summarize the artifact, declare confidence ≥90%, and ask: `Confidence: 95%. I audited these tasks, performed adversarial review, and found no material issues. Approve Phase 3, and I'll move to Phase 4 (implementation), which includes Phase 5 (code review) and Phase 6 (final Confidence Gate) before completion.`
-13. Do not begin implementation until the user explicitly approves Phase 3 and Phase 4 entry.
+7. Ensure `## Requirement Implementation Coverage` maps every `REQ-X.Y` to an implementation task or allowed rationale.
+8. If `design.md` Code Anatomy coverage is not `Exhaustive`, ensure Phase 1 starts with a discovery/inventory task before other implementation tasks.
+9. Grade with `quality-grading` in `grade-and-fix` mode.
+10. Audit with `agent-work-auditor` in `thorough` mode with `spec-driven` extension.
+11. Perform the Confidence Gate (Red Team Challenge).
+12. Validate with `sds validate tasks .specs/changes/<slug>/tasks.md --design .specs/changes/<slug>/design.md --requirements .specs/changes/<slug>/requirements.md`.
+13. Validate the full spec with `sds validate spec <slug>`. If either validation fails, fix and re-run.
+14. **STOP**. Summarize the artifact, declare confidence ≥90%, and ask: `Confidence: 95%. I audited these tasks, performed adversarial review, and found no material issues. Approve Phase 3, and I'll move to Phase 4 (implementation), which includes Phase 5 (code review) and Phase 6 (final Confidence Gate) before completion.`
+15. Do not begin implementation until the user explicitly approves Phase 3 and Phase 4 entry.
 
 ### Phase 4: Implementation
 
@@ -148,12 +150,14 @@ Invoke the `spec-driven-task-implementer` skill.
   - save the file immediately after each status change
 - Keep REQ and DES IDs inside `_Implements:` traceability tags in `tasks.md`; use behavior-focused names for tests and test cases.
 - Use the smallest meaningful verification for each task before marking it complete.
+- If implementation discovers additional in-scope work under existing `REQ-*`/`DES-*`, use the Task Amendment Protocol in `tasks.md` instead of treating it as scope creep.
+- If discovered work changes requirements, architecture, public contracts, migration scope, security posture, or operational risk, stop for mini-review before proceeding.
 - Continue implementation directly unless blocked by a real conflict, failed verification, or material ambiguity.
 - After all implementation tasks complete, the implementer skill automatically:
   1. Performs Confidence Gate Phase 4.5 (pre-audit Red Team Challenge)
   2. Invokes code review (Phase 5)
   3. Runs universal-live-check as a final pre-flight validation
-  4. Performs Final Confidence Gate Phase 6 before declaring completion
+  4. Builds the final per-`REQ-X.Y` coverage matrix and performs Final Confidence Gate Phase 6 before declaring completion
   5. Only after Phase 6 passes may declare: `Implementation complete. Confidence: X%.`
 
 ## Traceability Rules

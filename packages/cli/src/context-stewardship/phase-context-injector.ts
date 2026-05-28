@@ -51,10 +51,11 @@ export class PhaseContextInjector {
 
       const result = await this.resolver.resolve(query);
       if (result.rules.length > 0) {
+        const rules = result.rules.map(r => r.rule);
         const context: InjectedContext = {
           domain,
-          rules: result.rules.map(r => r.rule),
-          source: result.scopesResolved.includes('project') ? 'project' : 'global',
+          rules,
+          source: rules.some(rule => rule.projectScope) ? 'project' : 'global',
         };
         injected.push(context);
       }

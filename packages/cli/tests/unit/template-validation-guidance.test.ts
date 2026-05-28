@@ -102,7 +102,13 @@ describe('Unit: template validation guidance', () => {
         // Designer SKILL.md should reference shared templates
         expect(designerContent).toContain('spec-driven-shared-protocol');
 
-        // Shared templates should contain the design table structure
+        // Shared templates should contain the design coverage structure
+        expect(designerTemplateContent).toContain('### Coverage Declaration');
+        expect(designerTemplateContent).toContain('Coverage: Representative');
+        expect(designerTemplateContent).toContain('### Required Touchpoints');
+        expect(designerTemplateContent).toContain('### Known Impact Surface');
+        expect(designerTemplateContent).toContain('### Discovery Targets');
+        expect(designerTemplateContent).toContain('### Out of Scope');
         expect(designerTemplateContent).toContain('| File Path | Status | Evidence | Purpose | Implements |');
         expect(designerTemplateContent).toContain('Verified by Glob/Read');
 
@@ -143,6 +149,7 @@ describe('Unit: template validation guidance', () => {
         expect(documentTemplatesContent).toContain('## Overview');
         expect(documentTemplatesContent).toContain('## Repository Context Evidence');
         expect(documentTemplatesContent).toContain('## Repository Constraints');
+        expect(documentTemplatesContent).toContain('## Requirement Implementation Coverage');
 
         // Audit files still contain inline content
         expect(auditDesignContent).toContain('Repository Context Evidence shows guidelines');
@@ -219,7 +226,9 @@ describe('Unit: template validation guidance', () => {
 
         expect(requirementsAudit).toContain('Did I miss edge cases that make these untestable?');
         expect(designAudit).toContain('Does this design actually solve the requirements');
+        expect(designAudit).toContain('Ignore the Code Anatomy');
         expect(tasksAudit).toContain('Are any tasks too large for one focused session?');
+        expect(tasksAudit).toContain('Ignore the Code Anatomy');
     });
 
     it('requires Confidence Gate Rule in spec-driven planner', async () => {
@@ -249,6 +258,8 @@ describe('Unit: template validation guidance', () => {
         const content = await readTemplate('universal/skills/spec-driven-task-implementer/SKILL.md');
         expect(content).toContain('## Phase 4.5: Confidence Gate (Pre-Audit)');
         expect(content).toContain('## Phase 6: Final Confidence Gate');
+        expect(content).toContain('## Task Amendment Protocol');
+        expect(content).toContain('final requirement coverage matrix');
         expect(content).toContain('You may not proceed to Phase 5 until confidence is ≥90%');
     });
 

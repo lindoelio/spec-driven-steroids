@@ -50,6 +50,8 @@ Use these files in this order:
 
 If these inputs conflict, stop and resolve the conflict before continuing.
 
+`Code Anatomy` is not a closed completion checklist unless `design.md` says `Coverage: Exhaustive`. For `Coverage: Representative` or `Coverage: Initial Discovery Only`, complete the discovery/inventory task before treating the task plan as stable.
+
 ## Task Status Rules
 
 `tasks.md` is the progress ledger and must stay accurate. Use checkbox states:
@@ -68,9 +70,10 @@ For each task:
 2. Confirm it is pending and all `_Depends:` tasks are complete
 3. Change the task to `- [~]` and save `tasks.md`
 4. Implement only the scoped behavior required by the task
-5. Run the smallest meaningful verification
-6. If verification passes, change the task to `- [x]` and save `tasks.md`
-7. If verification fails, keep the task in progress until the issue is fixed or escalated
+5. If the task discovers additional in-scope work, follow the Task Amendment Protocol before marking the task complete
+6. Run the smallest meaningful verification
+7. If verification passes, change the task to `- [x]` and save `tasks.md`
+8. If verification fails, keep the task in progress until the issue is fixed or escalated
 
 ## Task Selection Rules
 
@@ -94,6 +97,19 @@ For each task:
 - Do not add features that are not required by the spec
 - Do not refactor unrelated code while implementing the task
 - Respect package and module boundaries
+- Do not treat files outside `Required Touchpoints` as scope creep when `Known Impact Surface` or `Discovery Targets` identify them as possible in-scope work
+
+## Task Amendment Protocol
+
+If implementation discovers files, entrypoints, exports, tests, integrations, or verification work not listed in `tasks.md`:
+
+1. Determine whether the discovered work maps to existing `REQ-*` and `DES-*` scope.
+2. If it is in scope and does not change product behavior, public contracts, architecture, or risk materially, add an amendment task to `tasks.md` before doing the newly discovered work.
+3. The amendment task must include `_Discovered from: <task-id or discovery target>_` and `_Implements: DES-X, REQ-Y.Z_`.
+4. If the discovered work changes requirements, architecture, public contracts, migration scope, security posture, or operational risk, keep the current task `- [~]` and request a mini-review before proceeding.
+5. Do not mark the discovery task complete until amendments are added or an explicit no-amendment rationale is recorded in that task.
+
+Amendments are not scope creep when they preserve the approved requirements and design intent. They are scope corrections caused by non-exhaustive discovery.
 
 ## Test Task Rules
 
@@ -153,7 +169,8 @@ If verification fails:
 - silently diverging from the design
 - marking tasks complete without verification
 - batching multiple task status updates after the fact
-- creating additional files in `.specs/changes/<slug>/`. Only write to tasks.md for status updates
+- treating non-exhaustive Code Anatomy as a closed file list
+- creating additional files in `.specs/changes/<slug>/`. Only write to tasks.md for status updates and task amendments allowed by the Task Amendment Protocol
 
 ## Quality Bar (Self-Check)
 
@@ -175,7 +192,7 @@ If material ambiguity or a blocking spec conflict prevents safe implementation, 
 Before invoking Phase 5 auditing, perform a Red Team Challenge on the completed implementation:
 
 1. **Adopt rejector persona**: You are a code reviewer who wants to reject this change.
-2. **Find 3 weaknesses**: Look for untested edge cases, missing error handling, scope creep, or deviations from the design.
+2. **Find 3 weaknesses**: Look for untested edge cases, missing error handling, scope creep, deviations from the design, or missed touchpoints hidden by non-exhaustive Code Anatomy.
 3. **Verify and fix**: If real, fix before proceeding. If not real, document why.
 4. **Declare confidence**: State `Confidence: X%`. If <90%, continue improving before audit.
 
@@ -247,9 +264,10 @@ The universal-live-check skill will classify affected domains, detect cross-doma
 After Phase 5 (Unified Auditing) and Live Check complete, perform a final Red Team Challenge before declaring the implementation finished:
 
 1. **Adopt rejector persona**: You are a senior engineer performing final sign-off. You want to reject the change.
-2. **Find 3 weaknesses**: Review the audit findings, live-check results, and implementation against the original requirements. Look for any gap between what was asked and what was built.
-3. **Verify and fix**: If real, fix before declaring finished. If not real, document why.
-4. **Declare final confidence**: State `Confidence: X%`.
-5. **Blocking rule**: If confidence <90%, you MUST NOT declare the implementation finished. Continue fixing or escalate to the user.
+2. **Find 3 weaknesses**: Review the audit findings, live-check results, implementation, task amendments, and original requirements. Look for any gap between what was asked and what was built.
+3. **Build the final requirement coverage matrix**: For each `REQ-X.Y`, list implemented behavior, files changed, covering test, verification command, and gap/rationale.
+4. **Verify and fix**: If real, fix before declaring finished. If not real, document why.
+5. **Declare final confidence**: State `Confidence: X%`.
+6. **Blocking rule**: If confidence <90%, you MUST NOT declare the implementation finished. Continue fixing or escalate to the user.
 
 Only after passing Phase 6 may you declare: `Implementation complete. Confidence: X%. All tasks verified.`

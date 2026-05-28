@@ -27,6 +27,9 @@ import {
 import {
   QwenCodeInjectionScope
 } from './qwen-code-scope.js';
+import {
+  ClineInjectionScope
+} from './cline-scope.js';
 import { transformTemplates } from './transformation-pipeline.js';
 import { createValidateCommand } from '../core/validate/index.js';
 import { createStewardshipCommand } from '../context-stewardship/cli-command.js';
@@ -39,7 +42,7 @@ interface InjectionResult {
   error: string;
 }
 
-const GLOBAL_CAPABLE_PLATFORMS = ['github-vscode', 'github-copilot-cli', 'gemini-cli', 'qwen-code', 'opencode'] as const;
+const GLOBAL_CAPABLE_PLATFORMS = ['github-vscode', 'github-copilot-cli', 'gemini-cli', 'qwen-code', 'opencode', 'cline'] as const;
 type GlobalCapablePlatform = typeof GLOBAL_CAPABLE_PLATFORMS[number];
 
 enum UnifiedInjectionScope {
@@ -89,6 +92,7 @@ function platformDisplayName(platform: string): string {
     case 'opencode': return 'OpenCode';
     case 'codex': return 'OpenAI Codex';
     case 'claudecode': return 'Claude Code';
+    case 'cline': return 'Cline';
     default: return platform;
   }
 }
@@ -167,7 +171,8 @@ program
           { name: 'Google Antigravity', value: 'antigravity' },
           { name: 'OpenCode', value: 'opencode' },
           { name: 'OpenAI Codex', value: 'codex' },
-          { name: 'Claude Code', value: 'claudecode' }
+          { name: 'Claude Code', value: 'claudecode' },
+          { name: 'Cline', value: 'cline' }
         ],
         validate: (input: string[]) => input.length > 0 || 'Select at least one platform.'
       }
@@ -186,6 +191,7 @@ program
           case 'gemini-cli': return 'Gemini CLI';
           case 'qwen-code': return 'Qwen Code';
           case 'opencode': return 'OpenCode';
+          case 'cline': return 'Cline';
           default: return p;
         }
       }).join(', ');
@@ -220,6 +226,9 @@ program
     const qwenCodeScope = unifiedScope === UnifiedInjectionScope.GLOBAL
       ? QwenCodeInjectionScope.USER
       : QwenCodeInjectionScope.PROJECT;
+    const clineScope = unifiedScope === UnifiedInjectionScope.GLOBAL
+      ? ClineInjectionScope.USER
+      : ClineInjectionScope.PROJECT;
 
     const targetDir = process.cwd();
     const bundledTemplatesDir = path.resolve(__dirname, '../../templates');
@@ -328,6 +337,16 @@ program
           }
         }
 
+        if (platform === 'cline') {
+          if (clineScope === ClineInjectionScope.USER) {
+            platformDest = path.join(os.homedir(), '.cline');
+            transformDestDir = platformDest;
+          } else {
+            platformDest = path.join(targetDir, '.cline');
+            transformDestDir = platformDest;
+          }
+        }
+
         if (transformDestDir) {
           const skipOutputTypes = (platform === 'github-vscode' && githubScope === GitHubCopilotInjectionScope.GLOBAL)
             ? ['inject-guidelines-command']
@@ -400,7 +419,8 @@ program
       removeGitHubCopilotCliSteroids(),
       removeGeminiCliSteroids(),
       removeQwenCodeSteroids(),
-      removeOpenCodeGlobalSteroids()
+      removeOpenCodeGlobalSteroids(),
+      removeClineSteroids()
     ]);
 
     const allCleaned = results.every(r => r);
@@ -483,6 +503,11 @@ function buildCleanPreview(): string {
     `    • agents/spec-driven.agent.md`,
     `    • commands/spec-driven.md, commands/inject-guidelines.md`,
     `    • skills/${STEROIDS_SKILL_DIRS.join('/, skills/')}/`,
+    '',
+    `  ${chalk.bold('Cline')} (${formatDir(path.join(os.homedir(), '.cline'))}):`,
+    `    • agents/spec-driven.agent.md`,
+    `    • commands/spec-driven.md, commands/inject-guidelines.md`,
+    `    • skills/`,
     '',
     `  ${chalk.bold('OpenCode')} (${formatDir(opencodeDir)}):`,
     `    • agents/${STEROIDS_FILES.agents.join(', ')}`,
@@ -653,6 +678,18 @@ async function removeQwenCodeSteroids(): Promise<boolean> {
     return true;
   } catch (err) {
     console.warn(chalk.yellow(`  ⚠️ Qwen Code: ${err}`));
+    return false;
+  }
+}
+
+async function removeClineSteroids(): Promise<boolean> {
+  try {
+    await removeSteroidsFiles(path.join(os.homedir(), '.cline'));
+    await removeSteroidsSkillDirs(path.join(os.homedir(), '.cline'));
+    console.log(chalk.green('  ✅ Cline cleaned.'));
+    return true;
+  } catch (err) {
+    console.warn(chalk.yellow(`  ⚠️ Cline: ${err}`));
     return false;
   }
 }

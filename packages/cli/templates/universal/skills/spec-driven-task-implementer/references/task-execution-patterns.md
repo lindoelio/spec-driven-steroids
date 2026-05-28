@@ -21,3 +21,23 @@ Use this reference when deciding how to resume work, verify a small change, or r
 2. Fix the smallest issue exposed by the failing test.
 3. Re-run the targeted verification.
 4. Escalate only if the failure reveals a real spec conflict.
+
+## Task Amendment Pattern
+
+When a task discovers additional in-scope work:
+
+1. Confirm the work maps to existing `REQ-*` and `DES-*` scope.
+2. Add a new pending task in the current or next appropriate phase.
+3. Include `_Discovered from: <task-id or discovery target>_`.
+4. Include `_Implements: DES-X, REQ-Y.Z_`.
+5. Continue only after the amendment is recorded.
+
+Stop for mini-review if the discovery changes requirements, architecture, public contracts, migrations, security posture, or operational risk.
+
+## Final Coverage Matrix Pattern
+
+Before declaring implementation complete, summarize each acceptance criterion:
+
+| Requirement | Implemented Behavior | Files Changed | Covering Test | Verification Command | Gap/Rationale |
+|-------------|----------------------|---------------|---------------|----------------------|---------------|
+| REQ-1.1 | Invalid input is rejected before persistence | src/example/service.ts | rejects invalid input | pnpm test -- example | None |

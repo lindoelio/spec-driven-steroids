@@ -39,9 +39,33 @@ _Implements: REQ-1.1_
 
 ## Code Anatomy
 
+### Coverage Declaration
+
+Coverage: Exhaustive
+
+### Required Touchpoints
+
 | File Path | Status | Evidence | Purpose | Implements |
 |-----------|--------|----------|---------|------------|
 | src/auth.ts | New | Proposed by DES-1 | Authentication service | DES-1 |
+
+### Known Impact Surface
+
+| Path or Area | Evidence | Why It Matters | Related DES |
+|--------------|----------|----------------|-------------|
+| src/auth.test.ts | Verified by Glob | Authentication tests | DES-1 |
+
+### Discovery Targets
+
+| Target | Method | Purpose | Related Requirements |
+|--------|--------|---------|----------------------|
+| auth exports | Grep for auth | Confirm no additional entrypoints | REQ-1.1 |
+
+### Out of Scope
+
+| Path or Area | Rationale |
+|--------------|-----------|
+| src/legacy-auth.ts | Legacy auth is not part of this change |
 
 ## Traceability Matrix
 
@@ -55,6 +79,12 @@ const validTasks = `# Implementation Tasks
 ## Overview
 
 This implementation is organized into 3 phases.
+
+## Requirement Implementation Coverage
+
+| Requirement | Implementation Coverage | Task or Rationale |
+|-------------|-------------------------|-------------------|
+| REQ-1.1 | task | 1.1 |
 
 ## Phase 1: Foundation
 
@@ -109,6 +139,43 @@ describe('Unit: hallucination-resistant spec validation', () => {
 
     expect(result.valid).toBe(false);
     expect(result.errors.some(error => error.errorType === 'Dependency Error')).toBe(true);
+  });
+
+  it('fails design validation without Code Anatomy coverage declaration', () => {
+    const design = validDesign.replace('Coverage: Exhaustive', '');
+
+    const result = verifyDesignFile(design, validRequirements);
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(error => error.context?.includes('coverage declaration'))).toBe(true);
+  });
+
+  it('fails task validation when non-exhaustive Code Anatomy has no discovery task first', () => {
+    const design = validDesign.replace('Coverage: Exhaustive', 'Coverage: Representative');
+
+    const result = verifyTasksFile(validTasks, design, validRequirements);
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(error => error.context?.includes('Phase 1 must start with a discovery'))).toBe(true);
+  });
+
+  it('fails task validation when requirement implementation coverage is missing', () => {
+    const tasks = validTasks.replace(/\n## Requirement Implementation Coverage[\s\S]*?(?=\n## Phase 1: Foundation)/, '');
+
+    const result = verifyTasksFile(tasks, validDesign, validRequirements);
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(error => error.context?.includes('Requirement Implementation Coverage'))).toBe(true);
+  });
+
+  it('allows justified non-task requirement implementation coverage', () => {
+    const tasks = validTasks
+      .replace('| REQ-1.1 | task | 1.1 |', '| REQ-1.1 | existing-behavior | Existing service already creates sessions; test task 2.1 verifies it |')
+      .replace('  - _Implements: DES-1, REQ-1.1_', '  - _Implements: DES-1_');
+
+    const result = verifyTasksFile(tasks, validDesign, validRequirements);
+
+    expect(result.valid).toBe(true);
   });
 
   it('fails complete spec validation when a sub-artifact is invalid', async () => {

@@ -83,6 +83,24 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
       'spec-driven-command': 'Spec-Driven'
     }
   },
+  'cline': {
+    id: 'cline',
+    format: FormatType.MARKDOWN,
+    frontmatter: {
+      fields: {
+        name: 'Spec-Driven',
+        description: 'Use this planner when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
+      }
+    },
+    agentDirectory: 'agents',
+    agentFilename: 'spec-driven.agent.md',
+    commandDirectory: 'commands',
+    specDrivenCommandFilename: 'spec-driven.md',
+    injectGuidelinesCommandFilename: 'inject-guidelines.md',
+    commandAgents: {
+      'spec-driven-command': 'Spec-Driven'
+    }
+  },
   'claudecode': {
     id: 'claudecode',
     format: FormatType.MARKDOWN,
