@@ -1,5 +1,31 @@
 # spec-driven-steroids
 
+## 0.15.0
+
+### Minor Changes
+
+- Streamline spec-driven workflow with unified quality gates and sub-agent reviews
+
+  Major workflow optimization:
+
+  - Replace multiple per-phase validations (quality-grading + agent-work-auditor + Red Team) with single Unified Quality Gate per phase
+  - Move Red Team Challenge to single cross-artifact review after all specs are approved, before implementation starts
+  - Add mandatory Code Review sub-agent gate after all implementation tasks complete
+  - Replace subjective Confidence: X% scoring with evidence-based verdicts (PASS, PASS WITH NOTES, FAIL)
+  - Remove Phases 4.5, 5, 6 from task implementer (consolidated into Code Review)
+  - Clarify phase terminology: only gates with human or sub-agent approval are "phases"
+
+  New lifecycle:
+  Phase 1: Requirements → Phase 2: Design → Phase 3: Tasks → Red Team Review (sub-agent) → Phase 4: Implementation → Code Review (sub-agent) → Done
+
+  Benefits:
+
+  - ~40% reduction in prompt token overhead (removed triple duplication)
+  - 80% fewer Red Team invocations (5 → 1 per workflow)
+  - 75% fewer agent-work-auditor invocations (4 → 1 per workflow)
+  - Honest, evidence-based quality assessment instead of fake confidence scores
+  - Clearer phase structure with explicit human/sub-agent gates
+
 ## 0.14.1
 
 ### Patch Changes
