@@ -77,6 +77,8 @@ const STEROIDS_SKILL_DIRS = [
   'universal-live-check'
 ] as const;
 
+const CLINE_EXTRA_SKILL_DIRS = ['spec-driven', 'inject-guidelines'] as const;
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const packageJsonPath = path.resolve(__dirname, '../../package.json');
@@ -505,9 +507,9 @@ function buildCleanPreview(): string {
     `    • skills/${STEROIDS_SKILL_DIRS.join('/, skills/')}/`,
     '',
     `  ${chalk.bold('Cline')} (${formatDir(path.join(os.homedir(), '.cline'))}):`,
-    `    • agents/spec-driven.agent.md`,
-    `    • commands/spec-driven.md, commands/inject-guidelines.md`,
-    `    • skills/`,
+    `    • skills/spec-driven/SKILL.md`,
+    `    • skills/inject-guidelines/SKILL.md`,
+    `    • skills/${STEROIDS_SKILL_DIRS.join('/, skills/')}/`,
     '',
     `  ${chalk.bold('OpenCode')} (${formatDir(opencodeDir)}):`,
     `    • agents/${STEROIDS_FILES.agents.join(', ')}`,
@@ -684,8 +686,27 @@ async function removeQwenCodeSteroids(): Promise<boolean> {
 
 async function removeClineSteroids(): Promise<boolean> {
   try {
-    await removeSteroidsFiles(path.join(os.homedir(), '.cline'));
-    await removeSteroidsSkillDirs(path.join(os.homedir(), '.cline'));
+    const clineDir = path.join(os.homedir(), '.cline');
+
+    // Remove legacy agents/commands files (from older injections)
+    await removeSteroidsFiles(clineDir);
+
+    // Remove standard skill dirs (the 12 universal skills)
+    await removeSteroidsSkillDirs(clineDir);
+
+    // Remove Cline-specific skill dirs (agent and commands emitted as skills)
+    const skillsDir = path.join(clineDir, 'skills');
+    for (const skill of CLINE_EXTRA_SKILL_DIRS) {
+      const skillPath = path.join(skillsDir, skill);
+      if (await fs.pathExists(skillPath)) {
+        await fs.remove(skillPath);
+      }
+    }
+    const remaining = await fs.readdir(skillsDir).catch(() => []);
+    if (remaining.length === 0) {
+      await fs.remove(skillsDir);
+    }
+
     console.log(chalk.green('  ✅ Cline cleaned.'));
     return true;
   } catch (err) {

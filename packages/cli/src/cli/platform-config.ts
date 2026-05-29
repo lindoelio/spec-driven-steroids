@@ -41,6 +41,11 @@ export interface PlatformConfig {
     'spec-driven-command'?: string;
     'inject-guidelines-command'?: string;
   };
+  /**
+   * When true, the platform has no native agent/command concepts.
+   * The agent and commands are emitted as skills instead.
+   */
+  skillsOnly?: boolean;
 }
 
 /**
@@ -86,20 +91,18 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
   'cline': {
     id: 'cline',
     format: FormatType.MARKDOWN,
+    skillsOnly: true,
     frontmatter: {
       fields: {
-        name: 'Spec-Driven',
+        name: 'spec-driven',
         description: 'Use this planner when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
       }
     },
-    agentDirectory: 'agents',
-    agentFilename: 'spec-driven.agent.md',
-    commandDirectory: 'commands',
-    specDrivenCommandFilename: 'spec-driven.md',
-    injectGuidelinesCommandFilename: 'inject-guidelines.md',
-    commandAgents: {
-      'spec-driven-command': 'Spec-Driven'
-    }
+    agentDirectory: 'skills/spec-driven',
+    agentFilename: 'SKILL.md',
+    commandDirectory: 'skills/inject-guidelines',
+    specDrivenCommandFilename: '',
+    injectGuidelinesCommandFilename: 'SKILL.md'
   },
   'claudecode': {
     id: 'claudecode',

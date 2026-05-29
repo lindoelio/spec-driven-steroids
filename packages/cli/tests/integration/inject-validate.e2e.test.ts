@@ -518,9 +518,11 @@ describe('CLI E2E: inject command', () => {
 
         const clineDir = path.join(targetDir, '.cline');
         expect(await fs.pathExists(clineDir)).toBe(true);
-        expect(await fs.pathExists(path.join(clineDir, 'agents'))).toBe(true);
-        expect(await fs.pathExists(path.join(clineDir, 'commands'))).toBe(true);
         expect(await fs.pathExists(path.join(clineDir, 'skills'))).toBe(true);
+        expect(await fs.pathExists(path.join(clineDir, 'skills', 'spec-driven', 'SKILL.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(clineDir, 'skills', 'inject-guidelines', 'SKILL.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(clineDir, 'agents'))).toBe(false);
+        expect(await fs.pathExists(path.join(clineDir, 'commands'))).toBe(false);
     });
 
     it('inject command with Cline platform global scope creates artifacts globally', async () => {
@@ -532,9 +534,11 @@ describe('CLI E2E: inject command', () => {
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const globalClineDir = path.join(os.homedir(), '.cline');
-        expect(await fs.pathExists(path.join(globalClineDir, 'agents'))).toBe(true);
-        expect(await fs.pathExists(path.join(globalClineDir, 'commands'))).toBe(true);
         expect(await fs.pathExists(path.join(globalClineDir, 'skills'))).toBe(true);
+        expect(await fs.pathExists(path.join(globalClineDir, 'skills', 'spec-driven', 'SKILL.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(globalClineDir, 'skills', 'inject-guidelines', 'SKILL.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(globalClineDir, 'agents'))).toBe(false);
+        expect(await fs.pathExists(path.join(globalClineDir, 'commands'))).toBe(false);
     });
 
     describe('inject output format', () => {
