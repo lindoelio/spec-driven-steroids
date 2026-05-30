@@ -1,5 +1,11 @@
 # spec-driven-steroids
 
+## 0.15.1
+
+### Patch Changes
+
+- Fix Cline injection to use skills directory instead of unsupported agents/commands directories. The spec-driven agent is now emitted as `~/.cline/skills/spec-driven/SKILL.md` which Cline auto-registers as the `/spec-driven` slash command.
+
 ## 0.15.0
 
 ### Minor Changes
