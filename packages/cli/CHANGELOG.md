@@ -1,5 +1,11 @@
 # spec-driven-steroids
 
+## 0.15.2
+
+### Patch Changes
+
+- Add parallel sub-agent execution support with concrete delegation instructions for Red Team Review, Code Review, and task implementation on OpenCode and Task-tool platforms.
+
 ## 0.15.1
 
 ### Patch Changes
