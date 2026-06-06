@@ -121,14 +121,23 @@ Invoke the `spec-driven-task-decomposer` skill.
 
 **Triggered after Phase 3 approval, before Phase 4 starts.**
 
-This is an adversarial review of the complete specification (requirements.md + design.md + tasks.md) performed by a separate sub-agent when supported by the platform.
+This is an adversarial review of the complete specification (`requirements.md`, `design.md`, `tasks.md`) performed by a separate sub-agent on platforms that support parallel execution (e.g., OpenCode).
 
-**Sub-agent automation:**
-- On platforms that support sub-agents (Qwen Code, OpenCode, Cline, etc.), launch a sub-agent with the Red Team reviewer role.
-- On platforms without sub-agent support, perform the Red Team Review inline (adopt the rejector persona yourself).
+**Platform detection:** If your platform exposes a `Task` tool for spawning sub-agents, use it. Otherwise fall back to inline review.
+
+**Sub-agent delegation protocol (OpenCode / Task-tool platforms):**
+
+Launch a Red Team reviewer sub-agent via the `Task` tool:
+
+- `subagent_type`: `general`
+- `description`: `Red Team Review for <slug>`
+- Prompt: provide a standalone brief containing:
+  - The three spec artifact paths: `.specs/changes/<slug>/requirements.md`, `.specs/changes/<slug>/design.md`, `.specs/changes/<slug>/tasks.md`.
+  - The Red Team Reviewer role instructions below.
+  - Instruction to return a structured verdict (`PASS`, `PASS WITH NOTES`, or `FAIL`) with classified findings.
 
 **Red Team Reviewer role:**
-- Read all three spec artifacts: `.specs/changes/<slug>/requirements.md`, `design.md`, `tasks.md`.
+- Read all three spec artifacts.
 - Use the Red Team questions in `agent-work-auditor/artifacts/{requirements,design,tasks}.md` as guidance.
 - Focus on **cross-artifact** issues: traceability gaps, requirement↔design mismatches, task coverage holes, scope creep, ambiguous acceptance criteria.
 - Produce findings classified as `blocking` or `non-blocking`.
@@ -138,6 +147,9 @@ This is an adversarial review of the complete specification (requirements.md + d
 - `PASS` — No blocking findings. Proceed to Phase 4.
 - `PASS WITH NOTES` — No blocking findings, non-blocking concerns documented. Proceed to Phase 4.
 - `FAIL` — Blocking findings exist. Fix and re-run Red Team Review.
+
+**Inline fallback:**
+- If no `Task` tool is available, perform the Red Team Review yourself. Adopt the rejector persona, read the same artifacts, apply the same cross-artifact focus, and produce the same structured verdict. Do not delegate to the platform's primary agent.
 
 After Red Team Review passes, ask the user: `Red Team Review: PASS. Approve entry to Phase 4 (implementation)?`
 
@@ -165,14 +177,25 @@ Invoke the `spec-driven-task-implementer` skill.
 
 **Triggered after all tasks in `tasks.md` are marked `[x]`.**
 
-This is a comprehensive review of the implementation performed by a separate sub-agent when supported by the platform.
+This is a comprehensive review of the implementation performed by a separate sub-agent on platforms that support parallel execution (e.g., OpenCode).
 
-**Sub-agent automation:**
-- On platforms that support sub-agents (Qwen Code, OpenCode, Cline, etc.), launch a sub-agent with the Code Reviewer role.
-- On platforms without sub-agent support, perform the Code Review inline.
+**Platform detection:** If your platform exposes a `Task` tool for spawning sub-agents, use it. Otherwise fall back to inline review.
+
+**Sub-agent delegation protocol (OpenCode / Task-tool platforms):**
+
+Launch a Code Reviewer sub-agent via the `Task` tool:
+
+- `subagent_type`: `general`
+- `description`: `Code Review for <slug>`
+- Prompt: provide a standalone brief containing:
+  - The spec artifact paths: `.specs/changes/<slug>/requirements.md`, `.specs/changes/<slug>/design.md`, `.specs/changes/<slug>/tasks.md`.
+  - The list of changed implementation files (from `git diff --name-only` against the base branch).
+  - The Code Reviewer role instructions below.
+  - Instruction to invoke `agent-work-auditor` with the `spec-driven` extension and `universal-live-check` for final validation.
+  - Instruction to return a structured verdict.
 
 **Code Reviewer role:**
-- Read the spec artifacts (`requirements.md`, `design.md`, `tasks.md`) and all changed implementation files.
+- Read the spec artifacts and all changed implementation files.
 - Invoke `agent-work-auditor` with `spec-driven` extension.
 - Invoke `universal-live-check` for final validation.
 - Verify implementation traces to `DES-*` and `REQ-*`.
@@ -182,6 +205,9 @@ This is a comprehensive review of the implementation performed by a separate sub
 - `APPROVE` — Implementation is complete and correct.
 - `APPROVE WITH NOTES` — Implementation is complete, non-blocking concerns documented.
 - `REQUEST CHANGES` — Blocking findings exist. Fix and re-run Code Review.
+
+**Inline fallback:**
+- If no `Task` tool is available, perform the Code Review yourself. Read the same artifacts, invoke the same skills, and produce the same structured verdict. Do not delegate to the platform's primary agent.
 
 After Code Review passes, declare: `Implementation complete. Code Review: APPROVE.`
 

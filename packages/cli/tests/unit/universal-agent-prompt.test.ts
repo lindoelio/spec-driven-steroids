@@ -35,14 +35,16 @@ describe('Unit: Universal Agent Prompt', () => {
     const universalPath = path.join(templatesDir, 'universal/agents/spec-driven.agent.md');
     const content = await fs.readFile(universalPath, 'utf-8');
     
-    // Should invoke skills, not subagents
+    // Should invoke skills, not sub-agents directly (sub-agent terms are for platform delegation)
     expect(content).toContain('spec-driven-requirements-writer` skill');
     expect(content).toContain('spec-driven-technical-designer` skill');
     expect(content).toContain('spec-driven-task-decomposer` skill');
     expect(content).toContain('spec-driven-task-implementer` skill');
     
-    // Should NOT contain "subagent" terminology
-    expect(content).not.toContain('subagent');
+    // SDS uses "sub-agent" (hyphenated) and "subagent_type" (platform tool parameter)
+    // intentionally for delegation. The primary orchestration is done through skills.
+    expect(content).toContain('sub-agent');
+    expect(content).toContain('Sub-agent delegation protocol');
   });
 
   it('delegates CLI validation to shared protocol via Unified Quality Gate', async () => {

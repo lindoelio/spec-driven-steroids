@@ -18,6 +18,8 @@ Default path: validate the complete spec, pick the next eligible task, mark it i
 
 Read `references/task-execution-patterns.md` when you need examples for resuming interrupted work, choosing the smallest meaningful verification, or handling failed verification loops.
 
+Read `references/parallel-execution-patterns.md` when executing a phase or full feature on a platform that supports sub-agent parallelism (e.g., OpenCode).
+
 ## Shared Protocol
 
 Follow the Context Preflight and Phase Gate protocols in the `spec-driven-shared-protocol` skill's `references/shared-protocol.md`.
@@ -85,9 +87,73 @@ For each task:
 - Execute pending tasks in that phase in dependency order
 - Complete one task fully before starting the next
 
+### Implementing a Full Feature
+- Execute all pending tasks across all phases in dependency order
+
 ### Default Scope
 - Implement one task by default
 - Do not continue to the next task unless the user explicitly requested a phase or full feature
+
+## Parallel Execution Protocol
+
+When the user requests a **phase** or **full feature** implementation and the platform exposes a `Task` tool for spawning sub-agents, you MAY execute independent tasks in parallel.
+
+### Platform Detection
+
+Check whether your tool set includes a `Task` tool. If it does, you are on a platform that supports parallel sub-agent execution. If not, fall back to sequential execution.
+
+### Dependency Analysis
+
+Before spawning sub-agents, analyze the dependency graph:
+
+1. Read all pending tasks in the requested scope from `tasks.md`.
+2. Build a dependency graph from `_Depends:` tags.
+3. Identify **independent batches**: groups of pending tasks whose `_Depends:` are all satisfied and that do not depend on each other.
+4. Tasks within the same batch can execute in parallel. Tasks across batches must execute sequentially.
+
+Example: If task 2.1 depends on 1.3, and task 2.2 also depends on 1.3, and 1.3 is already `[x]`, then 2.1 and 2.2 form an independent batch and can spawn in parallel.
+
+### Parallel Spawn Protocol
+
+For each task in an independent batch, launch a sub-agent via the `Task` tool:
+
+- `subagent_type`: `general`
+- `description`: `Implement task <task-id>: <task title>`
+- Prompt: provide a standalone brief containing:
+  - The spec artifact paths: `.specs/changes/<slug>/requirements.md`, `.specs/changes/<slug>/design.md`, `.specs/changes/<slug>/tasks.md`.
+  - The specific task ID and description to implement.
+  - Full spec-driven-task-implementer rules (this skill).
+  - Instruction to read `tasks.md`, mark the task `- [~]`, implement, verify, and mark `- [x]`.
+  - Instruction to return: changed files list, verification outcome, and the updated task status.
+
+Launch all tasks in the same batch simultaneously (multiple `Task` tool calls in one response).
+
+### Result Collection
+
+When all sub-agents in a batch complete:
+
+1. Read `tasks.md` to confirm each task was marked `- [x]`.
+2. If any task remains `- [~]` or verification failed, fix or re-spawn that task before proceeding.
+3. If all tasks in the batch succeeded, advance to the next independent batch.
+4. Repeat until all tasks in the requested scope are complete.
+
+### Conflict Prevention
+
+- Do NOT spawn tasks in parallel if their `_Implements:` file sets overlap with each other.
+- Do NOT spawn tasks in parallel with the same `_Depends:` chain (they are sequentially dependent by definition).
+- If unsure about file overlap, default to sequential execution.
+
+### Inline Fallback
+
+If the `Task` tool is not available, execute all tasks sequentially as described in the standard Task Selection Rules.
+
+### Parallel Execution Quality Bar
+
+Before spawning a parallel batch, verify:
+- [ ] all `_Depends:` for each task in the batch are satisfied
+- [ ] no task in the batch depends on another task in the same batch
+- [ ] `_Implements:` file sets are non-overlapping across tasks in the batch
+- [ ] platform `Task` tool is available
 
 ## Implementation Rules
 

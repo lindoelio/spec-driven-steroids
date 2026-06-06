@@ -121,3 +121,103 @@ Create a todo list containing the following items in `pending` state:
 - Mark an item `completed` only after the work step has been verified.
 - Do not mark an item `completed` until verification passes.
 - Create a fresh list when the phase begins; do not append to a prior phase's list.
+
+## Sub-Agent Delegation Protocol
+
+This protocol governs how the orchestrator delegates work to sub-agents on platforms that support a `Task` tool (e.g., OpenCode).
+
+### When To Delegate
+
+The orchestrator delegates to sub-agents for:
+
+1. **Red Team Review** — After Phase 3 approval, before Phase 4 starts
+2. **Code Review** — After all implementation tasks are complete
+3. **Parallel Implementation** — When executing a phase or full feature with independent task batches
+
+### Sub-Agent Context Bundle
+
+Every delegated sub-agent receives a self-contained context bundle. The orchestrator constructs this bundle before spawning the sub-agent:
+
+#### Red Team Review Sub-Agent Bundle
+```
+Task: Red Team Review for <slug>
+
+Artifacts to review:
+- .specs/changes/<slug>/requirements.md
+- .specs/changes/<slug>/design.md
+- .specs/changes/<slug>/tasks.md
+
+Instructions:
+1. Read all three artifacts.
+2. Use agent-work-auditor/artifacts/{requirements,design,tasks}.md for review questions.
+3. Focus on cross-artifact issues: traceability gaps, requirement-to-design mismatches, task coverage holes, scope creep, ambiguous acceptance criteria.
+4. Produce a structured verdict with classified findings.
+
+Return:
+- Verdict: PASS | PASS WITH NOTES | FAIL
+- Blocking findings: [list]
+- Non-blocking findings: [list]
+```
+
+#### Code Review Sub-Agent Bundle
+```
+Task: Code Review for <slug>
+
+Artifacts to review:
+- .specs/changes/<slug>/requirements.md
+- .specs/changes/<slug>/design.md
+- .specs/changes/<slug>/tasks.md
+- Changed files: <list from git diff --name-only against base branch>
+
+Instructions:
+1. Read all spec artifacts and changed files.
+2. Invoke agent-work-auditor with spec-driven extension.
+3. Invoke universal-live-check for final validation.
+4. Verify implementation traces to DES-* and REQ-*.
+5. Produce a structured verdict.
+
+Return:
+- Verdict: APPROVE | APPROVE WITH NOTES | REQUEST CHANGES
+- Findings: [list]
+- Validation output: [summary]
+```
+
+#### Implementation Task Sub-Agent Bundle
+```
+Task: Implement task <task-id>: <task title>
+
+Context files:
+- .specs/changes/<slug>/requirements.md
+- .specs/changes/<slug>/design.md
+- .specs/changes/<slug>/tasks.md
+
+Task to implement:
+<copy the full task line from tasks.md including all metadata>
+
+Rules (from spec-driven-task-implementer):
+1. Read tasks.md, find this task, mark it - [~] and save.
+2. Implement only the scoped behavior required by this task.
+3. Follow design.md for architecture and file placement.
+4. Follow project guidelines for naming, patterns, and structure.
+5. Run the smallest meaningful verification.
+6. If verification passes, mark the task - [x] and save tasks.md.
+7. If verification fails, keep at - [~] and fix.
+8. If the task discovers additional in-scope work, apply the Task Amendment Protocol.
+
+Return:
+- Changed files: [list of files modified or created]
+- Verification outcome: passed | failed
+- Task status: [x] | [~]
+- Discovery notes: [any amendments or observations]
+```
+
+### Orchestrator Responsibilities
+
+When using sub-agents, the orchestrator:
+
+1. Builds and sends the appropriate context bundle
+2. Launches sub-agents simultaneously for parallel batches
+3. Collects results from all sub-agents
+4. Reconciles results against `tasks.md` and spec artifacts
+5. Re-spawns or handles failed tasks before proceeding
+6. Falls back to inline execution if the `Task` tool is not available

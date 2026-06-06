@@ -243,7 +243,7 @@ describe('Unit: template validation guidance', () => {
         expect(content).toContain('Red Team Review');
         expect(content).toContain('Code Review');
         expect(content).toContain('Unified Quality Gate');
-        expect(content).toContain('Sub-agent automation');
+        expect(content).toContain('Sub-agent delegation protocol');
         expect(content).toContain('Red Team Review: PASS');
     });
 
