@@ -1,5 +1,11 @@
 # spec-driven-steroids
 
+## 0.15.3
+
+### Patch Changes
+
+- Fix OpenAI Codex injection to emit command wrappers as Codex skills instead of unsupported `.codex/commands` slash-command files. Codex users can now invoke the `spec-driven` and `inject-guidelines` workflows through Codex skills while retaining the native TOML custom agent.
+
 ## 0.15.2
 
 ### Patch Changes
