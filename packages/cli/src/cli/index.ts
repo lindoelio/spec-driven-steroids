@@ -364,6 +364,10 @@ program
           if (platform === 'github-vscode' && githubScope === GitHubCopilotInjectionScope.GLOBAL) {
             await flattenVSCodeGlobalPrompts(transformDestDir);
           }
+
+          if (platform === 'codex') {
+            await removeCodexLegacyCommands(transformDestDir);
+          }
         }
 
         if (platformDest) {
@@ -519,6 +523,13 @@ function buildCleanPreview(): string {
   ];
 
   return lines.join('\n');
+}
+
+async function removeCodexLegacyCommands(codexDir: string): Promise<void> {
+  await Promise.all([
+    fs.remove(path.join(codexDir, 'commands', 'spec-driven.md')),
+    fs.remove(path.join(codexDir, 'commands', 'inject-guidelines.md'))
+  ]);
 }
 
 async function removeVSCodeGlobalSteroids(): Promise<boolean> {

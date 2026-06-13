@@ -41,6 +41,8 @@ export interface PlatformConfig {
     'spec-driven-command'?: string;
     'inject-guidelines-command'?: string;
   };
+  /** Emit command wrappers as skills instead of native command files. */
+  commandSkills?: boolean;
   /**
    * When true, the platform has no native agent/command concepts.
    * The agent and commands are emitted as skills instead.
@@ -157,7 +159,8 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     agentFilename: 'spec-driven.toml',
     commandDirectory: 'commands',
     specDrivenCommandFilename: 'spec-driven.md',
-    injectGuidelinesCommandFilename: 'inject-guidelines.md'
+    injectGuidelinesCommandFilename: 'inject-guidelines.md',
+    commandSkills: true
   },
   'antigravity': {
     id: 'antigravity',

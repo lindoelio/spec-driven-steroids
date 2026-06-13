@@ -170,6 +170,31 @@ export function transformToTomlCommand(body: string, description: string): strin
   return lines.join('\n');
 }
 
+/**
+ * Transform command content into a Codex-loadable skill.
+ */
+export function transformCommandToSkill(body: string, name: string, description: string): string {
+  const normalizedBody = body
+    .replace(/\{\{\s*args\s*\}\}/g, 'the user\'s request')
+    .replace(/\$ARGUMENTS/g, 'the user\'s request')
+    .trim();
+
+  return [
+    '---',
+    `name: ${escapeYamlString(name)}`,
+    `description: ${escapeYamlString(description)}`,
+    '---',
+    '',
+    `# ${name}`,
+    '',
+    `Use this skill when the user asks to run the ${name} workflow.`,
+    '',
+    '## Workflow',
+    '',
+    normalizedBody
+  ].join('\n');
+}
+
 function escapeTomlMultilineBody(value: string): string {
   return value.replace(/"""/g, '\\"\\"\\"');
 }

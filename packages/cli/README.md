@@ -31,7 +31,7 @@ It injects:
 | GitHub Copilot for VS Code | global / project | Agents, prompts, skills |
 | GitHub Copilot for JetBrains | project | Agents, prompts, skills |
 | OpenCode | global / project | Agents, commands, skills |
-| OpenAI Codex | project | Agents, commands, skills |
+| OpenAI Codex | project | Agents, command skills, skills |
 | Qwen Code | user / project | Agents, commands, skills |
 
 ## Installation
@@ -195,7 +195,7 @@ This creates: `AGENTS.md`, `CONTRIBUTING.md`, `STYLEGUIDE.md`, `TESTING.md`, `AR
 - OpenCode: use the `Spec-Driven` agent
 - Cline: use the `Spec-Driven` agent or `/spec-driven`
 - Antigravity: `/spec-driven`
-- Codex: `/spec-driven Add a rate limiter`
+- Codex: select the `spec-driven` skill with `/skills` or mention `$spec-driven`
 
 4. Approve each planning phase, then move to implementation.
 

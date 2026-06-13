@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   transformToMarkdown,
   transformToToml,
+  transformCommandToSkill,
   transform,
   verifyBodyPreserved
 } from '../../src/cli/format-transformer.js';
@@ -121,6 +122,18 @@ You MUST enforce this lifecycle exactly.`;
 
       expect(result).toContain('Before \\\"\\\"\\\" after');
       expect(result).not.toContain('Before """ after');
+    });
+  });
+
+  describe('transformCommandToSkill', () => {
+    it('emits a skill and replaces command argument placeholders', () => {
+      const result = transformCommandToSkill('Run this for {{args}} and $ARGUMENTS', 'spec-driven', 'Start workflow');
+
+      expect(result).toContain('name: spec-driven');
+      expect(result).toContain('description: Start workflow');
+      expect(result).toContain('Run this for the user\'s request and the user\'s request');
+      expect(result).not.toContain('{{args}}');
+      expect(result).not.toContain('$ARGUMENTS');
     });
   });
 

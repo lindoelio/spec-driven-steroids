@@ -412,10 +412,10 @@ describe('CLI E2E: inject command', () => {
         const codexDir = path.join(targetDir, '.codex');
         expect(await fs.pathExists(codexDir)).toBe(true);
         expect(await fs.pathExists(path.join(codexDir, 'agents'))).toBe(true);
-        expect(await fs.pathExists(path.join(codexDir, 'commands'))).toBe(true);
+        expect(await fs.pathExists(path.join(codexDir, 'skills'))).toBe(true);
     });
 
-    it('inject command creates spec-driven agent and commands for Codex', async () => {
+    it('inject command creates spec-driven agent and command skills for Codex', async () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['codex'] });
 
@@ -431,20 +431,25 @@ describe('CLI E2E: inject command', () => {
         expect(agentContent.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
         expect(agentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
 
-        const commandPath = path.join(targetDir, '.codex', 'commands', 'spec-driven.md');
+        const commandPath = path.join(targetDir, '.codex', 'skills', 'spec-driven', 'SKILL.md');
         expect(await fs.pathExists(commandPath)).toBe(true);
 
         const commandContent = await fs.readFile(commandPath, 'utf-8');
+        expect(commandContent.includes('name: spec-driven')).toBe(true);
         expect(commandContent.includes('Begin at Phase 1 (requirements)')).toBe(true);
         expect(commandContent.includes('After Phase 1 is written, stop immediately.')).toBe(true);
+        expect(commandContent.includes('{{args}}')).toBe(false);
+        expect(await fs.pathExists(path.join(targetDir, '.codex', 'commands', 'spec-driven.md'))).toBe(false);
 
-        const injectGuidelinesPath = path.join(targetDir, '.codex', 'commands', 'inject-guidelines.md');
+        const injectGuidelinesPath = path.join(targetDir, '.codex', 'skills', 'inject-guidelines', 'SKILL.md');
         expect(await fs.pathExists(injectGuidelinesPath)).toBe(true);
 
         const injectGuidelinesContent = await fs.readFile(injectGuidelinesPath, 'utf-8');
+        expect(injectGuidelinesContent.includes('name: inject-guidelines')).toBe(true);
         expect(injectGuidelinesContent.includes('Generate all six guideline documents by default unless the user explicitly skips named files.')).toBe(true);
         expect(injectGuidelinesContent.includes('Do not treat missing guideline files as optional.')).toBe(true);
         expect(injectGuidelinesContent.includes('Testing Trophy')).toBe(true);
+        expect(await fs.pathExists(path.join(targetDir, '.codex', 'commands', 'inject-guidelines.md'))).toBe(false);
     });
 
     it('inject command with Antigravity does not create global artifacts directory', async () => {

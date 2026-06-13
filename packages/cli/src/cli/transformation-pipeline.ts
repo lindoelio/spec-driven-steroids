@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { getPlatformConfig, type PlatformConfig } from './platform-config.js';
-import { transform, transformToTomlCommand } from './format-transformer.js';
+import { transform, transformCommandToSkill, transformToTomlCommand } from './format-transformer.js';
 
 /**
  * Universal prompt source configuration.
@@ -136,6 +136,12 @@ async function transformSource(
     if (source.outputType === 'agent') {
       outputDir = config.agentDirectory;
       outputFilename = config.agentFilename;
+    } else if (config.commandSkills) {
+      const skillName = source.outputType === 'spec-driven-command'
+        ? 'spec-driven'
+        : 'inject-guidelines';
+      outputDir = path.join('skills', skillName);
+      outputFilename = 'SKILL.md';
     } else {
       outputDir = config.commandDirectory;
       outputFilename = source.outputType === 'spec-driven-command'
@@ -147,7 +153,16 @@ async function transformSource(
     let transformResult: { content: string; bodyPreserved: boolean };
 
     // Gemini CLI custom slash commands must be TOML files.
-    if (config.id === 'gemini-cli' && source.outputType !== 'agent') {
+    if (config.commandSkills && source.outputType !== 'agent') {
+      const name = source.outputType === 'spec-driven-command'
+        ? 'spec-driven'
+        : 'inject-guidelines';
+      const description = frontmatter.description || config.frontmatter.fields.description || '';
+      transformResult = {
+        content: transformCommandToSkill(body, name, description),
+        bodyPreserved: true
+      };
+    } else if (config.id === 'gemini-cli' && source.outputType !== 'agent') {
       const description = frontmatter.description || config.frontmatter.fields.description || '';
       transformResult = {
         content: transformToTomlCommand(body, description),

@@ -116,6 +116,21 @@ describe('Integration: Transformation Pipeline', () => {
       expect(content).toContain('---');
       expect(content).toContain('name: spec-driven');
     });
+
+    it('produces skill wrappers for Codex commands', async () => {
+      const results = await transformForPlatform('codex', templatesDir, tempDir);
+
+      const commandResult = results.find(r => r.sourcePath.includes('spec-driven.command.md'));
+      expect(commandResult).toBeDefined();
+      expect(commandResult?.success).toBe(true);
+      expect(commandResult?.outputPath).toMatch(/skills\/spec-driven\/SKILL\.md$/);
+
+      const content = await fs.readFile(commandResult!.outputPath, 'utf-8');
+      expect(content).toContain('name: spec-driven');
+      expect(content).toContain('description: Start the spec-driven workflow at Phase 1 requirements');
+      expect(content).toContain('Begin at Phase 1 (requirements)');
+      expect(content).not.toContain('{{args}}');
+    });
   });
 
   describe('transformTemplates', () => {
@@ -129,7 +144,7 @@ describe('Integration: Transformation Pipeline', () => {
       );
       
       // github-vscode: 3 results (agent + spec-driven-command + inject-guidelines-command)
-      // codex: 3 results (agent + spec-driven-command + inject-guidelines-command)
+      // codex: 3 results (agent + spec-driven skill + inject-guidelines skill)
       // antigravity: 2 results (agent + inject-guidelines-command, no spec-driven-command since it's same as agent)
       // Total: 8
       expect(results.length).toBe(8);
