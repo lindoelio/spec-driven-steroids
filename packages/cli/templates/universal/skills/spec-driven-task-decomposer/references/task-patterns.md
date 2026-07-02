@@ -17,17 +17,26 @@ Use this reference when tasks feel too broad, phases feel uneven, or acceptance-
 
 If the design's Code Anatomy coverage is `Representative` or `Initial Discovery Only`, Phase 1 starts with an inventory task before setup or implementation work.
 
-## Requirement-First Coverage Pattern
+## Per-Phase Test Pattern
 
-Add a `## Requirement Implementation Coverage` table before Phase 1:
+Any phase that contains one or more implementation tasks must include at least one `Test:` task to verify the work just completed before moving to the next phase. Phases that contain only a discovery/inventory task are exempt.
 
-| Requirement | Implementation Coverage | Task or Rationale |
-|-------------|-------------------------|-------------------|
-| REQ-1.1 | task | 1.2 |
-| REQ-1.2 | existing-behavior | Existing validation already rejects invalid input; test task 3.1 verifies it |
-| REQ-2.1 | no-code-change | Documentation-only requirement; covered by task 2.1 |
+```markdown
+## Phase 2: Feature Delivery
 
-Use `task` when production behavior changes. Use `existing-behavior`, `test-only`, or `no-code-change` only with a concrete rationale.
+- [ ] 2.1 Add denial feedback path
+  - Return a user-visible denial response when authorization fails.
+  - _Depends: 1.3_
+  - _Implements: DES-1, REQ-2.1_
+
+- [ ] 2.2 Test: verify denial feedback is returned
+  - Confirm the denial response is returned when authorization fails.
+  - Test type: integration
+  - _Depends: 2.1_
+  - _Implements: REQ-2.1_
+```
+
+The per-phase test task validates the phase's output. The dedicated `Acceptance Criteria Testing` phase remains the penultimate cross-cutting verification of all requirements.
 
 ## Discovery Task Pattern
 

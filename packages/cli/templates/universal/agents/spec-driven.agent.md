@@ -111,7 +111,7 @@ Invoke the `spec-driven-task-decomposer` skill.
 4. Invoke the `spec-driven-task-decomposer` skill.
 5. Wait for the skill to produce tasks content.
 6. Write `.specs/changes/<slug>/tasks.md`.
-7. Ensure `## Requirement Implementation Coverage` maps every `REQ-X.Y` to an implementation task or allowed rationale.
+7. Ensure every implementation-bearing phase contains at least one `Test:` task.
 8. If `design.md` Code Anatomy coverage is not `Exhaustive`, ensure Phase 1 starts with a discovery/inventory task before other implementation tasks.
 9. Run the Unified Quality Gate.
 10. **STOP**. Summarize the artifact, declare verdict, and ask for approval.

@@ -31,13 +31,14 @@ When this skill begins execution, create a todo list containing the following it
 4. Inspect existing patterns
 5. Define implementation phases
 6. Create atomic tasks
-7. Add acceptance criteria testing phase
-8. Add final checkpoint phase
-9. Save tasks.md
-10. Run CLI validation (`sds validate tasks` + `sds validate spec`)
-11. Complete quality bar self-check
-12. Fix validation failures (if any)
-13. Declare verdict
+7. Add per-phase test tasks
+8. Add acceptance criteria testing phase
+9. Add final checkpoint phase
+10. Save tasks.md
+11. Run CLI validation (`sds validate tasks` + `sds validate spec`)
+12. Complete quality bar self-check
+13. Fix validation failures (if any)
+14. Declare verdict
 
 ### Progress Rules
 
@@ -66,7 +67,6 @@ See the `spec-driven-shared-protocol` skill's `references/document-templates.md`
 - Resolve all placeholders before returning output.
 - Do not include HTML comments, TODO markers, or drafting notes.
 - Include `## Repository Constraints` when guidelines, contextual memory, or design evidence affects task ordering, test placement, naming, package boundaries, or verification commands.
-- Include `## Requirement Implementation Coverage` mapping every `REQ-X.Y` acceptance criterion to an implementation task or an explicit rationale.
 - If `design.md` Code Anatomy uses `Coverage: Representative` or `Coverage: Initial Discovery Only`, Phase 1 must include a discovery/inventory task before other implementation tasks.
 
 ## Task Types
@@ -85,7 +85,7 @@ Use implementation tasks for building or modifying design elements:
 Rules:
 - Every implementation task must reference at least one `DES-*` element.
 - Add `REQ-*` references when the task clearly delivers a specific requirement behavior.
-- Every `REQ-X.Y` acceptance criterion must have an implementation task unless `## Requirement Implementation Coverage` explicitly marks it as `existing-behavior`, `test-only`, or `no-code-change` with a rationale.
+- Every `REQ-X.Y` acceptance criterion must be referenced in the `_Implements:` line of at least one implementation or test task.
 - Keep titles action-oriented: `Add`, `Update`, `Refactor`, `Wire`, `Create`, `Remove`.
 
 ### Discovery Tasks
@@ -124,6 +124,10 @@ Rules:
 - Every acceptance criterion from `requirements.md` must be covered by at least one test task.
 - Group closely related acceptance criteria into one test task when a single test flow naturally verifies them together.
 
+### Per-Phase Test Tasks
+
+Test tasks may be placed in any phase to verify the work just completed. Any phase that contains one or more implementation tasks must include at least one `Test:` task. Phases that contain only a discovery/inventory task are exempt. The dedicated `Acceptance Criteria Testing` phase remains the penultimate cross-cutting verification.
+
 ## Testing Guidance
 
 Choose test type in this order:
@@ -159,7 +163,7 @@ Prefer 3-6 phases for most changes.
 
 - Every `DES-*` element from `design.md` should be implemented by at least one implementation task.
 - Every `REQ-*` acceptance criterion from `requirements.md` must be covered by at least one test task.
-- Every `REQ-*` acceptance criterion from `requirements.md` must be covered by at least one implementation task or a justified `existing-behavior`, `test-only`, or `no-code-change` rationale in `## Requirement Implementation Coverage`.
+- Every `REQ-*` acceptance criterion from `requirements.md` must be referenced in the `_Implements:` line of at least one implementation or test task.
 - Use `_Implements: DES-X_` or `_Implements: DES-X, REQ-Y.Z_` for implementation tasks.
 - Use `_Implements: REQ-Y.Z_` or grouped `_Implements: REQ-Y.Z, REQ-A.B_` for test tasks.
 - Use `_Implements: All requirements_` only for the Final Checkpoint task.
@@ -185,7 +189,7 @@ When `sds validate tasks` or `sds validate spec` returns errors:
 3. Add missing `_Implements:` lines to non-checkpoint tasks
 4. Add or fix `DES-*` references so they match `design.md`
 5. Add or fix test tasks so every acceptance criterion is covered
-6. Add or fix requirement implementation coverage rows and discovery tasks required by non-exhaustive Code Anatomy
+ 6. Add or fix discovery tasks required by non-exhaustive Code Anatomy
 
 After 3 failed validation attempts:
 1. Summarize remaining errors
@@ -208,7 +212,7 @@ Before returning the tasks, verify:
 - [ ] `Final Checkpoint` is the last phase
 - [ ] Every task uses checkbox format
 - [ ] Every non-checkpoint task includes `_Implements:`
-- [ ] `## Requirement Implementation Coverage` maps every `REQ-X.Y` to an implementation task or an allowed rationale
+- [ ] Each implementation-bearing phase contains at least one `Test:` task
 - [ ] Non-exhaustive Code Anatomy has a discovery/inventory task before other implementation tasks
 - [ ] Every `DES-*` from `design.md` is covered by implementation tasks
 - [ ] Every `REQ-*` acceptance criterion is covered by at least one test task

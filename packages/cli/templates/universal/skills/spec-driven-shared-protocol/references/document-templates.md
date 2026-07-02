@@ -217,7 +217,7 @@ _Include only when modifying existing features, shared code, contracts, or opera
 
 ## Overview
 
-This implementation is organized into 4 phases:
+This implementation is organized into 4 phases with at least one test task per implementation phase:
 
 1. **Foundation** - Prepare core structures and entry points
 2. **Feature Delivery** - Implement the main design elements
@@ -232,14 +232,6 @@ This implementation is organized into 4 phases:
 - Follow `STYLEGUIDE.md` and the design document's `Repository Context Evidence` for naming, file placement, and package boundaries.
 - Apply contextual-stewardship workflow rules retrieved for this phase.
 - If design Code Anatomy coverage is not `Exhaustive`, complete the discovery/inventory task before other implementation tasks.
-
-## Requirement Implementation Coverage
-
-| Requirement | Implementation Coverage | Task or Rationale |
-|-------------|-------------------------|-------------------|
-| REQ-1.1 | task | 1.2 |
-| REQ-1.2 | task | 1.2 |
-| REQ-2.1 | task | 2.1 |
 
 ## Phase 1: Foundation
 
@@ -257,6 +249,12 @@ This implementation is organized into 4 phases:
   - _Depends: 1.2_
   - _Implements: DES-1, REQ-1.1, REQ-1.2_
 
+- [ ] 1.4 Test: verify authorization service rejects unauthorized requests
+  - Confirm the authorization service rejects requests without the required role.
+  - Test type: integration
+  - _Depends: 1.3_
+  - _Implements: REQ-1.1_
+
 ## Phase 2: Feature Delivery
 
 - [ ] 2.1 Add denial feedback path
@@ -268,6 +266,12 @@ This implementation is organized into 4 phases:
   - Record authorization failures when audit logging is enabled.
   - _Depends: 1.3_
   - _Implements: DES-2, REQ-3.1, REQ-3.2_
+
+- [ ] 2.3 Test: verify denial feedback and audit logging
+  - Confirm denied actions display the denial response and record the denial event.
+  - Test type: integration
+  - _Depends: 2.1, 2.2_
+  - _Implements: REQ-2.1, REQ-3.1_
 
 ## Phase 3: Acceptance Criteria Testing
 

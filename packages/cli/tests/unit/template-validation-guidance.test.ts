@@ -156,7 +156,8 @@ describe('Unit: template validation guidance', () => {
         expect(documentTemplatesContent).toContain('## Overview');
         expect(documentTemplatesContent).toContain('## Repository Context Evidence');
         expect(documentTemplatesContent).toContain('## Repository Constraints');
-        expect(documentTemplatesContent).toContain('## Requirement Implementation Coverage');
+        expect(documentTemplatesContent).not.toContain('## Requirement Implementation Coverage');
+        expect(documentTemplatesContent).toMatch(/Test:.*?Test type:/s);
 
         // Audit files still contain inline content
         expect(auditDesignContent).toContain('Repository Context Evidence shows guidelines');

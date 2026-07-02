@@ -12,10 +12,22 @@ This plan delivers validators and final verification.
 - [ ] 1.2 Implement error reporting improvements
   - _Implements: DES-1, REQ-1.2_
 
+- [ ] 1.3 Test: verify requirements validator detects missing sections
+  - Confirm the validator identifies missing required sections in requirements files.
+  - Test type: unit
+  - _Depends: 1.1_
+  - _Implements: REQ-1.1_
+
 ## Phase 2: Add traceability checks
 
 - [ ] 2.1 Implement traceability validation
   - _Implements: DES-2, REQ-2.1_
+
+- [ ] 2.2 Test: verify traceability validation reports missing links
+  - Confirm the system reports traceability issues when links are missing.
+  - Test type: unit
+  - _Depends: 2.1_
+  - _Implements: REQ-2.1_
 
 ## Phase 3: Acceptance Criteria Testing
 

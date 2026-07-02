@@ -80,12 +80,6 @@ const validTasks = `# Implementation Tasks
 
 This implementation is organized into 3 phases.
 
-## Requirement Implementation Coverage
-
-| Requirement | Implementation Coverage | Task or Rationale |
-|-------------|-------------------------|-------------------|
-| REQ-1.1 | task | 1.1 |
-
 ## Phase 1: Foundation
 
 - [ ] 1.1 Add authentication service
@@ -159,67 +153,75 @@ describe('Unit: hallucination-resistant spec validation', () => {
     expect(result.errors.some(error => error.context?.includes('Phase 1 must start with a discovery'))).toBe(true);
   });
 
-  it('fails task validation when requirement implementation coverage is missing', () => {
-    const tasks = validTasks.replace(/\n## Requirement Implementation Coverage[\s\S]*?(?=\n## Phase 1: Foundation)/, '');
+  it('allows Test: tasks in implementation phases while keeping Acceptance Criteria Testing penultimate', () => {
+    const tasks = `# Implementation Tasks
 
-    const result = verifyTasksFile(tasks, validDesign, validRequirements);
+## Overview
 
-    expect(result.valid).toBe(false);
-    expect(result.errors.some(error => error.context?.includes('Requirement Implementation Coverage'))).toBe(true);
-  });
+This implementation is organized into 4 phases.
 
-  it('allows justified non-task requirement implementation coverage', () => {
-    const tasks = validTasks
-      .replace('| REQ-1.1 | task | 1.1 |', '| REQ-1.1 | existing-behavior | Existing service already creates sessions; test task 2.1 verifies it |')
-      .replace('  - _Implements: DES-1, REQ-1.1_', '  - _Implements: DES-1_');
+## Phase 1: Foundation
+
+- [ ] 1.1 Add authentication service
+  - Create the service that validates credentials and creates sessions.
+  - _Implements: DES-1, REQ-1.1_
+
+- [ ] 1.2 Test: verify authentication service creates sessions
+  - Confirm valid credentials create a session.
+  - Test type: integration
+  - _Depends: 1.1_
+  - _Implements: REQ-1.1_
+
+## Phase 2: Acceptance Criteria Testing
+
+- [ ] 2.1 Test: create session for valid credentials
+  - Verify valid credentials create a session.
+  - Test type: integration
+  - _Implements: REQ-1.1_
+
+## Phase 3: Final Checkpoint
+
+- [ ] 3.1 Verify all acceptance criteria
+  - Confirm all requirements are covered.
+  - _Implements: All requirements_
+`;
 
     const result = verifyTasksFile(tasks, validDesign, validRequirements);
 
     expect(result.valid).toBe(true);
   });
 
-  it('recognizes coverage heading with extra words between Requirement and Implementation Coverage', () => {
-    const tasks = validTasks.replace(
-      '## Requirement Implementation Coverage',
-      '## Requirement Traceability Implementation Coverage'
-    );
+  it('allows phases with only discovery tasks without a Test: task', () => {
+    const design = validDesign.replace('Coverage: Exhaustive', 'Coverage: Representative');
+    const tasks = `# Implementation Tasks
 
-    const result = verifyTasksFile(tasks, validDesign, validRequirements);
+## Overview
 
-    expect(result.errors.some(error => error.context?.includes('Requirement Implementation Coverage section not found'))).toBe(false);
-  });
+This implementation is organized into 3 phases.
 
-  it('recognizes coverage heading with plural Requirements', () => {
-    const tasks = validTasks.replace(
-      '## Requirement Implementation Coverage',
-      '## Requirements Implementation Coverage'
-    );
+## Phase 1: Foundation
 
-    const result = verifyTasksFile(tasks, validDesign, validRequirements);
+- [ ] 1.1 Inventory implementation touchpoints
+  - Execute the design's Discovery Targets and update this task plan if additional in-scope files are found.
+  - _Implements: DES-1, REQ-1.1_
 
-    expect(result.errors.some(error => error.context?.includes('Requirement Implementation Coverage section not found'))).toBe(false);
-  });
+## Phase 2: Acceptance Criteria Testing
 
-  it('parses coverage table with different column header names', () => {
-    const tasks = validTasks.replace(
-      '| Requirement | Implementation Coverage | Task or Rationale |',
-      '| REQ | Coverage Type | Details |'
-    );
+- [ ] 2.1 Test: create session for valid credentials
+  - Verify valid credentials create a session.
+  - Test type: integration
+  - _Implements: REQ-1.1_
 
-    const result = verifyTasksFile(tasks, validDesign, validRequirements);
+## Phase 3: Final Checkpoint
 
-    expect(result.errors.some(error => error.context?.includes('Requirement Implementation Coverage section not found'))).toBe(false);
-  });
+- [ ] 3.1 Verify all acceptance criteria
+  - Confirm all requirements are covered.
+  - _Implements: All requirements_
+`;
 
-  it('parses coverage table with alignment markers in separator row', () => {
-    const tasks = validTasks.replace(
-      '|-------------|-------------------------|-------------------|',
-      '|:------------|:-----------------------:|------------------:|'
-    );
+    const result = verifyTasksFile(tasks, design, validRequirements);
 
-    const result = verifyTasksFile(tasks, validDesign, validRequirements);
-
-    expect(result.errors.some(error => error.context?.includes('Requirement Implementation Coverage section not found'))).toBe(false);
+    expect(result.valid).toBe(true);
   });
 
   it('fails complete spec validation when a sub-artifact is invalid', async () => {
