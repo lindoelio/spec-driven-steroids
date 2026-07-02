@@ -1,5 +1,11 @@
 # spec-driven-steroids
 
+## 0.16.0
+
+### Minor Changes
+
+- Add per-phase test tasks to task decomposition and remove the Requirement Implementation Coverage section from tasks.md. Each implementation-bearing phase now requires at least one `Test:` task to verify work before proceeding to the next phase.
+
 ## 0.15.3
 
 ### Patch Changes
