@@ -78,6 +78,13 @@ You MUST enforce this lifecycle exactly.`;
       expect(result).not.toContain('agent:');
     });
 
+    it('omits agent field for commands on antigravity-cli', () => {
+      const config = PLATFORM_CONFIGS['antigravity-cli'];
+      const result = transformToMarkdown(testBody, config, {}, 'inject-guidelines-command');
+
+      expect(result).not.toContain('agent:');
+    });
+
     it('ignores agent in source frontmatter and uses platform mapping instead', () => {
       const config = PLATFORM_CONFIGS['github-vscode'];
       const sourceFrontmatter = { agent: 'build' };
@@ -186,7 +193,8 @@ You MUST enforce this lifecycle exactly.`;
         PLATFORM_CONFIGS['claudecode'],
         PLATFORM_CONFIGS['opencode'],
         PLATFORM_CONFIGS['codex'],
-        PLATFORM_CONFIGS['antigravity']
+        PLATFORM_CONFIGS['antigravity'],
+        PLATFORM_CONFIGS['antigravity-cli']
       ];
       
       for (const config of configs) {

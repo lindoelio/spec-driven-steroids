@@ -23,7 +23,8 @@ It injects:
 
 | Platform | Scope | Injection Type |
 |----------|-------|-------------|
-| Antigravity | project | `/spec-driven` workflow |
+| Antigravity IDE | global / project | Skills (`/spec-driven`) |
+| Antigravity CLI (AGY) | global / project | Skills (`/spec-driven`) |
 | Claude Code | project | Agents, commands, skills |
 | Cline | user / project | Agents, commands, skills |
 | Gemini CLI | global / project | Agents, commands, skills |
@@ -194,7 +195,8 @@ This creates: `AGENTS.md`, `CONTRIBUTING.md`, `STYLEGUIDE.md`, `TESTING.md`, `AR
 - GitHub Copilot: `@spec-driven Add a rate limiter`
 - OpenCode: use the `Spec-Driven` agent
 - Cline: use the `Spec-Driven` agent or `/spec-driven`
-- Antigravity: `/spec-driven`
+- Antigravity IDE: `/spec-driven`
+- Antigravity CLI (AGY): `/spec-driven`
 - Codex: select the `spec-driven` skill with `/skills` or mention `$spec-driven`
 
 4. Approve each planning phase, then move to implementation.

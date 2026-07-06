@@ -42,7 +42,7 @@ interface InjectionResult {
   error: string;
 }
 
-const GLOBAL_CAPABLE_PLATFORMS = ['github-vscode', 'github-copilot-cli', 'gemini-cli', 'qwen-code', 'opencode', 'cline'] as const;
+const GLOBAL_CAPABLE_PLATFORMS = ['github-vscode', 'github-copilot-cli', 'gemini-cli', 'qwen-code', 'opencode', 'cline', 'antigravity', 'antigravity-cli'] as const;
 type GlobalCapablePlatform = typeof GLOBAL_CAPABLE_PLATFORMS[number];
 
 enum UnifiedInjectionScope {
@@ -79,6 +79,8 @@ const STEROIDS_SKILL_DIRS = [
 
 const CLINE_EXTRA_SKILL_DIRS = ['spec-driven', 'inject-guidelines'] as const;
 
+const ANTIGRAVITY_EXTRA_SKILL_DIRS = ['spec-driven', 'inject-guidelines'] as const;
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const packageJsonPath = path.resolve(__dirname, '../../package.json');
@@ -90,7 +92,8 @@ function platformDisplayName(platform: string): string {
     case 'github-copilot-cli': return 'GitHub Copilot CLI';
     case 'gemini-cli': return 'Gemini CLI';
     case 'qwen-code': return 'Qwen Code';
-    case 'antigravity': return 'Google Antigravity';
+    case 'antigravity': return 'Google Antigravity IDE';
+    case 'antigravity-cli': return 'Google Antigravity CLI (AGY)';
     case 'opencode': return 'OpenCode';
     case 'codex': return 'OpenAI Codex';
     case 'claudecode': return 'Claude Code';
@@ -170,7 +173,8 @@ program
           { name: 'GitHub Copilot CLI', value: 'github-copilot-cli' },
           { name: 'Gemini CLI', value: 'gemini-cli' },
           { name: 'Qwen Code', value: 'qwen-code' },
-          { name: 'Google Antigravity', value: 'antigravity' },
+          { name: 'Google Antigravity IDE', value: 'antigravity' },
+          { name: 'Google Antigravity CLI (AGY)', value: 'antigravity-cli' },
           { name: 'OpenCode', value: 'opencode' },
           { name: 'OpenAI Codex', value: 'codex' },
           { name: 'Claude Code', value: 'claudecode' },
@@ -194,6 +198,8 @@ program
           case 'qwen-code': return 'Qwen Code';
           case 'opencode': return 'OpenCode';
           case 'cline': return 'Cline';
+          case 'antigravity': return 'Google Antigravity IDE';
+          case 'antigravity-cli': return 'Google Antigravity CLI (AGY)';
           default: return p;
         }
       }).join(', ');
@@ -231,6 +237,12 @@ program
     const clineScope = unifiedScope === UnifiedInjectionScope.GLOBAL
       ? ClineInjectionScope.USER
       : ClineInjectionScope.PROJECT;
+    const antigravityIdeScope = unifiedScope === UnifiedInjectionScope.GLOBAL
+      ? 'global'
+      : 'project';
+    const antigravityCliScope = unifiedScope === UnifiedInjectionScope.GLOBAL
+      ? 'global'
+      : 'project';
 
     const targetDir = process.cwd();
     const bundledTemplatesDir = path.resolve(__dirname, '../../templates');
@@ -277,8 +289,23 @@ program
         }
 
         if (platform === 'antigravity') {
-          platformDest = path.join(targetDir, '.agents');
-          transformDestDir = platformDest;
+          if (antigravityIdeScope === 'global') {
+            platformDest = path.join(os.homedir(), '.gemini', 'config');
+            transformDestDir = platformDest;
+          } else {
+            platformDest = path.join(targetDir, '.agents');
+            transformDestDir = platformDest;
+          }
+        }
+
+        if (platform === 'antigravity-cli') {
+          if (antigravityCliScope === 'global') {
+            platformDest = path.join(os.homedir(), '.gemini', 'antigravity-cli');
+            transformDestDir = platformDest;
+          } else {
+            platformDest = path.join(targetDir, '.agents');
+            transformDestDir = platformDest;
+          }
         }
 
         if (platform === 'opencode') {
@@ -426,7 +453,9 @@ program
       removeGeminiCliSteroids(),
       removeQwenCodeSteroids(),
       removeOpenCodeGlobalSteroids(),
-      removeClineSteroids()
+      removeClineSteroids(),
+      removeAntigravityIdeSteroids(),
+      removeAntigravityCliSteroids()
     ]);
 
     const allCleaned = results.every(r => r);
@@ -484,6 +513,8 @@ function buildCleanPreview(): string {
   const copilotCliDir = getGitHubCopilotCliGlobalConfigDir();
   const geminiDir = path.join(os.homedir(), '.gemini');
   const qwenDir = path.join(os.homedir(), '.qwen');
+  const antigravityIdeDir = path.join(os.homedir(), '.gemini', 'config');
+  const antigravityCliDir = path.join(os.homedir(), '.gemini', 'antigravity-cli');
 
   const formatDir = (d: string) => d.replace(os.homedir(), '~');
 
@@ -518,6 +549,16 @@ function buildCleanPreview(): string {
     `  ${chalk.bold('OpenCode')} (${formatDir(opencodeDir)}):`,
     `    • agents/${STEROIDS_FILES.agents.join(', ')}`,
     `    • commands/${STEROIDS_FILES.commands.join(', ')}`,
+    `    • skills/${STEROIDS_SKILL_DIRS.join('/, skills/')}/`,
+    '',
+    `  ${chalk.bold('Google Antigravity IDE')} (${formatDir(antigravityIdeDir)}):`,
+    `    • skills/spec-driven/SKILL.md`,
+    `    • skills/inject-guidelines/SKILL.md`,
+    `    • skills/${STEROIDS_SKILL_DIRS.join('/, skills/')}/`,
+    '',
+    `  ${chalk.bold('Google Antigravity CLI (AGY)')} (${formatDir(antigravityCliDir)}):`,
+    `    • skills/spec-driven/SKILL.md`,
+    `    • skills/inject-guidelines/SKILL.md`,
     `    • skills/${STEROIDS_SKILL_DIRS.join('/, skills/')}/`,
     ''
   ];
@@ -722,6 +763,65 @@ async function removeClineSteroids(): Promise<boolean> {
     return true;
   } catch (err) {
     console.warn(chalk.yellow(`  ⚠️ Cline: ${err}`));
+    return false;
+  }
+}
+
+async function removeAntigravityIdeSteroids(): Promise<boolean> {
+  try {
+    const antigravityIdeDir = path.join(os.homedir(), '.gemini', 'config');
+
+    await removeSteroidsFiles(antigravityIdeDir);
+    await removeSteroidsSkillDirs(antigravityIdeDir);
+
+    const skillsDir = path.join(antigravityIdeDir, 'skills');
+    for (const skill of ANTIGRAVITY_EXTRA_SKILL_DIRS) {
+      const skillPath = path.join(skillsDir, skill);
+      if (await fs.pathExists(skillPath)) {
+        await fs.remove(skillPath);
+      }
+    }
+    const remaining = await fs.readdir(skillsDir).catch(() => []);
+    if (remaining.length === 0) {
+      await fs.remove(skillsDir);
+    }
+
+    const workflowsDir = path.join(antigravityIdeDir, 'workflows');
+    if (await fs.pathExists(workflowsDir)) {
+      await fs.remove(workflowsDir);
+    }
+
+    console.log(chalk.green('  ✅ Google Antigravity IDE cleaned.'));
+    return true;
+  } catch (err) {
+    console.warn(chalk.yellow(`  ⚠️ Google Antigravity IDE: ${err}`));
+    return false;
+  }
+}
+
+async function removeAntigravityCliSteroids(): Promise<boolean> {
+  try {
+    const antigravityCliDir = path.join(os.homedir(), '.gemini', 'antigravity-cli');
+
+    await removeSteroidsFiles(antigravityCliDir);
+    await removeSteroidsSkillDirs(antigravityCliDir);
+
+    const skillsDir = path.join(antigravityCliDir, 'skills');
+    for (const skill of ANTIGRAVITY_EXTRA_SKILL_DIRS) {
+      const skillPath = path.join(skillsDir, skill);
+      if (await fs.pathExists(skillPath)) {
+        await fs.remove(skillPath);
+      }
+    }
+    const remaining = await fs.readdir(skillsDir).catch(() => []);
+    if (remaining.length === 0) {
+      await fs.remove(skillsDir);
+    }
+
+    console.log(chalk.green('  ✅ Google Antigravity CLI (AGY) cleaned.'));
+    return true;
+  } catch (err) {
+    console.warn(chalk.yellow(`  ⚠️ Google Antigravity CLI (AGY): ${err}`));
     return false;
   }
 }

@@ -80,14 +80,14 @@ export async function transformForPlatform(
   const skipOutputTypes = options?.skipOutputTypes || [];
   
   // Skip the spec-driven-command when:
-  // - Antigravity: the command IS the agent (same file, would overwrite)
   // - skillsOnly platforms: the agent is emitted as a skill; a separate command is redundant
+  // - Agent and command share the same directory AND filename (would overwrite)
   const skipSpecDrivenCommand = config.skillsOnly === true ||
     (config.agentDirectory === config.commandDirectory &&
      config.agentFilename === config.specDrivenCommandFilename);
   
   for (const source of UNIVERSAL_SOURCES) {
-    // Skip spec-driven-command for platforms like Antigravity where agent and command are the same file
+    // Skip spec-driven-command for skillsOnly platforms and same-file platforms
     if (source.outputType === 'spec-driven-command' && skipSpecDrivenCommand) {
       continue;
     }

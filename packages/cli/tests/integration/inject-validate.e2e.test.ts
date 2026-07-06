@@ -99,7 +99,7 @@ describe('CLI E2E: inject command', () => {
         expect(await fs.pathExists(path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md'))).toBe(true);
     });
 
-    it('inject command with Antigravity platform creates .agents directory structure (project scope)', async () => {
+    it('inject command with Antigravity IDE platform creates .agents directory structure (project scope)', async () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['antigravity'] })
             .mockResolvedValueOnce({ scope: 'project' });
@@ -109,28 +109,51 @@ describe('CLI E2E: inject command', () => {
 
         const agentDir = path.join(targetDir, '.agents');
         expect(await fs.pathExists(agentDir)).toBe(true);
-        expect(await fs.pathExists(path.join(agentDir, 'workflows'))).toBe(true);
+        expect(await fs.pathExists(path.join(agentDir, 'skills', 'spec-driven', 'SKILL.md'))).toBe(true);
     });
 
-    it('inject command with Antigravity skips global scope prompt and uses project-level injection', async () => {
+    it('inject command with Antigravity IDE global scope creates artifacts globally', async () => {
         vi.spyOn(inquirer, 'prompt')
-            .mockResolvedValueOnce({ platforms: ['antigravity'] });
+            .mockResolvedValueOnce({ platforms: ['antigravity'] })
+            .mockResolvedValueOnce({ scope: 'global' });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
-        expect(await fs.pathExists(path.join(targetDir, '.agents'))).toBe(true);
-        expect(await fs.pathExists(path.join(targetDir, '.agents', 'workflows', 'spec-driven.md'))).toBe(true);
+        const globalAntigravityIdeDir = path.join(os.homedir(), '.gemini', 'config');
+        expect(await fs.pathExists(path.join(globalAntigravityIdeDir, 'skills', 'spec-driven', 'SKILL.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(globalAntigravityIdeDir, 'skills', 'inject-guidelines', 'SKILL.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(globalAntigravityIdeDir, 'agents'))).toBe(false);
+        expect(await fs.pathExists(path.join(globalAntigravityIdeDir, 'commands'))).toBe(false);
     });
 
-    it('inject command skips scope prompt for Antigravity and proceeds directly to project-level injection', async () => {
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
-            .mockResolvedValueOnce({ platforms: ['antigravity'] });
+    it('inject command with Antigravity CLI (AGY) platform creates .agents directory structure (project scope)', async () => {
+        vi.spyOn(inquirer, 'prompt')
+            .mockResolvedValueOnce({ platforms: ['antigravity-cli'] })
+            .mockResolvedValueOnce({ scope: 'project' });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
-        expect(promptSpy).toHaveBeenCalledTimes(1);
+        const agentDir = path.join(targetDir, '.agents');
+        expect(await fs.pathExists(agentDir)).toBe(true);
+        expect(await fs.pathExists(path.join(agentDir, 'skills', 'spec-driven', 'SKILL.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(agentDir, 'skills', 'inject-guidelines', 'SKILL.md'))).toBe(true);
+    });
+
+    it('inject command with Antigravity CLI (AGY) global scope creates artifacts globally', async () => {
+        vi.spyOn(inquirer, 'prompt')
+            .mockResolvedValueOnce({ platforms: ['antigravity-cli'] })
+            .mockResolvedValueOnce({ scope: 'global' });
+
+        const program = (await import('../../dist/cli/index.js')).default;
+        await program.parseAsync(['inject'], { from: 'user' } as any);
+
+        const globalAntigravityCliDir = path.join(os.homedir(), '.gemini', 'antigravity-cli');
+        expect(await fs.pathExists(path.join(globalAntigravityCliDir, 'skills', 'spec-driven', 'SKILL.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(globalAntigravityCliDir, 'skills', 'inject-guidelines', 'SKILL.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(globalAntigravityCliDir, 'agents'))).toBe(false);
+        expect(await fs.pathExists(path.join(globalAntigravityCliDir, 'commands'))).toBe(false);
     });
 
     it('inject command displays single unified scope prompt for multiple global-capable platforms', async () => {
@@ -147,7 +170,7 @@ describe('CLI E2E: inject command', () => {
         expect(secondCallArgs[0].name).toBe('scope');
         expect(secondCallArgs[0].message).toContain('Injection scope for');
         expect(secondCallArgs[0].message).toContain('OpenCode');
-        expect(secondCallArgs[0].message).not.toContain('Antigravity');
+        expect(secondCallArgs[0].message).toContain('Google Antigravity IDE');
     });
 
     it('inject command with OpenCode platform creates .opencode directory structure (project scope)', async () => {
@@ -205,12 +228,12 @@ describe('CLI E2E: inject command', () => {
         expect(githubAgentContent.includes('Before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
         expect(githubAgentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
 
-        const antigravityWorkflowPath = path.join(targetDir, '.agents', 'workflows', 'spec-driven.md');
-        const antigravityWorkflowContent = await fs.readFile(antigravityWorkflowPath, 'utf-8');
-        expect(antigravityWorkflowContent.includes('## Lifecycle')).toBe(true);
-        expect(antigravityWorkflowContent.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
-        expect(antigravityWorkflowContent.includes('Before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
-        expect(antigravityWorkflowContent.includes('### Non-Skippable Stop Rule')).toBe(true);
+        const antigravitySkillPath = path.join(targetDir, '.agents', 'skills', 'spec-driven', 'SKILL.md');
+        const antigravitySkillContent = await fs.readFile(antigravitySkillPath, 'utf-8');
+        expect(antigravitySkillContent.includes('## Lifecycle')).toBe(true);
+        expect(antigravitySkillContent.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
+        expect(antigravitySkillContent.includes('Before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
+        expect(antigravitySkillContent.includes('### Non-Skippable Stop Rule')).toBe(true);
         delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
     });
 
@@ -224,7 +247,7 @@ describe('CLI E2E: inject command', () => {
 
         const plannerFiles = [
             path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md'),
-            path.join(targetDir, '.agents', 'workflows', 'spec-driven.md'),
+            path.join(targetDir, '.agents', 'skills', 'spec-driven', 'SKILL.md'),
             path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md'),
             path.join(targetDir, '.codex', 'agents', 'spec-driven.toml')
         ];
@@ -313,7 +336,7 @@ describe('CLI E2E: inject command', () => {
 
         const plannerFiles = [
             path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md'),
-            path.join(targetDir, '.agents', 'workflows', 'spec-driven.md'),
+            path.join(targetDir, '.agents', 'skills', 'spec-driven', 'SKILL.md'),
             path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md'),
             path.join(targetDir, '.codex', 'agents', 'spec-driven.toml')
         ];
@@ -342,7 +365,7 @@ describe('CLI E2E: inject command', () => {
         expect(githubPromptContent.includes('agent:')).toBe(false);
         expect(await fs.pathExists(path.join(targetDir, '.github', 'agents', 'inject-guidelines.agent.md'))).toBe(false);
 
-        const antigravityGuidelinesPath = path.join(targetDir, '.agents', 'workflows', 'inject-guidelines.md');
+        const antigravityGuidelinesPath = path.join(targetDir, '.agents', 'skills', 'inject-guidelines', 'SKILL.md');
         const antigravityGuidelinesContent = await fs.readFile(antigravityGuidelinesPath, 'utf-8');
         expect(antigravityGuidelinesContent.includes('Generate all six guideline documents by default unless the user explicitly skips named files.')).toBe(true);
         expect(antigravityGuidelinesContent.includes('Do not treat missing guideline files as optional.')).toBe(true);
@@ -452,22 +475,22 @@ describe('CLI E2E: inject command', () => {
         expect(await fs.pathExists(path.join(targetDir, '.codex', 'commands', 'inject-guidelines.md'))).toBe(false);
     });
 
-    it('inject command with Antigravity does not create global artifacts directory', async () => {
-        const globalAntigravityDir = path.join(os.homedir(), '.gemini', 'antigravity');
-        const globalWorkflowsPath = path.join(globalAntigravityDir, 'workflows');
+    it('inject command with Antigravity IDE global scope creates artifacts at ~/.gemini/config', async () => {
+        const globalAntigravityIdeDir = path.join(os.homedir(), '.gemini', 'config');
 
-        if (await fs.pathExists(globalAntigravityDir)) {
-            await fs.remove(globalAntigravityDir);
+        if (await fs.pathExists(globalAntigravityIdeDir)) {
+            await fs.remove(globalAntigravityIdeDir);
         }
 
         vi.spyOn(inquirer, 'prompt')
-            .mockResolvedValueOnce({ platforms: ['antigravity'] });
+            .mockResolvedValueOnce({ platforms: ['antigravity'] })
+            .mockResolvedValueOnce({ scope: 'global' });
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
-        expect(await fs.pathExists(globalWorkflowsPath)).toBe(false);
-        expect(await fs.pathExists(path.join(targetDir, '.agents'))).toBe(true);
+        expect(await fs.pathExists(path.join(globalAntigravityIdeDir, 'skills', 'spec-driven', 'SKILL.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(globalAntigravityIdeDir, 'skills', 'inject-guidelines', 'SKILL.md'))).toBe(true);
     });
 
     it('inject command includes Red Team Review and Code Review in planner templates', async () => {
@@ -491,10 +514,10 @@ describe('CLI E2E: inject command', () => {
         expect(githubAgentContent).toContain('Red Team Review');
         expect(githubAgentContent).toContain('Code Review');
 
-        const antigravityWorkflowPath = path.join(targetDir, '.agents', 'workflows', 'spec-driven.md');
-        const antigravityWorkflowContent = await fs.readFile(antigravityWorkflowPath, 'utf-8');
-        expect(antigravityWorkflowContent).toContain('Red Team Review');
-        expect(antigravityWorkflowContent).toContain('Code Review');
+        const antigravitySkillPath = path.join(targetDir, '.agents', 'skills', 'spec-driven', 'SKILL.md');
+        const antigravitySkillContent = await fs.readFile(antigravitySkillPath, 'utf-8');
+        expect(antigravitySkillContent).toContain('Red Team Review');
+        expect(antigravitySkillContent).toContain('Code Review');
 
         delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
     });

@@ -55,7 +55,24 @@ describe('Unit: Platform Config', () => {
       const config = getPlatformConfig('antigravity');
       expect(config).toBeDefined();
       expect(config?.format).toBe(FormatType.MARKDOWN);
-      expect(config?.agentDirectory).toBe('workflows');
+      expect(config?.skillsOnly).toBe(true);
+      expect(config?.agentDirectory).toBe('skills/spec-driven');
+      expect(config?.agentFilename).toBe('SKILL.md');
+      expect(config?.commandDirectory).toBe('skills/inject-guidelines');
+      expect(config?.injectGuidelinesCommandFilename).toBe('SKILL.md');
+      expect(config?.commandAgents).toBeUndefined();
+    });
+
+    it('returns config for antigravity-cli', () => {
+      const config = getPlatformConfig('antigravity-cli');
+      expect(config).toBeDefined();
+      expect(config?.format).toBe(FormatType.MARKDOWN);
+      expect(config?.skillsOnly).toBe(true);
+      expect(config?.agentDirectory).toBe('skills/spec-driven');
+      expect(config?.agentFilename).toBe('SKILL.md');
+      expect(config?.commandDirectory).toBe('skills/inject-guidelines');
+      expect(config?.injectGuidelinesCommandFilename).toBe('SKILL.md');
+      expect(config?.commandAgents).toBeUndefined();
     });
 
     it('returns config for github-copilot-cli', () => {
@@ -112,6 +129,7 @@ describe('Unit: Platform Config', () => {
         'opencode',
         'codex',
         'antigravity',
+        'antigravity-cli',
         'cline'
       ];
       

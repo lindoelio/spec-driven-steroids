@@ -165,17 +165,34 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
   'antigravity': {
     id: 'antigravity',
     format: FormatType.MARKDOWN,
+    skillsOnly: true,
     frontmatter: {
       fields: {
-        name: 'Spec-Driven',
-        description: 'Use this workflow when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
+        name: 'spec-driven',
+        description: 'Use this skill when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
       }
     },
-    agentDirectory: 'workflows',
-    agentFilename: 'spec-driven.md',
-    commandDirectory: 'workflows',
-    specDrivenCommandFilename: 'spec-driven.md',
-    injectGuidelinesCommandFilename: 'inject-guidelines.md'
+    agentDirectory: 'skills/spec-driven',
+    agentFilename: 'SKILL.md',
+    commandDirectory: 'skills/inject-guidelines',
+    specDrivenCommandFilename: '',
+    injectGuidelinesCommandFilename: 'SKILL.md'
+  },
+  'antigravity-cli': {
+    id: 'antigravity-cli',
+    format: FormatType.MARKDOWN,
+    skillsOnly: true,
+    frontmatter: {
+      fields: {
+        name: 'spec-driven',
+        description: 'Use this skill when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
+      }
+    },
+    agentDirectory: 'skills/spec-driven',
+    agentFilename: 'SKILL.md',
+    commandDirectory: 'skills/inject-guidelines',
+    specDrivenCommandFilename: '',
+    injectGuidelinesCommandFilename: 'SKILL.md'
   },
   'github-copilot-cli': {
     id: 'github-copilot-cli',

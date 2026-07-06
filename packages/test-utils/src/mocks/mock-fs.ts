@@ -53,7 +53,7 @@ export class MockFileSystem {
         for (const platform of options.platforms) {
             if (platform === 'github') {
                 await this.createGithubConfig(rootDir, options);
-            } else if (platform === 'antigravity') {
+            } else if (platform === 'antigravity' || platform === 'antigravity-cli') {
                 await this.createAntigravityConfig(rootDir, options);
             } else if (platform === 'opencode') {
                 await this.createOpenCodeConfig(rootDir, options);
