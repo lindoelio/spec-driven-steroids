@@ -1,5 +1,11 @@
 # spec-driven-steroids
 
+## 0.17.0
+
+### Minor Changes
+
+- Add Antigravity IDE global scope and Antigravity CLI (AGY) support. Migrate Antigravity IDE from workflows/ to skills/ using the AgentSkills spec folder-based SKILL.md format. Add global injection for Antigravity IDE (~/.gemini/config/skills/) and new Antigravity CLI (AGY) platform with project and global scope (~/.gemini/antigravity-cli/skills/). Add clean support for both platforms including legacy workflows/ cleanup.
+
 ## 0.16.0
 
 ### Minor Changes
