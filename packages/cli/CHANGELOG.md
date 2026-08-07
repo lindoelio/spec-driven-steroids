@@ -1,5 +1,11 @@
 # spec-driven-steroids
 
+## 0.18.0
+
+### Minor Changes
+
+- 886c7c8: Add two approval-gated workflow lanes: a default `brief.md` lane with one approval and compact review, and the existing full requirements/design/tasks lifecycle for high-risk changes. Add `sds validate brief`, automatic brief/full detection in structure and spec validation, Phase 3 Discovery Evidence for stable full task plans, and warning-based compatibility for legacy discovery-first specs.
+
 ## 0.17.0
 
 ### Minor Changes
