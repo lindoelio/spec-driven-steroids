@@ -10,7 +10,7 @@ Guidance for auditing task lists (implementation plans, task breakdowns).
 - All design elements are covered
 - All requirements have test coverage
 - All acceptance criteria have implementation coverage or an explicit allowed rationale
-- Non-exhaustive Code Anatomy has a discovery/inventory task before implementation work
+- Non-exhaustive Code Anatomy has complete Phase 3 Discovery Evidence reflected in implementation tasks
 - Dependencies are identified
 
 ### Correctness
@@ -52,5 +52,5 @@ When auditing tasks, adopt a rejector persona and answer these adversarial quest
 3. **Would executing these tasks in order break anything?** Are dependencies real and necessary, or artificially linear? Is there a hidden circular dependency?
 4. **Are implementation tasks distinct from test tasks?** Is any implementation task secretly also a test? Are test tasks prefixed with `Test:` and focused on behavior?
 5. **Is the Final Checkpoint actually final?** Does it verify all requirements, or just the happy path? Are there rollback or cleanup steps missing?
-6. **Ignore the Code Anatomy.** Starting from requirements and a fresh code search, which other files, entrypoints, exports, tests, or integrations could be affected? If the design is non-exhaustive, is there an inventory task before implementation tasks?
+6. **Audit the Discovery Evidence.** Does every Discovery Target have a concrete result and plan impact? Perform only targeted spot-checks for unsupported or suspicious gaps; do not repeat searches already evidenced.
 7. **Are risky tasks identified and mitigated?** Which task has the highest blast radius if it goes wrong? Is there a rollback task or contingency plan?

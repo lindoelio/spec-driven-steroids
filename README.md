@@ -7,11 +7,14 @@ Inject Spec-Driven Development into AI coding tools without building a new UI.
 
 ## What it is
 
-`spec-driven-steroids` is a CLI plus template bundle for running a strict workflow inside AI coding tools:
+`spec-driven-steroids` is an opt-in planning layer for AI coding tools. When invoked, it always requires a written plan and human approval before implementation.
 
 ```
-requirements → design → tasks → implementation
+brief (default): brief → approval → implementation → compact review
+full (high risk): requirements → design → tasks → Red Team Review → implementation → Code Review
 ```
+
+Direct implementation remains the host harness's default behavior. Use SDS when the change should be specified and approved first.
 
 It injects:
 - Platform-specific agents, commands, or workflows
@@ -64,6 +67,9 @@ sds inject
 # Validate spec folder structure
 sds validate structure <slug>
 
+# Validate a lightweight brief
+sds validate brief <path>
+
 # Validate EARS requirements
 sds validate requirements <path>
 
@@ -73,7 +79,7 @@ sds validate design <path>
 # Validate task structure and traceability
 sds validate tasks <path>
 
-# Full end-to-end validation
+# Auto-detect and validate a brief or full spec
 sds validate spec <slug>
 ```
 
@@ -132,6 +138,7 @@ The CLI injects these universal skills that work across all platforms:
 
 | Skill | Purpose | Phase |
 |-------|--------|-------|
+| `spec-driven-brief-planner` | Write, approve, implement, and review a compact brief | Brief lane |
 | `spec-driven-requirements-writer` | Write EARS-format requirements | 1 |
 | `spec-driven-technical-designer` | Create technical design with Mermaid | 2 |
 | `spec-driven-task-decomposer` | Decompose into atomic tasks | 3 |
@@ -157,22 +164,37 @@ The CLI injects these universal skills that work across all platforms:
 
 ## Spec Flow
 
+### Workflow lanes
+
+| Lane | Use When | Artifact | Approval |
+|------|----------|----------|----------|
+| `brief` | Default bounded change | `brief.md` | One approval before implementation |
+| `full` | High-risk, cross-boundary, migration, security, or public-contract change | `requirements.md`, `design.md`, `tasks.md` | Approval between every planning phase |
+
+SDS has no direct lane. Use the host harness without SDS when no planning artifact or approval is needed.
+
 ### What gets generated
 
 Spec-Driven planning writes artifacts to:
 
 ```
 .specs/changes/<slug>/
+brief lane:
+└── brief.md
+
+full lane:
 ├── requirements.md
 ├── design.md
 └── tasks.md
 ```
 
-### Workflow phases
+The two layouts are mutually exclusive. `sds validate structure` and `sds validate spec` detect the lane automatically.
+
+### Full workflow phases
 
 1. **Requirements** - EARS-syntax requirements with stable IDs
 2. **Design** - Mermaid diagrams, architecture sections
-3. **Tasks** - Atomic implementation tasks with traceability
+3. **Tasks** - Execute non-exhaustive Discovery Targets, record evidence, then produce stable atomic tasks
 4. **Implementation** - Task execution with verification
 
 ### Quick start
@@ -200,7 +222,7 @@ This creates: `AGENTS.md`, `CONTRIBUTING.md`, `STYLEGUIDE.md`, `TESTING.md`, `AR
 - Antigravity CLI (AGY): `/spec-driven`
 - Codex: select the `spec-driven` skill with `/skills` or mention `$spec-driven`
 
-4. Approve each planning phase, then move to implementation.
+4. Approve the single brief or each full-lane planning phase, then move to implementation.
 
 ## Long-Running Work
 

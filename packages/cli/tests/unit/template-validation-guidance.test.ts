@@ -234,9 +234,26 @@ describe('Unit: template validation guidance', () => {
 
         expect(requirementsAudit).toContain('Did I miss edge cases that make these untestable?');
         expect(designAudit).toContain('Does this design actually solve the requirements');
-        expect(designAudit).toContain('Ignore the Code Anatomy');
+        expect(designAudit).toContain('targeted spot-checks');
         expect(tasksAudit).toContain('Are any tasks too large for one focused session?');
-        expect(tasksAudit).toContain('Ignore the Code Anatomy');
+        expect(tasksAudit).toContain('Audit the Discovery Evidence');
+    });
+
+    it('completes non-exhaustive discovery during Phase 3 before task approval', async () => {
+        const agent = await readTemplate('universal/agents/spec-driven.agent.md');
+        const decomposer = await readTemplate('universal/skills/spec-driven-task-decomposer/SKILL.md');
+        const implementer = await readTemplate('universal/skills/spec-driven-task-implementer/SKILL.md');
+        const taskTemplate = await readTemplate('universal/skills/spec-driven-shared-protocol/references/document-templates.md');
+        const taskAudit = await readTemplate('universal/skills/agent-work-auditor/artifacts/tasks.md');
+
+        expect(agent).toContain('execute every `Discovery Target` before decomposition');
+        expect(agent).toContain('Do not emit a discovery/inventory implementation task');
+        expect(decomposer).toContain('## Discovery Evidence');
+        expect(decomposer).not.toContain('- [ ] 1.1 Inventory implementation touchpoints');
+        expect(implementer).toContain('enter implementation with a stable task plan');
+        expect(taskTemplate).toContain('## Discovery Evidence');
+        expect(taskTemplate).not.toContain('- [ ] 1.1 Inventory implementation touchpoints');
+        expect(taskAudit).not.toContain('fresh code search');
     });
 
     it('requires Red Team Review and Code Review in spec-driven planner', async () => {

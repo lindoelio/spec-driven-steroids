@@ -20,6 +20,15 @@ describe('Unit: Universal Agent Prompt', () => {
     
     // Check for key sections
     expect(content).toContain('## Lifecycle');
+    expect(content).toContain('## Lane Selection');
+    expect(content).toContain('### Brief Lane');
+    expect(content).toContain('### Full Lane');
+    expect(content).toContain('### No Direct Lane');
+    expect(content).toContain('spec-driven-brief-planner` skill');
+    expect(content.indexOf('If brief and full artifacts are mixed')).toBeLessThan(
+      content.indexOf('If `.specs/changes/<slug>/brief.md` exists')
+    );
+    expect(content).toContain('Run `sds validate structure <slug>` and `sds validate brief`');
     expect(content).toContain('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review');
     expect(content).toContain('Non-Skippable Stop Rule');
     expect(content).toContain('Phase 1: Requirements');

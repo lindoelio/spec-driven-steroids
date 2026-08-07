@@ -52,7 +52,7 @@ Use these files in this order:
 
 If these inputs conflict, stop and resolve the conflict before continuing.
 
-`Code Anatomy` is not a closed completion checklist unless `design.md` says `Coverage: Exhaustive`. For `Coverage: Representative` or `Coverage: Initial Discovery Only`, complete the discovery/inventory task before treating the task plan as stable.
+`Code Anatomy` is not a closed completion checklist unless `design.md` says `Coverage: Exhaustive`. New non-exhaustive specs complete discovery during Phase 3 and enter implementation with a stable task plan. For a legacy approved spec that already contains a discovery/inventory task, execute that task first.
 
 ## Task Status Rules
 
@@ -173,9 +173,9 @@ If implementation discovers files, entrypoints, exports, tests, integrations, or
 2. If it is in scope and does not change product behavior, public contracts, architecture, or risk materially, add an amendment task to `tasks.md` before doing the newly discovered work.
 3. The amendment task must include `_Discovered from: <task-id or discovery target>_` and `_Implements: DES-X, REQ-Y.Z_`.
 4. If the discovered work changes requirements, architecture, public contracts, migration scope, security posture, or operational risk, keep the current task `- [~]` and request a mini-review before proceeding.
-5. Do not mark the discovery task complete until amendments are added or an explicit no-amendment rationale is recorded in that task.
+5. Do not mark the originating implementation task complete until amendments are recorded or an explicit no-amendment rationale is documented.
 
-Amendments are not scope creep when they preserve the approved requirements and design intent. They are scope corrections caused by non-exhaustive discovery.
+Amendments are not scope creep when they preserve approved requirements and design intent, but they should represent genuinely unexpected implementation findings after Phase 3 discovery.
 
 ## Test Task Rules
 

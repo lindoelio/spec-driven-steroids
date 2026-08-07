@@ -55,6 +55,6 @@ When auditing design, adopt a rejector persona and answer these adversarial ques
 2. **Are the Mermaid diagrams lying?** Do the diagrams match the text description? Are there nodes or edges in the diagram that have no corresponding design element or file?
 3. **Is the traceability matrix complete or just decorative?** Does every DES-* map to at least one REQ-*? Does every REQ-* have at least one DES-* implementing it? Are there orphaned design elements?
 4. **Would a new developer understand the file placement without asking?** Are the Code Anatomy entries specific enough? Is every file mapped to a DES-*? Are proposed paths labeled `New` and existing paths verified?
-5. **Ignore the Code Anatomy.** Starting from requirements and a fresh code search, which other files, entrypoints, exports, tests, or integrations could be affected? If any plausible touchpoint exists outside Code Anatomy, is coverage non-exhaustive and is there a Discovery Target for it?
+5. **Challenge the Code Anatomy coverage honestly.** Are Discovery Targets sufficient to expose plausible missing entrypoints, exports, tests, or integrations? Use targeted spot-checks only when the documented evidence is unsupported; do not repeat completed searches by default.
 6. **Are failure modes and rollback considered?** What happens if the new component crashes on startup? Is there a rollback plan for deployments or migrations?
 7. **Is the design over-engineered for the problem?** Are there abstractions that serve only one use case? Could the design be simpler while still meeting requirements?

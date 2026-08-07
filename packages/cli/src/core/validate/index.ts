@@ -4,11 +4,13 @@ import { createRequirementsCommand } from './requirements.js';
 import { createDesignCommand } from './design.js';
 import { createTasksCommand } from './tasks.js';
 import { createSpecCommand } from './spec.js';
+import { createBriefCommand } from './brief.js';
 
 /**
  * Creates the parent 'validate' command with all subcommands registered.
  * Provides comprehensive validation for Spec-Driven specs:
  * - structure: Validates spec directory structure
+ * - brief: Validates the lightweight approved brief format
  * - requirements: Validates requirements.md EARS patterns and numbering
  * - design: Validates design.md Mermaid diagrams and traceability
  * - tasks: Validates tasks.md phase structure and traceability
@@ -23,7 +25,8 @@ export function createValidateCommand(): Command {
       `Validate Spec-Driven specs for correctness and completeness.
 
 The validate command checks specs in .specs/changes/<slug>/ for:
-  • structure   - Required files (requirements.md, design.md, tasks.md)
+  • structure   - Required files for brief or full lanes
+  • brief       - Compact change brief structure and traceability
   • requirements - EARS patterns, REQ-X numbering, acceptance criteria
   • design      - Mermaid diagrams, DES-X numbering, _Implements tags
   • tasks       - Phase structure, task status, traceability links
@@ -33,6 +36,7 @@ All subcommands support --format <text|json> for output control.
 Use --help with any subcommand for specific options and examples.`
     )
     .addCommand(createStructureCommand())
+    .addCommand(createBriefCommand())
     .addCommand(createRequirementsCommand())
     .addCommand(createDesignCommand())
     .addCommand(createTasksCommand())

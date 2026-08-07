@@ -4,7 +4,7 @@
 
 ## Project Identity
 
-This is **Spec-Driven Steroids** (`spec-driven-steroids`), a CLI tool and template bundle that injects a strict Spec-Driven Development workflow (requirements → design → tasks → implementation) into AI coding tools. It ships as a single public npm package with a `sds` alias.
+This is **Spec-Driven Steroids** (`spec-driven-steroids`), a CLI tool and template bundle that injects approval-gated brief and full Spec-Driven workflows into AI coding tools. It ships as a single public npm package with a `sds` alias.
 
 ## Technology Stack
 
@@ -40,8 +40,8 @@ When writing code here, always run `pnpm typecheck` before considering a change 
 - **Package scope**: The `packages/cli` package is the only public package. `packages/test-utils` and `packages/landing-page` are private.
 - **Platform template changes**: When editing template files under `packages/cli/templates/`, ensure corresponding E2E tests in `packages/cli/tests/integration/` are updated because many tests verify template content assertions.
 - **Template source**: When adding or modifying template files, update `STEROIDS_SKILL_DIRS` and `STEROIDS_FILES` in `packages/cli/src/cli/index.ts` if the new files must be tracked for clean and injection.
-- **No direct implementation requests**: Agents must never skip the Spec-Driven phases. Implementation must always follow the full flow (`requirements → design → tasks → implementation`). See [CONTRIBUTING.md](CONTRIBUTING.md) for the PR process.
-- **Spec artifact exclusion**: Never read `.specs/changes/<slug>/` artifacts (requirements.md, design.md, tasks.md) as context for any task unless:
+- **Approval-gated SDS invocation**: When SDS is selected, implementation must follow an approved `brief.md` or the approved full flow (`requirements → design → tasks → implementation`). Direct implementation belongs to the host harness outside SDS. See [CONTRIBUTING.md](CONTRIBUTING.md) for the PR process.
+- **Spec artifact exclusion**: Never read `.specs/changes/<slug>/` artifacts (brief.md, requirements.md, design.md, tasks.md) as context for any task unless:
   - You are explicitly in a spec-driven workflow for that specific `<slug>`, OR
   - The user explicitly references or asks about that specific spec artifact
   - Treat spec artifacts as ephemeral snapshots of past intent — they do not reflect current codebase state and must never be used as implementation reference outside their own spec-driven flow.

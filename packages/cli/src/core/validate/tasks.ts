@@ -45,6 +45,37 @@ function extractDesignCoverage(designContent?: string): string | undefined {
   return codeAnatomy?.match(/^\s*Coverage:\s*(.+?)\s*$/im)?.[1]?.trim();
 }
 
+function validateDiscoveryEvidence(content: string): { present: boolean; valid: boolean; line?: number } {
+  const placeholderPattern = /\b(?:TODO|TBD|TBA|FIXME)\b|<\s*(?:discovery target|search method|result|touchpoints? found|task ids?|plan impact|describe[^>]*|fill(?: in)?[^>]*)\s*>/i;
+  const lines = content.split('\n');
+  const headingIndex = lines.findIndex(line => /^##\s+Discovery Evidence\s*$/i.test(line));
+  if (headingIndex === -1) return { present: false, valid: false };
+
+  let endIndex = lines.length;
+  for (let index = headingIndex + 1; index < lines.length; index++) {
+    if (/^##\s+/.test(lines[index])) {
+      endIndex = index;
+      break;
+    }
+  }
+
+  const evidenceLines = lines.slice(headingIndex + 1, endIndex);
+  const targetIndexes = evidenceLines
+    .map((line, index) => /^- Target:\s+\S/i.test(line) ? index : -1)
+    .filter(index => index !== -1);
+  if (targetIndexes.length === 0) return { present: true, valid: false, line: headingIndex + 1 };
+
+  const hasInvalidBlock = targetIndexes.some((targetIndex, index) => {
+    const nextTargetIndex = targetIndexes[index + 1] ?? evidenceLines.length;
+    const block = evidenceLines.slice(targetIndex, nextTargetIndex).join('\n');
+    return !/^[ \t]+- Result:\s+\S/im.test(block) ||
+      !/^[ \t]+- Plan impact:\s+\S/im.test(block) ||
+      placeholderPattern.test(block);
+  });
+
+  return { present: true, valid: !hasInvalidBlock, line: headingIndex + 1 };
+}
+
 function verifyTasksFile(content: string, designContent?: string, requirementsContent?: string): TasksValidationResult {
   const errors: ValidationError[] = [];
   const warnings: Array<{ line?: number; message: string }> = [];
@@ -283,16 +314,31 @@ function verifyTasksFile(content: string, designContent?: string, requirementsCo
 
   const designCoverage = extractDesignCoverage(designContent);
   if (designCoverage && designCoverage !== 'Exhaustive') {
+    const discoveryEvidence = validateDiscoveryEvidence(content);
     const firstImplementationTask = implementationTasks[0];
-    const isDiscoveryFirst = firstImplementationTask &&
+    const legacyDiscoveryPattern = /\b(?:discovery|discover|inventory)\b[\s\S]{0,300}\b(?:targets?|implementation|codebase|touchpoints?|files?|entrypoints?|exports?|tests?|integrations?)\b|\b(?:implementation|codebase|touchpoints?)\b[\s\S]{0,120}\b(?:discovery|inventory)\b/i;
+    const hasLegacyDiscoveryTask = firstImplementationTask &&
       firstImplementationTask.phase === '1' &&
-      /\b(discovery|discover|inventory|inventor(?:y|ies)|touchpoints?)\b/i.test(`${firstImplementationTask.title}\n${firstImplementationTask.text}`);
+      legacyDiscoveryPattern.test(`${firstImplementationTask.title}\n${firstImplementationTask.text}`);
 
-    if (!isDiscoveryFirst) {
+    if (discoveryEvidence.present && !discoveryEvidence.valid) {
       errors.push({
         errorType: 'Traceability Error',
-        context: `Code Anatomy coverage is ${designCoverage}; Phase 1 must start with a discovery/inventory implementation task`,
-        suggestedFix: 'Add a Phase 1 discovery/inventory task before other implementation tasks and link it with _Implements: DES-X, REQ-Y.Z_',
+        context: `Code Anatomy coverage is ${designCoverage}; Discovery Evidence is incomplete`,
+        suggestedFix: 'For every design Discovery Target, add Target, Result, and Plan impact entries under ## Discovery Evidence',
+        line: discoveryEvidence.line,
+        skillDocLink: SKILL_DOCS.tasks
+      });
+    } else if (!discoveryEvidence.present && hasLegacyDiscoveryTask) {
+      warnings.push({
+        line: firstImplementationTask.line,
+        message: 'Legacy discovery task accepted; new full specs should execute discovery during Phase 3 and record ## Discovery Evidence'
+      });
+    } else if (!discoveryEvidence.present) {
+      errors.push({
+        errorType: 'Traceability Error',
+        context: `Code Anatomy coverage is ${designCoverage}; completed Phase 3 discovery evidence is missing`,
+        suggestedFix: 'Execute every design Discovery Target before decomposition and record the results under ## Discovery Evidence',
         line: firstImplementationTask?.line,
         skillDocLink: SKILL_DOCS.tasks
       });
@@ -387,6 +433,12 @@ export function createTasksCommand(): Command {
       console.log(chalk.green('✅ Tasks validation passed.'));
       console.log(`\nFound ${result.tasksFound} tasks across ${result.phases.length} phases.`);
       console.log(`Traceability links: ${result.traceabilityReport.linked.length}`);
+      if (result.warnings.length > 0) {
+        console.log(chalk.yellow('\nWarnings:'));
+        for (const warning of result.warnings) {
+          console.log(`  • ${warning.message}`);
+        }
+      }
       process.exit(0);
     });
   

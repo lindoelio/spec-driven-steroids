@@ -144,13 +144,57 @@ describe('Unit: hallucination-resistant spec validation', () => {
     expect(result.errors.some(error => error.context?.includes('coverage declaration'))).toBe(true);
   });
 
-  it('fails task validation when non-exhaustive Code Anatomy has no discovery task first', () => {
+  it('fails task validation when non-exhaustive Code Anatomy has no discovery evidence', () => {
     const design = validDesign.replace('Coverage: Exhaustive', 'Coverage: Representative');
 
     const result = verifyTasksFile(validTasks, design, validRequirements);
 
     expect(result.valid).toBe(false);
-    expect(result.errors.some(error => error.context?.includes('Phase 1 must start with a discovery'))).toBe(true);
+    expect(result.errors.some(error => error.context?.includes('discovery evidence is missing'))).toBe(true);
+  });
+
+  it('accepts completed Phase 3 discovery evidence without an implementation discovery task', () => {
+    const design = validDesign.replace('Coverage: Exhaustive', 'Coverage: Representative');
+    const tasks = validTasks.replace('## Phase 1: Foundation', `## Discovery Evidence
+
+- Target: \`Grep for auth exports\`
+  - Result: \`src/auth.ts\` and \`src/auth.test.ts\`
+  - Plan impact: Tasks 1.1 and 2.1 cover the discovered surface
+
+## Phase 1: Foundation`);
+
+    const result = verifyTasksFile(tasks, design, validRequirements);
+
+    expect(result.valid).toBe(true);
+    expect(result.warnings).toHaveLength(0);
+  });
+
+  it('allows legitimate angle-bracket syntax in discovery evidence', () => {
+    const design = validDesign.replace('Coverage: Exhaustive', 'Coverage: Representative');
+    const tasks = validTasks.replace('## Phase 1: Foundation', `## Discovery Evidence
+
+- Target: \`Grep for auth exports\`
+  - Result: \`Map<string, Session>\` usage in \`src/auth.ts\`
+  - Plan impact: Task 1.1 covers the discovered surface
+
+## Phase 1: Foundation`);
+
+    expect(verifyTasksFile(tasks, design, validRequirements).valid).toBe(true);
+  });
+
+  it('rejects incomplete Phase 3 discovery evidence', () => {
+    const design = validDesign.replace('Coverage: Exhaustive', 'Coverage: Representative');
+    const tasks = validTasks.replace('## Phase 1: Foundation', `## Discovery Evidence
+
+- Target: \`Grep for auth exports\`
+  - Result: \`src/auth.ts\`
+
+## Phase 1: Foundation`);
+
+    const result = verifyTasksFile(tasks, design, validRequirements);
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(error => error.context?.includes('Discovery Evidence is incomplete'))).toBe(true);
   });
 
   it('allows Test: tasks in implementation phases while keeping Acceptance Criteria Testing penultimate', () => {
@@ -191,7 +235,7 @@ This implementation is organized into 4 phases.
     expect(result.valid).toBe(true);
   });
 
-  it('allows phases with only discovery tasks without a Test: task', () => {
+  it('accepts legacy discovery-first task plans with a warning', () => {
     const design = validDesign.replace('Coverage: Exhaustive', 'Coverage: Representative');
     const tasks = `# Implementation Tasks
 
@@ -222,6 +266,45 @@ This implementation is organized into 3 phases.
     const result = verifyTasksFile(tasks, design, validRequirements);
 
     expect(result.valid).toBe(true);
+    expect(result.warnings.some(warning => warning.message.includes('Legacy discovery task accepted'))).toBe(true);
+  });
+
+  it('propagates legacy discovery warnings through complete spec validation', async () => {
+    tempDir = mkdtempSync(path.join(tmpdir(), 'sds-spec-'));
+    const specDir = path.join(tempDir, '.specs', 'changes', 'login');
+    mkdirSync(specDir, { recursive: true });
+    writeFileSync(path.join(specDir, 'requirements.md'), validRequirements);
+    writeFileSync(path.join(specDir, 'design.md'), validDesign.replace('Coverage: Exhaustive', 'Coverage: Representative'));
+    writeFileSync(path.join(specDir, 'tasks.md'), `# Implementation Tasks
+
+## Overview
+
+This implementation is organized into 3 phases.
+
+## Phase 1: Foundation
+
+- [ ] 1.1 Inventory implementation touchpoints
+  - Execute the design's Discovery Targets.
+  - _Implements: DES-1, REQ-1.1_
+
+## Phase 2: Acceptance Criteria Testing
+
+- [ ] 2.1 Test: create session for valid credentials
+  - Verify valid credentials create a session.
+  - Test type: integration
+  - _Implements: REQ-1.1_
+
+## Phase 3: Final Checkpoint
+
+- [ ] 3.1 Verify all acceptance criteria
+  - Confirm all requirements are covered.
+  - _Implements: All requirements_
+`);
+
+    const result = await verifyCompleteSpec('login', tempDir);
+
+    expect(result.valid).toBe(true);
+    expect(result.warnings.some(warning => warning.message.includes('Legacy discovery task accepted'))).toBe(true);
   });
 
   it('fails complete spec validation when a sub-artifact is invalid', async () => {

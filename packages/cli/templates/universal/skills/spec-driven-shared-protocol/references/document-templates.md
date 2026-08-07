@@ -105,7 +105,7 @@ flowchart LR
 
 Coverage: Representative
 
-Code Anatomy is not exhaustive unless explicitly marked `Coverage: Exhaustive`. Non-exhaustive coverage requires a discovery/inventory task before implementation tasks.
+Code Anatomy is not exhaustive unless explicitly marked `Coverage: Exhaustive`. Non-exhaustive coverage requires every Discovery Target to run during Phase 3 before `tasks.md` is written.
 
 ### Required Touchpoints
 
@@ -231,40 +231,41 @@ This implementation is organized into 4 phases with at least one test task per i
 - Follow `TESTING.md` for test placement and command selection.
 - Follow `STYLEGUIDE.md` and the design document's `Repository Context Evidence` for naming, file placement, and package boundaries.
 - Apply contextual-stewardship workflow rules retrieved for this phase.
-- If design Code Anatomy coverage is not `Exhaustive`, complete the discovery/inventory task before other implementation tasks.
+- If design Code Anatomy coverage is not `Exhaustive`, execute every Discovery Target during Phase 3 and record the evidence below before writing implementation tasks.
+
+## Discovery Evidence
+
+- Target: `Grep for handleExample and related exports`
+  - Result: `src/example/service.ts`, `src/example/handler.ts`, and `src/example/tests/`
+  - Plan impact: Tasks 1.1, 1.2, and 2.1 cover the discovered touchpoints
 
 ## Phase 1: Foundation
 
-- [ ] 1.1 Inventory implementation touchpoints
-  - Execute the design's `Discovery Targets` and update this task plan if additional in-scope files, entrypoints, exports, tests, or integrations are found.
-  - _Implements: DES-1, REQ-1.1_
-
-- [ ] 1.2 Add request entry point
+- [ ] 1.1 Add request entry point
   - Create the main request handler for protected operations.
-  - _Depends: 1.1_
   - _Implements: DES-1_
 
-- [ ] 1.3 Add authorization service
+- [ ] 1.2 Add authorization service
   - Implement the shared authorization decision logic used by protected operations.
-  - _Depends: 1.2_
+  - _Depends: 1.1_
   - _Implements: DES-1, REQ-1.1, REQ-1.2_
 
-- [ ] 1.4 Test: verify authorization service rejects unauthorized requests
+- [ ] 1.3 Test: verify authorization service rejects unauthorized requests
   - Confirm the authorization service rejects requests without the required role.
   - Test type: integration
-  - _Depends: 1.3_
+  - _Depends: 1.2_
   - _Implements: REQ-1.1_
 
 ## Phase 2: Feature Delivery
 
 - [ ] 2.1 Add denial feedback path
   - Return a user-visible denial response when authorization fails.
-  - _Depends: 1.3_
+  - _Depends: 1.2_
   - _Implements: DES-1, REQ-2.1_
 
 - [ ] 2.2 Add audit logging for denied actions
   - Record authorization failures when audit logging is enabled.
-  - _Depends: 1.3_
+  - _Depends: 1.2_
   - _Implements: DES-2, REQ-3.1, REQ-3.2_
 
 - [ ] 2.3 Test: verify denial feedback and audit logging
@@ -278,13 +279,13 @@ This implementation is organized into 4 phases with at least one test task per i
 - [ ] 3.1 Test: reject non-administrator protected actions
   - Verify protected actions are rejected for non-administrator users.
   - Test type: integration
-  - _Depends: 1.3_
+  - _Depends: 1.2_
   - _Implements: REQ-1.1_
 
 - [ ] 3.2 Test: allow administrator protected actions
   - Verify protected actions succeed for administrator users.
   - Test type: integration
-  - _Depends: 1.3_
+  - _Depends: 1.2_
   - _Implements: REQ-1.2_
 
 - [ ] 3.3 Test: show denial feedback and record denied attempts

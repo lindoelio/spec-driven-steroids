@@ -9,10 +9,17 @@ import {
   getExitCode
 } from './shared/formatter.js';
 
-const REQUIRED_FILES = ['requirements.md', 'design.md', 'tasks.md'];
-const ALLOWED_FILES = [...REQUIRED_FILES];
+const FULL_FILES = ['requirements.md', 'design.md', 'tasks.md'];
+const BRIEF_FILES = ['brief.md'];
+
+export type SpecLane = 'brief' | 'full';
+
+export function detectSpecLane(files: string[]): SpecLane {
+  return files.includes('brief.md') ? 'brief' : 'full';
+}
 
 interface StructureValidationResult extends ValidationResult {
+  lane: SpecLane;
   specDir: string;
   filesFound: string[];
   missingFiles: string[];
@@ -39,7 +46,8 @@ export async function verifySpecStructure(slug: string, targetDir: string): Prom
         ...createValidationResult(false, errors, warnings),
         specDir,
         filesFound: [],
-        missingFiles: REQUIRED_FILES,
+        lane: 'full',
+        missingFiles: FULL_FILES,
         unexpectedFiles: []
       };
     }
@@ -55,13 +63,16 @@ export async function verifySpecStructure(slug: string, targetDir: string): Prom
       ...createValidationResult(false, errors, warnings),
       specDir,
       filesFound: [],
-      missingFiles: REQUIRED_FILES,
+      lane: 'full',
+      missingFiles: FULL_FILES,
       unexpectedFiles: []
     };
   }
   
-  const missingFiles = REQUIRED_FILES.filter(f => !files.includes(f));
-  const unexpectedFiles = files.filter(f => !ALLOWED_FILES.includes(f));
+  const lane = detectSpecLane(files);
+  const requiredFiles = lane === 'brief' ? BRIEF_FILES : FULL_FILES;
+  const missingFiles = requiredFiles.filter(f => !files.includes(f));
+  const unexpectedFiles = files.filter(f => !requiredFiles.includes(f));
   
   for (const missingFile of missingFiles) {
     errors.push({
@@ -77,12 +88,15 @@ export async function verifySpecStructure(slug: string, targetDir: string): Prom
       errorType: 'Structure Error',
       context: `Unexpected files found: ${unexpectedFiles.join(', ')}`,
       message: `Unexpected files found`,
-      suggestedFix: 'Only requirements.md, design.md, and tasks.md are allowed. Remove or rename extra files'
+      suggestedFix: lane === 'brief'
+        ? 'A brief spec directory may contain only brief.md. Remove full-lane or extra files'
+        : 'A full spec directory may contain only requirements.md, design.md, and tasks.md. Remove or rename extra files'
     });
   }
   
   return {
     ...createValidationResult(errors.length === 0, errors, warnings),
+    lane,
     specDir,
     filesFound: files,
     missingFiles,
@@ -95,7 +109,7 @@ export function createStructureCommand(): Command {
   
   cmd
     .name('structure')
-    .description('Validate that a spec directory contains the three required files (requirements.md, design.md, tasks.md)')
+    .description('Validate that a spec directory contains either brief.md or the full requirements/design/tasks set')
     .argument('<slug>', 'Spec slug (e.g., my-feature)')
     .option('--target-dir <path>', 'Project root directory', process.cwd())
     .option('--format <text|json>', 'Output format (text or json)', 'text')
@@ -120,6 +134,7 @@ export function createStructureCommand(): Command {
       
       console.log(chalk.green('✅ Structure validation passed.'));
       console.log(`\nSpec directory: ${result.specDir}`);
+      console.log(`Lane: ${result.lane}`);
       console.log(`Files found: ${result.filesFound.join(', ')}`);
       process.exit(0);
     });

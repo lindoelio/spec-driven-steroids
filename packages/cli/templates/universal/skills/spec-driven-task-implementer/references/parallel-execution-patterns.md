@@ -7,24 +7,23 @@ Use this reference when spawning sub-agent tasks on platforms that support the `
 Given this `tasks.md` snippet:
 
 ```
-- [x] 1.1 Inventory implementation touchpoints
-- [x] 1.2 Add request entry point
-- [x] 1.3 Add authorization service
-  _Depends: 1.2_
+- [x] 1.1 Add request entry point
+- [x] 1.2 Add authorization service
+  _Depends: 1.1_
 - [ ] 2.1 Add denial feedback path
-  _Depends: 1.3_
+  _Depends: 1.2_
 - [ ] 2.2 Add audit logging for denied actions
-  _Depends: 1.3_
+  _Depends: 1.2_
 - [ ] 3.1 Test: reject non-administrator protected actions
-  _Depends: 1.3_
+  _Depends: 1.2_
 - [ ] 3.2 Test: allow administrator protected actions
-  _Depends: 1.3_
+  _Depends: 1.2_
 ```
 
-After Phase 1 is complete (1.1, 1.2, 1.3 are `[x]`), the dependency graph resolves to:
+After Phase 1 is complete (1.1 and 1.2 are `[x]`), the dependency graph resolves to:
 
-- **Independent batch 1**: 2.1, 2.2 (both depend only on 1.3, which is done)
-- **Sequential after batch 1**: 3.1, 3.2 (depend on 1.3, but check file overlap with batch 1)
+- **Independent batch 1**: 2.1, 2.2 (both depend only on 1.2, which is done)
+- **Sequential after batch 1**: 3.1, 3.2 (depend on 1.2, but check file overlap with batch 1)
 
 Check `_Implements:` file sets before spawning. If 2.1 and 2.2 touch different files, spawn both in parallel. If they touch the same files, execute sequentially.
 

@@ -35,6 +35,7 @@ describe('CLI E2E: clean --global command', () => {
         await fs.outputFile(path.join(configDir, 'commands', 'spec-driven.command.md'), 'command');
         await fs.outputFile(path.join(configDir, 'commands', 'spec-driven.md'), 'command');
         await fs.outputFile(path.join(configDir, 'skills', 'long-running-work-planning', 'SKILL.md'), 'skill');
+        await fs.outputFile(path.join(configDir, 'skills', 'spec-driven-brief-planner', 'SKILL.md'), 'skill');
 
         const program = (await import('../../dist/cli/index.js')).default;
         await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
@@ -43,6 +44,7 @@ describe('CLI E2E: clean --global command', () => {
         expect(await fs.pathExists(path.join(configDir, 'commands', 'spec-driven.command.md'))).toBe(false);
         expect(await fs.pathExists(path.join(configDir, 'commands', 'spec-driven.md'))).toBe(false);
         expect(await fs.pathExists(path.join(configDir, 'skills', 'long-running-work-planning'))).toBe(false);
+        expect(await fs.pathExists(path.join(configDir, 'skills', 'spec-driven-brief-planner'))).toBe(false);
     });
 
     it('clean --global removes Gemini CLI global artifacts', async () => {

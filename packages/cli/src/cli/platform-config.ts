@@ -53,6 +53,8 @@ export interface PlatformConfig {
 /**
  * Mapping of platform IDs to their configuration.
  */
+const SPEC_DRIVEN_DESCRIPTION = 'Use this planner when implementation must be specified and approved before code changes. It selects the brief lane by default or the full requirements -> design -> tasks lifecycle for high-risk work.';
+
 export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
   'github-vscode': {
     id: 'github-vscode',
@@ -60,7 +62,7 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     frontmatter: {
       fields: {
         name: 'Spec-Driven',
-        description: 'Use this planner when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
+        description: SPEC_DRIVEN_DESCRIPTION
       }
     },
     agentDirectory: 'agents',
@@ -78,7 +80,7 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     frontmatter: {
       fields: {
         name: 'Spec-Driven',
-        description: 'Use this planner when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
+        description: SPEC_DRIVEN_DESCRIPTION
       }
     },
     agentDirectory: 'agents',
@@ -97,7 +99,7 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     frontmatter: {
       fields: {
         name: 'spec-driven',
-        description: 'Use this planner when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
+        description: SPEC_DRIVEN_DESCRIPTION
       }
     },
     agentDirectory: 'skills/spec-driven',
@@ -112,7 +114,7 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     frontmatter: {
       fields: {
         name: 'spec-driven',
-        description: 'Primary skill for Spec-Driven flow (Requirements -> Design -> Tasks -> Implementation). Use when the user wants to plan or implement a feature, fix, or change using the spec-driven methodology.'
+        description: SPEC_DRIVEN_DESCRIPTION
       }
     },
     agentDirectory: 'agents',
@@ -130,7 +132,7 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     frontmatter: {
       fields: {
         name: 'Spec-Driven',
-        description: 'Use this planner when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
+        description: SPEC_DRIVEN_DESCRIPTION
       },
       additionalFields: {
         mode: 'primary'
@@ -152,7 +154,7 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     frontmatter: {
       fields: {
         name: 'spec-driven',
-        description: 'Use this planner when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
+        description: SPEC_DRIVEN_DESCRIPTION
       }
     },
     agentDirectory: 'agents',
@@ -169,7 +171,7 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     frontmatter: {
       fields: {
         name: 'spec-driven',
-        description: 'Use this skill when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
+        description: SPEC_DRIVEN_DESCRIPTION
       }
     },
     agentDirectory: 'skills/spec-driven',
@@ -185,7 +187,7 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     frontmatter: {
       fields: {
         name: 'spec-driven',
-        description: 'Use this skill when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
+        description: SPEC_DRIVEN_DESCRIPTION
       }
     },
     agentDirectory: 'skills/spec-driven',
@@ -200,7 +202,7 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     frontmatter: {
       fields: {
         name: 'Spec-Driven',
-        description: 'Use this planner when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
+        description: SPEC_DRIVEN_DESCRIPTION
       }
     },
     agentDirectory: 'agents',
@@ -218,7 +220,7 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     frontmatter: {
       fields: {
         name: 'spec-driven',
-        description: 'Use this planner when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
+        description: SPEC_DRIVEN_DESCRIPTION
       }
     },
     agentDirectory: 'agents',
@@ -233,7 +235,7 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     frontmatter: {
       fields: {
         name: 'Spec-Driven',
-        description: 'Use this planner when the user wants to define, design, decompose, or implement a change through the full Spec-Driven lifecycle. It must enforce requirements -> design -> tasks -> implementation, load long-running-work-planning at the start of each planning phase when available, and stop for human approval between phases.'
+        description: SPEC_DRIVEN_DESCRIPTION
       }
     },
     agentDirectory: 'agents',

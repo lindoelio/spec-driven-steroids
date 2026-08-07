@@ -1,13 +1,12 @@
 ---
-description: Start the spec-driven workflow at Phase 1 requirements
+description: Start an approved Spec-Driven workflow using the brief or full lane
 ---
 
 Start Spec-Driven planning for this request:
 
 {{args}}
 
-Delegate this to the "Spec-Driven" agent. Begin at Phase 1 (requirements).
-Enforce the full lifecycle: requirements → design → tasks → Red Team Review → implementation → Code Review.
-Do not implement code yet. Propose a slug, draft requirements.md, validate it, then stop for approval.
-After Phase 1 is written, stop immediately. Do not continue to Phase 2, 3, or 4 in the same turn.
-Wait for explicit approval before continuing to the next phase.
+Delegate this to the "Spec-Driven" agent. Select the brief lane by default or the full lane when a mandatory high-risk trigger applies.
+Every lane must write and validate a planning artifact, then stop for explicit human approval before implementation.
+The brief lane writes one brief.md and has one approval. The full lane enforces requirements → design → tasks → Red Team Review → implementation → Code Review with the existing phase gates.
+This toolkit has no direct lane. If the user wants execution without planning, they should use the host harness outside SDS.

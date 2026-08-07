@@ -84,12 +84,15 @@ flowchart LR
 The validation system (`packages/cli/src/core/validate/`) provides progressive, composable validation:
 
 ```
-sds validate structure   → Verify required files exist
+sds validate structure   → Detect brief/full lane and verify the exact file set
+sds validate brief       → Validate compact intent, evidence, tasks, and traceability
 sds validate requirements → Validate EARS syntax and REQ-X numbering
 sds validate design      → Validate Mermaid syntax and DES-X traceability
 sds validate tasks       → Validate phase structure and _Implements tags
-sds validate spec        → Cross-file traceability matrix
+sds validate spec        → Auto-detect and validate brief or full spec
 ```
+
+The injected planner uses a brief lane by default and the existing full lifecycle for high-risk changes. Both lanes require an approved artifact before implementation. Full-lane non-exhaustive discovery runs during task decomposition and is recorded in `tasks.md` before approval.
 
 ### Knowledge Graph (Context Stewardship)
 

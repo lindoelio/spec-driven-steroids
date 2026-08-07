@@ -72,6 +72,12 @@ Each spec phase (Requirements, Design, Tasks) uses a single unified quality gate
 
 After writing a spec artifact, validate it using the CLI. Do not claim validation passed unless the command was actually run and its output was observed:
 
+### Brief Validation
+
+```bash
+sds validate brief .specs/changes/<slug>/brief.md
+```
+
 ### Requirements Validation
 
 ```bash

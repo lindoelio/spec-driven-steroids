@@ -28,7 +28,7 @@ When this skill begins execution, create a todo list containing the following it
 1. Read requirements.md and design.md
 2. Read project guidelines
 3. Retrieve contextual memory (workflow)
-4. Inspect existing patterns
+4. Execute non-exhaustive Code Anatomy Discovery Targets and record evidence
 5. Define implementation phases
 6. Create atomic tasks
 7. Add per-phase test tasks
@@ -67,7 +67,7 @@ See the `spec-driven-shared-protocol` skill's `references/document-templates.md`
 - Resolve all placeholders before returning output.
 - Do not include HTML comments, TODO markers, or drafting notes.
 - Include `## Repository Constraints` when guidelines, contextual memory, or design evidence affects task ordering, test placement, naming, package boundaries, or verification commands.
-- If `design.md` Code Anatomy uses `Coverage: Representative` or `Coverage: Initial Discovery Only`, Phase 1 must include a discovery/inventory task before other implementation tasks.
+- If `design.md` Code Anatomy uses `Coverage: Representative` or `Coverage: Initial Discovery Only`, execute every Discovery Target before writing tasks and include `## Discovery Evidence`.
 
 ## Task Types
 
@@ -88,21 +88,23 @@ Rules:
 - Every `REQ-X.Y` acceptance criterion must be referenced in the `_Implements:` line of at least one implementation or test task.
 - Keep titles action-oriented: `Add`, `Update`, `Refactor`, `Wire`, `Create`, `Remove`.
 
-### Discovery Tasks
+### Phase 3 Discovery Evidence
 
-Use a discovery/inventory task when the design does not claim exhaustive Code Anatomy coverage:
+For non-exhaustive Code Anatomy, discovery is decomposition work, not an implementation task. Execute every design `Discovery Target` and record one evidence block per target before the first implementation phase:
 
 ```markdown
-- [ ] 1.1 Inventory implementation touchpoints
-  - Execute the design's `Discovery Targets` and update this task plan if additional in-scope files, entrypoints, exports, tests, or integrations are found.
-  - _Implements: DES-1, REQ-1.1_
+## Discovery Evidence
+
+- Target: `Grep for request handlers and exports`
+  - Result: `src/example/handler.ts` and `src/example/index.ts`
+  - Plan impact: Tasks 1.1 and 2.1 cover the discovered touchpoints
 ```
 
 Rules:
-- Place the discovery task before implementation tasks that depend on the inventory.
-- Reference the `DES-*` and `REQ-*` elements most likely to be affected by the discovery.
-- State that task amendments are allowed for newly discovered in-scope work.
-- Do not use a discovery task to postpone known implementation work.
+- Record explicit results, including `No additional touchpoints` when a search finds none.
+- Map each result to task IDs or state `No plan change`.
+- If findings change approved design boundaries or risk, stop and return to design review.
+- Do not emit a discovery/inventory checkbox task in new task plans.
 
 ### Test Tasks
 
@@ -126,7 +128,7 @@ Rules:
 
 ### Per-Phase Test Tasks
 
-Test tasks may be placed in any phase to verify the work just completed. Any phase that contains one or more implementation tasks must include at least one `Test:` task. Phases that contain only a discovery/inventory task are exempt. The dedicated `Acceptance Criteria Testing` phase remains the penultimate cross-cutting verification.
+Test tasks may be placed in any phase to verify the work just completed. Any phase that contains one or more implementation tasks must include at least one `Test:` task. The dedicated `Acceptance Criteria Testing` phase remains the penultimate cross-cutting verification.
 
 ## Testing Guidance
 
@@ -189,7 +191,7 @@ When `sds validate tasks` or `sds validate spec` returns errors:
 3. Add missing `_Implements:` lines to non-checkpoint tasks
 4. Add or fix `DES-*` references so they match `design.md`
 5. Add or fix test tasks so every acceptance criterion is covered
- 6. Add or fix discovery tasks required by non-exhaustive Code Anatomy
+6. Add or fix Phase 3 Discovery Evidence required by non-exhaustive Code Anatomy
 
 After 3 failed validation attempts:
 1. Summarize remaining errors
@@ -213,7 +215,7 @@ Before returning the tasks, verify:
 - [ ] Every task uses checkbox format
 - [ ] Every non-checkpoint task includes `_Implements:`
 - [ ] Each implementation-bearing phase contains at least one `Test:` task
-- [ ] Non-exhaustive Code Anatomy has a discovery/inventory task before other implementation tasks
+- [ ] Non-exhaustive Code Anatomy has complete Phase 3 Discovery Evidence and no discovery/inventory implementation task
 - [ ] Every `DES-*` from `design.md` is covered by implementation tasks
 - [ ] Every `REQ-*` acceptance criterion is covered by at least one test task
 - [ ] No HTML comments or drafting notes remain

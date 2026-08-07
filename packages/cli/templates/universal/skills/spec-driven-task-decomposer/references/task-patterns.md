@@ -15,11 +15,11 @@ Use this reference when tasks feel too broad, phases feel uneven, or acceptance-
 4. Acceptance Criteria Testing
 5. Final Checkpoint
 
-If the design's Code Anatomy coverage is `Representative` or `Initial Discovery Only`, Phase 1 starts with an inventory task before setup or implementation work.
+If the design's Code Anatomy coverage is `Representative` or `Initial Discovery Only`, execute every Discovery Target and record evidence before writing Phase 1 tasks.
 
 ## Per-Phase Test Pattern
 
-Any phase that contains one or more implementation tasks must include at least one `Test:` task to verify the work just completed before moving to the next phase. Phases that contain only a discovery/inventory task are exempt.
+Any phase that contains one or more implementation tasks must include at least one `Test:` task to verify the work just completed before moving to the next phase.
 
 ```markdown
 ## Phase 2: Feature Delivery
@@ -38,17 +38,19 @@ Any phase that contains one or more implementation tasks must include at least o
 
 The per-phase test task validates the phase's output. The dedicated `Acceptance Criteria Testing` phase remains the penultimate cross-cutting verification of all requirements.
 
-## Discovery Task Pattern
+## Phase 3 Discovery Pattern
 
-Use this as the first implementation task for non-exhaustive Code Anatomy:
+Use this before implementation phases for non-exhaustive Code Anatomy:
 
 ```markdown
-- [ ] 1.1 Inventory implementation touchpoints
-  - Execute the design's `Discovery Targets` and update this task plan if additional in-scope files, entrypoints, exports, tests, or integrations are found.
-  - _Implements: DES-1, REQ-1.1_
+## Discovery Evidence
+
+- Target: `Grep for request handlers and exports`
+  - Result: `src/example/handler.ts` and `src/example/index.ts`
+  - Plan impact: Tasks 1.1 and 2.1 cover the discovered touchpoints
 ```
 
-The discovery task is complete only after the agent either amends `tasks.md` for newly discovered in-scope work or records why no amendments were needed.
+Discovery is complete only after every target has a result and plan impact. If discovery changes approved design boundaries or risk, return to design review before writing `tasks.md`.
 
 ## Grouped Test Guidance
 

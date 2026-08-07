@@ -28,7 +28,7 @@ Before finalizing a design element:
 Use the narrowest honest coverage level:
 
 - `Coverage: Exhaustive` only when repository inspection found every file, entrypoint, export, test area, config, and integration that can be affected.
-- `Coverage: Representative` when the design identifies important touchpoints but later phases must still search for additional affected paths.
-- `Coverage: Initial Discovery Only` when the design intentionally stops at starting points and requires implementation-time inventory.
+- `Coverage: Representative` when the design identifies important touchpoints but Phase 3 must still search for additional affected paths.
+- `Coverage: Initial Discovery Only` when the design intentionally stops at starting points and requires Phase 3 inventory before task decomposition.
 
-For `Representative` or `Initial Discovery Only`, include concrete `Discovery Targets` such as grep patterns, route directories, exported symbols, test suites, CLI commands, generated files, or integration boundaries. Do not let a representative Code Anatomy read like a closed completion checklist.
+For `Representative` or `Initial Discovery Only`, include concrete `Discovery Targets` such as grep patterns, route directories, exported symbols, test suites, CLI commands, generated files, or integration boundaries. Phase 3 executes every target and records the result before `tasks.md` is approved. Do not let a representative Code Anatomy read like a closed completion checklist.

@@ -104,9 +104,9 @@ If `## Impact Analysis` is included, include `### Testing Requirements`. Add `##
 - `### Coverage Declaration` must use exactly one value: `Coverage: Exhaustive`, `Coverage: Representative`, or `Coverage: Initial Discovery Only`.
 - Use `### Required Touchpoints` for files/directories that must change. Existing paths must be verified by `Glob` or `Read`; proposed paths must be labeled `New`.
 - Use `### Known Impact Surface` for files/directories that must be considered but may not change.
-- Use `### Discovery Targets` for searches, patterns, commands, or areas that must be investigated during task decomposition or implementation.
+- Use `### Discovery Targets` for searches, patterns, commands, or areas that must be investigated during task decomposition.
 - Use `### Out of Scope` for areas explicitly excluded from the change.
-- If coverage is not `Exhaustive`, state that Code Anatomy is not a completion checklist and must produce a discovery/inventory task in Phase 3.
+- If coverage is not `Exhaustive`, state that Code Anatomy is not a completion checklist and that every Discovery Target must be executed during Phase 3 before `tasks.md` is written.
 - Use `## Traceability Matrix` to map every `DES-*` element to requirements.
 - Prefer architecture decisions over implementation details.
 - Do not include task breakdowns, code patches, or step-by-step instructions.

@@ -41,7 +41,7 @@ spec-driven-steroids/
 
 - Generated guideline documents ([AGENTS.md](AGENTS.md), [STYLEGUIDE.md](STYLEGUIDE.md), [TESTING.md](TESTING.md), [ARCHITECTURE.md](ARCHITECTURE.md), [SECURITY.md](SECURITY.md), and this file) contain managed sections wrapped in `<!-- SpecDriven:managed -->` markers. Do not edit content between `SpecDriven:managed:start` and `SpecDriven:managed:end` markers manually — regenerate them with `/inject-guidelines` instead.
 - Product-level documentation lives in `README.md` and `packages/cli/README.md`.
-- Spec-driven change artifacts follow the `.specs/changes/<slug>/` convention (requirements.md, design.md, tasks.md).
+- Spec-driven change artifacts follow the `.specs/changes/<slug>/` convention: either `brief.md` or the full `requirements.md`, `design.md`, and `tasks.md` set.
 
 ### Changesets
 

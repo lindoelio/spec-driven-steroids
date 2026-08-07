@@ -184,6 +184,7 @@ describe('CLI E2E: inject command', () => {
         const opencodeDir = path.join(targetDir, '.opencode');
         expect(await fs.pathExists(opencodeDir)).toBe(true);
         expect(await fs.pathExists(path.join(opencodeDir, 'skills'))).toBe(true);
+        expect(await fs.pathExists(path.join(opencodeDir, 'skills', 'spec-driven-brief-planner', 'SKILL.md'))).toBe(true);
     });
 
     it('inject command includes spec-driven phase-gating guardrails and command shortcut', async () => {
@@ -200,15 +201,18 @@ describe('CLI E2E: inject command', () => {
 
         expect(agentContent.includes('## Lifecycle')).toBe(true);
         expect(agentContent.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
-        expect(agentContent.includes('Before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
-        expect(agentContent.includes('I can implement this, but per Spec-Driven flow I must start with Phase 1 (requirements) first.')).toBe(true);
+        expect(agentContent.includes('## Lane Selection')).toBe(true);
+        expect(agentContent.includes('### No Direct Lane')).toBe(true);
+        expect(agentContent.includes('In the full lane, before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
+        expect(agentContent.includes('SDS requires an approved planning artifact before implementation.')).toBe(true);
         expect(agentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
 
         const commandPath = path.join(targetDir, '.opencode', 'commands', 'spec-driven.md');
         const commandContent = await fs.readFile(commandPath, 'utf-8');
 
         expect(commandContent.includes('agent: Spec-Driven')).toBe(true);
-        expect(commandContent.includes('Begin at Phase 1 (requirements)')).toBe(true);
+        expect(commandContent.includes('Select the brief lane by default')).toBe(true);
+        expect(commandContent.includes('This toolkit has no direct lane')).toBe(true);
         delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
     });
 
@@ -225,14 +229,14 @@ describe('CLI E2E: inject command', () => {
         const githubAgentContent = await fs.readFile(githubAgentPath, 'utf-8');
         expect(githubAgentContent.includes('## Lifecycle')).toBe(true);
         expect(githubAgentContent.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
-        expect(githubAgentContent.includes('Before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
+        expect(githubAgentContent.includes('In the full lane, before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
         expect(githubAgentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
 
         const antigravitySkillPath = path.join(targetDir, '.agents', 'skills', 'spec-driven', 'SKILL.md');
         const antigravitySkillContent = await fs.readFile(antigravitySkillPath, 'utf-8');
         expect(antigravitySkillContent.includes('## Lifecycle')).toBe(true);
         expect(antigravitySkillContent.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
-        expect(antigravitySkillContent.includes('Before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
+        expect(antigravitySkillContent.includes('In the full lane, before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
         expect(antigravitySkillContent.includes('### Non-Skippable Stop Rule')).toBe(true);
         delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
     });
@@ -459,8 +463,8 @@ describe('CLI E2E: inject command', () => {
 
         const commandContent = await fs.readFile(commandPath, 'utf-8');
         expect(commandContent.includes('name: spec-driven')).toBe(true);
-        expect(commandContent.includes('Begin at Phase 1 (requirements)')).toBe(true);
-        expect(commandContent.includes('After Phase 1 is written, stop immediately.')).toBe(true);
+        expect(commandContent.includes('Select the brief lane by default')).toBe(true);
+        expect(commandContent.includes('Every lane must write and validate a planning artifact')).toBe(true);
         expect(commandContent.includes('{{args}}')).toBe(false);
         expect(await fs.pathExists(path.join(targetDir, '.codex', 'commands', 'spec-driven.md'))).toBe(false);
 

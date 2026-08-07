@@ -67,6 +67,7 @@ const STEROIDS_SKILL_DIRS = [
   'spec-driven-task-implementer',
   'spec-driven-requirements-writer',
   'spec-driven-task-decomposer',
+  'spec-driven-brief-planner',
   'spec-driven-shared-protocol',
   'long-running-work-planning',
   'project-guidelines-writer',
