@@ -1,5 +1,11 @@
 # spec-driven-steroids
 
+## 0.19.0
+
+### Minor Changes
+
+- Add Qoder CLI and Qoder IDE as supported platforms with agents, commands, and skills injection for user and project scope
+
 ## 0.18.0
 
 ### Minor Changes
