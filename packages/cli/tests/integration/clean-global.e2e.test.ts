@@ -96,6 +96,23 @@ describe('CLI E2E: clean --global command', () => {
         expect(await fs.pathExists(path.join(qwenDir, 'skills', 'long-running-work-planning'))).toBe(false);
     });
 
+    it('clean --global removes Qoder global artifacts', async () => {
+        const qoderDir = path.join(os.homedir(), '.qoder');
+
+        await fs.outputFile(path.join(qoderDir, 'agents', 'spec-driven.md'), 'agent');
+        await fs.outputFile(path.join(qoderDir, 'commands', 'spec-driven.md'), 'command');
+        await fs.outputFile(path.join(qoderDir, 'commands', 'inject-guidelines.md'), 'command');
+        await fs.outputFile(path.join(qoderDir, 'skills', 'long-running-work-planning', 'SKILL.md'), 'skill');
+
+        const program = (await import('../../dist/cli/index.js')).default;
+        await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
+
+        expect(await fs.pathExists(path.join(qoderDir, 'agents', 'spec-driven.md'))).toBe(false);
+        expect(await fs.pathExists(path.join(qoderDir, 'commands', 'spec-driven.md'))).toBe(false);
+        expect(await fs.pathExists(path.join(qoderDir, 'commands', 'inject-guidelines.md'))).toBe(false);
+        expect(await fs.pathExists(path.join(qoderDir, 'skills', 'long-running-work-planning'))).toBe(false);
+    });
+
     it('clean --global removes Cline global artifacts', async () => {
         const clineDir = path.join(os.homedir(), '.cline');
 

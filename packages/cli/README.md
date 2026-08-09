@@ -36,6 +36,7 @@ It injects:
 | GitHub Copilot for JetBrains | project | Agents, prompts, skills |
 | OpenCode | global / project | Agents, commands, skills |
 | OpenAI Codex | project | Agents, command skills, skills |
+| Qoder CLI / IDE | user / project | Agents, commands, skills |
 | Qwen Code | user / project | Agents, commands, skills |
 
 ## Installation

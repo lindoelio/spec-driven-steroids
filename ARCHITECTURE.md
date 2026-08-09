@@ -41,6 +41,7 @@ flowchart TB
         CDX["Codex"]
         CC["Claude Code"]
         QC["Qwen Code"]
+        QD["Qoder CLI / IDE"]
     end
     CLI --> Commands
     INJECT --> TP --> PST --> Platforms

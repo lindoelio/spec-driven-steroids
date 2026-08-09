@@ -620,17 +620,18 @@ describe('CLI E2E: inject command', () => {
         it('summary includes all platforms with scope and final count', async () => {
             const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
             vi.spyOn(inquirer, 'prompt')
-                .mockResolvedValueOnce({ platforms: ['opencode', 'gemini-cli', 'qwen-code'] })
+                .mockResolvedValueOnce({ platforms: ['opencode', 'gemini-cli', 'qwen-code', 'qoder'] })
                 .mockResolvedValueOnce({ scope: 'global' });
 
             const program = (await import('../../dist/cli/index.js')).default;
             await program.parseAsync(['inject'], { from: 'user' } as any);
 
             const output = collectOutput(consoleSpy);
-            expect(output).toContain('3 platforms configured (global)');
+            expect(output).toContain('4 platforms configured (global)');
             expect(output).toContain('OpenCode');
             expect(output).toContain('Gemini CLI');
             expect(output).toContain('Qwen Code');
+            expect(output).toContain('Qoder CLI / IDE');
             consoleSpy.mockRestore();
         });
 

@@ -104,6 +104,20 @@ describe('Unit: Platform Config', () => {
       expect(config?.commandDirectory).toBe('commands');
     });
 
+    it('returns config for qoder', () => {
+      const config = getPlatformConfig('qoder');
+      expect(config).toBeDefined();
+      expect(config?.format).toBe(FormatType.MARKDOWN);
+      expect(config?.frontmatter.fields.name).toBe('spec-driven');
+      expect(config?.agentDirectory).toBe('agents');
+      expect(config?.agentFilename).toBe('spec-driven.md');
+      expect(config?.commandDirectory).toBe('commands');
+      expect(config?.specDrivenCommandFilename).toBe('spec-driven.md');
+      expect(config?.injectGuidelinesCommandFilename).toBe('inject-guidelines.md');
+      expect(config?.commandAgents).toBeUndefined();
+      expect(config?.skillsOnly).toBeUndefined();
+    });
+
     it('returns config for cline', () => {
       const config = getPlatformConfig('cline');
       expect(config).toBeDefined();
@@ -125,6 +139,7 @@ describe('Unit: Platform Config', () => {
         'github-copilot-cli',
         'gemini-cli',
         'qwen-code',
+        'qoder',
         'claudecode',
         'opencode',
         'codex',

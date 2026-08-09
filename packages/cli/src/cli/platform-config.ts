@@ -246,6 +246,21 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     commandAgents: {
       'spec-driven-command': 'Spec-Driven'
     }
+  },
+  'qoder': {
+    id: 'qoder',
+    format: FormatType.MARKDOWN,
+    frontmatter: {
+      fields: {
+        name: 'spec-driven',
+        description: SPEC_DRIVEN_DESCRIPTION
+      }
+    },
+    agentDirectory: 'agents',
+    agentFilename: 'spec-driven.md',
+    commandDirectory: 'commands',
+    specDrivenCommandFilename: 'spec-driven.md',
+    injectGuidelinesCommandFilename: 'inject-guidelines.md'
   }
 };
 

@@ -28,6 +28,10 @@ import {
   QwenCodeInjectionScope
 } from './qwen-code-scope.js';
 import {
+  QoderInjectionScope,
+  getQoderGlobalConfigDir
+} from './qoder-scope.js';
+import {
   ClineInjectionScope
 } from './cline-scope.js';
 import { transformTemplates } from './transformation-pipeline.js';
@@ -42,7 +46,7 @@ interface InjectionResult {
   error: string;
 }
 
-const GLOBAL_CAPABLE_PLATFORMS = ['github-vscode', 'github-copilot-cli', 'gemini-cli', 'qwen-code', 'opencode', 'cline', 'antigravity', 'antigravity-cli'] as const;
+const GLOBAL_CAPABLE_PLATFORMS = ['github-vscode', 'github-copilot-cli', 'gemini-cli', 'qwen-code', 'opencode', 'cline', 'antigravity', 'antigravity-cli', 'qoder'] as const;
 type GlobalCapablePlatform = typeof GLOBAL_CAPABLE_PLATFORMS[number];
 
 enum UnifiedInjectionScope {
@@ -93,6 +97,7 @@ function platformDisplayName(platform: string): string {
     case 'github-copilot-cli': return 'GitHub Copilot CLI';
     case 'gemini-cli': return 'Gemini CLI';
     case 'qwen-code': return 'Qwen Code';
+          case 'qoder': return 'Qoder CLI / IDE';
     case 'antigravity': return 'Google Antigravity IDE';
     case 'antigravity-cli': return 'Google Antigravity CLI (AGY)';
     case 'opencode': return 'OpenCode';
@@ -174,6 +179,7 @@ program
           { name: 'GitHub Copilot CLI', value: 'github-copilot-cli' },
           { name: 'Gemini CLI', value: 'gemini-cli' },
           { name: 'Qwen Code', value: 'qwen-code' },
+          { name: 'Qoder CLI / IDE', value: 'qoder' },
           { name: 'Google Antigravity IDE', value: 'antigravity' },
           { name: 'Google Antigravity CLI (AGY)', value: 'antigravity-cli' },
           { name: 'OpenCode', value: 'opencode' },
@@ -197,6 +203,7 @@ program
           case 'github-copilot-cli': return 'GitHub Copilot CLI';
           case 'gemini-cli': return 'Gemini CLI';
           case 'qwen-code': return 'Qwen Code';
+    case 'qoder': return 'Qoder CLI / IDE';
           case 'opencode': return 'OpenCode';
           case 'cline': return 'Cline';
           case 'antigravity': return 'Google Antigravity IDE';
@@ -235,6 +242,9 @@ program
     const qwenCodeScope = unifiedScope === UnifiedInjectionScope.GLOBAL
       ? QwenCodeInjectionScope.USER
       : QwenCodeInjectionScope.PROJECT;
+    const qoderScope = unifiedScope === UnifiedInjectionScope.GLOBAL
+      ? QoderInjectionScope.USER
+      : QoderInjectionScope.PROJECT;
     const clineScope = unifiedScope === UnifiedInjectionScope.GLOBAL
       ? ClineInjectionScope.USER
       : ClineInjectionScope.PROJECT;
@@ -367,6 +377,16 @@ program
           }
         }
 
+        if (platform === 'qoder') {
+          if (qoderScope === QoderInjectionScope.USER) {
+            platformDest = getQoderGlobalConfigDir();
+            transformDestDir = platformDest;
+          } else {
+            platformDest = path.join(targetDir, '.qoder');
+            transformDestDir = platformDest;
+          }
+        }
+
         if (platform === 'cline') {
           if (clineScope === ClineInjectionScope.USER) {
             platformDest = path.join(os.homedir(), '.cline');
@@ -453,6 +473,7 @@ program
       removeGitHubCopilotCliSteroids(),
       removeGeminiCliSteroids(),
       removeQwenCodeSteroids(),
+      removeQoderSteroids(),
       removeOpenCodeGlobalSteroids(),
       removeClineSteroids(),
       removeAntigravityIdeSteroids(),
@@ -514,6 +535,7 @@ function buildCleanPreview(): string {
   const copilotCliDir = getGitHubCopilotCliGlobalConfigDir();
   const geminiDir = path.join(os.homedir(), '.gemini');
   const qwenDir = path.join(os.homedir(), '.qwen');
+  const qoderDir = path.join(os.homedir(), '.qoder');
   const antigravityIdeDir = path.join(os.homedir(), '.gemini', 'config');
   const antigravityCliDir = path.join(os.homedir(), '.gemini', 'antigravity-cli');
 
@@ -539,6 +561,11 @@ function buildCleanPreview(): string {
     '',
     `  ${chalk.bold('Qwen Code')} (${formatDir(qwenDir)}):`,
     `    • agents/spec-driven.agent.md`,
+    `    • commands/spec-driven.md, commands/inject-guidelines.md`,
+    `    • skills/${STEROIDS_SKILL_DIRS.join('/, skills/')}/`,
+    '',
+    `  ${chalk.bold('Qoder CLI / IDE')} (${formatDir(qoderDir)}):`,
+    `    • agents/spec-driven.md`,
     `    • commands/spec-driven.md, commands/inject-guidelines.md`,
     `    • skills/${STEROIDS_SKILL_DIRS.join('/, skills/')}/`,
     '',
@@ -733,6 +760,41 @@ async function removeQwenCodeSteroids(): Promise<boolean> {
     return true;
   } catch (err) {
     console.warn(chalk.yellow(`  ⚠️ Qwen Code: ${err}`));
+    return false;
+  }
+}
+
+async function removeQoderGlobalFiles(): Promise<void> {
+  const qoderDir = path.join(os.homedir(), '.qoder');
+  const filesToRemove = [
+    path.join(qoderDir, 'agents', 'spec-driven.md'),
+    path.join(qoderDir, 'commands', 'spec-driven.md'),
+    path.join(qoderDir, 'commands', 'inject-guidelines.md')
+  ];
+
+  for (const file of filesToRemove) {
+    if (await fs.pathExists(file)) {
+      await fs.remove(file);
+    }
+  }
+
+  for (const dir of ['agents', 'commands']) {
+    const dirPath = path.join(qoderDir, dir);
+    const remaining = await fs.readdir(dirPath).catch(() => []);
+    if (remaining.length === 0) {
+      await fs.remove(dirPath);
+    }
+  }
+}
+
+async function removeQoderSteroids(): Promise<boolean> {
+  try {
+    await removeQoderGlobalFiles();
+    await removeSteroidsSkillDirs(path.join(os.homedir(), '.qoder'));
+    console.log(chalk.green('  ✅ Qoder CLI / IDE cleaned.'));
+    return true;
+  } catch (err) {
+    console.warn(chalk.yellow(`  ⚠️ Qoder CLI / IDE: ${err}`));
     return false;
   }
 }
