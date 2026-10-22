@@ -34,7 +34,7 @@ describe('CLI E2E: Qoder CLI / IDE injection', () => {
         .mockResolvedValueOnce({ platforms: ['qoder'] })
         .mockResolvedValueOnce({ scope: 'global' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const qoderDir = path.join(mockHomeDir, '.qoder');
@@ -50,7 +50,7 @@ describe('CLI E2E: Qoder CLI / IDE injection', () => {
         .mockResolvedValueOnce({ platforms: ['qoder'] })
         .mockResolvedValueOnce({ scope: 'global' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const agentPath = path.join(mockHomeDir, '.qoder', 'agents', 'spec-driven.md');
@@ -65,7 +65,7 @@ describe('CLI E2E: Qoder CLI / IDE injection', () => {
         .mockResolvedValueOnce({ platforms: ['qoder'] })
         .mockResolvedValueOnce({ scope: 'global' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const commandPath = path.join(mockHomeDir, '.qoder', 'commands', 'spec-driven.md');
@@ -80,7 +80,7 @@ describe('CLI E2E: Qoder CLI / IDE injection', () => {
         .mockResolvedValueOnce({ platforms: ['qoder'] })
         .mockResolvedValueOnce({ scope: 'global' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const commandPath = path.join(mockHomeDir, '.qoder', 'commands', 'inject-guidelines.md');
@@ -95,7 +95,7 @@ describe('CLI E2E: Qoder CLI / IDE injection', () => {
         .mockResolvedValueOnce({ platforms: ['qoder'] })
         .mockResolvedValueOnce({ scope: 'global' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const skillsPath = path.join(mockHomeDir, '.qoder', 'skills', 'long-running-work-planning', 'SKILL.md');
@@ -109,7 +109,7 @@ describe('CLI E2E: Qoder CLI / IDE injection', () => {
         .mockResolvedValueOnce({ platforms: ['qoder'] })
         .mockResolvedValueOnce({ scope: 'project' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const qoderDir = path.join(targetDir, '.qoder');
@@ -125,7 +125,7 @@ describe('CLI E2E: Qoder CLI / IDE injection', () => {
         .mockResolvedValueOnce({ platforms: ['qoder'] })
         .mockResolvedValueOnce({ scope: 'project' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const agentPath = path.join(targetDir, '.qoder', 'agents', 'spec-driven.md');
@@ -139,7 +139,7 @@ describe('CLI E2E: Qoder CLI / IDE injection', () => {
         .mockResolvedValueOnce({ platforms: ['qoder'] })
         .mockResolvedValueOnce({ scope: 'project' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const commandPath = path.join(targetDir, '.qoder', 'commands', 'spec-driven.md');
@@ -153,7 +153,7 @@ describe('CLI E2E: Qoder CLI / IDE injection', () => {
         .mockResolvedValueOnce({ platforms: ['qoder'] })
         .mockResolvedValueOnce({ scope: 'project' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const commandPath = path.join(targetDir, '.qoder', 'commands', 'inject-guidelines.md');
@@ -167,7 +167,7 @@ describe('CLI E2E: Qoder CLI / IDE injection', () => {
         .mockResolvedValueOnce({ platforms: ['qoder'] })
         .mockResolvedValueOnce({ scope: 'project' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const skillsPath = path.join(targetDir, '.qoder', 'skills', 'long-running-work-planning', 'SKILL.md');

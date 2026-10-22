@@ -115,6 +115,18 @@ describe('Unit: spec lane validation', () => {
     expect(result.unexpectedFiles).toEqual(['notes.md']);
   });
 
+  it('ignores OS and hidden files in the spec directory', async () => {
+    const specDir = createSpecDir();
+    writeFileSync(path.join(specDir, 'brief.md'), validBrief);
+    writeFileSync(path.join(specDir, '.DS_Store'), '');
+    writeFileSync(path.join(specDir, '.notes'), 'hidden');
+
+    const result = await verifySpecStructure('change', tempDir!);
+
+    expect(result.valid).toBe(true);
+    expect(result.unexpectedFiles).toEqual([]);
+  });
+
   it('propagates brief validation failures through validate spec', async () => {
     const specDir = createSpecDir();
     writeFileSync(path.join(specDir, 'brief.md'), validBrief.replace('REQ-1_', 'REQ-9_'));

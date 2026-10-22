@@ -159,56 +159,55 @@ export function validateMermaidDiagram(content: string, blockStartLine: number =
 }
 
 function validateSequenceDiagram(lines: string[], startLine: number, errors: MermaidError[]): void {
-  const participants = new Set<string>();
-  const participantPattern = /^(?:participant|actor)\s+([A-Za-z][A-Za-z0-9_]*)/i;
+  const knownParticipants = new Set<string>();
+  const participantPattern = /^(?:create\s+)?(?:participant|actor)\s+([A-Za-z][A-Za-z0-9_]*)/i;
   const messagePattern = /^([A-Za-z][A-Za-z0-9_]*)\s*-?-?>>?\s*([A-Za-z][A-Za-z0-9_]*)/i;
-  
+  const activationPattern = /^(?:activate|deactivate)\s+([A-Za-z][A-Za-z0-9_]*)/i;
+  const activations: Array<{ line: number; participant: string }> = [];
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const lineNum = startLine + i;
     const trimmed = line.trim();
-    
+
     if (i === 0) continue;
     if (!trimmed || trimmed.startsWith('%%') || trimmed.startsWith('note ') || trimmed.startsWith('rect ') || trimmed === 'end') {
       continue;
     }
-    
+
     if (trimmed.startsWith('autonumber')) continue;
-    
-    if (/^(?:loop|alt|else|opt|par|and|critical|option|break)/i.test(trimmed)) {
+
+    if (/^(?:loop|alt|else|opt|par|and|critical|option|break)\b/i.test(trimmed)) {
       continue;
     }
-    
+
     const participantMatch = trimmed.match(participantPattern);
     if (participantMatch) {
-      participants.add(participantMatch[1]);
+      knownParticipants.add(participantMatch[1]);
       continue;
     }
-    
-    const activateMatch = trimmed.match(/^(?:activate|deactivate)\s+([A-Za-z][A-Za-z0-9_]*)/i);
-    if (activateMatch) {
-      if (participants.size > 0 && !participants.has(activateMatch[1])) {
-        errors.push({
-          line: lineNum,
-          errorType: 'UndefinedParticipant',
-          message: `Participant '${activateMatch[1]}' is not defined`,
-          suggestedFix: `Add 'participant ${activateMatch[1]}' before this line`
-        });
-      }
-      continue;
-    }
-    
+
     const messageMatch = trimmed.match(messagePattern);
     if (messageMatch) {
-      const [, from, to] = messageMatch;
-      if (participants.size > 0) {
-        if (!participants.has(from) && !from.match(/^[A-Z]/)) {
-          continue;
-        }
-        if (!participants.has(to) && !to.match(/^[A-Z]/)) {
-          continue;
-        }
-      }
+      // Mermaid implicitly declares both endpoints of a message.
+      knownParticipants.add(messageMatch[1]);
+      knownParticipants.add(messageMatch[2]);
+      continue;
     }
+
+    const activationMatch = trimmed.match(activationPattern);
+    if (activationMatch) {
+      activations.push({ line: lineNum, participant: activationMatch[1] });
+    }
+  }
+
+  for (const activation of activations) {
+    if (knownParticipants.has(activation.participant)) continue;
+    errors.push({
+      line: activation.line,
+      errorType: 'UndefinedParticipant',
+      message: `Participant '${activation.participant}' is not defined`,
+      suggestedFix: `Add 'participant ${activation.participant}' before this line`
+    });
   }
 }

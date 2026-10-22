@@ -78,7 +78,12 @@ flowchart LR
     PSC --> OUT["Platform Output Dir\n(.github, .opencode, etc.)"]
 ```
 
-**Key decision**: Platform configs are centralized in `platform-config.ts` as a static registry (`PLATFORM_CONFIGS`). Each platform defines its output format, directory layout, and frontmatter fields. Adding a new platform means adding a new entry to this registry and updating the injection logic in `index.ts`.
+**Key decision**: Platform behavior is centralized in `platform-registry.ts`. Each entry defines display name, supported scopes, transform config, destination resolvers, skills destination, and post-processing. `platform-config.ts` remains the formatting registry consumed by the transformation pipeline. Adding a platform means adding one registry entry plus a table-driven test.
+
+### Install Manifest
+
+Every successful injection writes an install manifest under `~/.config/spec-driven-steroids/installs/` (or `$SDS_CONFIG_DIR`). The manifest records the platform, scope, root, skills root, CLI/template version, and the SHA-256 of every installed file. `clean`, `uninstall`, `doctor`, and `repair` operate from this manifest, which is what prevents SDS from deleting or moving files it does not own.
+
 
 ### Validation Pipeline
 
@@ -123,7 +128,7 @@ Rather than requiring each platform to implement an adapter, the CLI transforms 
 
 ### AD-3: File-Based Knowledge Graph
 
-The stewardship store uses flat JSON files instead of a database. This avoids runtime dependencies and keeps the knowledge graph portable, inspectable, and version-controllable. Retrieval resolves project rules before global fallback rules, and write-lock serialization prevents concurrent-write corruption within a single process.
+The stewardship store uses flat JSON files instead of a database. This avoids runtime dependencies and keeps the knowledge graph portable, inspectable, and version-controllable. Retrieval resolves project rules before global fallback rules. Writes use a cross-process lock file and atomic temp-file renames to prevent concurrent-write corruption. Scope IDs are sanitized before use as directory names.
 
 ### AD-4: Integration-Test-First Strategy
 
@@ -131,7 +136,16 @@ Full CLI workflows are verified through integration tests that exercise real fil
 
 ### AD-5: Remote Template Support with Bundled Fallback
 
-The CLI prefers fetching the latest templates from a remote source but falls back to bundled templates when remote retrieval fails. This enables template updates without new releases while ensuring offline capability.
+The CLI prefers fetching versioned templates from a remote source but falls back to bundled templates when remote retrieval fails. This enables template updates without new releases while ensuring offline capability. Remote bundles are digest-verified, host-restricted, schema/version-checked, time-bounded, and cached by digest.
+
+### AD-6: Manifest-Based Install Ownership
+
+SDS records every file it writes in an install manifest and cleans only owned files. Legacy installs without a manifest fall back to a known-artifact list, and directories are removed only when empty. This replaces directory-level cleanup that could delete user-owned agents, prompts, or workflows.
+
+### AD-7: Single Platform Registry
+
+`platform-registry.ts` is the runtime source of truth for platform identity, scope support, destinations, transform configuration, and post-processing. Prompt choices, injection, cleanup, and reporting all derive from it. No platform-specific path logic belongs in command handlers.
+
 
 ## Data Flow
 

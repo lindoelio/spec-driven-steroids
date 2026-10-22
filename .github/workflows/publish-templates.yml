@@ -3,12 +3,8 @@ name: Publish Templates
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
-    paths:
-      - 'packages/cli/templates/**'
-      - 'packages/cli/tests/**'
-      - '.github/workflows/publish-templates.yml'
+    tags:
+      - 'v*'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -47,6 +43,7 @@ jobs:
       - name: Build template bundle assets
         run: |
           node -e '
+            const crypto = require("crypto");
             const fs = require("fs");
             const path = require("path");
 
@@ -77,20 +74,27 @@ jobs:
               return files;
             }
 
-            const version = process.env.GITHUB_SHA || "local-" + Date.now();
+            const cliVersion = require("./packages/cli/package.json").version;
+            const version = cliVersion + "-" + (process.env.GITHUB_SHA || "local").slice(0, 8);
             const bundleFileName = "templates-bundle.json";
-            const manifest = {
-              version: version,
-              bundleUrl: "https://github.com/" + process.env.GITHUB_REPOSITORY + "/releases/download/templates-latest/" + bundleFileName,
-              publishedAt: new Date().toISOString()
-            };
             const bundle = {
+              schemaVersion: 1,
               version: version,
               files: walk(templatesRoot)
             };
+            const bundleText = JSON.stringify(bundle, null, 2);
+            const sha256 = crypto.createHash("sha256").update(bundleText, "utf8").digest("hex");
+            const manifest = {
+              schemaVersion: 1,
+              version: version,
+              bundleUrl: "https://github.com/" + process.env.GITHUB_REPOSITORY + "/releases/download/templates-latest/" + bundleFileName,
+              sha256: sha256,
+              minCliVersion: cliVersion,
+              publishedAt: new Date().toISOString()
+            };
 
             fs.writeFileSync(path.join(outputDir, "templates-manifest.json"), JSON.stringify(manifest, null, 2));
-            fs.writeFileSync(path.join(outputDir, bundleFileName), JSON.stringify(bundle, null, 2));
+            fs.writeFileSync(path.join(outputDir, bundleFileName), bundleText);
           '
 
       - name: Publish template release assets

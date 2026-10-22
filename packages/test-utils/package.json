@@ -13,10 +13,11 @@
         "build": "tsc",
         "clean": "rm -rf dist tsconfig.tsbuildinfo",
         "dev": "tsc -w",
+        "lint": "pnpm exec biome check src",
         "typecheck": "tsc --noEmit"
     },
     "devDependencies": {
-        "@types/node": "^25.2.1",
+        "@types/node": "^20.19.0",
         "typescript": "^5.9.3",
         "vitest": "^2.1.0"
     }

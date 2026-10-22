@@ -30,9 +30,9 @@ export async function verifySpecStructure(slug: string, targetDir: string): Prom
   const errors: Array<{ line?: number; errorType: string; context?: string; message: string; suggestedFix?: string }> = [];
   const warnings: Array<{ line?: number; message: string }> = [];
   const specDir = path.join(targetDir, '.specs', 'changes', slug);
-  
+
   let files: string[] = [];
-  
+
   try {
     const stats = await fs.stat(specDir);
     if (!stats.isDirectory()) {
@@ -68,12 +68,17 @@ export async function verifySpecStructure(slug: string, targetDir: string): Prom
       unexpectedFiles: []
     };
   }
-  
+
   const lane = detectSpecLane(files);
   const requiredFiles = lane === 'brief' ? BRIEF_FILES : FULL_FILES;
   const missingFiles = requiredFiles.filter(f => !files.includes(f));
-  const unexpectedFiles = files.filter(f => !requiredFiles.includes(f));
-  
+  const ignoredFiles = new Set(['.DS_Store', 'Thumbs.db']);
+  const unexpectedFiles = files.filter(file =>
+    !requiredFiles.includes(file) &&
+    !ignoredFiles.has(file) &&
+    !file.startsWith('.')
+  );
+
   for (const missingFile of missingFiles) {
     errors.push({
       errorType: 'Structure Error',
@@ -82,7 +87,7 @@ export async function verifySpecStructure(slug: string, targetDir: string): Prom
       suggestedFix: `Create ${missingFile} in ${specDir}/`
     });
   }
-  
+
   if (unexpectedFiles.length > 0) {
     errors.push({
       errorType: 'Structure Error',
@@ -93,7 +98,7 @@ export async function verifySpecStructure(slug: string, targetDir: string): Prom
         : 'A full spec directory may contain only requirements.md, design.md, and tasks.md. Remove or rename extra files'
     });
   }
-  
+
   return {
     ...createValidationResult(errors.length === 0, errors, warnings),
     lane,
@@ -106,7 +111,7 @@ export async function verifySpecStructure(slug: string, targetDir: string): Prom
 
 export function createStructureCommand(): Command {
   const cmd = new Command();
-  
+
   cmd
     .name('structure')
     .description('Validate that a spec directory contains either brief.md or the full requirements/design/tasks set')
@@ -115,12 +120,13 @@ export function createStructureCommand(): Command {
     .option('--format <text|json>', 'Output format (text or json)', 'text')
     .action(async (slug: string, opts: { targetDir: string; format: string }) => {
       const result = await verifySpecStructure(slug, opts.targetDir);
-      
+
       if (opts.format === 'json') {
         console.log(formatValidationResult(result, 'json'));
-        process.exit(getExitCode(result));
+        process.exitCode = getExitCode(result);
+        return;
       }
-      
+
       if (!result.valid) {
         console.log(chalk.red('❌ Structure validation failed:\n'));
         for (const err of result.errors) {
@@ -129,15 +135,17 @@ export function createStructureCommand(): Command {
             console.log(chalk.gray(`    → ${err.suggestedFix}`));
           }
         }
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
-      
+
       console.log(chalk.green('✅ Structure validation passed.'));
       console.log(`\nSpec directory: ${result.specDir}`);
       console.log(`Lane: ${result.lane}`);
       console.log(`Files found: ${result.filesFound.join(', ')}`);
-      process.exit(0);
+      process.exitCode = 0;
+      return;
     });
-  
+
   return cmd;
 }

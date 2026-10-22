@@ -8,6 +8,7 @@
     "build": "tsc && vite build",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "preview": "vite preview",
+    "lint": "pnpm exec biome check src",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

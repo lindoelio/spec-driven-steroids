@@ -144,7 +144,7 @@ export { verifyRequirementsFile };
 
 export function createRequirementsCommand(): Command {
   const cmd = new Command();
-  
+
   cmd
     .name('requirements')
     .description('Validate a requirements.md file for EARS patterns, REQ-X numbering, and acceptance criteria')
@@ -153,18 +153,19 @@ export function createRequirementsCommand(): Command {
     .action(async (filePath: string, opts: { format: string }) => {
       const targetDir = process.cwd();
       const fullPath = path.resolve(targetDir, filePath);
-      
+
       let content: string;
       try {
         content = await fs.readFile(fullPath, 'utf-8');
       } catch {
         console.error(chalk.red(`Error: Cannot read file: ${fullPath}`));
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
-      
+
       const result = verifyRequirementsFile(content);
       const output = formatValidationResult(result, opts.format as 'text' | 'json');
-      
+
       if (opts.format === 'json') {
         console.log(output);
       } else {
@@ -174,16 +175,19 @@ export function createRequirementsCommand(): Command {
             console.log(formatError(err));
             console.log();
           }
-          process.exit(1);
+          process.exitCode = 1;
+          return;
         } else {
           console.log(chalk.green('✅ Requirements validation passed.'));
           console.log(`\nFound ${result.requirementsFound.length} requirements.`);
           console.log(`EARS patterns: ${result.earsPatterns.join(', ')}`);
         }
       }
-      
-      process.exit(getExitCode(result));
+
+      process.exitCode = getExitCode(result);
+
+      return;
     });
-  
+
   return cmd;
 }

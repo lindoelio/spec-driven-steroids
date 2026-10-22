@@ -12,10 +12,11 @@
 ## Pull Request Process
 
 1. Open a PR against `main` with a clear description of the change.
-2. Ensure CI passes: builds, tests, typecheck, and lint must all succeed.
-3. The PR title should follow the conventional commit format (`feat:`, `fix:`, `refactor:`, etc.).
-4. Request review from a maintainer.
-5. Merge only after approval and all status checks pass.
+2. Ensure CI passes: `.github/workflows/ci.yml` runs typecheck, build, lint, tests, coverage, package smoke test, and a production dependency audit on Node 20, 22, and 24.
+3. Coverage must not decrease. Raise the thresholds when coverage improves; never lower them to make a PR pass.
+4. The PR title should follow the conventional commit format (`feat:`, `fix:`, `refactor:`, etc.).
+5. Request review from a maintainer.
+6. Merge only after approval and all status checks pass.
 
 ## Repository Structure
 

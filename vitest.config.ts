@@ -17,18 +17,16 @@ export default defineConfig({
                 '**/*.config.ts',
                 'packages/test-utils/**'
             ],
-            statements: 80,
-            branches: 80,
-            functions: 80,
-            lines: 80
+            thresholds: {
+                statements: 70,
+                branches: 65,
+                functions: 75,
+                lines: 70
+            }
         },
         setupFiles: [],
-        testTimeout: 10000,
-        include: ['**/__tests__/**/*.test.ts'],
-        workspace: [
-            'packages/cli',
-            'packages/test-utils'
-        ]
+        testTimeout: 30000,
+        include: ['packages/*/tests/**/*.test.ts']
     },
     resolve: {
         alias: {

@@ -274,7 +274,8 @@ export function createDesignCommand(): Command {
         content = await fs.readFile(fullPath, 'utf-8');
       } catch {
         console.error(chalk.red(`Error: Cannot read file: ${fullPath}`));
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
       
       let requirementsContent: string | undefined;
@@ -284,7 +285,8 @@ export function createDesignCommand(): Command {
           requirementsContent = await fs.readFile(reqPath, 'utf-8');
         } catch {
           console.error(chalk.red(`Error: Cannot read requirements file: ${reqPath}`));
-          process.exit(1);
+          process.exitCode = 1;
+          return;
         }
       }
       
@@ -292,7 +294,8 @@ export function createDesignCommand(): Command {
       
       if (opts.format === 'json') {
         console.log(formatValidationResult(result, 'json'));
-        process.exit(getExitCode(result));
+        process.exitCode = getExitCode(result);
+        return;
       }
       
       if (!result.valid) {
@@ -301,7 +304,8 @@ export function createDesignCommand(): Command {
           console.log(formatError(err));
           console.log();
         }
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
       
       console.log(chalk.green('✅ Design validation passed.'));
@@ -309,7 +313,8 @@ export function createDesignCommand(): Command {
       if (result.traceabilityReport.orphaned.length > 0) {
         console.log(chalk.yellow(`Warning: ${result.traceabilityReport.orphaned.length} orphaned design elements.`));
       }
-      process.exit(0);
+      process.exitCode = 0;
+      return;
     });
   
   return cmd;

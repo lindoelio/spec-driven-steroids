@@ -43,15 +43,17 @@ export class PhaseContextInjector {
 
     for (const domain of domains) {
       const query: RetrievalQuery = {
-        query: domain,
+        query: '',
         domain: domain as Domain,
         includeDeprecated: false,
         limit: 5,
+        matchMode: 'domain',
       };
 
       const result = await this.resolver.resolve(query);
-      if (result.rules.length > 0) {
-        const rules = result.rules.map(r => r.rule);
+      const relevantRules = result.rules.filter(scored => !scored.isOutOfDomain);
+      if (relevantRules.length > 0) {
+        const rules = relevantRules.map(r => r.rule);
         const context: InjectedContext = {
           domain,
           rules,

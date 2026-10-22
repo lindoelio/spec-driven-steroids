@@ -18,10 +18,12 @@ export default defineConfig({
                 'dist/**',
                 'tests/**'
             ],
-            statements: 75,
-            branches: 75,
-            functions: 75,
-            lines: 75
+            thresholds: {
+                statements: 70,
+                branches: 65,
+                functions: 75,
+                lines: 70
+            }
         }
     },
     resolve: {

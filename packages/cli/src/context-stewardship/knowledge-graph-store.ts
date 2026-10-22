@@ -1,6 +1,9 @@
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync, cpSync, renameSync, openSync, closeSync } from 'fs';
 import { join } from 'path';
+import path from 'path';
 import { homedir } from 'os';
+import { basename } from 'path';
+import { cwd } from 'process';
 import type {
   RuleNode,
   RuleVersion,
@@ -8,7 +11,6 @@ import type {
   Metadata,
   LifecycleState,
   Domain,
-  ConflictDecision,
 } from './types.js';
 import {
   DEFAULT_EXPIRATION_YEARS,
@@ -16,18 +18,99 @@ import {
 } from './types.js';
 import { computeSimilarity } from './utils.js';
 
-const BASE_DIR = join(homedir(), '.agents', 'stewardship');
+const DEFAULT_STEWARDSHIP_DIR = '.agents';
+const SCOPE_DIR_NAME = 'stewardship';
 
 type ScopeLevel = 'global' | 'org' | 'project';
 
 export interface KnowledgeGraphStoreConfig {
   conflictSimilarityThreshold?: number;
+  /** Root stewardship directory; the store appends the scope subdirectory. */
+  rootDir?: string;
 }
 
-function getScopeDir(scope: ScopeLevel, scopeId?: string): string {
-  if (scope === 'global') return join(BASE_DIR, 'global');
-  if (scope === 'org') return join(BASE_DIR, 'orgs', scopeId ?? 'default');
-  return join(BASE_DIR, 'projects', scopeId ?? 'default');
+function getDefaultBaseDir(): string {
+  const root = process.env.SDS_HOME
+    ? path.join(process.env.SDS_HOME, SCOPE_DIR_NAME)
+    : path.join(homedir(), DEFAULT_STEWARDSHIP_DIR, SCOPE_DIR_NAME);
+  return root;
+}
+
+function getScopeDir(baseDir: string, scope: ScopeLevel, scopeId?: string): string {
+  if (scope === 'global') return join(baseDir, 'global');
+  if (scope === 'org') return join(baseDir, 'orgs', sanitizeScopeId(scopeId ?? 'default'));
+  return join(baseDir, 'projects', sanitizeScopeId(scopeId ?? 'default'));
+}
+
+export function sanitizeScopeId(scopeId: string): string {
+  const sanitized = scopeId.trim().toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '');
+  if (!sanitized || sanitized === '.' || sanitized === '..' || sanitized.includes('/') || sanitized.includes('\\')) {
+    throw new Error(`Invalid stewardship scope id: ${scopeId}`);
+  }
+  return sanitized;
+}
+
+function atomicWriteFileSync(filePath: string, contents: string): void {
+  const tempPath = `${filePath}.${process.pid}.${Math.random().toString(36).slice(2, 8)}.tmp`;
+  writeFileSync(tempPath, contents, 'utf-8');
+  renameSync(tempPath, filePath);
+}
+
+function sleepSync(milliseconds: number): void {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
+}
+
+function acquireFileLock(lockPath: string, timeoutMs = 5_000): () => void {
+  ensureDir(path.dirname(lockPath));
+  const startedAt = Date.now();
+
+  while (true) {
+    try {
+      const descriptor = openSync(lockPath, 'wx');
+      writeFileSync(descriptor, String(process.pid));
+      closeSync(descriptor);
+      return () => rmSync(lockPath, { force: true });
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code !== 'EEXIST') throw error;
+
+      try {
+        const owner = Number(readFileSync(lockPath, 'utf-8'));
+        if (Number.isInteger(owner) && owner > 0) {
+          process.kill(owner, 0);
+        }
+      } catch {
+        rmSync(lockPath, { force: true });
+        continue;
+      }
+
+      if (Date.now() - startedAt > timeoutMs) {
+        throw new Error(`Timed out waiting for stewardship write lock: ${lockPath}`);
+      }
+      sleepSync(25);
+    }
+  }
+}
+
+function migrateLegacyProjectScope(scope: ScopeLevel, scopeId: string | undefined, targetBaseDir: string): void {
+  if (scope !== 'project' || !scopeId || existsSync(targetBaseDir)) return;
+
+  let legacyId: string;
+  try {
+    legacyId = sanitizeScopeId(basename(cwd()));
+  } catch {
+    return;
+  }
+
+  if (legacyId === scopeId) return;
+  const legacyDir = join(getDefaultBaseDir(), 'projects', legacyId);
+  if (!existsSync(legacyDir)) return;
+
+  try {
+    cpSync(legacyDir, targetBaseDir, { recursive: true });
+  } catch {
+    // Migration is best-effort; a failed copy must not block the new store.
+  }
 }
 
 function getStateDir(base: string, state: string): string {
@@ -50,16 +133,24 @@ function getVersionPath(dir: string, id: string): string {
 
 export class KnowledgeGraphStore {
   private scopeId?: string;
-  private baseDir: string;
+  private scopeDir: string;
   private conflictThreshold: number;
-  /** Write-lock queue: ensures serialized writes per rule ID to prevent concurrent-write corruption */
-  private writeLocks: Map<string, Promise<unknown>> = new Map();
 
   constructor(scope: ScopeLevel = 'global', scopeId?: string, config?: KnowledgeGraphStoreConfig) {
     this.scopeId = scopeId;
-    this.baseDir = getScopeDir(scope, scopeId);
+    this.scopeDir = getScopeDir(config?.rootDir ?? getDefaultBaseDir(), scope, scopeId);
     this.conflictThreshold = config?.conflictSimilarityThreshold ?? CONFLICT_SIMILARITY_THRESHOLD;
+    migrateLegacyProjectScope(scope, scopeId, this.scopeDir);
     this.ensureDirectoryStructure();
+  }
+
+  private async withWriteLock<T>(operation: () => Promise<T> | T): Promise<T> {
+    const release = acquireFileLock(join(this.scopeDir, '.write.lock'));
+    try {
+      return await operation();
+    } finally {
+      release();
+    }
   }
 
   setConflictThreshold(threshold: number): void {
@@ -68,9 +159,9 @@ export class KnowledgeGraphStore {
 
   private ensureDirectoryStructure(): void {
     for (const state of ['active', 'deprecated', 'archived']) {
-      ensureDir(getStateDir(this.baseDir, state));
+      ensureDir(getStateDir(this.scopeDir, state));
     }
-    ensureDir(join(this.baseDir, '.versions'));
+    ensureDir(join(this.scopeDir, '.versions'));
   }
 
   private generateId(): string {
@@ -132,26 +223,21 @@ export class KnowledgeGraphStore {
   }
 
   async saveRule(rule: RuleNode): Promise<void> {
-    // Serialize writes per rule ID to prevent concurrent-write corruption
-    let lock = this.writeLocks.get(rule.id);
-    const newLock = (async () => {
-      if (lock) await lock;
-      const stateDir = getStateDir(this.baseDir, rule.state.value);
+    await this.withWriteLock(async () => {
+      const stateDir = getStateDir(this.scopeDir, rule.state.value);
       const rulePath = getRulePath(stateDir, rule.id);
       try {
-        writeFileSync(rulePath, JSON.stringify(rule, null, 2), 'utf-8');
+        atomicWriteFileSync(rulePath, JSON.stringify(rule, null, 2));
       } catch (err) {
         throw new Error(`Failed to save rule ${rule.id}: ${err instanceof Error ? err.message : String(err)}`);
       }
-    })();
-    this.writeLocks.set(rule.id, newLock);
-    await newLock;
+    });
   }
 
   async readRule(ruleId: string, state?: string): Promise<RuleNode | null> {
     const states = state ? [state] : ['active', 'deprecated', 'archived'];
     for (const s of states) {
-      const rulePath = getRulePath(getStateDir(this.baseDir, s), ruleId);
+      const rulePath = getRulePath(getStateDir(this.scopeDir, s), ruleId);
       if (existsSync(rulePath)) {
         try {
           const content = readFileSync(rulePath, 'utf-8');
@@ -166,10 +252,7 @@ export class KnowledgeGraphStore {
   }
 
   async updateRule(ruleId: string, updates: Partial<RuleNode>, changedBy: string): Promise<RuleNode | null> {
-    // Serialize updates per rule ID
-    let lock = this.writeLocks.get(ruleId);
-    const newLock = (async () => {
-      if (lock) await lock;
+    return this.withWriteLock(async () => {
       const rule = await this.readRule(ruleId);
       if (!rule) return null;
 
@@ -188,26 +271,23 @@ export class KnowledgeGraphStore {
       };
 
       if (rule.state.value !== updatedRule.state.value) {
-        // Move to new state directory
-        const oldStateDir = getStateDir(this.baseDir, rule.state.value);
-        const newStateDir = getStateDir(this.baseDir, updatedRule.state.value);
+        const oldStateDir = getStateDir(this.scopeDir, rule.state.value);
+        const newStateDir = getStateDir(this.scopeDir, updatedRule.state.value);
         const oldPath = getRulePath(oldStateDir, ruleId);
         const newPath = getRulePath(newStateDir, ruleId);
 
+        ensureDir(newStateDir);
+        atomicWriteFileSync(newPath, JSON.stringify(updatedRule, null, 2));
         if (existsSync(oldPath)) {
           rmSync(oldPath);
         }
-        writeFileSync(newPath, JSON.stringify(updatedRule, null, 2), 'utf-8');
       } else {
-        const stateDir = getStateDir(this.baseDir, rule.state.value);
-        const rulePath = getRulePath(stateDir, rule.id);
-        writeFileSync(rulePath, JSON.stringify(updatedRule, null, 2), 'utf-8');
+        const stateDir = getStateDir(this.scopeDir, rule.state.value);
+        atomicWriteFileSync(getRulePath(stateDir, rule.id), JSON.stringify(updatedRule, null, 2));
       }
 
       return updatedRule;
-    })();
-    this.writeLocks.set(ruleId, newLock);
-    return newLock as Promise<RuleNode | null>;
+    });
   }
 
   async listRules(params?: {
@@ -219,7 +299,7 @@ export class KnowledgeGraphStore {
     const rules: RuleNode[] = [];
 
     for (const state of states) {
-      const stateDir = getStateDir(this.baseDir, state);
+      const stateDir = getStateDir(this.scopeDir, state);
       if (!existsSync(stateDir)) continue;
 
       const files = readdirSync(stateDir).filter(f => f.endsWith('.json'));
@@ -250,7 +330,7 @@ export class KnowledgeGraphStore {
   }
 
   private async archiveVersion(rule: RuleNode, changedBy: string): Promise<void> {
-    const versionsDir = join(this.baseDir, '.versions');
+    const versionsDir = join(this.scopeDir, '.versions');
     ensureDir(versionsDir);
     const versionPath = getVersionPath(versionsDir, rule.id);
 
@@ -268,11 +348,11 @@ export class KnowledgeGraphStore {
     };
 
     versions.push(newVersion);
-    writeFileSync(versionPath, JSON.stringify(versions, null, 2), 'utf-8');
+    atomicWriteFileSync(versionPath, JSON.stringify(versions, null, 2));
   }
 
   async getRuleHistory(ruleId: string): Promise<RuleVersion[]> {
-    const versionPath = getVersionPath(join(this.baseDir, '.versions'), ruleId);
+    const versionPath = getVersionPath(join(this.scopeDir, '.versions'), ruleId);
     if (!existsSync(versionPath)) return [];
     return JSON.parse(readFileSync(versionPath, 'utf-8'));
   }
@@ -291,45 +371,5 @@ export class KnowledgeGraphStore {
     }
 
     return conflicts;
-  }
-
-  async handleConflict(
-    existingRuleId: string,
-    newRule: RuleNode,
-    decision: ConflictDecision,
-    changedBy: string
-  ): Promise<RuleNode | null> {
-    if (decision === 'cancel') {
-      return null;
-    }
-
-    if (decision === 'override') {
-      await this.deprecateRule(existingRuleId, newRule.id, changedBy);
-      return this.saveRule(newRule).then(() => newRule);
-    }
-
-    // merge - combine content and keep newer
-    const existingRule = await this.readRule(existingRuleId);
-    if (!existingRule) return null;
-
-    const mergedRule: RuleNode = {
-      ...existingRule,
-      id: newRule.id,
-      content: `${existingRule.content}\n---\n${newRule.content}`,
-      provenance: newRule.provenance,
-      metadata: {
-        ...existingRule.metadata,
-        confidence: Math.max(existingRule.metadata.confidence, newRule.metadata.confidence),
-      },
-      state: {
-        value: 'active',
-        changedAt: new Date().toISOString(),
-        changedBy,
-      },
-      supersededBy: existingRule.id, // old rule superseded by merged
-    };
-
-    await this.deprecateRule(existingRuleId, mergedRule.id, changedBy);
-    return this.saveRule(mergedRule).then(() => mergedRule);
   }
 }

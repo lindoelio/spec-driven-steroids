@@ -56,13 +56,19 @@ export function transformToMarkdown(body: string, config: PlatformConfig, source
  * Handles quotes and special characters.
  */
 function escapeYamlString(value: string): string {
-  // If the value contains newlines, quotes, or special chars, wrap in quotes
-  if (value.includes('\n') || value.includes('"') || value.includes("'") || value.includes(':')) {
-    // Escape double quotes and wrap in double quotes
-    const escaped = value.replace(/"/g, '\\"');
-    return `"${escaped}"`;
+  const plainSafe = /^[A-Za-z0-9_][A-Za-z0-9 _./()'@-]*$/;
+  const reserved = /^(?:true|false|null|yes|no|on|off|~|-?\d+(?:\.\d+)?)$/i;
+
+  if (
+    value.length > 0 &&
+    value === value.trim() &&
+    plainSafe.test(value) &&
+    !reserved.test(value)
+  ) {
+    return value;
   }
-  return value;
+
+  return JSON.stringify(value);
 }
 
 /**

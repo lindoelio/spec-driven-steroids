@@ -49,9 +49,9 @@ async function verifyCompleteSpec(
   const requirementsErrors: string[] = [];
   const designErrors: string[] = [];
   const tasksErrors: string[] = [];
-  
+
   const specDir = path.join(targetDir, '.specs', 'changes', slug);
-  
+
   const structureResult = prevalidatedStructure ?? await verifySpecStructure(slug, targetDir);
   warnings.push(...structureResult.warnings);
   if (!structureResult.valid) {
@@ -59,11 +59,11 @@ async function verifyCompleteSpec(
       errors.push(err);
     }
   }
-  
+
   let requirementsContent = '';
   let designContent = '';
   let tasksContent = '';
-  
+
   try {
     requirementsContent = await fs.readFile(path.join(specDir, 'requirements.md'), 'utf-8');
   } catch (e) {
@@ -76,7 +76,7 @@ async function verifyCompleteSpec(
       skillDocLink: SKILL_DOCS.requirements
     });
   }
-  
+
   try {
     designContent = await fs.readFile(path.join(specDir, 'design.md'), 'utf-8');
   } catch (e) {
@@ -89,7 +89,7 @@ async function verifyCompleteSpec(
       skillDocLink: SKILL_DOCS.design
     });
   }
-  
+
   try {
     tasksContent = await fs.readFile(path.join(specDir, 'tasks.md'), 'utf-8');
   } catch (e) {
@@ -102,7 +102,7 @@ async function verifyCompleteSpec(
       skillDocLink: SKILL_DOCS.tasks
     });
   }
-  
+
   if (requirementsContent) {
     const reqResult = verifyRequirementsFile(requirementsContent);
     warnings.push(...reqResult.warnings.map(warning => ({ ...warning, message: `requirements.md: ${warning.message}` })));
@@ -113,7 +113,7 @@ async function verifyCompleteSpec(
       }
     }
   }
-  
+
   if (designContent) {
     const desResult = verifyDesignFile(designContent, requirementsContent);
     warnings.push(...desResult.warnings.map(warning => ({ ...warning, message: `design.md: ${warning.message}` })));
@@ -124,7 +124,7 @@ async function verifyCompleteSpec(
       }
     }
   }
-  
+
   if (tasksContent) {
     const taskResult = verifyTasksFile(tasksContent, designContent, requirementsContent);
     warnings.push(...taskResult.warnings.map(warning => ({ ...warning, message: `tasks.md: ${warning.message}` })));
@@ -135,13 +135,13 @@ async function verifyCompleteSpec(
       }
     }
   }
-  
+
   const desIds = designContent ? extractDeclaredDesignElementIds(designContent).map(id => id) : [];
   const taskDesImpl = tasksContent
     ? Array.from(tasksContent.matchAll(/_Implements:\s*([^_\n]+)_/gi), m => m[1].match(/DES-\d+/g) || []).flat()
     : [];
   const orphans: string[] = [];
-  
+
   for (const desId of desIds) {
     const hasTask = taskDesImpl.includes(desId);
     if (!hasTask) {
@@ -154,7 +154,7 @@ async function verifyCompleteSpec(
       });
     }
   }
-  
+
   return {
     ...createValidationResult(errors.length === 0, errors, warnings),
     lane: 'full',
@@ -234,7 +234,7 @@ export { verifyBriefSpec, verifyCompleteSpec, verifySpec };
 
 export function createSpecCommand(): Command {
   const cmd = new Command();
-  
+
   cmd
     .name('spec')
     .description('Validate a brief or full spec with cross-file traceability')
@@ -243,12 +243,13 @@ export function createSpecCommand(): Command {
     .option('--format <text|json>', 'Output format (text or json)', 'text')
     .action(async (slug: string, opts: { targetDir: string; format: string }) => {
       const result = await verifySpec(slug, opts.targetDir);
-      
+
       if (opts.format === 'json') {
         console.log(formatValidationResult(result, 'json'));
-        process.exit(getExitCode(result));
+        process.exitCode = getExitCode(result);
+        return;
       }
-      
+
       if (!result.valid) {
         console.log(chalk.red('❌ Spec validation failed:\n'));
 
@@ -259,7 +260,7 @@ export function createSpecCommand(): Command {
           }
           console.log();
         }
-        
+
         if (result.requirementsErrors.length > 0) {
           console.log(chalk.red('Requirements errors:'));
           for (const err of result.requirementsErrors) {
@@ -267,7 +268,7 @@ export function createSpecCommand(): Command {
           }
           console.log();
         }
-        
+
         if (result.designErrors.length > 0) {
           console.log(chalk.red('Design errors:'));
           for (const err of result.designErrors) {
@@ -275,7 +276,7 @@ export function createSpecCommand(): Command {
           }
           console.log();
         }
-        
+
         if (result.tasksErrors.length > 0) {
           console.log(chalk.red('Tasks errors:'));
           for (const err of result.tasksErrors) {
@@ -283,10 +284,12 @@ export function createSpecCommand(): Command {
           }
           console.log();
         }
-        
-        process.exit(1);
+
+        process.exitCode = 1;
+
+        return;
       }
-      
+
       console.log(chalk.green('✅ Spec validation passed.'));
       console.log(`\nLane: ${result.lane}`);
       console.log('\nTraceability Report:');
@@ -300,9 +303,11 @@ export function createSpecCommand(): Command {
           console.log(`  • ${warning.message}`);
         }
       }
-      
-      process.exit(0);
+
+      process.exitCode = 0;
+
+      return;
     });
-  
+
   return cmd;
 }

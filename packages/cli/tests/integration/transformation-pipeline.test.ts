@@ -6,7 +6,6 @@ import {
   transformForPlatform,
   transformTemplates
 } from '../../src/cli/transformation-pipeline.js';
-import { PLATFORM_CONFIGS } from '../../src/cli/platform-config.js';
 
 describe('Integration: Transformation Pipeline', () => {
   const templatesDir = path.resolve(__dirname, '../../templates');

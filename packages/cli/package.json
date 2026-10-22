@@ -13,7 +13,8 @@
         "templates",
         "package.json",
         "README.md",
-        "LICENSE"
+        "LICENSE",
+        "CHANGELOG.md"
     ],
     "scripts": {
         "build": "tsc",
@@ -22,21 +23,24 @@
         "dev": "tsc -w",
         "test": "tsc && vitest run",
         "test:ui": "tsc && vitest --ui",
-        "test:coverage": "tsc && vitest --coverage",
+        "test:coverage": "tsc && vitest run --coverage",
+        "pack:check": "node ../../scripts/pack-check.mjs",
+        "lint": "pnpm exec biome check src tests",
         "typecheck": "tsc --noEmit",
         "prepublishOnly": "pnpm build"
     },
     "dependencies": {
-        "commander": "^11.1.0",
-        "inquirer": "^9.2.12",
         "chalk": "^5.3.0",
-        "fs-extra": "^11.2.0"
+        "commander": "^11.1.0",
+        "fs-extra": "^11.2.0",
+        "inquirer": "^9.2.12",
+        "yaml": "^2.9.1"
     },
     "devDependencies": {
         "@spec-driven-steroids/test-utils": "workspace:*",
-        "@types/node": "^25.2.1",
         "@types/fs-extra": "^11.0.4",
         "@types/inquirer": "^9.0.7",
+        "@types/node": "^20.19.0",
         "typescript": "^5.9.3"
     },
     "repository": {

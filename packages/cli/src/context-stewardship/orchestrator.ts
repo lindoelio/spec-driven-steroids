@@ -4,7 +4,7 @@ import { LifecycleManager } from './lifecycle-manager.js';
 import { GracefulDegradationRouter, defaultRouter } from './graceful-degradation-router.js';
 import { SpecDecisionExtractor } from './spec-decision-extractor.js';
 import { PhaseContextInjector } from './phase-context-injector.js';
-import type { RetrievalQuery, Domain, RuleNode } from './types.js';
+import type { RetrievalQuery, Domain, RuleNode, ConflictDecision } from './types.js';
 
 export type Command =
   | 'retrieve'
@@ -62,7 +62,7 @@ export class ContextStewardshipOrchestrator {
       case 'retrieve':
         return this.commandRetrieve(args as { query: string; domain?: Domain; scope?: string; global?: boolean });
       case 'store':
-        return this.commandStore(args as { domain: Domain; content: string; author?: string; scope?: string; global?: boolean });
+        return this.commandStore(args as { domain: Domain; content: string; author?: string; scope?: string; global?: boolean; onConflict?: ConflictDecision });
       case 'extract':
         return this.commandExtract(args as { filePath: string; author?: string });
       case 'trace':
@@ -176,7 +176,7 @@ export class ContextStewardshipOrchestrator {
     return { success: true, output: lines.join('\n'), data: result };
   }
 
-  private async commandStore(args: { domain: Domain; content: string; author?: string; scope?: string; global?: boolean }): Promise<CommandResult> {
+  private async commandStore(args: { domain: Domain; content: string; author?: string; scope?: string; global?: boolean; onConflict?: ConflictDecision }): Promise<CommandResult> {
     const scopeError = this.validateScopeOptions(args);
     if (scopeError) {
       return { success: false, output: scopeError };
@@ -184,28 +184,53 @@ export class ContextStewardshipOrchestrator {
 
     const scope = this.resolveTargetScope(args);
     const store = this.createStoreForScope(scope);
-    const rule = store.createRule({
+    const author = args.author ?? 'agent';
+    let rule = store.createRule({
       domain: args.domain,
       content: args.content,
-      author: args.author,
+      author,
     });
 
     const conflicts = await this.detectConflictsForScope(rule, store, scope);
     if (conflicts.length > 0) {
-      const conflictLines = ['Potential conflicts detected:', ...conflicts.map(c =>
-        `  - Similarity ${c.similarity.toFixed(2)} (${c.scope}): ${c.rule.content.slice(0, 60)}...`
-      )];
-      conflictLines.push('Use store with conflict resolution or cancel.');
+      if (!args.onConflict) {
+        const conflictLines = [
+          'Potential conflicts detected:',
+          ...conflicts.map(c =>
+            `  - ${c.rule.id} (similarity ${c.similarity.toFixed(2)}, ${c.scope}): ${c.rule.content.slice(0, 60)}...`
+          ),
+          'Re-run with --on-conflict cancel|override|merge to decide.'
+        ];
+        return {
+          success: false,
+          output: conflictLines.join('\n'),
+          data: { rule, conflicts },
+        };
+      }
 
-      return {
-        success: false,
-        output: conflictLines.join('\n'),
-        data: { rule, conflicts },
-      };
+      if (args.onConflict === 'cancel') {
+        return { success: false, output: 'Store cancelled because conflicting rules exist.', data: { rule, conflicts } };
+      }
+
+      for (const conflict of conflicts) {
+        const conflictStore = conflict.scope === 'global' ? this.globalStore : store;
+        if (args.onConflict === 'merge') {
+          rule = {
+            ...rule,
+            content: `${conflict.rule.content}\n---\n${rule.content}`,
+            provenance: {
+              ...rule.provenance,
+              originalText: `${conflict.rule.provenance.originalText}\n---\n${rule.provenance.originalText}`,
+            },
+          };
+        }
+        await conflictStore.deprecateRule(conflict.rule.id, rule.id, author);
+      }
     }
 
     await store.saveRule(rule);
-    return { success: true, output: `Rule created: ${rule.id} (${this.formatScope(scope)})`, data: { rule } };
+    const conflictNote = conflicts.length > 0 ? ` (resolved ${conflicts.length} conflict(s) with ${args.onConflict})` : '';
+    return { success: true, output: `Rule created: ${rule.id} (${this.formatScope(scope)})${conflictNote}`, data: { rule, conflicts } };
   }
 
   private async commandExtract(args: { filePath: string; author?: string }): Promise<CommandResult> {

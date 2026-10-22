@@ -1,5 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
+import { parse as parseYaml } from 'yaml';
 import { getPlatformConfig, type PlatformConfig } from './platform-config.js';
 import { transform, transformCommandToSkill, transformToTomlCommand } from './format-transformer.js';
 
@@ -47,6 +48,8 @@ export interface PlatformTransformResult {
 export interface TransformOptions {
   /** Output types to skip (e.g., ['inject-guidelines-command'] to skip prompts) */
   skipOutputTypes?: string[];
+  /** Compute outputs without writing them to disk. */
+  dryRun?: boolean;
 }
 
 /**
@@ -95,7 +98,7 @@ export async function transformForPlatform(
     if (skipOutputTypes.includes(source.outputType)) {
       continue;
     }
-    const result = await transformSource(source, config, templatesDir, destDir);
+    const result = await transformSource(source, config, templatesDir, destDir, options?.dryRun === true);
     results.push(result);
   }
   
@@ -109,7 +112,8 @@ async function transformSource(
   source: UniversalSource,
   config: PlatformConfig,
   templatesDir: string,
-  destDir: string
+  destDir: string,
+  dryRun: boolean
 ): Promise<PlatformTransformResult> {
   const sourcePath = path.join(templatesDir, source.sourcePath);
 
@@ -175,8 +179,10 @@ async function transformSource(
     const outputPath = path.join(destDir, outputDir, outputFilename);
 
     // Write transformed content
-    await fs.ensureDir(path.dirname(outputPath));
-    await fs.writeFile(outputPath, transformResult.content, 'utf-8');
+    if (!dryRun) {
+      await fs.ensureDir(path.dirname(outputPath));
+      await fs.writeFile(outputPath, transformResult.content, 'utf-8');
+    }
 
     return {
       platformId: config.id,
@@ -201,27 +207,32 @@ async function transformSource(
  * Extract body content and YAML frontmatter from a universal prompt file.
  */
 function extractContent(content: string): { body: string; frontmatter: Record<string, string> } {
-  let body = content;
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+  if (!match) {
+    return { body: content, frontmatter: {} };
+  }
+
+  const body = content.slice(match[0].length).trim();
   const frontmatter: Record<string, string> = {};
-  
-  if (content.startsWith('---')) {
-    const endFrontmatter = content.indexOf('---', 3);
-    if (endFrontmatter !== -1) {
-      body = content.slice(endFrontmatter + 3).trim();
-      const fmStr = content.slice(3, endFrontmatter).trim();
-      for (const line of fmStr.split('\n')) {
-        const colonIdx = line.indexOf(':');
-        if (colonIdx !== -1) {
-          const key = line.slice(0, colonIdx).trim();
-          let value = line.slice(colonIdx + 1).trim();
-          if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
-            value = value.slice(1, -1);
-          }
+
+  try {
+    const parsed = parseYaml(match[1]) as Record<string, unknown> | null;
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      for (const [key, value] of Object.entries(parsed)) {
+        if (value === null || value === undefined) continue;
+        if (typeof value === 'string') {
           frontmatter[key] = value;
+        } else if (Array.isArray(value)) {
+          frontmatter[key] = value.map(item => String(item)).join(', ');
+        } else {
+          frontmatter[key] = String(value);
         }
       }
     }
+  } catch {
+    // Invalid frontmatter is ignored; the body is still transformed.
   }
+
   return { body, frontmatter };
 }
 

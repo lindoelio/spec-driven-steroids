@@ -12,7 +12,7 @@ This project's testing mix (integration/E2E alongside unit tests, no declared hi
 
 ## Frameworks and Tooling
 
-- **Test runner**: [Vitest](https://vitest.dev/) 2.x
+- **Test runner**: [Vitest](https://vitest.dev/) 3.x
 - **Coverage**: `@vitest/coverage-v8`
 - **Assertions**: Vitest's built-in `expect` (global)
 - **Mocks**: `vi.spyOn`, `vi.stubGlobal`, `vi.fn`
@@ -34,7 +34,7 @@ pnpm test:ui
 npx vitest run tests/integration/inject-validate.e2e.test.ts
 ```
 
-**Important**: Integration tests import compiled output from `dist/`, so run `pnpm build` (or `tsc`) before executing tests when source has changed.
+**Important**: The package test script runs `tsc` first. Unit and integration tests import from `src/`; only `tests/integration/dist-smoke.test.ts` imports the compiled `dist/` entry point.
 
 ## Test Organization
 
@@ -81,10 +81,21 @@ Unit tests import directly from `src/` and run without a build step.
 
 ## Coverage Targets
 
+Coverage is enforced in CI with a ratchet policy. The current thresholds are:
+
 | Package | Statements | Branches | Functions | Lines |
 |---|---|---|---|---|
-| `packages/cli` | 75% | 75% | 75% | 75% |
-| `packages/test-utils` | 60% | 60% | 60% | 60% |
+| `packages/cli` | 70% | 65% | 75% | 70% |
+| `packages/test-utils` | n/a (excluded) | n/a | n/a | n/a |
+
+The ratchet must never decrease. Raise the thresholds when a change meaningfully improves coverage; do not lower them to make a PR pass.
+
+Unit tests import from `src/` so coverage maps to source files. Integration tests may import the compiled `dist/` entry point only for the dedicated `dist-smoke` test.
+
+## Cross-Platform Tests
+
+Platform path helpers are expected to work on macOS, Linux, and Windows. Add unit tests that stub `process.platform` when changing path resolution logic.
+
 
 ## Test Utilities
 

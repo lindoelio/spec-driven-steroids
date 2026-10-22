@@ -15,11 +15,7 @@ export function getGitHubCopilotCliGlobalConfigDir(): string {
 }
 
 export function getGitHubCopilotCliUserSkillsDir(): string {
-  if (process.platform === "win32") {
-    const userProfile = process.env.USERPROFILE || os.homedir()
-    return path.join(userProfile, ".copilot", "skills")
-  }
-  return path.join(os.homedir(), ".copilot", "skills")
+  return path.join(getGitHubCopilotCliGlobalConfigDir(), "skills")
 }
 
 export function getGitHubCopilotCliProjectSkillsDir(targetDir: string): string {

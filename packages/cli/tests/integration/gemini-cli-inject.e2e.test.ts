@@ -34,7 +34,7 @@ describe('CLI E2E: Gemini CLI injection', () => {
         .mockResolvedValueOnce({ platforms: ['gemini-cli'] })
         .mockResolvedValueOnce({ scope: 'global' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const geminiDir = path.join(mockHomeDir, '.gemini');
@@ -50,7 +50,7 @@ describe('CLI E2E: Gemini CLI injection', () => {
         .mockResolvedValueOnce({ platforms: ['gemini-cli'] })
         .mockResolvedValueOnce({ scope: 'global' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const agentPath = path.join(mockHomeDir, '.gemini', 'agents', 'spec-driven.md');
@@ -65,7 +65,7 @@ describe('CLI E2E: Gemini CLI injection', () => {
         .mockResolvedValueOnce({ platforms: ['gemini-cli'] })
         .mockResolvedValueOnce({ scope: 'global' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const commandPath = path.join(mockHomeDir, '.gemini', 'commands', 'inject-guidelines.toml');
@@ -80,7 +80,7 @@ describe('CLI E2E: Gemini CLI injection', () => {
         .mockResolvedValueOnce({ platforms: ['gemini-cli'] })
         .mockResolvedValueOnce({ scope: 'global' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const commandPath = path.join(mockHomeDir, '.gemini', 'commands', 'spec-driven.toml');
@@ -96,7 +96,7 @@ describe('CLI E2E: Gemini CLI injection', () => {
         .mockResolvedValueOnce({ platforms: ['gemini-cli'] })
         .mockResolvedValueOnce({ scope: 'global' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const skillsPath = path.join(mockHomeDir, '.gemini', 'skills', 'long-running-work-planning', 'SKILL.md');
@@ -108,7 +108,7 @@ describe('CLI E2E: Gemini CLI injection', () => {
         .mockResolvedValueOnce({ platforms: ['gemini-cli'] })
         .mockResolvedValueOnce({ scope: 'global' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const aliasDir = path.join(mockHomeDir, '.agents', 'skills');
@@ -122,7 +122,7 @@ describe('CLI E2E: Gemini CLI injection', () => {
         .mockResolvedValueOnce({ platforms: ['gemini-cli'] })
         .mockResolvedValueOnce({ scope: 'project' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const geminiDir = path.join(targetDir, '.gemini');
@@ -137,7 +137,7 @@ describe('CLI E2E: Gemini CLI injection', () => {
         .mockResolvedValueOnce({ platforms: ['gemini-cli'] })
         .mockResolvedValueOnce({ scope: 'project' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const agentPath = path.join(targetDir, '.gemini', 'agents', 'spec-driven.md');
@@ -151,7 +151,7 @@ describe('CLI E2E: Gemini CLI injection', () => {
         .mockResolvedValueOnce({ platforms: ['gemini-cli'] })
         .mockResolvedValueOnce({ scope: 'project' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const commandPath = path.join(targetDir, '.gemini', 'commands', 'inject-guidelines.toml');
@@ -166,7 +166,7 @@ describe('CLI E2E: Gemini CLI injection', () => {
         .mockResolvedValueOnce({ platforms: ['gemini-cli'] })
         .mockResolvedValueOnce({ scope: 'project' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const commandPath = path.join(targetDir, '.gemini', 'commands', 'spec-driven.toml');
@@ -182,7 +182,7 @@ describe('CLI E2E: Gemini CLI injection', () => {
         .mockResolvedValueOnce({ platforms: ['gemini-cli'] })
         .mockResolvedValueOnce({ scope: 'project' });
 
-      const program = (await import('../../dist/cli/index.js')).default;
+      const program = (await import('../../src/cli/index.js')).default;
       await program.parseAsync(['inject'], { from: 'user' } as any);
 
       const skillsPath = path.join(targetDir, '.gemini', 'skills', 'long-running-work-planning', 'SKILL.md');

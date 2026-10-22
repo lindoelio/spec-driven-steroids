@@ -389,7 +389,8 @@ export function createTasksCommand(): Command {
         content = await fs.readFile(fullPath, 'utf-8');
       } catch {
         console.error(chalk.red(`Error: Cannot read file: ${fullPath}`));
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
       
       let designContent: string | undefined;
@@ -399,7 +400,8 @@ export function createTasksCommand(): Command {
           designContent = await fs.readFile(designPath, 'utf-8');
         } catch {
           console.error(chalk.red(`Error: Cannot read design file: ${designPath}`));
-          process.exit(1);
+          process.exitCode = 1;
+          return;
         }
       }
 
@@ -410,7 +412,8 @@ export function createTasksCommand(): Command {
           requirementsContent = await fs.readFile(requirementsPath, 'utf-8');
         } catch {
           console.error(chalk.red(`Error: Cannot read requirements file: ${requirementsPath}`));
-          process.exit(1);
+          process.exitCode = 1;
+          return;
         }
       }
        
@@ -418,7 +421,8 @@ export function createTasksCommand(): Command {
       
       if (opts.format === 'json') {
         console.log(formatValidationResult(result, 'json'));
-        process.exit(getExitCode(result));
+        process.exitCode = getExitCode(result);
+        return;
       }
       
       if (!result.valid) {
@@ -427,7 +431,8 @@ export function createTasksCommand(): Command {
           console.log(formatError(err));
           console.log();
         }
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
       
       console.log(chalk.green('✅ Tasks validation passed.'));
@@ -439,7 +444,8 @@ export function createTasksCommand(): Command {
           console.log(`  • ${warning.message}`);
         }
       }
-      process.exit(0);
+      process.exitCode = 0;
+      return;
     });
   
   return cmd;

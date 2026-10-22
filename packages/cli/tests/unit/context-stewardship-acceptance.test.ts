@@ -3,16 +3,15 @@ import { tmpdir } from 'os';
 import path from 'path';
 import { promises as fs } from 'fs';
 
-const originalHome = process.env.HOME;
-
 interface TestModules {
-  KnowledgeGraphStore: typeof import('../../dist/context-stewardship/knowledge-graph-store.js')['KnowledgeGraphStore'];
-  LifecycleManager: typeof import('../../dist/context-stewardship/lifecycle-manager.js')['LifecycleManager'];
-  SemanticRetrievalEngine: typeof import('../../dist/context-stewardship/semantic-retrieval-engine.js')['SemanticRetrievalEngine'];
-  ProjectScopedResolver: typeof import('../../dist/context-stewardship/project-scoped-resolver.js')['ProjectScopedResolver'];
-  SpecDecisionExtractor: typeof import('../../dist/context-stewardship/spec-decision-extractor.js')['SpecDecisionExtractor'];
-  GracefulDegradationRouter: typeof import('../../dist/context-stewardship/graceful-degradation-router.js')['GracefulDegradationRouter'];
-  ContextStewardshipOrchestrator: typeof import('../../dist/context-stewardship/orchestrator.js')['ContextStewardshipOrchestrator'];
+  KnowledgeGraphStore: typeof import('../../src/context-stewardship/knowledge-graph-store.js')['KnowledgeGraphStore'];
+  LifecycleManager: typeof import('../../src/context-stewardship/lifecycle-manager.js')['LifecycleManager'];
+  SemanticRetrievalEngine: typeof import('../../src/context-stewardship/semantic-retrieval-engine.js')['SemanticRetrievalEngine'];
+  ProjectScopedResolver: typeof import('../../src/context-stewardship/project-scoped-resolver.js')['ProjectScopedResolver'];
+  detectProjectId: typeof import('../../src/context-stewardship/project-scoped-resolver.js')['detectProjectId'];
+  SpecDecisionExtractor: typeof import('../../src/context-stewardship/spec-decision-extractor.js')['SpecDecisionExtractor'];
+  GracefulDegradationRouter: typeof import('../../src/context-stewardship/graceful-degradation-router.js')['GracefulDegradationRouter'];
+  ContextStewardshipOrchestrator: typeof import('../../src/context-stewardship/orchestrator.js')['ContextStewardshipOrchestrator'];
   DEFAULT_EXPIRATION_YEARS: number;
   CONFLICT_SIMILARITY_THRESHOLD: number;
 }
@@ -25,20 +24,21 @@ async function withTempHome<T>(fn: (mods: TestModules) => Promise<T>): Promise<T
   try {
     // Import modules AFTER setting temp HOME so BASE_DIR uses correct path
     const [kgModule, lmModule, sreModule, psrModule, sdeModule, gdrModule, orchModule, typesModule] = await Promise.all([
-      import('../../dist/context-stewardship/knowledge-graph-store.js'),
-      import('../../dist/context-stewardship/lifecycle-manager.js'),
-      import('../../dist/context-stewardship/semantic-retrieval-engine.js'),
-      import('../../dist/context-stewardship/project-scoped-resolver.js'),
-      import('../../dist/context-stewardship/spec-decision-extractor.js'),
-      import('../../dist/context-stewardship/graceful-degradation-router.js'),
-      import('../../dist/context-stewardship/orchestrator.js'),
-      import('../../dist/context-stewardship/types.js'),
+      import('../../src/context-stewardship/knowledge-graph-store.js'),
+      import('../../src/context-stewardship/lifecycle-manager.js'),
+      import('../../src/context-stewardship/semantic-retrieval-engine.js'),
+      import('../../src/context-stewardship/project-scoped-resolver.js'),
+      import('../../src/context-stewardship/spec-decision-extractor.js'),
+      import('../../src/context-stewardship/graceful-degradation-router.js'),
+      import('../../src/context-stewardship/orchestrator.js'),
+      import('../../src/context-stewardship/types.js'),
     ]);
     const mods: TestModules = {
       KnowledgeGraphStore: kgModule.KnowledgeGraphStore,
       LifecycleManager: lmModule.LifecycleManager,
       SemanticRetrievalEngine: sreModule.SemanticRetrievalEngine,
       ProjectScopedResolver: psrModule.ProjectScopedResolver,
+      detectProjectId: psrModule.detectProjectId,
       SpecDecisionExtractor: sdeModule.SpecDecisionExtractor,
       GracefulDegradationRouter: gdrModule.GracefulDegradationRouter,
       ContextStewardshipOrchestrator: orchModule.ContextStewardshipOrchestrator,
@@ -332,7 +332,7 @@ describe('Context Stewardship Acceptance Tests', () => {
     });
 
     it('stores rules in the current project scope by default', async () => {
-      await withTempHome(async ({ KnowledgeGraphStore, ContextStewardshipOrchestrator }) => {
+      await withTempHome(async ({ KnowledgeGraphStore, ContextStewardshipOrchestrator, detectProjectId }) => {
         const oldCwd = process.cwd();
         const projectId = `scoped-memory-${Date.now()}`;
         const projectDir = path.join(tmpdir(), projectId);
@@ -349,7 +349,7 @@ describe('Context Stewardship Acceptance Tests', () => {
             content,
           });
 
-          const projectStore = new KnowledgeGraphStore('project', projectId);
+          const projectStore = new KnowledgeGraphStore('project', detectProjectId(projectDir));
           const globalStore = new KnowledgeGraphStore('global');
           const projectRules = await projectStore.listRules({ state: 'active' });
           const globalRules = await globalStore.listRules({ state: 'active' });
@@ -720,6 +720,90 @@ This document describes the system requirements.
         expect(caps.enabledFeatures).toBeDefined();
         expect(Array.isArray(caps.enabledFeatures)).toBe(true);
       });
+    });
+  });
+
+  describe('7.15 - Phase context injection and conflict resolution', () => {
+    it('returns stored rules for a phase even when the rule text does not contain the domain name', async () => {
+      await withTempHome(async ({ ContextStewardshipOrchestrator }) => {
+        const orchestrator = new ContextStewardshipOrchestrator();
+        await orchestrator.initialize();
+
+        const stored = await orchestrator.executeCommand('store', {
+          domain: 'architecture',
+          content: 'Use PostgreSQL as the primary database',
+        });
+        expect(stored.success).toBe(true);
+
+        const injected = await orchestrator.executeCommand('inject', { phase: 'design' });
+        expect(injected.output).toContain('Use PostgreSQL as the primary database');
+        const contexts = injected.data as Array<{ domain: string }>;
+        expect(contexts).toHaveLength(1);
+        expect(contexts[0].domain).toBe('architecture');
+      });
+    });
+
+    it('resolves duplicate rules with override and deprecates the previous rule', async () => {
+      await withTempHome(async ({ KnowledgeGraphStore, ContextStewardshipOrchestrator }) => {
+        const orchestrator = new ContextStewardshipOrchestrator();
+        await orchestrator.initialize();
+
+        const first = await orchestrator.executeCommand('store', {
+          domain: 'architecture',
+          content: 'Use PostgreSQL as the primary database',
+          global: true,
+        });
+        expect(first.success).toBe(true);
+
+        const second = await orchestrator.executeCommand('store', {
+          domain: 'architecture',
+          content: 'Use PostgreSQL as the primary database',
+          global: true,
+          onConflict: 'override',
+        });
+        expect(second.success).toBe(true);
+
+        const store = new KnowledgeGraphStore('global');
+        const activeRules = await store.listRules({ state: 'active' });
+        const deprecatedRules = await store.listRules({ state: 'deprecated' });
+        expect(activeRules).toHaveLength(1);
+        expect(deprecatedRules).toHaveLength(1);
+        expect(deprecatedRules[0].supersededBy).toBe(activeRules[0].id);
+      });
+    });
+
+    it('merges duplicate rules with merge', async () => {
+      await withTempHome(async ({ ContextStewardshipOrchestrator }) => {
+        const orchestrator = new ContextStewardshipOrchestrator();
+        await orchestrator.initialize();
+
+        await orchestrator.executeCommand('store', {
+          domain: 'architecture',
+          content: 'Use PostgreSQL as the primary database',
+          global: true,
+        });
+        const merged = await orchestrator.executeCommand('store', {
+          domain: 'architecture',
+          content: 'Use PostgreSQL as the primary database',
+          global: true,
+          onConflict: 'merge',
+        });
+
+        expect(merged.success).toBe(true);
+        expect(merged.output).toContain('resolved 1 conflict');
+      });
+    });
+
+    it('generates different project ids for different paths with the same basename', async () => {
+      const first = await fs.mkdtemp(path.join(tmpdir(), 'sds-project-a-'));
+      const second = await fs.mkdtemp(path.join(tmpdir(), 'sds-project-b-'));
+      try {
+        const { detectProjectId } = await import('../../src/context-stewardship/project-scoped-resolver.js');
+        expect(detectProjectId(first)).not.toBe(detectProjectId(second));
+      } finally {
+        await fs.rm(first, { recursive: true, force: true });
+        await fs.rm(second, { recursive: true, force: true });
+      }
     });
   });
 });

@@ -66,6 +66,7 @@ export interface RetrievalQuery {
   lifecycleState?: LifecycleValue;
   includeDeprecated?: boolean;
   limit?: number;
+  matchMode?: 'keyword' | 'domain' | 'hybrid';
 }
 
 export interface ScoredRule {

@@ -9,34 +9,44 @@ import { fileURLToPath } from 'url';
 
 import { resolveTemplateSource } from './template-source.js';
 import {
-  OpenCodeInjectionScope,
   getOpenCodeGlobalConfigDir
 } from './opencode-scope.js';
 import {
-  GitHubCopilotInjectionScope,
   getVSCodeGlobalPromptsDir,
   getCopilotGlobalSkillsDir
 } from './github-copilot-scope.js';
 import {
-  GitHubCopilotCliInjectionScope,
   getGitHubCopilotCliGlobalConfigDir
 } from './github-copilot-cli-scope.js';
 import {
-  GeminiCliInjectionScope
-} from './gemini-cli-scope.js';
-import {
-  QwenCodeInjectionScope
-} from './qwen-code-scope.js';
-import {
-  QoderInjectionScope,
-  getQoderGlobalConfigDir
-} from './qoder-scope.js';
-import {
-  ClineInjectionScope
-} from './cline-scope.js';
+  getPlatformDefinition,
+  getPlatformDefinitions,
+  getGlobalCapablePlatforms,
+  resolvePlatformScope,
+  type InjectionScope
+} from './platform-registry.js';
 import { transformTemplates } from './transformation-pipeline.js';
+import { getCliVersion, getBundledTemplatesDir } from './version.js';
+import { flattenPromptFiles, resolveFlattenedPromptPaths } from './vscode-prompts.js';
 import { createValidateCommand } from '../core/validate/index.js';
 import { createStewardshipCommand } from '../context-stewardship/cli-command.js';
+import {
+  createDoctorCommand,
+  createRepairCommand,
+  createTemplatesCommand,
+  createUninstallCommand
+} from '../commands/manifest-commands.js';
+import {
+  buildInstalledFiles,
+  collectFiles,
+  getConfigDir,
+  getManifestPath,
+  readManifest,
+  cleanManifest,
+  listManifests,
+  writeManifest,
+  type InstallManifest
+} from './install-manifest.js';
 
 interface InjectionResult {
   platform: string;
@@ -44,10 +54,11 @@ interface InjectionResult {
   scope: string;
   ok: boolean;
   error: string;
+  files?: string[];
+  dryRun?: boolean;
 }
 
-const GLOBAL_CAPABLE_PLATFORMS = ['github-vscode', 'github-copilot-cli', 'gemini-cli', 'qwen-code', 'opencode', 'cline', 'antigravity', 'antigravity-cli', 'qoder'] as const;
-type GlobalCapablePlatform = typeof GLOBAL_CAPABLE_PLATFORMS[number];
+const GLOBAL_CAPABLE_PLATFORMS = new Set(getGlobalCapablePlatforms().map(definition => definition.id));
 
 enum UnifiedInjectionScope {
   PROJECT = 'project',
@@ -87,25 +98,23 @@ const CLINE_EXTRA_SKILL_DIRS = ['spec-driven', 'inject-guidelines'] as const;
 const ANTIGRAVITY_EXTRA_SKILL_DIRS = ['spec-driven', 'inject-guidelines'] as const;
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const packageJsonPath = path.resolve(__dirname, '../../package.json');
 
 function platformDisplayName(platform: string): string {
-  switch (platform) {
-    case 'github-vscode': return 'GitHub Copilot for VS Code';
-    case 'github-jetbrains': return 'GitHub Copilot for JetBrains';
-    case 'github-copilot-cli': return 'GitHub Copilot CLI';
-    case 'gemini-cli': return 'Gemini CLI';
-    case 'qwen-code': return 'Qwen Code';
-          case 'qoder': return 'Qoder CLI / IDE';
-    case 'antigravity': return 'Google Antigravity IDE';
-    case 'antigravity-cli': return 'Google Antigravity CLI (AGY)';
-    case 'opencode': return 'OpenCode';
-    case 'codex': return 'OpenAI Codex';
-    case 'claudecode': return 'Claude Code';
-    case 'cline': return 'Cline';
-    default: return platform;
-  }
+  return getPlatformDefinition(platform)?.displayName ?? platform;
+}
+
+function getEffectiveScope(platform: string, unifiedScope: UnifiedInjectionScope): InjectionScope {
+  const definition = getPlatformDefinition(platform);
+  if (!definition) return 'project';
+  return resolvePlatformScope(
+    definition,
+    unifiedScope === UnifiedInjectionScope.GLOBAL ? 'global' : 'project'
+  );
+}
+
+function summarizeScope(results: InjectionResult[]): string {
+  const scopes = [...new Set(results.map(result => result.scope))];
+  return scopes.length === 1 ? scopes[0] : 'mixed';
 }
 
 function renderInjectionSummary(
@@ -144,15 +153,7 @@ function renderInjectionSummary(
   }
 }
 
-function getCliVersion(): string {
-  try {
-    const pkg = fs.readJsonSync(packageJsonPath) as { version?: string };
-    return pkg.version ?? '0.0.0';
-  } catch {
-    return '0.0.0';
-  }
-}
-
+export function createProgram(): Command {
 const program = new Command();
 
 program
@@ -163,54 +164,78 @@ program
 
 program.addCommand(createValidateCommand());
 program.addCommand(createStewardshipCommand());
+program.addCommand(createDoctorCommand());
+program.addCommand(createRepairCommand());
+program.addCommand(createUninstallCommand());
+program.addCommand(createTemplatesCommand());
 
 program
    .command('inject')
   .description('Inject platform-specific Spec-Driven configs')
-  .action(async () => {
-    const { platforms } = await inquirer.prompt([
-      {
-        type: 'checkbox',
-        name: 'platforms',
-        message: 'Select platforms to support:',
-        choices: [
-          { name: 'GitHub Copilot for VS Code', value: 'github-vscode' },
-          { name: 'GitHub Copilot for JetBrains', value: 'github-jetbrains' },
-          { name: 'GitHub Copilot CLI', value: 'github-copilot-cli' },
-          { name: 'Gemini CLI', value: 'gemini-cli' },
-          { name: 'Qwen Code', value: 'qwen-code' },
-          { name: 'Qoder CLI / IDE', value: 'qoder' },
-          { name: 'Google Antigravity IDE', value: 'antigravity' },
-          { name: 'Google Antigravity CLI (AGY)', value: 'antigravity-cli' },
-          { name: 'OpenCode', value: 'opencode' },
-          { name: 'OpenAI Codex', value: 'codex' },
-          { name: 'Claude Code', value: 'claudecode' },
-          { name: 'Cline', value: 'cline' }
-        ],
-        validate: (input: string[]) => input.length > 0 || 'Select at least one platform.'
-      }
-    ]);
+  .option('--platform <ids>', 'Comma-separated platform IDs (skips the platform prompt)')
+  .option('--scope <scope>', 'Injection scope: global or project')
+  .option('--templates <source>', 'Template source: bundled or remote')
+  .option('--dry-run', 'Show planned files without writing them')
+  .option('--json', 'Emit a machine-readable JSON summary')
+  .option('--backup', 'Back up existing platform roots before writing')
+  .option('--yes', 'Skip prompts when --platform is provided')
+  .action(async (opts: {
+    platform?: string;
+    scope?: string;
+    templates?: string;
+    dryRun?: boolean;
+    json?: boolean;
+    backup?: boolean;
+    yes?: boolean;
+  }) => {
+    const log = opts.json ? () => undefined : console.log;
+    let platforms: string[];
 
-    const selectedGlobalPlatforms = platforms.filter((p: string) => 
-      GLOBAL_CAPABLE_PLATFORMS.includes(p as GlobalCapablePlatform)
-    ) as GlobalCapablePlatform[];
+    if (opts.platform) {
+      platforms = opts.platform.split(',').map(value => value.trim()).filter(Boolean);
+      const unknown = platforms.filter(platform => !getPlatformDefinition(platform));
+      if (unknown.length > 0) {
+        console.error(chalk.red(`Error: Unknown platform(s): ${unknown.join(', ')}`));
+        process.exitCode = 2;
+        return;
+      }
+    } else {
+      if (opts.yes) {
+        console.error(chalk.red('Error: --yes requires --platform.'));
+        process.exitCode = 2;
+        return;
+      }
+      const answer = await inquirer.prompt([
+        {
+          type: 'checkbox',
+          name: 'platforms',
+          message: 'Select platforms to support:',
+          choices: getPlatformDefinitions().map(definition => ({
+            name: definition.displayName,
+            value: definition.id
+          })),
+          validate: (input: string[]) => input.length > 0 || 'Select at least one platform.'
+        }
+      ]);
+      platforms = answer.platforms;
+    }
+
+    const selectedGlobalPlatforms = platforms.filter((p: string) => GLOBAL_CAPABLE_PLATFORMS.has(p));
     
     let unifiedScope = DEFAULT_UNIFIED_SCOPE;
-    if (selectedGlobalPlatforms.length > 0) {
-      const platformNames = selectedGlobalPlatforms.map(p => {
-        switch (p) {
-          case 'github-vscode': return 'GitHub Copilot for VS Code';
-          case 'github-copilot-cli': return 'GitHub Copilot CLI';
-          case 'gemini-cli': return 'Gemini CLI';
-          case 'qwen-code': return 'Qwen Code';
-    case 'qoder': return 'Qoder CLI / IDE';
-          case 'opencode': return 'OpenCode';
-          case 'cline': return 'Cline';
-          case 'antigravity': return 'Google Antigravity IDE';
-          case 'antigravity-cli': return 'Google Antigravity CLI (AGY)';
-          default: return p;
-        }
-      }).join(', ');
+    if (opts.scope) {
+      if (!['global', 'project'].includes(opts.scope)) {
+        console.error(chalk.red("Error: --scope must be 'global' or 'project'."));
+        process.exitCode = 2;
+        return;
+      }
+      unifiedScope = opts.scope === 'global'
+        ? UnifiedInjectionScope.GLOBAL
+        : UnifiedInjectionScope.PROJECT;
+    } else if (selectedGlobalPlatforms.length > 0 && !opts.yes) {
+      const platformNames = selectedGlobalPlatforms
+        .map((p: string) => platformDisplayName(p))
+        .join(', ');
       
       const { scope } = await inquirer.prompt([
         {
@@ -224,217 +249,179 @@ program
       unifiedScope = scope as UnifiedInjectionScope;
     }
 
-    const scopeLabel = unifiedScope === UnifiedInjectionScope.GLOBAL ? 'global' : 'project';
+    if (opts.templates && !['bundled', 'remote'].includes(opts.templates)) {
+      console.error(chalk.red("Error: --templates must be 'bundled' or 'remote'."));
+      process.exitCode = 2;
+      return;
+    }
+
     const results: InjectionResult[] = [];
 
-    const openCodeScope = unifiedScope === UnifiedInjectionScope.GLOBAL
-      ? OpenCodeInjectionScope.GLOBAL
-      : OpenCodeInjectionScope.PROJECT;
-    const githubScope = unifiedScope === UnifiedInjectionScope.GLOBAL
-      ? GitHubCopilotInjectionScope.GLOBAL
-      : GitHubCopilotInjectionScope.PROJECT;
-    const githubCopilotCliScope = unifiedScope === UnifiedInjectionScope.GLOBAL
-      ? GitHubCopilotCliInjectionScope.USER
-      : GitHubCopilotCliInjectionScope.PROJECT;
-    const geminiCliScope = unifiedScope === UnifiedInjectionScope.GLOBAL
-      ? GeminiCliInjectionScope.USER
-      : GeminiCliInjectionScope.PROJECT;
-    const qwenCodeScope = unifiedScope === UnifiedInjectionScope.GLOBAL
-      ? QwenCodeInjectionScope.USER
-      : QwenCodeInjectionScope.PROJECT;
-    const qoderScope = unifiedScope === UnifiedInjectionScope.GLOBAL
-      ? QoderInjectionScope.USER
-      : QoderInjectionScope.PROJECT;
-    const clineScope = unifiedScope === UnifiedInjectionScope.GLOBAL
-      ? ClineInjectionScope.USER
-      : ClineInjectionScope.PROJECT;
-    const antigravityIdeScope = unifiedScope === UnifiedInjectionScope.GLOBAL
-      ? 'global'
-      : 'project';
-    const antigravityCliScope = unifiedScope === UnifiedInjectionScope.GLOBAL
-      ? 'global'
-      : 'project';
-
     const targetDir = process.cwd();
-    const bundledTemplatesDir = path.resolve(__dirname, '../../templates');
+    const bundledTemplatesDir = getBundledTemplatesDir();
     const templateSource = await resolveTemplateSource({
-      bundledTemplatesDir
+      bundledTemplatesDir,
+      cliVersion: getCliVersion(),
+      source: opts.templates as 'bundled' | 'remote' | undefined
     });
     const standardsDir = templateSource.rootDir;
     const universalSkillsDir = path.join(standardsDir, 'universal/skills');
 
     if (templateSource.source === 'remote') {
-      console.log(chalk.green(`Using remote templates (${templateSource.version}).`));
+      log(chalk.green(`Using remote templates (${templateSource.version}).`));
     } else {
-      console.log(chalk.yellow('Using bundled templates.'));
+      log(chalk.yellow('Using bundled templates.'));
       if (templateSource.fallbackReason) {
-        console.log(chalk.yellow(`Remote template retrieval failed, so inject fell back to bundled templates: ${templateSource.fallbackReason}`));
+        if (templateSource.errorKind) {
+          log(chalk.yellow(`Remote template retrieval failed, so inject fell back to bundled templates: ${templateSource.fallbackReason}`));
+        } else {
+          log(chalk.yellow(templateSource.fallbackReason));
+        }
       }
+    }
+    for (const warning of templateSource.warnings) {
+      log(chalk.yellow(`Template warning: ${warning}`));
     }
 
     for (const platform of platforms) {
       const displayName = platformDisplayName(platform);
-      process.stdout.write(`  ${displayName}...`);
+      const platformScope = getEffectiveScope(platform, unifiedScope);
+      if (!opts.json && !opts.dryRun) {
+        process.stdout.write(`  ${displayName}...`);
+      }
       try {
-        let platformDest = '';
-        let skillsSubDir = 'skills';
-        let transformDestDir = '';
+        const definition = getPlatformDefinition(platform);
+        if (!definition) {
+          throw new Error(`Unknown platform: ${platform}`);
+        }
 
-        if (platform === 'github-vscode') {
-          if (githubScope === GitHubCopilotInjectionScope.GLOBAL) {
-            const globalPromptsDir = getVSCodeGlobalPromptsDir();
-            transformDestDir = globalPromptsDir;
-            
-            const globalSkillsDir = getCopilotGlobalSkillsDir();
-            await fs.ensureDir(globalSkillsDir);
-            await fs.copy(universalSkillsDir, globalSkillsDir, { overwrite: true });
-          } else {
-            platformDest = path.join(targetDir, '.github');
-            transformDestDir = platformDest;
+        const effectiveScope = resolvePlatformScope(
+          definition,
+          unifiedScope === UnifiedInjectionScope.GLOBAL ? 'global' : 'project'
+        );
+        const platformRoot = definition.resolveRoot(effectiveScope, { cwd: targetDir, home: os.homedir() });
+        const skillsRoot = definition.resolveSkillsRoot(effectiveScope, { cwd: targetDir, home: os.homedir() });
+
+        if (platform === 'opencode' && effectiveScope === 'project' && !opts.dryRun) {
+          await updateOpenCodeConfig(targetDir);
+        }
+
+        if (opts.backup && !opts.dryRun) {
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          const backupRoot = path.join(getConfigDir(), 'backups', platform, effectiveScope, timestamp);
+          if (await fs.pathExists(platformRoot)) {
+            const destination = path.join(backupRoot, 'root');
+            await fs.copy(platformRoot, destination, { overwrite: true });
+            log(chalk.gray(`  backup: ${destination}`));
+          }
+          if (!isPathInside(platformRoot, skillsRoot) && await fs.pathExists(skillsRoot)) {
+            const destination = path.join(backupRoot, 'skills');
+            await fs.copy(skillsRoot, destination, { overwrite: true });
+            log(chalk.gray(`  backup: ${destination}`));
           }
         }
 
-        if (platform === 'github-jetbrains') {
-          platformDest = path.join(targetDir, '.github');
-          transformDestDir = platformDest;
+        const skipOutputTypes = platform === 'github-vscode' && effectiveScope === 'global'
+          ? definition.skipOutputTypes
+          : undefined;
+
+        const transformResults = await transformTemplates(
+          [platform],
+          standardsDir,
+          () => platformRoot,
+          { skipOutputTypes, dryRun: opts.dryRun }
+        );
+
+        const failedTransforms = transformResults.filter(result => !result.success);
+        if (failedTransforms.length > 0) {
+          const details = failedTransforms
+            .map(result => `${result.sourcePath}: ${result.error ?? 'unknown error'}`)
+            .join('; ');
+          throw new Error(`Template transformation failed: ${details}`);
         }
 
-        if (platform === 'antigravity') {
-          if (antigravityIdeScope === 'global') {
-            platformDest = path.join(os.homedir(), '.gemini', 'config');
-            transformDestDir = platformDest;
-          } else {
-            platformDest = path.join(targetDir, '.agents');
-            transformDestDir = platformDest;
-          }
+        const transformedFiles = transformResults
+          .map(result => result.outputPath)
+          .filter((outputPath): outputPath is string => outputPath.length > 0);
+
+        const flattensPrompts = definition.postProcess === 'flatten-vscode-prompts' && effectiveScope === 'global';
+        const writtenFiles = flattensPrompts
+          ? resolveFlattenedPromptPaths(platformRoot, transformedFiles)
+          : transformedFiles;
+
+        if (!opts.dryRun && flattensPrompts) {
+          await flattenPromptFiles(platformRoot, transformedFiles);
+        }
+        if (!opts.dryRun && definition.postProcess === 'remove-codex-legacy-commands') {
+          await removeCodexLegacyCommands(platformRoot);
         }
 
-        if (platform === 'antigravity-cli') {
-          if (antigravityCliScope === 'global') {
-            platformDest = path.join(os.homedir(), '.gemini', 'antigravity-cli');
-            transformDestDir = platformDest;
-          } else {
-            platformDest = path.join(targetDir, '.agents');
-            transformDestDir = platformDest;
-          }
-        }
+        const skillFiles = (await collectFiles(universalSkillsDir))
+          .map(file => path.join(skillsRoot, path.relative(universalSkillsDir, file)));
 
-        if (platform === 'opencode') {
-          if (openCodeScope === OpenCodeInjectionScope.GLOBAL) {
-            const globalOpencodeDir = getOpenCodeGlobalConfigDir();
-            transformDestDir = globalOpencodeDir;
-            
-            const globalSkillsDir = path.join(globalOpencodeDir, 'skills');
-            await fs.ensureDir(globalSkillsDir);
-            await fs.copy(universalSkillsDir, globalSkillsDir, { overwrite: true });
-          } else {
-            platformDest = path.join(targetDir, '.opencode');
-            transformDestDir = platformDest;
+        if (!opts.dryRun) {
+          await fs.ensureDir(skillsRoot);
+          await fs.copy(universalSkillsDir, skillsRoot, { overwrite: true });
 
-            await updateOpenCodeConfig(targetDir);
-          }
-        }
+          const installedFiles = await buildInstalledFiles([...writtenFiles, ...skillFiles]);
 
-        if (platform === 'codex') {
-          platformDest = path.join(targetDir, '.codex');
-          transformDestDir = platformDest;
-        }
-
-        if (platform === 'claudecode') {
-          platformDest = path.join(targetDir, '.claude');
-          transformDestDir = platformDest;
-        }
-
-        if (platform === 'github-copilot-cli') {
-          if (githubCopilotCliScope === GitHubCopilotCliInjectionScope.USER) {
-            const globalConfigDir = getGitHubCopilotCliGlobalConfigDir();
-            platformDest = globalConfigDir;
-            transformDestDir = globalConfigDir;
-            skillsSubDir = 'skills';
-          } else {
-            platformDest = path.join(targetDir, '.github');
-            transformDestDir = platformDest;
-          }
-        }
-
-        if (platform === 'gemini-cli') {
-          if (geminiCliScope === GeminiCliInjectionScope.USER) {
-            platformDest = path.join(os.homedir(), '.gemini');
-            transformDestDir = platformDest;
-          } else {
-            platformDest = path.join(targetDir, '.gemini');
-            transformDestDir = platformDest;
-          }
-        }
-
-        if (platform === 'qwen-code') {
-          if (qwenCodeScope === QwenCodeInjectionScope.USER) {
-            platformDest = path.join(os.homedir(), '.qwen');
-            transformDestDir = platformDest;
-          } else {
-            platformDest = path.join(targetDir, '.qwen');
-            transformDestDir = platformDest;
-          }
-        }
-
-        if (platform === 'qoder') {
-          if (qoderScope === QoderInjectionScope.USER) {
-            platformDest = getQoderGlobalConfigDir();
-            transformDestDir = platformDest;
-          } else {
-            platformDest = path.join(targetDir, '.qoder');
-            transformDestDir = platformDest;
-          }
-        }
-
-        if (platform === 'cline') {
-          if (clineScope === ClineInjectionScope.USER) {
-            platformDest = path.join(os.homedir(), '.cline');
-            transformDestDir = platformDest;
-          } else {
-            platformDest = path.join(targetDir, '.cline');
-            transformDestDir = platformDest;
-          }
-        }
-
-        if (transformDestDir) {
-          const skipOutputTypes = (platform === 'github-vscode' && githubScope === GitHubCopilotInjectionScope.GLOBAL)
-            ? ['inject-guidelines-command']
-            : undefined;
-
-          await transformTemplates(
-            [platform],
-            standardsDir,
-            () => transformDestDir,
-            { skipOutputTypes }
-          );
-
-          if (platform === 'github-vscode' && githubScope === GitHubCopilotInjectionScope.GLOBAL) {
-            await flattenVSCodeGlobalPrompts(transformDestDir);
+          const previousManifest = await readManifest(getManifestPath(platform, effectiveScope, platformRoot));
+          if (previousManifest) {
+            const currentPaths = new Set(installedFiles.map(file => file.path));
+            const staleFiles = previousManifest.files.filter(file => !currentPaths.has(file.path));
+            if (staleFiles.length > 0) {
+              await cleanManifest({ ...previousManifest, files: staleFiles });
+            }
           }
 
-          if (platform === 'codex') {
-            await removeCodexLegacyCommands(transformDestDir);
-          }
+          const manifest: InstallManifest = {
+            version: 1,
+            platform,
+            scope: effectiveScope,
+            root: platformRoot,
+            skillsRoot,
+            cliVersion: getCliVersion(),
+            templateVersion: templateSource.version,
+            installedAt: new Date().toISOString(),
+            files: installedFiles
+          };
+          await writeManifest(manifest);
         }
 
-        if (platformDest) {
-          const destSkillsDir = path.join(platformDest, skillsSubDir);
-          await fs.ensureDir(destSkillsDir);
-          await fs.copy(universalSkillsDir, destSkillsDir, { overwrite: true });
-        }
-
-        results.push({ platform, displayName, scope: scopeLabel, ok: true, error: '' });
-        console.log(chalk.green(` ok (${scopeLabel})`));
+        const plannedFiles = [...writtenFiles, ...skillFiles];
+        results.push({ platform, displayName, scope: effectiveScope, ok: true, error: '', files: plannedFiles, dryRun: opts.dryRun });
+        log(chalk.green(` ok (${effectiveScope})`));
 
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);
-        results.push({ platform, displayName, scope: scopeLabel, ok: false, error: errorMsg });
-        console.log(chalk.red(` fail (${scopeLabel})`));
+        results.push({ platform, displayName, scope: platformScope, ok: false, error: errorMsg });
+        log(chalk.red(` fail (${platformScope})`));
       }
     }
 
-    renderInjectionSummary(results, templateSource, scopeLabel);
+    if (opts.json) {
+      console.log(JSON.stringify({
+        templateSource: {
+          source: templateSource.source,
+          version: templateSource.version,
+          fallbackReason: templateSource.fallbackReason,
+          warnings: templateSource.warnings
+        },
+        scope: summarizeScope(results),
+        dryRun: opts.dryRun === true,
+        results
+      }, null, 2));
+    } else {
+      renderInjectionSummary(results, templateSource, summarizeScope(results));
+      if (opts.dryRun) {
+        for (const result of results) {
+          for (const file of result.files ?? []) {
+            console.log(`  would write: ${file}`);
+          }
+        }
+        console.log(chalk.yellow('\nDry run: no files were written.'));
+      }
+    }
     if (results.some(r => !r.ok)) {
       process.exitCode = 1;
     }
@@ -444,12 +431,78 @@ program
   .command('clean')
   .description('Remove globally injected Spec-Driven Steroids')
   .option('--global', 'Clean global steroids from all platforms (default)')
+  .option('--project', 'Clean project-level steroids in the current directory')
+  .option('--platform <platform>', 'Limit cleanup to one platform')
+  .option('--force', 'Remove files even if they were modified after installation')
+  .option('--dry-run', 'Show what would be removed without deleting anything')
+  .option('--json', 'Emit a machine-readable JSON summary')
   .option('-y, --yes', 'Skip confirmation prompt')
-  .action(async ({ yes }) => {
-    console.log(chalk.bold.cyan('\n🧹 Cleaning global steroids...\n'));
+  .action(async ({ yes, dryRun, project, platform, force, json }) => {
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    let restored = false;
+
+    const restoreConsole = () => {
+      if (restored) return;
+      restored = true;
+      console.log = originalLog;
+      console.warn = originalWarn;
+    };
+
+    const finish = (payload?: unknown) => {
+      restoreConsole();
+      if (json && payload !== undefined) {
+        console.log(JSON.stringify(payload, null, 2));
+      }
+    };
+
+    if (json) {
+      console.log = () => undefined;
+      console.warn = () => undefined;
+    }
+
+    try {
+      await runCleanAction({ yes, dryRun, project, platform, force, finish });
+    } finally {
+      restoreConsole();
+    }
+  });
+
+  async function runCleanAction(options: {
+    yes?: boolean;
+    dryRun?: boolean;
+    project?: boolean;
+    platform?: string;
+    force?: boolean;
+    finish: (payload?: unknown) => void;
+  }): Promise<void> {
+    const { yes, dryRun, project, platform, force, finish } = options;
+    const scope = project ? 'project' : 'global';
+    if (platform && !getPlatformDefinition(platform)) {
+      console.error(chalk.red(`Error: Unknown platform: ${platform}`));
+      finish({ scope, error: `Unknown platform: ${platform}` });
+      process.exitCode = 2;
+      return;
+    }
+    console.log(chalk.bold.cyan(`\n🧹 Cleaning ${scope} steroids...\n`));
 
     const preview = buildCleanPreview();
     console.log(preview);
+
+    if (dryRun) {
+      const result = await cleanInstalledManifests({
+        scope,
+        projectRoot: process.cwd(),
+        platform,
+        force,
+        dryRun: true
+      });
+      for (const file of result.removed) console.log(`  would remove: ${file}`);
+      for (const file of result.skipped) console.log(chalk.yellow(`  would skip (modified): ${file}`));
+      console.log(chalk.yellow('\nDry run: no files were removed.'));
+      finish({ scope, dryRun: true, removed: result.removed, skipped: result.skipped });
+      return;
+    }
 
     if (!yes) {
       const { confirmed } = await inquirer.prompt([
@@ -462,35 +515,82 @@ program
       ]);
       if (!confirmed) {
         console.log(chalk.yellow('Aborted.'));
+        finish({ scope, aborted: true });
         return;
       }
     }
 
     console.log(chalk.cyan('\n'));
 
-    const results = await Promise.all([
-      removeVSCodeGlobalSteroids(),
-      removeGitHubCopilotCliSteroids(),
-      removeGeminiCliSteroids(),
-      removeQwenCodeSteroids(),
-      removeQoderSteroids(),
-      removeOpenCodeGlobalSteroids(),
-      removeClineSteroids(),
-      removeAntigravityIdeSteroids(),
-      removeAntigravityCliSteroids()
-    ]);
+    const manifestResult = await cleanInstalledManifests({
+      scope,
+      projectRoot: process.cwd(),
+      platform,
+      force
+    });
+
+    if (manifestResult.removed.length > 0) {
+      console.log(chalk.green(`  ✅ Removed ${manifestResult.removed.length} manifest-tracked file(s).`));
+    }
+    if (manifestResult.skipped.length > 0) {
+      console.log(chalk.yellow(`  ⚠️ Skipped ${manifestResult.skipped.length} modified file(s). Use --force to remove them.`));
+    }
+
+    if (scope === 'project') {
+      const legacyRemoved = manifestResult.found === 0
+        ? await cleanLegacyProjectInstall(process.cwd(), platform)
+        : 0;
+      if (manifestResult.removed.length === 0 && manifestResult.skipped.length === 0 && legacyRemoved === 0) {
+        console.log(chalk.yellow('  No project install manifests or legacy project files found.'));
+      }
+      finish({
+        scope,
+        removed: manifestResult.removed,
+        skipped: manifestResult.skipped,
+        manifests: manifestResult.cleaned,
+        legacyRemoved
+      });
+      return;
+    }
+
+    const results = await Promise.all(
+      platform
+        ? [runLegacyPlatformCleanup(platform)]
+        : [
+            removeVSCodeGlobalSteroids(),
+            removeGitHubCopilotCliSteroids(),
+            removeGeminiCliSteroids(),
+            removeQwenCodeSteroids(),
+            removeQoderSteroids(),
+            removeOpenCodeGlobalSteroids(),
+            removeClineSteroids(),
+            removeAntigravityIdeSteroids(),
+            removeAntigravityCliSteroids()
+          ]
+    );
 
     const allCleaned = results.every(r => r);
     if (allCleaned) {
       console.log(chalk.bold.green('\n✅ All global steroids cleaned successfully.'));
     } else {
       console.log(chalk.bold.yellow('\n⚠️ Some platforms could not be fully cleaned.'));
+      process.exitCode = 1;
     }
-  });
+    finish({
+      scope,
+      removed: manifestResult.removed,
+      skipped: manifestResult.skipped,
+      manifests: manifestResult.cleaned,
+      legacy: results
+    });
+  }
+
+  return program;
+}
+
+const program = createProgram();
 
 function isCliEntrypoint(): boolean {
-  if (process.env.VITEST) return false;
-
   const entry = process.argv[1];
   if (!entry) return false;
 
@@ -526,6 +626,111 @@ async function updateOpenCodeConfig(targetDir: string) {
 
   await fs.writeJson(configPath, config, { spaces: 2 });
   console.log(chalk.green('✅ opencode.json updated with schema.'));
+}
+
+async function runLegacyPlatformCleanup(platform: string): Promise<boolean> {
+  switch (platform) {
+    case 'github-vscode': return removeVSCodeGlobalSteroids();
+    case 'github-copilot-cli': return removeGitHubCopilotCliSteroids();
+    case 'gemini-cli': return removeGeminiCliSteroids();
+    case 'qwen-code': return removeQwenCodeSteroids();
+    case 'qoder': return removeQoderSteroids();
+    case 'opencode': return removeOpenCodeGlobalSteroids();
+    case 'cline': return removeClineSteroids();
+    case 'antigravity': return removeAntigravityIdeSteroids();
+    case 'antigravity-cli': return removeAntigravityCliSteroids();
+    default:
+      console.warn(chalk.yellow(`  ⚠️ No legacy cleanup available for ${platform}.`));
+      return true;
+  }
+}
+
+async function cleanLegacyProjectInstall(targetDir: string, platformFilter?: string): Promise<number> {
+  let removed = 0;
+
+  for (const definition of getPlatformDefinitions()) {
+    if (!definition.supportedScopes.includes('project')) continue;
+    if (platformFilter && definition.id !== platformFilter) continue;
+
+    const root = definition.resolveRoot('project', { cwd: targetDir, home: os.homedir() });
+    const config = definition.config;
+    const candidates: string[] = [
+      path.join(root, config.agentDirectory, config.agentFilename)
+    ];
+
+    if (config.commandSkills || config.skillsOnly) {
+      candidates.push(
+        path.join(root, 'skills', 'spec-driven', 'SKILL.md'),
+        path.join(root, 'skills', 'inject-guidelines', 'SKILL.md')
+      );
+    } else {
+      if (config.specDrivenCommandFilename) {
+        candidates.push(path.join(root, config.commandDirectory, config.specDrivenCommandFilename));
+      }
+      if (config.injectGuidelinesCommandFilename) {
+        candidates.push(path.join(root, config.commandDirectory, config.injectGuidelinesCommandFilename));
+      }
+    }
+
+    for (const candidate of candidates) {
+      if (await fs.pathExists(candidate)) {
+        await fs.remove(candidate);
+        removed += 1;
+      }
+    }
+
+    await removeSteroidsSkillDirs(root);
+    for (const skill of ['spec-driven', 'inject-guidelines']) {
+      const skillPath = path.join(root, 'skills', skill);
+      if (await fs.pathExists(skillPath)) {
+        await fs.remove(skillPath);
+      }
+    }
+
+    for (const directory of ['agents', 'commands', 'prompts', 'skills']) {
+      const directoryPath = path.join(root, directory);
+      const remaining = await fs.readdir(directoryPath).catch(() => []);
+      if (remaining.length === 0) {
+        await fs.remove(directoryPath).catch(() => undefined);
+      }
+    }
+  }
+
+  return removed;
+}
+
+async function cleanInstalledManifests(options: {
+  scope: 'global' | 'project';
+  projectRoot?: string;
+  force?: boolean;
+  dryRun?: boolean;
+  platform?: string;
+}): Promise<{ removed: string[]; skipped: string[]; cleaned: number; found: number }> {
+  const manifests = (await listManifests()).filter(manifest => {
+    if (manifest.scope !== options.scope) return false;
+    if (options.platform && manifest.platform !== options.platform) return false;
+    if (options.scope === 'project') {
+      const projectRoot = path.resolve(options.projectRoot ?? process.cwd());
+      const manifestRoot = path.resolve(manifest.root);
+      return manifestRoot === projectRoot || manifestRoot.startsWith(`${projectRoot}${path.sep}`);
+    }
+    return true;
+  });
+
+  const removed: string[] = [];
+  const skipped: string[] = [];
+  let cleaned = 0;
+
+  for (const manifest of manifests) {
+    const result = await cleanManifest(manifest, { force: options.force, dryRun: options.dryRun });
+    removed.push(...result.removed);
+    skipped.push(...result.skipped);
+    if (result.removed.length > 0 || result.missing.length > 0) {
+      cleaned += 1;
+    }
+  }
+
+  return { removed, skipped, cleaned, found: manifests.length };
 }
 
 function buildCleanPreview(): string {
@@ -594,6 +799,11 @@ function buildCleanPreview(): string {
   return lines.join('\n');
 }
 
+function isPathInside(parent: string, child: string): boolean {
+  const relative = path.relative(path.resolve(parent), path.resolve(child));
+  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
+}
+
 async function removeCodexLegacyCommands(codexDir: string): Promise<void> {
   await Promise.all([
     fs.remove(path.join(codexDir, 'commands', 'spec-driven.md')),
@@ -628,7 +838,11 @@ async function removeVSCodeGlobalPrompts(): Promise<void> {
   const subDirs = ['agents', 'prompts'];
   for (const subDir of subDirs) {
     const subDirPath = path.join(promptsDir, subDir);
-    if (await fs.pathExists(subDirPath)) {
+    if (!await fs.pathExists(subDirPath)) {
+      continue;
+    }
+    const remaining = await fs.readdir(subDirPath).catch(() => []);
+    if (remaining.length === 0) {
       await fs.remove(subDirPath);
     }
   }
@@ -643,26 +857,6 @@ async function removeVSCodeGlobalSkills(): Promise<void> {
     const skillPath = path.join(skillsDir, skill);
     if (await fs.pathExists(skillPath)) {
       await fs.remove(skillPath);
-    }
-  }
-}
-
-async function flattenVSCodeGlobalPrompts(promptsDir: string): Promise<void> {
-  const subDirs = ['agents', 'prompts'];
-  for (const subDir of subDirs) {
-    const subDirPath = path.join(promptsDir, subDir);
-    if (!await fs.pathExists(subDirPath)) {
-      continue;
-    }
-    const files = await fs.readdir(subDirPath);
-    for (const file of files) {
-      const src = path.join(subDirPath, file);
-      const dest = path.join(promptsDir, file);
-      await fs.move(src, dest, { overwrite: true });
-    }
-    const remaining = await fs.readdir(subDirPath).catch(() => []);
-    if (remaining.length === 0) {
-      await fs.remove(subDirPath);
     }
   }
 }
@@ -849,11 +1043,6 @@ async function removeAntigravityIdeSteroids(): Promise<boolean> {
       await fs.remove(skillsDir);
     }
 
-    const workflowsDir = path.join(antigravityIdeDir, 'workflows');
-    if (await fs.pathExists(workflowsDir)) {
-      await fs.remove(workflowsDir);
-    }
-
     console.log(chalk.green('  ✅ Google Antigravity IDE cleaned.'));
     return true;
   } catch (err) {
@@ -916,7 +1105,7 @@ async function removeSteroidsSkillDirs(baseDir: string): Promise<void> {
       await fs.remove(skillPath);
     }
   }
-  const remaining = await fs.readdir(skillsDir);
+  const remaining = await fs.readdir(skillsDir).catch(() => []);
   if (remaining.length === 0) {
     await fs.remove(skillsDir);
   }

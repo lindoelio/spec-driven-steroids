@@ -1,4 +1,7 @@
 import type { CapabilityReport, CapabilityTier } from './types.js';
+import { accessSync, constants, mkdirSync } from 'fs';
+import { homedir, tmpdir } from 'os';
+import path from 'path';
 
 export interface CapabilityDetector {
   detectFileSystem(): Promise<boolean>;
@@ -6,13 +9,23 @@ export interface CapabilityDetector {
 
 export class DefaultCapabilityDetector implements CapabilityDetector {
   async detectFileSystem(): Promise<boolean> {
-    try {
-      const fs = await import('fs');
-      fs.accessSync('/tmp', fs.constants.W_OK);
-      return true;
-    } catch {
-      return false;
+    const candidates = [
+      process.env.SDS_HOME,
+      path.join(homedir(), '.agents'),
+      tmpdir()
+    ].filter((candidate): candidate is string => Boolean(candidate));
+
+    for (const candidate of candidates) {
+      try {
+        mkdirSync(candidate, { recursive: true });
+        accessSync(candidate, constants.W_OK);
+        return true;
+      } catch {
+        // Try the next candidate.
+      }
     }
+
+    return false;
   }
 }
 

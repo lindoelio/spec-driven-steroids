@@ -60,7 +60,23 @@ The CLI provides two command names:
 ```bash
 # Interactive injection (prompts for platform and scope)
 sds inject
+
+# Non-interactive injection for CI or containers
+sds inject --platform opencode --scope global --yes
+
+# Preview without writing, or emit machine-readable output
+sds inject --platform opencode --scope project --yes --dry-run
+sds inject --platform opencode --scope project --yes --json
+
+# Choose the template source explicitly
+sds inject --platform opencode --scope project --yes --templates bundled
 ```
+
+`--platform` accepts a comma-separated list. `--scope` accepts `global` or `project`.
+`--backup` copies an existing platform root under the SDS config directory
+(`$SDS_CONFIG_DIR/backups`, default `~/.config/spec-driven-steroids/backups`,
+`%APPDATA%\spec-driven-steroids\backups` on Windows) before writing. `--dry-run` never writes files
+or install manifests. Exit codes: `0` success, `1` validation/partial failure, `2` usage error.
 
 ### Validate Commands
 
@@ -82,7 +98,12 @@ sds validate tasks <path>
 
 # Auto-detect and validate a brief or full spec
 sds validate spec <slug>
+
+# Aggregate every spec in one result
+sds validate all --format json
 ```
+
+Mermaid validation is structural and best-effort; it checks diagram type and sequence participant references but is not a full Mermaid parser.
 
 ### Other Commands
 
@@ -90,12 +111,42 @@ sds validate spec <slug>
 # Clean globally injected steroids
 sds clean --global
 
+# Clean project-level artifacts recorded in the install manifest
+sds clean --project
+
+# Preview cleanup or force removal of modified files
+sds clean --global --dry-run
+sds clean --global --yes --force
+
+# Inspect, repair, or remove manifest-tracked installs
+sds doctor
+sds repair --project
+sds uninstall --platform opencode --scope project --yes
+
+# Inspect the resolved template source
+sds templates info
+sds templates info --json
+
 # Show version
 sds --version
 
 # Show help
 sds --help
 ```
+
+### Validation
+
+```bash
+# Validate every spec in one aggregated result (useful in CI)
+sds validate all --format json
+
+# Validate only specs changed since a git ref
+sds validate all --changed origin/main
+```
+
+`--changed` exits `2` when the ref cannot be resolved; shallow CI clones may need a
+full history (`fetch-depth: 0`). When the ref resolves but no spec changed, it exits `0`
+with an empty result.
 
 ### Stewardship Commands
 
@@ -130,6 +181,9 @@ sds stewardship manage move --ruleId <ruleId> --scope <project-id>
 ```
 
 Rules are project-scoped by default and only fall back to global rules during retrieval. Use `--global` only for memories that are safe across unrelated repositories.
+
+Retrieval and conflict detection use keyword overlap plus recency/confidence scoring. They are lexical, not embedding-based, so contradictions that share no vocabulary are not detected automatically. Phase injection returns all active rules in the phase's domains.
+
 
 ## Skills Injected
 
@@ -253,8 +307,9 @@ pnpm test
 
 Useful commands:
 - `pnpm typecheck` - Type check all packages
-- `pnpm lint` - Lint all packages
-- `pnpm test:coverage` - Run tests with coverage
+- `pnpm lint` - Lint all packages with Biome
+- `pnpm test:coverage` - Run tests with enforced coverage thresholds
+- `pnpm pack:check` - Build, pack, install the tarball, and run `sds --version`
 - `pnpm changeset` - Create a changeset
 - `pnpm changeset:version` - Version bump
 

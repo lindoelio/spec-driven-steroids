@@ -60,6 +60,8 @@ export class SemanticRetrievalEngine {
 
     const domainFilterResults: ScoredRule[] = [];
     const crossDomainResults: ScoredRule[] = [];
+    const matchMode = query.matchMode
+      ?? (query.domain && query.query.trim().toLowerCase() === String(query.domain).toLowerCase() ? 'domain' : 'keyword');
 
     const queryDomains = query.domain
       ? [query.domain, ...searchDomains(query.domain)]
@@ -72,8 +74,9 @@ export class SemanticRetrievalEngine {
       const compositeScore = keywordScore * 0.5 + recencyScore * 0.3 + confidenceScore * 0.2;
 
       const isDomainMatch = queryDomains.length === 0 || queryDomains.includes(rule.domain);
+      const includeByKeyword = keywordScore > 0 || query.query.trim() === '' || matchMode === 'domain';
 
-      if (keywordScore > 0 || query.query.trim() === '') {
+      if (includeByKeyword) {
         const scoredRule: ScoredRule = {
           rule,
           score: compositeScore,

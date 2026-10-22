@@ -27,19 +27,25 @@ npm update -g spec-driven-steroids
 
 ### File System Access
 
-The CLI writes files to the filesystem during injection (templates, skills, agents, commands) and during knowledge graph operations (JSON rules under `~/.agents/stewardship/`). It does **not**:
-- Access files outside its intended target directories
-- Modify existing files other than `opencode.json` (schema injection only)
-- Write to directories without explicit user confirmation (the `clean` command shows a preview and requests confirmation)
+The CLI writes files to the filesystem during injection (templates, skills, agents, commands) and during knowledge graph operations (JSON rules under `~/.agents/stewardship/` or `$SDS_HOME/stewardship/`).
+
+- Every injected file is recorded in an install manifest under `~/.config/spec-driven-steroids/installs/` (or `$SDS_CONFIG_DIR`).
+- `clean`, `uninstall`, and `repair` operate only on files listed in that manifest. Files whose hashes differ after installation are skipped unless `--force` is provided.
+- The CLI never deletes a non-empty platform directory wholesale. Legacy cleanup removes only known SDS-owned files and removes directories only when they are empty.
+- Project scopes are sanitized before being used as directory names.
+- The CLI modifies `opencode.json` only to add the schema field.
 
 ### Template Sources
 
 The CLI supports two template sources:
 
-1. **Remote templates**: Fetched over HTTPS. Content is copied to local directories after retrieval. Remote templates are preferred but always fall back to bundled templates on failure.
-2. **Bundled templates**: Shipped in the npm package and verified by the npm integrity chain.
+1. **Remote templates** (default): fetched over HTTPS, restricted to approved hosts, bounded in time and size, and verified against a SHA-256 digest from the manifest when one is present. Version and schema compatibility are checked before use. Remote content is written to the local cache and then into agent directories.
+2. **Bundled templates**: shipped in the npm package and verified by the npm integrity chain. Use `SDS_TEMPLATE_SOURCE=bundled` or `--templates bundled` to force this source.
 
-Both paths result in templates being written to local directories. No template content is executed — all files are plain text (Markdown, TOML).
+Remote template content is plain text (Markdown, TOML) and is never executed by the CLI. It is, however, interpreted as instructions by AI tools, so the digest and compatibility checks are part of the security boundary. A manifest without a digest is accepted for backward compatibility but emits a warning.
+
+Template cache locations are platform-specific (`~/Library/Caches` on macOS, `$XDG_CACHE_HOME` on Linux, `%LOCALAPPDATA%` on Windows) and can be overridden with `SDS_TEMPLATE_CACHE_DIR`. Cached bundles record a per-file digest when extracted and are re-hashed on reuse; a cache whose contents no longer match is re-downloaded before use.
+
 
 ### Knowledge Graph Storage
 

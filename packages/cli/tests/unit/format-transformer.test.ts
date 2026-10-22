@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { parse as parseYaml } from 'yaml';
 import {
   transformToMarkdown,
   transformToToml,
@@ -6,7 +7,7 @@ import {
   transform,
   verifyBodyPreserved
 } from '../../src/cli/format-transformer.js';
-import { FormatType, PLATFORM_CONFIGS } from '../../src/cli/platform-config.js';
+import { PLATFORM_CONFIGS } from '../../src/cli/platform-config.js';
 
 describe('Unit: Format Transformer', () => {
   const testBody = `# Spec-Driven Planner
@@ -201,6 +202,34 @@ You MUST enforce this lifecycle exactly.`;
         const result = transform(testBody, config);
         expect(result.bodyPreserved).toBe(true);
       }
+    });
+  });
+
+  describe('YAML frontmatter safety', () => {
+    it('quotes values that contain YAML indicators', () => {
+      const config = PLATFORM_CONFIGS['github-vscode'];
+      const description = 'Use # heading: [x] & * ! | > % @ ` and "quotes"';
+      const result = transformToMarkdown(testBody, config, { description }, 'agent');
+
+      const frontmatter = result.match(/^---\n([\s\S]*?)\n---/)?.[1];
+      expect(frontmatter).toBeDefined();
+      expect(parseYaml(frontmatter!)).toMatchObject({ description });
+    });
+
+    it('quotes values with newlines and backslashes', () => {
+      const config = PLATFORM_CONFIGS['opencode'];
+      const description = 'line one\nline two\\path';
+      const result = transformToMarkdown(testBody, config, { description }, 'agent');
+
+      const frontmatter = result.match(/^---\n([\s\S]*?)\n---/)?.[1];
+      expect(parseYaml(frontmatter!)).toMatchObject({ description });
+    });
+
+    it('keeps safe plain scalars unquoted', () => {
+      const config = PLATFORM_CONFIGS['opencode'];
+      const result = transformToMarkdown(testBody, config, { description: 'Start workflow' }, 'agent');
+
+      expect(result).toContain('description: Start workflow');
     });
   });
 });

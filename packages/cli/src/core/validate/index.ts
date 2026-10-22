@@ -5,6 +5,7 @@ import { createDesignCommand } from './design.js';
 import { createTasksCommand } from './tasks.js';
 import { createSpecCommand } from './spec.js';
 import { createBriefCommand } from './brief.js';
+import { createAllCommand } from './all.js';
 
 /**
  * Creates the parent 'validate' command with all subcommands registered.
@@ -31,6 +32,7 @@ The validate command checks specs in .specs/changes/<slug>/ for:
   • design      - Mermaid diagrams, DES-X numbering, _Implements tags
   • tasks       - Phase structure, task status, traceability links
   • spec        - Cross-file validation and traceability matrix
+  • all         - Aggregate every spec in .specs/changes
 
 All subcommands support --format <text|json> for output control.
 Use --help with any subcommand for specific options and examples.`
@@ -40,7 +42,8 @@ Use --help with any subcommand for specific options and examples.`
     .addCommand(createRequirementsCommand())
     .addCommand(createDesignCommand())
     .addCommand(createTasksCommand())
-    .addCommand(createSpecCommand());
+    .addCommand(createSpecCommand())
+    .addCommand(createAllCommand());
 
   return cmd;
 }

@@ -307,7 +307,8 @@ export function createBriefCommand(): Command {
         content = await fs.readFile(fullPath, 'utf-8');
       } catch {
         console.error(chalk.red(`Error: Cannot read file: ${fullPath}`));
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
 
       const result = verifyBriefFile(content);
@@ -324,7 +325,9 @@ export function createBriefCommand(): Command {
         console.log(`\nFound ${result.requirementsFound.length} requirements and ${result.tasksFound.length} tasks.`);
       }
 
-      process.exit(getExitCode(result));
+      process.exitCode = getExitCode(result);
+
+      return;
     });
 
   return cmd;

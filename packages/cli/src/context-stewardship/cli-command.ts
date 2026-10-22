@@ -95,10 +95,18 @@ function createStoreCommand(): Command {
     .option('--author <author>', 'Author name')
     .option('--scope <scope>', 'Project scope identifier (defaults to current project)')
     .option('--global', 'Persist as a global rule instead of a project rule')
-    .action(async (domain: string, opts: { content?: string; author?: string; scope?: string; global?: boolean }) => {
+    .option('--on-conflict <decision>', 'Resolve conflicts with cancel, override, or merge')
+    .action(async (domain: string, opts: { content?: string; author?: string; scope?: string; global?: boolean; onConflict?: string }) => {
       if (!opts.content) {
         console.error(chalk.red('Error: --content is required for store command.'));
-        process.exit(1);
+        process.exitCode = 1;
+        return;
+      }
+
+      if (opts.onConflict && !['cancel', 'override', 'merge'].includes(opts.onConflict)) {
+        console.error(chalk.red("Error: --on-conflict must be one of: cancel, override, merge."));
+        process.exitCode = 1;
+        return;
       }
 
       if (!isStandardDomain(domain)) {
@@ -112,13 +120,15 @@ function createStoreCommand(): Command {
         content: opts.content,
         author: opts.author,
         scope: opts.scope,
-        global: opts.global
+        global: opts.global,
+        onConflict: opts.onConflict as 'cancel' | 'override' | 'merge' | undefined
       });
 
       if (result.success) {
         console.log(chalk.green(result.output));
       } else {
         console.log(chalk.yellow(result.output));
+        process.exitCode = 1;
       }
     });
 
@@ -179,6 +189,7 @@ function createTraceCommand(): Command {
         console.log(result.output);
       } else {
         console.log(chalk.red(result.output));
+        process.exitCode = 1;
       }
     });
 
@@ -198,7 +209,8 @@ function createInjectCommand(): Command {
       const validPhases = ['requirements', 'design', 'tasks', 'implementation'];
       if (!validPhases.includes(phase)) {
         console.error(chalk.red(`Error: Invalid phase '${phase}'. Must be one of: ${validPhases.join(', ')}`));
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
 
       const orch = new ContextStewardshipOrchestrator();
@@ -233,22 +245,26 @@ function createManageCommand(): Command {
       const validActions = ['list', 'deprecate', 'archive', 'move'];
       if (!validActions.includes(action)) {
         console.error(chalk.red(`Error: Invalid action '${action}'. Must be one of: ${validActions.join(', ')}`));
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
 
       if ((action === 'deprecate' || action === 'archive' || action === 'move') && !opts.ruleId) {
         console.error(chalk.red(`Error: --ruleId is required for '${action}' action.`));
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
 
       if (action === 'move' && !opts.scope) {
         console.error(chalk.red("Error: --scope is required for 'move' action."));
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
 
       if (action === 'move' && opts.global) {
         console.error(chalk.red("Error: 'move' uses --scope as the target project and cannot be combined with --global."));
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
 
       const orch = new ContextStewardshipOrchestrator();
@@ -264,6 +280,7 @@ function createManageCommand(): Command {
         console.log(result.output);
       } else {
         console.log(chalk.red(result.output));
+        process.exitCode = 1;
       }
     });
 

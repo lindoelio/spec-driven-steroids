@@ -16,6 +16,7 @@ describe('CLI E2E: inject command', () => {
         mockHomeDir = await mockFs.createTempDir();
         process.chdir(targetDir);
         process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES = 'true';
+        process.env.SDS_TEMPLATE_ALLOWED_HOSTS = 'example.test';
         vi.clearAllMocks();
         vi.spyOn(os, 'homedir').mockReturnValue(mockHomeDir);
     });
@@ -23,6 +24,7 @@ describe('CLI E2E: inject command', () => {
     afterEach(async () => {
         process.chdir(originalCwd);
         delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
+        delete process.env.SDS_TEMPLATE_ALLOWED_HOSTS;
         vi.unstubAllGlobals();
         await mockFs.cleanup();
     });
@@ -32,7 +34,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['github-vscode'] })
             .mockResolvedValueOnce({ scope: 'project' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const githubDir = path.join(targetDir, '.github');
@@ -45,7 +47,7 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['github-jetbrains'] });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const githubDir = path.join(targetDir, '.github');
@@ -64,7 +66,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['github-vscode'] })
             .mockResolvedValueOnce({ scope: 'global' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const globalVSCodeDir = (() => {
@@ -92,7 +94,7 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['github-jetbrains'] });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         expect(await fs.pathExists(path.join(targetDir, '.github'))).toBe(true);
@@ -104,7 +106,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['antigravity'] })
             .mockResolvedValueOnce({ scope: 'project' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const agentDir = path.join(targetDir, '.agents');
@@ -117,7 +119,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['antigravity'] })
             .mockResolvedValueOnce({ scope: 'global' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const globalAntigravityIdeDir = path.join(os.homedir(), '.gemini', 'config');
@@ -132,7 +134,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['antigravity-cli'] })
             .mockResolvedValueOnce({ scope: 'project' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const agentDir = path.join(targetDir, '.agents');
@@ -146,7 +148,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['antigravity-cli'] })
             .mockResolvedValueOnce({ scope: 'global' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const globalAntigravityCliDir = path.join(os.homedir(), '.gemini', 'antigravity-cli');
@@ -161,7 +163,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['opencode', 'antigravity'] })
             .mockResolvedValueOnce({ scope: 'global' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         expect(promptSpy).toHaveBeenCalledTimes(2);
@@ -178,7 +180,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['opencode'] })
             .mockResolvedValueOnce({ scope: 'project' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const opencodeDir = path.join(targetDir, '.opencode');
@@ -193,7 +195,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['opencode'] })
             .mockResolvedValueOnce({ scope: 'project' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const agentPath = path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md');
@@ -222,7 +224,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['github-vscode', 'antigravity'] })
             .mockResolvedValueOnce({ scope: 'project' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const githubAgentPath = path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md');
@@ -246,7 +248,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['github-vscode', 'antigravity', 'opencode', 'codex'] })
             .mockResolvedValueOnce({ scope: 'project' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const plannerFiles = [
@@ -300,7 +302,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['github-vscode'] })
             .mockResolvedValueOnce({ scope: 'project' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const injectedAgent = await fs.readFile(path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md'), 'utf-8');
@@ -323,7 +325,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['github-vscode'] })
             .mockResolvedValueOnce({ scope: 'project' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const injectedAgent = await fs.readFile(path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md'), 'utf-8');
@@ -335,7 +337,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['github-vscode', 'antigravity', 'opencode', 'codex'] })
             .mockResolvedValueOnce({ scope: 'project' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const plannerFiles = [
@@ -357,7 +359,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['github-vscode', 'antigravity', 'opencode'] })
             .mockResolvedValueOnce({ scope: 'project' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const githubPromptPath = path.join(targetDir, '.github', 'prompts', 'inject-guidelines.prompt.md');
@@ -396,7 +398,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['opencode'] })
             .mockResolvedValueOnce({ scope: 'project' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const config = await fs.readJson(opencodeConfigPath);
@@ -410,7 +412,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['opencode'] })
             .mockResolvedValueOnce({ scope: 'global' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         expect(await fs.pathExists(path.join(globalOpencodeDir, 'agents'))).toBe(true);
@@ -433,7 +435,7 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['codex'] });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const codexDir = path.join(targetDir, '.codex');
@@ -446,7 +448,7 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['codex'] });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const agentPath = path.join(targetDir, '.codex', 'agents', 'spec-driven.toml');
@@ -490,7 +492,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['antigravity'] })
             .mockResolvedValueOnce({ scope: 'global' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         expect(await fs.pathExists(path.join(globalAntigravityIdeDir, 'skills', 'spec-driven', 'SKILL.md'))).toBe(true);
@@ -503,7 +505,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['opencode', 'github-vscode', 'antigravity'] })
             .mockResolvedValueOnce({ scope: 'project' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const opencodeAgentPath = path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md');
@@ -530,7 +532,7 @@ describe('CLI E2E: inject command', () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['claudecode'] });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const claudeDir = path.join(targetDir, '.claude');
@@ -545,7 +547,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['cline'] })
             .mockResolvedValueOnce({ scope: 'project' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const clineDir = path.join(targetDir, '.cline');
@@ -562,7 +564,7 @@ describe('CLI E2E: inject command', () => {
             .mockResolvedValueOnce({ platforms: ['cline'] })
             .mockResolvedValueOnce({ scope: 'global' });
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const globalClineDir = path.join(os.homedir(), '.cline');
@@ -592,7 +594,7 @@ describe('CLI E2E: inject command', () => {
                 .mockResolvedValueOnce({ platforms: ['opencode'] })
                 .mockResolvedValueOnce({ scope: 'project' });
 
-            const program = (await import('../../dist/cli/index.js')).default;
+            const program = (await import('../../src/cli/index.js')).default;
             await program.parseAsync(['inject'], { from: 'user' } as any);
 
             const output = collectOutput(consoleSpy);
@@ -607,7 +609,7 @@ describe('CLI E2E: inject command', () => {
                 .mockResolvedValueOnce({ platforms: ['opencode', 'gemini-cli'] })
                 .mockResolvedValueOnce({ scope: 'global' });
 
-            const program = (await import('../../dist/cli/index.js')).default;
+            const program = (await import('../../src/cli/index.js')).default;
             await program.parseAsync(['inject'], { from: 'user' } as any);
 
             const output = collectOutput(consoleSpy);
@@ -623,7 +625,7 @@ describe('CLI E2E: inject command', () => {
                 .mockResolvedValueOnce({ platforms: ['opencode', 'gemini-cli', 'qwen-code', 'qoder'] })
                 .mockResolvedValueOnce({ scope: 'global' });
 
-            const program = (await import('../../dist/cli/index.js')).default;
+            const program = (await import('../../src/cli/index.js')).default;
             await program.parseAsync(['inject'], { from: 'user' } as any);
 
             const output = collectOutput(consoleSpy);
@@ -668,7 +670,7 @@ describe('CLI E2E: inject command', () => {
                 .mockResolvedValueOnce({ platforms: ['opencode'] })
                 .mockResolvedValueOnce({ scope: 'project' });
 
-            const program = (await import('../../dist/cli/index.js')).default;
+            const program = (await import('../../src/cli/index.js')).default;
             await program.parseAsync(['inject'], { from: 'user' } as any);
 
             const output = collectOutput(consoleSpy);
@@ -690,7 +692,7 @@ describe('CLI E2E: inject command', () => {
                 .mockResolvedValueOnce({ platforms: ['opencode'] })
                 .mockResolvedValueOnce({ scope: 'project' });
 
-            const program = (await import('../../dist/cli/index.js')).default;
+            const program = (await import('../../src/cli/index.js')).default;
             await program.parseAsync(['inject'], { from: 'user' } as any);
 
             const output = collectOutput(consoleSpy);
@@ -699,5 +701,66 @@ describe('CLI E2E: inject command', () => {
             vi.unstubAllGlobals();
             consoleSpy.mockRestore();
         });
+
+        it('reports project scope for project-only platforms', async () => {
+            const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+            vi.spyOn(inquirer, 'prompt')
+                .mockResolvedValueOnce({ platforms: ['codex'] });
+
+            const program = (await import('../../src/cli/index.js')).default;
+            await program.parseAsync(['inject'], { from: 'user' } as any);
+
+            const output = collectOutput(consoleSpy);
+            expect(output).toContain('OpenAI Codex');
+            expect(output).toContain('(project)');
+            expect(output).not.toContain('OpenAI Codex            global');
+            consoleSpy.mockRestore();
+        });
+    });
+
+    it('reports failure when a remote template bundle is missing a required file', async () => {
+        delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
+        vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+            const url = String(input);
+            if (url.endsWith('/templates-manifest.json')) {
+                return {
+                    ok: true,
+                    status: 200,
+                    statusText: 'OK',
+                    text: async () => JSON.stringify({
+                        version: 'broken-remote',
+                        bundleUrl: 'https://example.test/templates-bundle.json'
+                    })
+                } as Response;
+            }
+            if (url.endsWith('/templates-bundle.json')) {
+                return {
+                    ok: true,
+                    status: 200,
+                    statusText: 'OK',
+                    text: async () => JSON.stringify({
+                        version: 'broken-remote',
+                        files: {
+                            'universal/commands/spec-driven.command.md': '---\ndescription: Test\n---\n\nCOMMAND ONLY'
+                        }
+                    })
+                } as Response;
+            }
+            throw new Error(`Unexpected fetch: ${url}`);
+        }));
+
+        vi.spyOn(inquirer, 'prompt')
+            .mockResolvedValueOnce({ platforms: ['github-vscode'] })
+            .mockResolvedValueOnce({ scope: 'project' });
+
+        const program = (await import('../../src/cli/index.js')).default;
+        process.exitCode = 0;
+        await program.parseAsync(['inject'], { from: 'user' } as any);
+
+        expect(process.exitCode).toBe(1);
+        expect(await fs.pathExists(path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md'))).toBe(false);
+
+        process.exitCode = 0;
+        vi.unstubAllGlobals();
     });
 });

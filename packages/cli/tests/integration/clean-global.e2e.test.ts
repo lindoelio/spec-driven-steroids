@@ -37,7 +37,7 @@ describe('CLI E2E: clean --global command', () => {
         await fs.outputFile(path.join(configDir, 'skills', 'long-running-work-planning', 'SKILL.md'), 'skill');
         await fs.outputFile(path.join(configDir, 'skills', 'spec-driven-brief-planner', 'SKILL.md'), 'skill');
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
 
         expect(await fs.pathExists(path.join(configDir, 'agents', 'spec-driven.agent.md'))).toBe(false);
@@ -55,7 +55,7 @@ describe('CLI E2E: clean --global command', () => {
         await fs.outputFile(path.join(geminiDir, 'commands', 'inject-guidelines.toml'), 'command');
         await fs.outputFile(path.join(geminiDir, 'skills', 'long-running-work-planning', 'SKILL.md'), 'skill');
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
 
         expect(await fs.pathExists(path.join(geminiDir, 'agents', 'spec-driven.md'))).toBe(false);
@@ -72,7 +72,7 @@ describe('CLI E2E: clean --global command', () => {
         await fs.outputFile(path.join(copilotCliDir, 'commands', 'inject-guidelines.md'), 'command');
         await fs.outputFile(path.join(copilotCliDir, 'skills', 'long-running-work-planning', 'SKILL.md'), 'skill');
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
 
         expect(await fs.pathExists(path.join(copilotCliDir, 'agents', 'spec-driven.agent.md'))).toBe(false);
@@ -88,7 +88,7 @@ describe('CLI E2E: clean --global command', () => {
         await fs.outputFile(path.join(qwenDir, 'skills', 'inject-guidelines.md'), 'command');
         await fs.outputFile(path.join(qwenDir, 'skills', 'long-running-work-planning', 'SKILL.md'), 'skill');
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
 
         expect(await fs.pathExists(path.join(qwenDir, 'skills', 'spec-driven.md'))).toBe(false);
@@ -104,7 +104,7 @@ describe('CLI E2E: clean --global command', () => {
         await fs.outputFile(path.join(qoderDir, 'commands', 'inject-guidelines.md'), 'command');
         await fs.outputFile(path.join(qoderDir, 'skills', 'long-running-work-planning', 'SKILL.md'), 'skill');
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
 
         expect(await fs.pathExists(path.join(qoderDir, 'agents', 'spec-driven.md'))).toBe(false);
@@ -126,7 +126,7 @@ describe('CLI E2E: clean --global command', () => {
         await fs.outputFile(path.join(clineDir, 'commands', 'spec-driven.md'), 'command');
         await fs.outputFile(path.join(clineDir, 'commands', 'inject-guidelines.md'), 'command');
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
 
         // New layout cleaned
@@ -150,7 +150,7 @@ describe('CLI E2E: clean --global command', () => {
         await fs.outputFile(path.join(promptsDir, 'spec-driven.prompt.md'), 'prompt');
         await fs.outputFile(path.join(skillsDir, 'long-running-work-planning', 'SKILL.md'), 'skill');
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
 
         expect(await fs.pathExists(path.join(promptsDir, 'spec-driven.agent.md'))).toBe(false);
@@ -159,7 +159,7 @@ describe('CLI E2E: clean --global command', () => {
     });
 
     it('clean --global handles missing directories gracefully', async () => {
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
 
         await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
 
@@ -171,11 +171,64 @@ describe('CLI E2E: clean --global command', () => {
         await fs.ensureDir(aliasDir);
         await fs.outputFile(path.join(aliasDir, 'some-external-skill', 'SKILL.md'), 'external skill content');
 
-        const program = (await import('../../dist/cli/index.js')).default;
+        const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
 
         expect(await fs.pathExists(path.join(aliasDir, 'some-external-skill', 'SKILL.md'))).toBe(true);
         const content = await fs.readFile(path.join(aliasDir, 'some-external-skill', 'SKILL.md'), 'utf-8');
         expect(content).toBe('external skill content');
+    });
+
+    it('clean --global preserves unrelated user files in shared prompt directories', async () => {
+        const promptsDir = process.platform === 'darwin'
+            ? path.join(os.homedir(), 'Library', 'Application Support', 'Code', 'User', 'prompts')
+            : path.join(os.homedir(), '.config', 'Code', 'User', 'prompts');
+
+        await fs.outputFile(path.join(promptsDir, 'agents', 'user-agent.md'), 'user agent');
+        await fs.outputFile(path.join(promptsDir, 'prompts', 'user-prompt.md'), 'user prompt');
+        await fs.outputFile(path.join(promptsDir, 'spec-driven.agent.md'), 'sds agent');
+        await fs.outputFile(path.join(promptsDir, 'spec-driven.prompt.md'), 'sds prompt');
+
+        const program = (await import('../../src/cli/index.js')).default;
+        await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
+
+        expect(await fs.pathExists(path.join(promptsDir, 'agents', 'user-agent.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(promptsDir, 'prompts', 'user-prompt.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(promptsDir, 'spec-driven.agent.md'))).toBe(false);
+        expect(await fs.pathExists(path.join(promptsDir, 'spec-driven.prompt.md'))).toBe(false);
+    });
+
+    it('clean --global preserves custom Antigravity workflows', async () => {
+        const workflowsDir = path.join(os.homedir(), '.gemini', 'config', 'workflows');
+        await fs.outputFile(path.join(workflowsDir, 'custom.yaml'), 'name: custom');
+
+        const program = (await import('../../src/cli/index.js')).default;
+        await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
+
+        expect(await fs.pathExists(path.join(workflowsDir, 'custom.yaml'))).toBe(true);
+    });
+
+    it('global VS Code inject only flattens SDS-owned files', async () => {
+        process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES = 'true';
+        const promptsDir = process.platform === 'darwin'
+            ? path.join(os.homedir(), 'Library', 'Application Support', 'Code', 'User', 'prompts')
+            : path.join(os.homedir(), '.config', 'Code', 'User', 'prompts');
+
+        await fs.outputFile(path.join(promptsDir, 'agents', 'user-agent.md'), 'user agent');
+        await fs.outputFile(path.join(promptsDir, 'prompts', 'user-prompt.md'), 'user prompt');
+
+        vi.spyOn(inquirer, 'prompt')
+            .mockResolvedValueOnce({ platforms: ['github-vscode'] })
+            .mockResolvedValueOnce({ scope: 'global' });
+
+        const program = (await import('../../src/cli/index.js')).default;
+        await program.parseAsync(['inject'], { from: 'user' } as any);
+
+        expect(await fs.pathExists(path.join(promptsDir, 'agents', 'user-agent.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(promptsDir, 'prompts', 'user-prompt.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(promptsDir, 'spec-driven.agent.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(promptsDir, 'spec-driven.prompt.md'))).toBe(true);
+
+        delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
     });
 });
