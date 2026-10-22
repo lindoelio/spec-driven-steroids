@@ -10,7 +10,7 @@ describe('CLI E2E: install manifest lifecycle', () => {
   let originalCwd: string;
   let mockHomeDir: string;
 
-  const installDir = () => path.join(os.homedir(), '.config', 'spec-driven-steroids', 'installs');
+  const installDir = () => path.join(process.env.SDS_CONFIG_DIR as string, 'installs');
 
   beforeEach(async () => {
     originalCwd = process.cwd();
@@ -18,6 +18,7 @@ describe('CLI E2E: install manifest lifecycle', () => {
     mockHomeDir = await mockFs.createTempDir();
     process.chdir(targetDir);
     process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES = 'true';
+    process.env.SDS_CONFIG_DIR = path.join(mockHomeDir, '.config', 'spec-driven-steroids');
     vi.clearAllMocks();
     vi.spyOn(os, 'homedir').mockReturnValue(mockHomeDir);
   });
@@ -25,6 +26,7 @@ describe('CLI E2E: install manifest lifecycle', () => {
   afterEach(async () => {
     process.chdir(originalCwd);
     delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
+    delete process.env.SDS_CONFIG_DIR;
     process.exitCode = 0;
     vi.unstubAllGlobals();
     await mockFs.cleanup();

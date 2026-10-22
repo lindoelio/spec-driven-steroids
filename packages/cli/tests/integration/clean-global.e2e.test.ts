@@ -17,12 +17,14 @@ describe('CLI E2E: clean --global command', () => {
         targetDir = await mockFs.createTempDir();
         mockHomeDir = await mockFs.createTempDir();
         process.chdir(targetDir);
+        process.env.SDS_CONFIG_DIR = path.join(mockHomeDir, '.config', 'spec-driven-steroids');
         vi.clearAllMocks();
         vi.spyOn(os, 'homedir').mockReturnValue(mockHomeDir);
     });
 
     afterEach(async () => {
         process.chdir(originalCwd);
+        delete process.env.SDS_CONFIG_DIR;
         vi.unstubAllGlobals();
         await mockFs.cleanup();
     });

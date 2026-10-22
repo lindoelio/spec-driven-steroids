@@ -15,6 +15,7 @@ describe('CLI E2E: non-interactive inject', () => {
     mockHomeDir = await mockFs.createTempDir();
     process.chdir(targetDir);
     process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES = 'true';
+    process.env.SDS_CONFIG_DIR = path.join(mockHomeDir, '.config', 'spec-driven-steroids');
     vi.clearAllMocks();
     vi.spyOn(os, 'homedir').mockReturnValue(mockHomeDir);
   });
@@ -22,6 +23,7 @@ describe('CLI E2E: non-interactive inject', () => {
   afterEach(async () => {
     process.chdir(originalCwd);
     delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
+    delete process.env.SDS_CONFIG_DIR;
     process.exitCode = 0;
     vi.restoreAllMocks();
     await mockFs.cleanup();
@@ -54,7 +56,7 @@ describe('CLI E2E: non-interactive inject', () => {
     expect(parsed.results).toHaveLength(1);
     expect(parsed.results[0]).toMatchObject({ platform: 'opencode', ok: true, scope: 'project' });
 
-    const manifestDir = path.join(os.homedir(), '.config', 'spec-driven-steroids', 'installs');
+    const manifestDir = path.join(process.env.SDS_CONFIG_DIR as string, 'installs');
     expect((await fs.readdir(manifestDir)).some(file => file.startsWith('opencode-project-'))).toBe(true);
   });
 
@@ -80,7 +82,7 @@ describe('CLI E2E: non-interactive inject', () => {
     expect(parsed.results[0].files.length).toBeGreaterThan(0);
 
     expect(await fs.pathExists(path.join(targetDir, '.opencode'))).toBe(false);
-    const manifestDir = path.join(os.homedir(), '.config', 'spec-driven-steroids', 'installs');
+    const manifestDir = path.join(process.env.SDS_CONFIG_DIR as string, 'installs');
     expect(await fs.pathExists(manifestDir)).toBe(false);
   });
 

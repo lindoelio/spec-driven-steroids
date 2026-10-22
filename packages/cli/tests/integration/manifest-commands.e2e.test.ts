@@ -35,6 +35,7 @@ describe('CLI E2E: manifest commands', () => {
     mockHomeDir = await mockFs.createTempDir();
     process.chdir(targetDir);
     process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES = 'true';
+    process.env.SDS_CONFIG_DIR = path.join(mockHomeDir, '.config', 'spec-driven-steroids');
     vi.clearAllMocks();
     vi.spyOn(os, 'homedir').mockReturnValue(mockHomeDir);
   });
@@ -42,6 +43,7 @@ describe('CLI E2E: manifest commands', () => {
   afterEach(async () => {
     process.chdir(originalCwd);
     delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
+    delete process.env.SDS_CONFIG_DIR;
     process.exitCode = 0;
     vi.restoreAllMocks();
     await mockFs.cleanup();
