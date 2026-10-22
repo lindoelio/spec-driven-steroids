@@ -1,6 +1,6 @@
 {
     "name": "@spec-driven-steroids/monorepo",
-    "version": "0.19.0",
+    "version": "0.20.0",
     "private": true,
     "description": "Inject spec-driven intelligence into your favorite AI Agents. Rigorous. Simple. Frictionless.",
     "repository": {
