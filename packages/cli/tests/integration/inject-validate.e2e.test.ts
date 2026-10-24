@@ -4,6 +4,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
 import { mockFs } from '@spec-driven-steroids/test-utils';
+import { expectIncrementalGuidelinesContract } from '../helpers/template-test-helpers.js';
 
 describe('CLI E2E: inject command', () => {
     let targetDir: string;
@@ -60,7 +61,7 @@ describe('CLI E2E: inject command', () => {
         const jetbrainsAgentContent = await fs.readFile(path.join(githubDir, 'agents', 'spec-driven.agent.md'), 'utf-8');
         const jetbrainsPromptContent = await fs.readFile(path.join(githubDir, 'prompts', 'inject-guidelines.prompt.md'), 'utf-8');
         expect(jetbrainsAgentContent.includes('## Lifecycle')).toBe(true);
-        expect(jetbrainsPromptContent.includes('Generate all six guideline documents by default unless the user explicitly skips named files.')).toBe(true);
+        expectIncrementalGuidelinesContract(jetbrainsPromptContent);
     });
 
     it('inject command with GitHub Copilot for VS Code global scope creates artifacts globally', async () => {
@@ -356,7 +357,7 @@ describe('CLI E2E: inject command', () => {
         }
     });
 
-    it('inject-guidelines templates require creating all six guideline files by default', async () => {
+    it('inject-guidelines templates require incremental review and creation of missing guideline files', async () => {
         vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['github-vscode', 'antigravity', 'opencode'] })
             .mockResolvedValueOnce({ scope: 'project' });
@@ -366,7 +367,7 @@ describe('CLI E2E: inject command', () => {
 
         const githubPromptPath = path.join(targetDir, '.github', 'prompts', 'inject-guidelines.prompt.md');
         const githubPromptContent = await fs.readFile(githubPromptPath, 'utf-8');
-        expect(githubPromptContent.includes('Generate all six guideline documents by default unless the user explicitly skips named files.')).toBe(true);
+        expectIncrementalGuidelinesContract(githubPromptContent);
         expect(githubPromptContent.includes('Do not treat missing guideline files as optional.')).toBe(true);
         expect(githubPromptContent.includes('Testing Trophy')).toBe(true);
         expect(githubPromptContent.includes('default generated `TESTING.md` to Testing Trophy guidance')).toBe(true);
@@ -375,7 +376,7 @@ describe('CLI E2E: inject command', () => {
 
         const antigravityGuidelinesPath = path.join(targetDir, '.agents', 'skills', 'inject-guidelines', 'SKILL.md');
         const antigravityGuidelinesContent = await fs.readFile(antigravityGuidelinesPath, 'utf-8');
-        expect(antigravityGuidelinesContent.includes('Generate all six guideline documents by default unless the user explicitly skips named files.')).toBe(true);
+        expectIncrementalGuidelinesContract(antigravityGuidelinesContent);
         expect(antigravityGuidelinesContent.includes('Do not treat missing guideline files as optional.')).toBe(true);
         expect(antigravityGuidelinesContent.includes('Testing Trophy')).toBe(true);
         expect(antigravityGuidelinesContent.includes('default generated `TESTING.md` to Testing Trophy guidance')).toBe(true);
@@ -383,13 +384,18 @@ describe('CLI E2E: inject command', () => {
 
         const opencodeGuidelinesPath = path.join(targetDir, '.opencode', 'commands', 'inject-guidelines.md');
         const opencodeGuidelinesContent = await fs.readFile(opencodeGuidelinesPath, 'utf-8');
-        expect(opencodeGuidelinesContent.includes('Generate all six guideline documents by default unless the user explicitly skips named files.')).toBe(true);
+        expectIncrementalGuidelinesContract(opencodeGuidelinesContent);
         expect(opencodeGuidelinesContent.includes('Do not treat missing guideline files as optional.')).toBe(true);
         expect(opencodeGuidelinesContent.includes('Testing Trophy')).toBe(true);
         expect(opencodeGuidelinesContent.includes('default generated `TESTING.md` to Testing Trophy guidance')).toBe(true);
         expect(opencodeGuidelinesContent.includes('agent: build')).toBe(true);
 
         expect(await fs.pathExists(path.join(targetDir, '.opencode', 'commands', 'inject-guidelines.command.md'))).toBe(false);
+
+        for (const root of ['.github', '.agents', '.opencode']) {
+            const skillPath = path.join(targetDir, root, 'skills', 'project-guidelines-writer', 'SKILL.md');
+            expectIncrementalGuidelinesContract(await fs.readFile(skillPath, 'utf-8'));
+        }
     });
 
     it('inject command with OpenCode project scope adds schema to opencode.json', async () => {
@@ -477,7 +483,7 @@ describe('CLI E2E: inject command', () => {
 
         const injectGuidelinesContent = await fs.readFile(injectGuidelinesPath, 'utf-8');
         expect(injectGuidelinesContent.includes('name: inject-guidelines')).toBe(true);
-        expect(injectGuidelinesContent.includes('Generate all six guideline documents by default unless the user explicitly skips named files.')).toBe(true);
+        expectIncrementalGuidelinesContract(injectGuidelinesContent);
         expect(injectGuidelinesContent.includes('Do not treat missing guideline files as optional.')).toBe(true);
         expect(injectGuidelinesContent.includes('Testing Trophy')).toBe(true);
         expect(await fs.pathExists(path.join(targetDir, '.codex', 'commands', 'inject-guidelines.md'))).toBe(false);

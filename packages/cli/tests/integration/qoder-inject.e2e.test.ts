@@ -4,6 +4,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
 import { mockFs } from '@spec-driven-steroids/test-utils';
+import { expectIncrementalGuidelinesContract } from '../helpers/template-test-helpers.js';
 
 describe('CLI E2E: Qoder CLI / IDE injection', () => {
   let targetDir: string;
@@ -89,7 +90,7 @@ describe('CLI E2E: Qoder CLI / IDE injection', () => {
       expect(await fs.pathExists(commandPath)).toBe(true);
       const content = await fs.readFile(commandPath, 'utf-8');
       expect(content).toContain('name: inject-guidelines');
-      expect(content).toContain('Spec-Driven Steroids Guidelines Injector');
+      expectIncrementalGuidelinesContract(content);
     });
 
     it('copies universal skills to ~/.qoder/skills/', async () => {
@@ -162,6 +163,7 @@ describe('CLI E2E: Qoder CLI / IDE injection', () => {
       expect(await fs.pathExists(commandPath)).toBe(true);
       const content = await fs.readFile(commandPath, 'utf-8');
       expect(content).toContain('name: inject-guidelines');
+      expectIncrementalGuidelinesContract(content);
     });
 
     it('copies universal skills to ./.qoder/skills/', async () => {

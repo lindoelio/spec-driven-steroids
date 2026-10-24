@@ -1,65 +1,67 @@
-<!-- SpecDriven:managed:start -->
+# Contributing
 
-# CONTRIBUTING.md
+Contribute focused changes to the CLI, shipped templates, or landing page. Use [AGENTS.md](AGENTS.md#essential-commands) for setup and verification commands, [STYLEGUIDE.md](STYLEGUIDE.md) for code conventions, and [TESTING.md](TESTING.md) for test selection.
 
-## Git Workflow
+## Repository layout
 
-- **Branch naming**: Use descriptive branch names prefixed by change type: `feat/`, `fix/`, `refactor/`, `docs/`, `chore/`.
-- **Commits**: Keep commits focused. Reference a spec slug when a change is spec-driven (e.g., `feat: add unified scope prompt (expand-platform-support)`).
-- **Base branch**: All PRs target `main`. Rebase onto `main` before opening a PR.
-- **Signoff**: Commits must be signed (verified). Use `-S` or configure `commit.gpgsign true`.
-
-## Pull Request Process
-
-1. Open a PR against `main` with a clear description of the change.
-2. Ensure CI passes: `.github/workflows/ci.yml` runs typecheck, build, lint, tests, coverage, package smoke test, and a production dependency audit on Node 20, 22, and 24.
-3. Coverage must not decrease. Raise the thresholds when coverage improves; never lower them to make a PR pass.
-4. The PR title should follow the conventional commit format (`feat:`, `fix:`, `refactor:`, etc.).
-5. Request review from a maintainer.
-6. Merge only after approval and all status checks pass.
-
-## Repository Structure
-
-```
-spec-driven-steroids/
-├── .changeset/          # Changesets for versioning
-├── .github/workflows/   # CI/CD pipelines
-├── packages/
-│   ├── cli/             # Main CLI (public, published to npm)
-│   │   ├── src/
-│   │   │   ├── cli/          # Injection commands & platform configs
-│   │   │   ├── core/validate/ # Validation modules
-│   │   │   └── context-stewardship/ # Knowledge graph system
-│   │   ├── templates/   # Platform templates and universal skills
-│   │   └── tests/       # Integration and unit tests
-│   ├── test-utils/      # Shared testing utilities (private)
-│   └── landing-page/    # Documentation site (private, Vite)
-├── scripts/             # Build and release utilities
-└── specs/               # Spec artifacts for this repo's own features
+```text
+packages/
+  cli/                 Public npm package
+    src/cli/           Entry point, platform adapters, templates, install manifests
+    src/commands/      Installation lifecycle and template-inspection commands
+    src/core/validate/ Spec validators and shared validation helpers
+    src/context-stewardship/ Local rule storage, retrieval, and lifecycle
+    templates/         Shipped agents, commands, and skills
+    tests/             Unit and integration suites
+  test-utils/          Private shared filesystem helpers and fixtures
+  landing-page/        Private Vite site
+scripts/               Packaging and release helpers
+.github/workflows/     Verification, publishing, and site deployment
+.changeset/            Public-package release notes and versioning configuration
 ```
 
-## Documentation Workflow
+## Make a change
 
-- Generated guideline documents ([AGENTS.md](AGENTS.md), [STYLEGUIDE.md](STYLEGUIDE.md), [TESTING.md](TESTING.md), [ARCHITECTURE.md](ARCHITECTURE.md), [SECURITY.md](SECURITY.md), and this file) contain managed sections wrapped in `<!-- SpecDriven:managed -->` markers. Do not edit content between `SpecDriven:managed:start` and `SpecDriven:managed:end` markers manually — regenerate them with `/inject-guidelines` instead.
-- Product-level documentation lives in `README.md` and `packages/cli/README.md`.
-- Spec-driven change artifacts follow the `.specs/changes/<slug>/` convention: either `brief.md` or the full `requirements.md`, `design.md`, and `tasks.md` set.
+1. Start a focused branch from `main`, the configured Changesets base branch and CI push target.
+2. Keep the change limited to one behavior or problem. Include a regression test when fixing a bug.
+3. For platform or template changes, verify affected destinations, scopes, and emitted content in integration tests. Change universal sources rather than local installed copies.
+4. Update documentation when behavior changes. Check both `README.md` and `packages/cli/README.md` for duplicated product instructions.
+5. Run the relevant checks before opening a pull request and record their results.
 
-### Changesets
+Use descriptive commit messages. Recent history uses prefixes such as `feat:`, `test:`, and `chore(release):`; no commit-message validator is configured in the checked-in workflows.
 
-This project uses [Changesets](https://github.com/changesets/changesets) for version management:
+## Pull requests and CI
+
+Open pull requests against `main`. Explain the problem, the behavioral change, affected platforms or scopes, and how the result was verified. Identify intentional compatibility changes and any checks not run locally.
+
+[CI](.github/workflows/ci.yml) runs on pull requests and pushes to `main`, using Node.js 20, 22, and 24. It checks:
+
+- Type checking and builds
+- Biome lint rules
+- Tests and coverage thresholds
+- Installation of the packed npm artifact
+- Production dependency audit
+
+Workflow configuration does not establish repository branch-protection settings. Do not assume a required approval count or signed-commit policy from these files.
+
+## Changesets and publishing
+
+Add a changeset for a release-worthy change to public CLI behavior or shipped templates:
 
 ```bash
-pnpm changeset          # Create a new changeset entry
-pnpm changeset:version  # Consume changesets and bump versions
-pnpm changeset:publish  # Publish updated packages
+pnpm changeset
 ```
 
-## Development Setup
+Select `spec-driven-steroids`, the public package. Describe the effect on users rather than only listing implementation files. The root workspace, test utilities, and landing page are private.
 
-```bash
-pnpm install
-pnpm build
-pnpm test
-```
+The root versioning script runs Changesets and then synchronizes the root package version with the CLI package. Package publishing is triggered by `v*` tags; the workflow verifies the tag against the CLI version before publishing. Template assets have a separate workflow, triggered by release tags or manual dispatch. See [ARCHITECTURE.md](ARCHITECTURE.md#distribution-and-release-boundaries) for the distribution boundaries.
 
-<!-- SpecDriven:managed:end -->
+Creating a contribution does not require publishing, pushing tags, or deploying the site. Those are separate maintainer actions.
+
+## Maintain documentation
+
+Guidelines are ordinary Markdown and can be edited with any tool. Read existing content first, preserve valid policies and organization, and apply only justified corrections or material additions. Leave files untouched when no update is needed.
+
+Keep agent instructions in [AGENTS.md](AGENTS.md), coding details in [STYLEGUIDE.md](STYLEGUIDE.md), testing guidance in [TESTING.md](TESTING.md), system boundaries in [ARCHITECTURE.md](ARCHITECTURE.md), and security practices in [SECURITY.md](SECURITY.md). Prefer links over repeating full sections.
+
+The optional planning workflow and its approval gates are described in [README.md](README.md#spec-flow). It is not a prerequisite for every contribution.

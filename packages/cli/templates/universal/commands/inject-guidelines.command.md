@@ -1,55 +1,65 @@
 ---
-description: Generate or refresh repository guideline documents using the project-guidelines-writer skill. Analyze the repo, generate all six standard guideline files by default, prefer managed-section updates for existing files, and ask only for exceptional overwrite or skip decisions.
+description: Review repository guidelines using the project-guidelines-writer skill. Create missing documents as ordinary Markdown, apply only justified incremental updates to existing files, and leave unchanged files unwritten.
 ---
 
-You are **Spec-Driven Steroids Guidelines Injector**. Analyze this repository and generate or update the standard guideline documents with a consistent, low-friction workflow.
+Load the `project-guidelines-writer` skill. Analyze this repository and maintain its guideline documents as ordinary, tool-independent Markdown.
 
 ## Workflow
 
 ### Step 1: Repository Analysis
 
-- Inspect existing guideline files first to avoid duplication.
+- Read existing guideline files in full before proposing changes.
 - Select representative files across config, source, docs, and tests.
-- Return the repository-analysis output expected by the skill.
+- Do not use historical spec artifacts as current repository evidence.
+- Keep analysis notes internal unless the user requests them.
 
 ### Step 2: Repository Insights
 
 - Analyze the selected files for stack, structure, conventions, documentation coverage, and conflicts.
+- Confirm commands, paths, versions, and prerequisites against current configuration, scripts, CI, and code.
 - Determine whether the repository's testing strategy is clear or mixed.
-- If testing strategy is unclear or mixed, default generated `TESTING.md` to Testing Trophy guidance.
+- When no documented testing strategy exists and evidence is unclear or mixed, default generated `TESTING.md` to Testing Trophy guidance.
 - Under that fallback, prefer integration tests as the main confidence layer, e2e tests for critical user journeys, and unit tests as secondary and selective.
-- Return the repository-insights output expected by the skill.
+- Do not replace an existing documented testing strategy merely to apply this fallback.
 
-### Step 3: Existing Files Decision
+### Step 3: Delta Review
 
-- Default existing guideline files to managed-section updates.
-- Ask the user only when a whole-file overwrite or explicit skip decision is genuinely needed.
-- Missing guideline files must be created automatically.
+- Identify only necessary corrections, material gaps, harmful contradictions, legacy marker removal, or changes explicitly requested by the user.
+- Justify each proposed delta with repository evidence or the user's request.
+- Preserve valid content, structure, wording, and formatting.
+- Do not reorganize or restyle valid documents merely to match a template.
+- Preserve explicit project policies; ask before changing them when the intended policy is unclear.
+- Create missing guideline files automatically unless explicitly skipped by the user.
 - Do not treat missing guideline files as optional.
 
 ### Step 4: Document Generation And Writing
 
-- Generate these six documents by default:
+- Review these six documents and create any missing ones unless explicitly skipped:
   - `AGENTS.md`
   - `CONTRIBUTING.md`
   - `STYLEGUIDE.md`
   - `TESTING.md`
   - `ARCHITECTURE.md`
   - `SECURITY.md`
-- Use the Document Responsibility Matrix from the skill.
-- Preserve user-authored content outside managed sections when updating.
-- Write the files before asking the user to review the result.
+- Use the skill's Document Responsibility Matrix to organize new content, not to force rewrites of existing documents.
+- Use targeted patches for existing files; never regenerate them by default.
+- If no justified changes remain, do not write the file.
+- Re-read changed files and inspect the diff for unrelated edits or lost guidance.
+- Summarize created, updated, unchanged, and explicitly skipped files, with the reasons for applied deltas.
 
 ## Key Behaviors
 
-- Generate all six guideline documents by default unless the user explicitly skips named files.
-- Default existing guideline files to managed-section updates unless the user asks for overwrite or skip behavior.
-- Use managed section markers for generated content.
+- Review all six guideline documents by default unless the user explicitly skips named files.
+- Do not add generator branding, ownership markers, or tool-specific maintenance instructions.
+- Remove only legacy SpecDriven:managed delimiter comments; preserve all enclosed content.
+- Marker removal is a targeted migration, not permission to regenerate the document or remove unrelated comments.
+- Replace obsolete generator-only maintenance instructions with ordinary editing guidance; preserve tools and workflows that belong to the project itself.
 - Cross-reference related docs instead of duplicating guidance.
 - Keep behavior aligned with the `project-guidelines-writer` skill rather than adding platform-specific workflow rules.
 
 ## Constraints
 
 - Do not generate feature specs or implementation code.
+- Do not introduce tool-specific workflows into guidelines unless they describe the repository itself.
 - Do not ask for confirmation between internal analysis steps.
-- Ask only when exceptional existing-file handling requires user choice.
+- Ask only for unresolved material policy conflicts or before a necessary whole-file rewrite not explicitly requested by the user.

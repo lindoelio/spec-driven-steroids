@@ -1,111 +1,64 @@
-<!-- SpecDriven:managed:start -->
-
 # AGENTS.md
 
-## Project Identity
+## Project context
 
-This is **Spec-Driven Steroids** (`spec-driven-steroids`), a CLI tool and template bundle that injects approval-gated brief and full Spec-Driven workflows into AI coding tools. It ships as a single public npm package with a `sds` alias.
+Spec-Driven Steroids is a TypeScript CLI and template bundle for AI coding tools. The public package is `spec-driven-steroids`, with `sds` as its short command name. It installs prompts and skills; the host AI tool interprets those instructions.
 
-## Technology Stack
+- Workspace: pnpm 10.29.2; Node.js >=20.19.0 for repository development
+- CLI: TypeScript 5.9, ES2022, NodeNext modules, Commander 11, Inquirer 9, Chalk 5
+- Tests: Vitest 3 with V8 coverage in the CLI suite
+- Build: `tsc` for the CLI and test utilities; Vite 7 for the landing page
+- Packages: `packages/cli` is public; `packages/test-utils` and `packages/landing-page` are private
 
-- **Language**: TypeScript 5.9, ES2022 target, NodeNext modules, strict mode
-- **Runtime**: Node.js >=20
-- **Package Manager**: pnpm 10 (workspace monorepo)
-- **CLI**: Commander.js 11 + Inquirer 9 + Chalk 5
-- **Testing**: Vitest 2.x with v8 coverage
-- **Build**: `tsc` (no bundler)
-- **Publishing**: Changesets → npm (with provenance)
+Read [ARCHITECTURE.md](ARCHITECTURE.md) for boundaries, [STYLEGUIDE.md](STYLEGUIDE.md) for coding conventions, [TESTING.md](TESTING.md) for test selection, and [SECURITY.md](SECURITY.md) for filesystem and template trust constraints. Follow [CONTRIBUTING.md](CONTRIBUTING.md) for changesets and pull requests.
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for system boundaries and [STYLEGUIDE.md](STYLEGUIDE.md) for code conventions.
+## Essential commands
 
-## Essential Commands
+Run these commands from the workspace root:
 
-```bash
-pnpm build          # Build all packages
-pnpm test           # Run all tests (requires prior build)
-pnpm typecheck      # Type-check all packages (no emit)
-pnpm lint           # Lint all packages
-pnpm test:coverage  # Run tests with coverage
-pnpm changeset      # Create a changeset entry
-```
+| Command | Purpose |
+| --- | --- |
+| `pnpm install --frozen-lockfile` | Install the locked workspace dependencies |
+| `pnpm typecheck` | Type-check all packages without emitting output |
+| `pnpm build` | Build all packages in dependency order |
+| `pnpm lint` | Run the configured Biome checks |
+| `pnpm test` | Run package test scripts |
+| `pnpm test:coverage` | Run tests with coverage thresholds |
+| `pnpm pack:check` | Pack, install, and smoke-test the public npm package |
 
-When writing code here, always run `pnpm typecheck` before considering a change complete.
+Build before testing a clean checkout: the shared test utilities export compiled files from `dist/`. The CLI test script compiles the CLI itself before running Vitest. Most tests import CLI source; `packages/cli/tests/integration/dist-smoke.test.ts` intentionally imports the compiled entry point.
 
-## Agent Constraints
+Run `pnpm typecheck` before considering code changes complete. Report which checks actually ran and any failures or checks left unexecuted.
 
-- **Code comments policy**: Add code comments only when they are highly necessary to explain non-obvious intent, workarounds, or critical constraints. Do not add comments that merely restate what the code does.
-- **Import style**: Use ES module imports only. All packages are `"type": "module"`. Use `.js` extensions in relative imports (TypeScript resolves them correctly).
-- **Source layout**: The CLI source lives in `packages/cli/src/`. Tests live in `packages/cli/tests/` (not co-located). Shared test utilities are in `packages/test-utils/src/`.
-- **Build before test**: Integration tests import from `dist/`, so `pnpm build` (or `tsc`) must run before `pnpm test`.
-- **Package scope**: The `packages/cli` package is the only public package. `packages/test-utils` and `packages/landing-page` are private.
-- **Platform template changes**: When editing template files under `packages/cli/templates/`, ensure corresponding E2E tests in `packages/cli/tests/integration/` are updated because many tests verify template content assertions.
-- **Template source**: When adding or modifying template files, update `STEROIDS_SKILL_DIRS` and `STEROIDS_FILES` in `packages/cli/src/cli/index.ts` if the new files must be tracked for clean and injection.
-- **Approval-gated SDS invocation**: When SDS is selected, implementation must follow an approved `brief.md` or the approved full flow (`requirements → design → tasks → implementation`). Direct implementation belongs to the host harness outside SDS. See [CONTRIBUTING.md](CONTRIBUTING.md) for the PR process.
-- **Spec artifact exclusion**: Never read `.specs/changes/<slug>/` artifacts (brief.md, requirements.md, design.md, tasks.md) as context for any task unless:
-  - You are explicitly in a spec-driven workflow for that specific `<slug>`, OR
-  - The user explicitly references or asks about that specific spec artifact
-  - Treat spec artifacts as ephemeral snapshots of past intent — they do not reflect current codebase state and must never be used as implementation reference outside their own spec-driven flow.
+## Agent constraints
+
+- Add code comments only when highly necessary to explain non-obvious intent, workarounds, or critical constraints. Do not narrate straightforward code.
+- Use ES module imports. Relative imports in the CLI and test utilities use `.js` extensions, even in TypeScript files.
+- Keep CLI implementation under `packages/cli/src/` and tests under `packages/cli/tests/`. Shared test utilities belong in `packages/test-utils/src/`.
+- Edit shipped prompt sources under `packages/cli/templates/`, not installed copies in AI-tool configuration directories. Update the corresponding template and integration tests.
+- When adding or removing shipped skills or legacy artifacts, review `STEROIDS_SKILL_DIRS` and `STEROIDS_FILES` in `packages/cli/src/cli/index.ts`.
+- Platform destinations and scope support belong in `platform-registry.ts`; output-format configuration belongs in `platform-config.ts`. Avoid adding parallel platform-specific routing in command handlers.
+- Exercise filesystem-changing commands in isolated test directories. Do not modify real global installations, publish packages, or push release tags unless requested.
+- Use current source and configuration as implementation evidence. Historical planning artifacts describe intent, not necessarily current behavior.
+- The planning workflow described in [README.md](README.md#spec-flow) is opt-in. Honor its approval gates when explicitly selected; do not require it for every repository edit.
+- Treat guideline documents as ordinary repository files. Preserve valid content and apply justified patches; do not regenerate unchanged documents.
 
 ## Behavioral Guidelines
 
-Guidelines to reduce common LLM coding mistakes.
+1. Think Before Coding. Don't assume. Don't hide confusion. Surface tradeoffs.
+2. Simplicity First. Minimum code that solves the problem. Nothing speculative. Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+3. Surgical Changes. Touch only what you must. Clean up only your own mess.
+4. Goal-Driven Execution. Strong success criteria let you loop independently. Weak criteria ("make it work") require clarification.
 
-**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+## Mandatory Self-Review Gate (Pre-Handoff)
 
-### 1. Think Before Coding
+Before marking any task as complete or handing it off to a reviewer agent, you are strictly required to run an internal self-audit and cleanup cycle. Never deliver your raw first draft.
 
-Don't assume. Don't hide confusion. Surface tradeoffs.
+Pause, inspect your work against the 4 pillars below, and fix any issues immediately:
 
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them - don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
+1. Zero Execution Debris (Clean Up Your Tracks): Delete all temporary files, scratchpads, one-off test scripts, logs, or unrequested summary notes created to aid your reasoning during execution. Leave only the requested final artifacts behind.
+2. Clean Replacement (Forward-Only): When modifying existing work (including your own output from earlier steps), replace the old version completely. Leave no dead code, orphaned text, unnecessary backward-compatibility layers, or "just-in-case" fallbacks unless explicitly instructed to do so.
+3. Cohesion & Reuse: Ensure you have not duplicated logic, patterns, or content that already exists in the current workspace. Reuse established modules, styles, and conventions rather than reinventing them locally.
+4. Target the Source of Truth: Verify that your changes and validations/tests target the primary source files directly—never compiled, transpiled, generated, or secondary outputs.
 
-### 2. Simplicity First
-
-Minimum code that solves the problem. Nothing speculative.
-
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
-
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
-
-### 3. Surgical Changes
-
-Touch only what you must. Clean up only your own mess.
-
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it - don't delete it.
-
-When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
-
-The test: Every changed line should trace directly to the user's request.
-
-### 4. Goal-Driven Execution
-
-Define success criteria. Loop until verified.
-
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
-
-For multi-step tasks, state a brief plan:
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
-```
-
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
-
-<!-- SpecDriven:managed:end -->
+**Handoff Rule:** If you detect any violation of the points above during your check, fix it silently within your current loop. Only conclude your turn or invoke the next agent once all 4 checks pass cleanly.

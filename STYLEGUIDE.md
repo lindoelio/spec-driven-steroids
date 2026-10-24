@@ -1,110 +1,66 @@
-<!-- SpecDriven:managed:start -->
+# Code style
 
-# STYLEGUIDE.md
+Use the checked-in TypeScript and Biome configuration as the authority for enforced rules. Preserve the surrounding file's formatting rather than applying an unrelated cleanup.
 
-## TypeScript Configuration
+## TypeScript and modules
 
-The project enforces strict TypeScript via `tsconfig.base.json`:
+The CLI and test utilities extend [tsconfig.base.json](tsconfig.base.json):
 
-| Option | Value |
-|---|---|
-| `target` | `ES2022` |
-| `module` | `NodeNext` |
-| `strict` | `true` |
-| `noUnusedLocals` | `true` |
-| `noUnusedParameters` | `true` |
-| `noImplicitReturns` | `true` |
-| `noFallthroughCasesInSwitch` | `true` |
-| `esModuleInterop` | `true` |
-| `forceConsistentCasingInFileNames` | `true` |
+| Setting | Value |
+| --- | --- |
+| Target | ES2022 |
+| Module and resolution | NodeNext |
+| Strict checking | Enabled |
+| Unused locals and parameters | Rejected |
+| Missing returns and switch fallthrough | Checked |
+| Declarations and source maps | Emitted during build |
 
-## Module System
+Both packages use ES modules. Include `.js` in relative imports so emitted JavaScript resolves correctly:
 
-All packages are `"type": "module"`. Use ES module `import`/`export` exclusively. Relative imports must include the `.js` extension (TypeScript resolves them correctly at compile time):
+```typescript
+import path from 'path';
 
-```ts
-import { KnowledgeGraphStore } from './knowledge-graph-store.js';
-import type { RuleNode } from './types.js';
+import { getPlatformDefinition } from './platform-registry.js';
+import type { InjectionScope } from './platform-registry.js';
 ```
 
-## Naming
+Use type-only imports for dependencies used only as types. Keep exported interfaces and return types explicit at module boundaries, following the surrounding modules.
 
-| Category | Convention | Examples |
-|---|---|---|
-| Classes | PascalCase | `KnowledgeGraphStore`, `ProjectScopedResolver` |
-| Interfaces | PascalCase | `RuleNode`, `PlatformConfig`, `ScoredRule` |
-| Enums | PascalCase | `FormatType`, `UnifiedInjectionScope` |
-| Types (aliases) | PascalCase | `Domain`, `LifecycleValue`, `ConflictDecision` |
-| Functions | camelCase | `getPlatformConfig`, `computeSimilarity` |
-| Variables | camelCase | `baseDir`, `targetDir`, `rules` |
-| Constants | UPPER_SNAKE_CASE | `CONFLICT_SIMILARITY_THRESHOLD`, `DEFAULT_EXPIRATION_YEARS` |
-| Files/Directories | kebab-case | `knowledge-graph-store.ts`, `platform-config.ts` |
+The landing page has a separate [TypeScript configuration](packages/landing-page/tsconfig.json): ESNext modules, bundler resolution, DOM types, and no TypeScript emit. Do not apply NodeNext-specific import assumptions to that package.
 
-## Code Style
+## Naming and organization
 
-- **Indentation**: 4 spaces
-- **Semicolons**: Required at end of statements
-- **Quotes**: Single quotes preferred (`'utf-8'`, not `"utf-8"`)
-- **Trailing commas**: Not used in imports or object/type literals
-- **Braces**: Opening brace on same line (K&R style)
-- **Line length**: Aim for reasonable readability; no hard limit
+Follow the existing naming patterns:
 
-### Imports
+| Element | Pattern | Example |
+| --- | --- | --- |
+| Files | kebab-case | `template-source.ts` |
+| Classes, interfaces, type aliases | PascalCase | `TemplateSourceError`, `InstallManifest` |
+| Functions and variables | camelCase | `resolveTemplateSource`, `manifestPath` |
+| Module-level fixed configuration | UPPER_SNAKE_CASE | `PLATFORM_DEFINITIONS` |
 
-Group imports in this order, separated by blank lines:
-1. Node built-ins (`fs`, `path`, `os`, `url`)
-2. Third-party packages (`commander`, `chalk`, `inquirer`)
-3. Internal project modules (`./types.js`, `./utils.js`)
+Keep platform definitions in the registry and format configuration in its dedicated module. See [ARCHITECTURE.md](ARCHITECTURE.md#implementation-boundaries) before moving responsibilities between subsystems.
 
-```ts
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join } from 'path';
-import { homedir } from 'os';
+Use narrow unions for known choices, such as injection scopes and output formats. Validate external values at the boundary before treating them as those types.
 
-import type { RuleNode, Domain } from './types.js';
-import { CONFLICT_SIMILARITY_THRESHOLD } from './types.js';
-import { computeSimilarity } from './utils.js';
-```
+## Formatting and linting
 
-## TypeScript Patterns
+[biome.json](biome.json) enables linting but disables formatting and import organization. The repository contains both two-space and four-space TypeScript indentation; retain the local convention. Existing TypeScript uses semicolons and predominantly single-quoted strings.
 
-- **Prefer `interface` for object shapes**, `type` for unions, tuples, and simple aliases.
-- **Return types** on exported functions: Always annotate the return type on public/exported functions. Internal helpers may omit return types when the inference is obvious.
-- **`as const` assertions** for read-only arrays and tuples used as configuration.
+The configured lint rules reject:
 
-```ts
-const STEROIDS_SKILL_DIRS = [
-  'spec-driven-technical-designer',
-  'spec-driven-task-implementer',
-  // ...
-] as const;
-```
+- Unused imports or variables, undeclared variables, and unreachable code
+- Explicit `any` in production code
+- Loose equality, implicit-any declarations, and async Promise executors
 
-- **Async/await**: Use `async`/`await` for all asynchronous operations. Never use raw `.then()` chains.
-- **Error handling**: Use `try`/`catch` with typed error messages. Surface actionable errors to the user.
-- **String templates**: Prefer template literals over concatenation for dynamic strings.
+Explicit `any` is permitted by the Biome override for test files. This exception does not apply to production code. Templates, build output, and coverage directories are excluded from Biome's file selection.
 
-## JSDoc
+Do not claim a formatting convention is automatically enforced when the formatter is disabled.
 
-Use JSDoc for exported public API functions and classes. Keep it concise:
+## Errors and comments
 
-```ts
-/**
- * Get platform configuration by platform ID.
- */
-export function getPlatformConfig(platformId: string): PlatformConfig | undefined {
-  return PLATFORM_CONFIGS[platformId];
-}
-```
+Treat JSON, filesystem content, URLs, and command arguments as external input. Narrow `unknown` values before accessing fields. Follow existing typed error and validation-result patterns instead of suppressing errors with broad casts.
 
-Do not add JSDoc to private helpers unless the intent is genuinely non-obvious.
+At CLI boundaries, provide actionable errors and preserve the command's exit-code and machine-readable output contract. Do not add human-readable output to a JSON response path without checking its callers and tests.
 
-## Testing File Style
-
-- Test files use `*.test.ts` naming.
-- Tests are organized under `tests/integration/` and `tests/unit/`.
-- Use Vitest globals (`describe`, `it`, `expect`) imported explicitly.
-- Use descriptive test names that state the expected behavior.
-- See [TESTING.md](TESTING.md) for full testing strategy.
-
-<!-- SpecDriven:managed:end -->
+Comments explain non-obvious intent or constraints, not statements the code already expresses. Follow the code-comment policy in [AGENTS.md](AGENTS.md#agent-constraints). Test organization and naming are covered in [TESTING.md](TESTING.md).

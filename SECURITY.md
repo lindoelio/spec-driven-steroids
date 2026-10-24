@@ -1,75 +1,51 @@
-<!-- SpecDriven:managed:start -->
+# Security
 
-# SECURITY.md
+This project installs files into developer tools and distributes instructions interpreted by AI agents. Review both filesystem effects and prompt trust when using or modifying it.
 
-## Security Policy
+## Report a vulnerability privately
 
-Spec-Driven Steroids takes security seriously. This document outlines security practices and how to report vulnerabilities.
+Do not publish working exploits, credentials, or private filesystem contents in a public issue. Contact the maintainer privately using the address published in the [package metadata](packages/cli/package.json): [lindoelio@gmail.com](mailto:lindoelio@gmail.com).
 
-## Reporting a Vulnerability
+Include the information needed to reproduce the problem safely:
 
-If you discover a security vulnerability, please **do not open a public issue**. Instead, report it privately:
+- CLI version and, when available, template version and source
+- Operating system, target platform, and project or global scope
+- A minimal reproduction using temporary directories and sanitized files
+- Expected behavior, observed behavior, and impact
 
-1. Email **[lindoelio@gmail.com](mailto:lindoelio@gmail.com)** with a detailed description of the vulnerability.
-2. Include steps to reproduce, affected versions, and potential impact.
-3. Allow up to **5 business days** for an initial response.
-4. Once resolved, the fix will be published in a release with an appropriate changelog note.
+Coordinate public disclosure with the maintainer. No response-time commitment or supported-version/backport matrix is established by the checked-in release configuration; report the exact affected versions rather than assuming older releases are maintained.
 
-## Supported Versions
+## Filesystem and local data
 
-Only the latest published version receives security patches. Users should regularly update to the latest release:
+Injection writes platform files and installation manifests. Use an isolated project or temporary home when experimenting. Global scope can change instructions shared by unrelated repositories.
 
-```bash
-npm update -g spec-driven-steroids
-```
+Manifest-based cleanup compares installed-file hashes and skips modified files unless `--force` is supplied. Preserve this behavior when changing cleanup, and do not delete whole platform directories containing unrelated user files. The legacy cleanup path also needs preservation tests; it cannot rely on a modern install manifest being present.
 
-## Security Constraints
+Injection and repair can overwrite installed artifacts. In particular, repair re-emits templates and copies skills with overwrite enabled; it is not limited to filling missing files. Review local customizations before running it. The injection command supports a backup option, and filesystem-changing commands expose dry-run modes for previewing installation changes.
 
-### File System Access
+A dry-run is not a sandbox: template-source resolution may still access the network or populate its cache. Do not interpret it as permission to trust arbitrary source URLs or local manifests.
 
-The CLI writes files to the filesystem during injection (templates, skills, agents, commands) and during knowledge graph operations (JSON rules under `~/.agents/stewardship/` or `$SDS_HOME/stewardship/`).
+Install manifests, caches, and rule graphs are local files, not encrypted secret stores. Do not put tokens, credentials, private keys, or confidential customer data in templates, rule content, fixtures, or command output. Keep storage paths scoped and preserve the rule store's scope-ID validation, locking, and atomic-write behavior.
 
-- Every injected file is recorded in an install manifest under `~/.config/spec-driven-steroids/installs/` (or `$SDS_CONFIG_DIR`).
-- `clean`, `uninstall`, and `repair` operate only on files listed in that manifest. Files whose hashes differ after installation are skipped unless `--force` is provided.
-- The CLI never deletes a non-empty platform directory wholesale. Legacy cleanup removes only known SDS-owned files and removes directories only when they are empty.
-- Project scopes are sanitized before being used as directory names.
-- The CLI modifies `opencode.json` only to add the schema field.
+## Remote templates and host instructions
 
-### Template Sources
+Remote templates are enabled by default. The source resolver checks bundle URLs, allowed hosts, schema/version compatibility, path containment, file-count and size limits, and a SHA-256 digest when the remote manifest supplies one. Cached files are rechecked against recorded hashes before reuse.
 
-The CLI supports two template sources:
+These checks have distinct limits:
 
-1. **Remote templates** (default): fetched over HTTPS, restricted to approved hosts, bounded in time and size, and verified against a SHA-256 digest from the manifest when one is present. Version and schema compatibility are checked before use. Remote content is written to the local cache and then into agent directories.
-2. **Bundled templates**: shipped in the npm package and verified by the npm integrity chain. Use `SDS_TEMPLATE_SOURCE=bundled` or `--templates bundled` to force this source.
+- A digest detects a mismatch with the supplied manifest; it is not an independent signature authenticating the publisher
+- Manifests without a digest are accepted with a warning for compatibility
+- Custom manifest URLs and allowed-host overrides change the trust boundary
+- Remote-resolution failures fall back to bundled templates rather than authorizing an invalid remote bundle
 
-Remote template content is plain text (Markdown, TOML) and is never executed by the CLI. It is, however, interpreted as instructions by AI tools, so the digest and compatibility checks are part of the security boundary. A manifest without a digest is accepted for backward compatibility but emits a warning.
+Use the explicit bundled source when remote instructions are not appropriate for the environment. Inspect template-source settings and the actual source selected before investigating an unexpected prompt.
 
-Template cache locations are platform-specific (`~/Library/Caches` on macOS, `$XDG_CACHE_HOME` on Linux, `%LOCALAPPDATA%` on Windows) and can be overridden with `SDS_TEMPLATE_CACHE_DIR`. Cached bundles record a per-file digest when extracted and are re-hashed on reuse; a cache whose contents no longer match is re-downloaded before use.
+The CLI copies prompt text; it does not execute that text as Node.js code. The host AI tool may interpret it and take actions with its own permissions. Prompt approval rules are not a replacement for the host's permission controls, human review, or filesystem isolation.
 
+## Dependencies and release security
 
-### Knowledge Graph Storage
+CI installs the lockfile with frozen dependency resolution, audits production dependencies, and verifies a packed installation. Dependabot is configured for weekly npm and GitHub Actions updates.
 
-The stewardship knowledge graph stores user-authored architectural decisions as JSON files under `~/.agents/stewardship/`. These files:
-- Are stored in user home directory (not system locations)
-- Contain only user-supplied content and metadata
-- Do not include secrets, tokens, or credentials by design
-- Are scoped by global, organization, or project boundaries
+The public package requests npm provenance through `publishConfig`. The publishing workflow grants OIDC token permission and verifies the release tag against the package version. Preserve these checks when changing publication; do not commit publishing credentials or broaden workflow permissions without a specific need.
 
-### CLI Authentication
-
-The CLI does **not** handle authentication. It delegates to platform-native authentication mechanisms (GitHub Copilot, Gemini, etc.). No tokens or credentials are collected, stored, or transmitted by this tool.
-
-### Dependency Hygiene
-
-- Dependencies are pinned via `pnpm-lock.yaml`
-- `pnpm install --frozen-lockfile` is used in CI to prevent supply-chain drift
-- npm publishes use [provenance attestation](https://docs.npmjs.com/generating-provenance-statements) to verify package authenticity
-- The package manager version is locked in `package.json` (`packageManager` field)
-
-## Reporting Process
-
-```
-Reporter → Email lindoelio@gmail.com → Triage (5 days) → Fix → Release → Public disclosure (optional)
-```
-
-<!-- SpecDriven:managed:end -->
+For changes to path validation, remote loading, cleanup, or rule storage, include negative tests demonstrating that invalid input cannot escape its intended boundary or remove unrelated data. Use [TESTING.md](TESTING.md#isolate-side-effects) for isolation practices.

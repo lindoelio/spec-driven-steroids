@@ -260,13 +260,13 @@ The two layouts are mutually exclusive. `sds validate structure` and `sds valida
 sds inject
 ```
 
-2. Generate project guidance:
+2. Generate or review project guidance:
 
 ```bash
 /inject-guidelines
 ```
 
-This creates: `AGENTS.md`, `CONTRIBUTING.md`, `STYLEGUIDE.md`, `TESTING.md`, `ARCHITECTURE.md`, `SECURITY.md`
+This reviews `AGENTS.md`, `CONTRIBUTING.md`, `STYLEGUIDE.md`, `TESTING.md`, `ARCHITECTURE.md`, and `SECURITY.md`, creating missing files unless explicitly skipped. Existing documents receive only justified, targeted updates; files that need no changes are not rewritten. Guidelines are ordinary Markdown without generator branding or ownership markers. Legacy managed-section delimiters are removed without regenerating their content.
 
 3. Start the spec flow:
 

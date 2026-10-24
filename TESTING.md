@@ -1,121 +1,76 @@
-<!-- SpecDriven:managed:start -->
+# Testing
 
-# TESTING.md
+Tests verify CLI behavior, filesystem effects, template transformation, and validation logic. Use integration tests as the main confidence layer, selective unit tests for isolated logic, and smoke tests for the distributed artifact: a Testing Trophy approach for this repository's mixed suite.
 
-## Testing Trophy Strategy
+## Tooling and prerequisites
 
-This project's testing mix (integration/E2E alongside unit tests, no declared hierarchy) defaults to the **Testing Trophy** approach:
+The CLI suite runs with Vitest 3 and V8 coverage from the workspace root dependencies. Tests use the Node environment and a configured 30-second timeout.
 
-1. **Integration tests are the main confidence layer** — they verify that full CLI workflows behave correctly end-to-end.
-2. **E2E tests cover critical user journeys** — platform injection, validation pipelines, and cross-system flows.
-3. **Unit tests are secondary and selective** — reserved for isolated, high-risk logic where fast feedback is essential.
+Set up and build the workspace as described in [AGENTS.md](AGENTS.md#essential-commands) before testing a clean checkout. `@spec-driven-steroids/test-utils` exports compiled files from `dist/`. The CLI's `test` and `test:coverage` scripts run `tsc` before Vitest, but that does not replace building the shared workspace dependency.
 
-## Frameworks and Tooling
+Tests in the integration suite import the CLI from `src/`, except for `tests/integration/dist-smoke.test.ts`, which imports `dist/cli/index.js`. Do not generalize the smoke test's compiled-import requirement to every integration test.
 
-- **Test runner**: [Vitest](https://vitest.dev/) 3.x
-- **Coverage**: `@vitest/coverage-v8`
-- **Assertions**: Vitest's built-in `expect` (global)
-- **Mocks**: `vi.spyOn`, `vi.stubGlobal`, `vi.fn`
-- **File system mocks**: `@spec-driven-steroids/test-utils` provides `mockFs` (see [Test Utilities](#test-utilities))
+## Run the relevant suite
 
-## Running Tests
+Run these commands from the workspace root:
+
+| Command | Scope |
+| --- | --- |
+| `pnpm test` | Package test scripts; the CLI defines the current test suite |
+| `pnpm test:coverage` | CLI suite with coverage enforcement |
+| `pnpm --filter spec-driven-steroids test:ui` | CLI Vitest UI after compiling the CLI |
+
+To run one test file after building the workspace:
 
 ```bash
-# Run all tests (requires prior build for integration tests)
-pnpm build && pnpm test
-
-# Run tests with coverage
-pnpm test:coverage
-
-# Run tests with Vitest UI
-pnpm test:ui
-
-# Run a specific test file
-npx vitest run tests/integration/inject-validate.e2e.test.ts
+pnpm --filter spec-driven-steroids exec vitest run tests/unit/template-source.test.ts
 ```
 
-**Important**: The package test script runs `tsc` first. Unit and integration tests import from `src/`; only `tests/integration/dist-smoke.test.ts` imports the compiled `dist/` entry point.
+To check prompt contracts and injection together:
 
-## Test Organization
-
-```
-packages/cli/tests/
-├── integration/           # E2E tests: full CLI workflows
-│   ├── inject-validate.e2e.test.ts
-│   ├── gemini-cli-inject.e2e.test.ts
-│   ├── clean-global.e2e.test.ts
-│   └── transformation-pipeline.test.ts
-├── unit/                  # Isolated component tests
-│   ├── platform-config.test.ts
-│   ├── format-transformer.test.ts
-│   ├── error-formatter.test.ts
-│   ├── gemini-cli-scope.test.ts
-│   ├── template-validation-guidance.test.ts
-│   ├── universal-agent-prompt.test.ts
-│   ├── context-stewardship-acceptance.test.ts
-│   └── validate/
-└── helpers/               # Shared test helpers
-    └── template-test-helpers.ts
+```bash
+pnpm --filter spec-driven-steroids exec vitest run tests/unit/template-validation-guidance.test.ts tests/integration/inject-validate.e2e.test.ts
 ```
 
-## Integration Tests (Primary)
+Direct `vitest` invocation does not perform the compilation included in package test scripts. Rebuild first when a test depends on changed compiled output.
 
-Integration tests verify end-to-end CLI behavior by:
-- Creating temporary directories with `mockFs.createTempDir()`
-- Mocking user input via `vi.spyOn(inquirer, 'prompt')`
-- Running CLI commands programmatically via `program.parseAsync()`
-- Asserting filesystem side effects (directory structure, file content)
-- Cleaning up with `mockFs.cleanup()` in `afterEach`
+## Test locations and responsibilities
 
-These tests are the primary confidence layer. Every CLI command and platform injection should have corresponding integration coverage.
+| Location | Responsibility |
+| --- | --- |
+| `packages/cli/tests/unit/` | Parsers, validators, template-source checks, formatting helpers, scope resolution, and rule-storage logic |
+| `packages/cli/tests/integration/` | CLI injection, installation lifecycle, non-interactive behavior, platform outputs, and compiled entry-point smoke tests |
+| `packages/cli/tests/helpers/` | Shared template assertions and other suite helpers |
+| `packages/test-utils/src/` | Filesystem helpers and reusable fixtures |
 
-## Unit Tests (Selective)
+Use `*.test.ts` filenames; CLI workflow tests also use `*.e2e.test.ts`. Import the Vitest APIs used by a test explicitly, following neighboring tests. Describe observable behavior in test names.
 
-Unit tests validate isolated, high-risk logic:
-- Platform configuration resolution
-- Format transformation rules
-- Validation module logic
-- Pure utility functions
+For filesystem or platform changes, cover the resulting paths and file contents, not just a successful exit. For cleanup changes, include unrelated user files and modified installed files so preservation is exercised. For validator fixes, include a failing input and a valid counterpart.
 
-Unit tests import directly from `src/` and run without a build step.
+## Isolate side effects
 
-## Coverage Targets
+The `mockFs` helper creates real temporary directories; it is not an in-memory filesystem. Clean up every test-owned directory and restore process-wide state:
 
-Coverage is enforced in CI with a ratchet policy. The current thresholds are:
+- Save and restore the working directory when using `process.chdir`
+- Redirect home directories, `SDS_CONFIG_DIR`, caches, and rule-storage roots when the tested path uses them; do not rely on the developer's configuration
+- Restore environment variables, mocks, globals, and `process.exitCode` when changed
+- Use bundled templates for injection tests through `SPEC_DRIVEN_USE_BUNDLED_TEMPLATES=true` or an explicit bundled source
+- Test remote-source behavior with controlled fetch responses and isolated cache directories
 
-| Package | Statements | Branches | Functions | Lines |
-|---|---|---|---|---|
-| `packages/cli` | 70% | 65% | 75% | 70% |
-| `packages/test-utils` | n/a (excluded) | n/a | n/a | n/a |
+See `inject-validate.e2e.test.ts`, `manifest-clean.e2e.test.ts`, and `template-source.test.ts` for existing patterns.
 
-The ratchet must never decrease. Raise the thresholds when a change meaningfully improves coverage; do not lower them to make a PR pass.
+## Coverage and release confidence
 
-Unit tests import from `src/` so coverage maps to source files. Integration tests may import the compiled `dist/` entry point only for the dedicated `dist-smoke` test.
+The root and CLI Vitest configurations currently enforce these thresholds:
 
-## Cross-Platform Tests
+| Statements | Branches | Functions | Lines |
+| --- | --- | --- | --- |
+| 70% | 65% | 75% | 70% |
 
-Platform path helpers are expected to work on macOS, Linux, and Windows. Add unit tests that stub `process.platform` when changing path resolution logic.
+Keep the two configurations consistent when intentionally changing coverage policy. Do not lower thresholds merely to hide missing coverage.
 
+CI runs the suite on Linux with Node.js 20, 22, and 24. Platform-path tests simulate other environments; passing them is not evidence of execution on native Windows or macOS runners.
 
-## Test Utilities
+The package smoke check installs an npm tarball in a temporary prefix and invokes the installed CLI. It checks packaging and startup, not the behavior of every command. Its prerequisite and command are listed in [AGENTS.md](AGENTS.md#essential-commands).
 
-Shared testing utilities are in `@spec-driven-steroids/test-utils`:
-
-```ts
-import { mockFs } from '@spec-driven-steroids/test-utils';
-```
-
-- `mockFs.createTempDir()` — Creates a temporary filesystem directory
-- `mockFs.cleanup()` — Cleans up all temporary directories
-- `getFixtureContent(name)` — Loads fixture files for validation testing
-- `getFixtureFiles()` — Lists available fixture names
-
-## Writing New Tests
-
-1. For new CLI commands or platform integrations: add an **integration test** in `tests/integration/`.
-2. For new validation logic or utility functions: add a **selective unit test** in `tests/unit/` only if the logic is complex or error-prone.
-3. Use `descriptive test names` that state expected behavior (`it('inject command with GitHub platform creates .github directory structure'`).
-4. Always clean up temporary directories in `afterEach` hooks.
-5. When asserting template content, use `process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES = 'true'` to avoid remote template fetching during tests.
-
-<!-- SpecDriven:managed:end -->
+Template contract tests check emitted instructions and file placement. They do not execute a host LLM or prove that it follows approval, incremental-edit, or no-op instructions. Behavioral evaluation of generated documents requires a separate run in the host AI tool.

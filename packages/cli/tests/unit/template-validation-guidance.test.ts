@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 
 import {
     expectContinuityStartup,
+    expectIncrementalGuidelinesContract,
     expectSharedPlannerContract,
     expectTestingTrophyFallback
 } from '../helpers/template-test-helpers.js';
@@ -181,6 +182,55 @@ describe('Unit: template validation guidance', () => {
         expect(content).toContain('code comment');
         expect(content).toContain('highly necessary');
         expect(content).toContain('non-obvious intent');
+    });
+
+    it('requires tool-independent incremental review in guideline templates', async () => {
+        const targets = [
+            'universal/commands/inject-guidelines.command.md',
+            'universal/skills/project-guidelines-writer/SKILL.md'
+        ];
+
+        for (const target of targets) {
+            expectIncrementalGuidelinesContract(await readTemplate(target));
+        }
+    });
+
+    it('requires justified deltas without imposing templates or changing existing policies', async () => {
+        const content = await readTemplate('universal/skills/project-guidelines-writer/SKILL.md');
+
+        expect(content).toContain('Each proposed delta must identify the affected passage, current repository evidence or explicit user request, and why the change is necessary.');
+        expect(content).toContain("Do not rewrite an existing document merely to match this skill's template or Responsibility Matrix.");
+        expect(content).toContain('Preserve explicit project policies; ask before changing them when the intended policy is unclear.');
+        expect(content).toContain('Do not replace an existing documented testing strategy merely to apply this fallback.');
+        expect(content).toContain('When updating an existing AGENTS.md, preserve equivalent guidance instead of inserting the example verbatim.');
+        expect(content).toContain('Do not introduce Spec-Driven workflows or artifact-access rules merely because this skill is installed.');
+    });
+
+    it('keeps generator output instructions outside the AGENTS example blocks', async () => {
+        const content = await readTemplate('universal/skills/project-guidelines-writer/SKILL.md');
+        const behavioralExample = content.match(/```markdown\n(## Behavioral Guidelines[\s\S]*?)\n```(?:\n|$)/)?.[1];
+        const selfReviewExample = content.match(/```markdown\n(## Mandatory Self-Review Gate[\s\S]*?)\n```(?:\n|$)/)?.[1];
+
+        expect(behavioralExample).toBeDefined();
+        expect(behavioralExample).toContain('4. Goal-Driven Execution.');
+        expect(behavioralExample).not.toContain('### 1. Think Before Coding');
+        expect(behavioralExample).not.toContain('## Output Format');
+        expect(behavioralExample).not.toContain('<document>');
+
+        expect(selfReviewExample).toBeDefined();
+        expect(selfReviewExample).toContain('## Mandatory Self-Review Gate (Pre-Handoff)');
+        expect(selfReviewExample).toContain('Target the Source of Truth');
+        expect(selfReviewExample).not.toContain('## Output Format');
+        expect(selfReviewExample).not.toContain('<document>');
+    });
+
+    it('keeps repository guidelines free of legacy managed-section markers', async () => {
+        const documents = ['AGENTS.md', 'CONTRIBUTING.md', 'STYLEGUIDE.md', 'TESTING.md', 'ARCHITECTURE.md', 'SECURITY.md'];
+
+        for (const document of documents) {
+            const content = await readRepositoryFile(document);
+            expect(content).not.toContain('SpecDriven:managed');
+        }
     });
 
     it('uses trigger-rich skill descriptions with progressive-disclosure references', async () => {
