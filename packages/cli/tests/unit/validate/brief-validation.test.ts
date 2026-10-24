@@ -44,6 +44,7 @@ describe('Unit: brief validation', () => {
     expect(result.valid).toBe(true);
     expect(result.requirementsFound).toEqual(['REQ-1', 'REQ-2']);
     expect(result.tasksFound).toHaveLength(1);
+    expect(result.warnings).toEqual([]);
   });
 
   it.each([
@@ -162,5 +163,41 @@ describe('Unit: brief validation', () => {
 
     expect(verifyBriefFile(withRisks).valid).toBe(true);
     expect(verifyBriefFile(misplacedRisks).valid).toBe(false);
+  });
+
+  it('warns about task paths without evidence without invalidating legacy briefs', () => {
+    const content = validBrief.replace('- Files: `src/validate.ts`, `tests/brief.test.ts`', '- Files: `src/validate.ts`, `src/unknown.ts`');
+    const result = verifyBriefFile(content);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toEqual([]);
+    expect(result.warnings).toHaveLength(1);
+    expect(result.warnings[0].message).toContain('src/unknown.ts without an Existing or New entry');
+    expect(result.warnings[0].line).toBeGreaterThan(0);
+  });
+
+  it('compares equivalent task paths without host-specific separator differences', () => {
+    const content = validBrief.replace('- Files: `src/validate.ts`, `tests/brief.test.ts`', '- Files: `./src/validate.ts`, `tests\\brief.test.ts`');
+    const result = verifyBriefFile(content);
+    expect(result.valid).toBe(true);
+    expect(result.warnings).toEqual([]);
+  });
+
+  it.each(['Looks fine', 'Tests pass', 'Check: everything', 'Check: open page =>', '` `'])('warns about weak verification: %s', verify => {
+    const result = verifyBriefFile(validBrief.replace('`pnpm test brief`', verify));
+    expect(result.valid).toBe(true);
+    expect(result.warnings).toHaveLength(1);
+    expect(result.warnings[0].message).toContain('Verification signal: task 1');
+  });
+
+  it.each(['Check: open the settings page => the saved locale is displayed', 'Check: submit an invalid form → an error is displayed', 'Check: count failures => 0'])('accepts an explicit observable verification: %s', verify => {
+    const result = verifyBriefFile(validBrief.replace('`pnpm test brief`', verify));
+    expect(result.valid).toBe(true);
+    expect(result.warnings).toEqual([]);
+  });
+
+  it('accepts optional slice metadata without imposing it on existing briefs', () => {
+    const result = verifyBriefFile(validBrief.replace('**Lane:** brief', '**Lane:** brief\n\n**Slice:** 2/3'));
+    expect(result.valid).toBe(true);
+    expect(result.warnings).toEqual([]);
   });
 });

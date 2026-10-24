@@ -121,13 +121,13 @@ Invoke the `spec-driven-task-decomposer` skill.
 
 **Triggered after Phase 3 approval, before Phase 4 starts.**
 
-This is an adversarial review of the complete specification (`requirements.md`, `design.md`, `tasks.md`) performed by a separate sub-agent on platforms that support parallel execution (e.g., OpenCode).
+This is an adversarial review of the complete specification (`requirements.md`, `design.md`, `tasks.md`), performed by a separate reviewer when the host supports sub-agent spawning.
 
-**Platform detection:** If your platform exposes a `Task` tool for spawning sub-agents, use it. Otherwise fall back to inline review.
+**Platform detection:** Use any available sub-agent spawning capability, regardless of tool name. Otherwise fall back to structured inline adversarial review and disclose that it is not independent.
 
-**Sub-agent delegation protocol (OpenCode / Task-tool platforms):**
+**Sub-agent delegation protocol:**
 
-Launch a Red Team reviewer sub-agent via the `Task` tool:
+Launch a Red Team reviewer through the host's spawning interface. Adapt role and parameter names to that interface:
 
 - `subagent_type`: `general`
 - `description`: `Red Team Review for <slug>`
@@ -149,7 +149,7 @@ Launch a Red Team reviewer sub-agent via the `Task` tool:
 - `FAIL` — Blocking findings exist. Fix and re-run Red Team Review.
 
 **Inline fallback:**
-- If no `Task` tool is available, perform the Red Team Review yourself. Adopt the rejector persona, read the same artifacts, apply the same cross-artifact focus, and produce the same structured verdict. Do not delegate to the platform's primary agent.
+- If spawning is unavailable, perform the Red Team Review yourself. Adopt the rejector persona, read the same artifacts, apply the same cross-artifact focus, cite findings and evidence, and produce the same structured verdict. Label the review inline, not independent.
 
 After Red Team Review passes, ask the user: `Red Team Review: PASS. Approve entry to Phase 4 (implementation)?`
 
@@ -177,13 +177,13 @@ Invoke the `spec-driven-task-implementer` skill.
 
 **Triggered after all tasks in `tasks.md` are marked `[x]`.**
 
-This is a comprehensive review of the implementation performed by a separate sub-agent on platforms that support parallel execution (e.g., OpenCode).
+This is a comprehensive implementation review performed by a separate reviewer when spawning is available.
 
-**Platform detection:** If your platform exposes a `Task` tool for spawning sub-agents, use it. Otherwise fall back to inline review.
+**Platform detection:** Use any available sub-agent spawning capability, regardless of tool name. Otherwise fall back to structured inline adversarial review and disclose that it is not independent.
 
-**Sub-agent delegation protocol (OpenCode / Task-tool platforms):**
+**Sub-agent delegation protocol:**
 
-Launch a Code Reviewer sub-agent via the `Task` tool:
+Launch a Code Reviewer through the host's spawning interface. Adapt role and parameter names to that interface:
 
 - `subagent_type`: `general`
 - `description`: `Code Review for <slug>`
@@ -207,7 +207,7 @@ Launch a Code Reviewer sub-agent via the `Task` tool:
 - `REQUEST CHANGES` — Blocking findings exist. Fix and re-run Code Review.
 
 **Inline fallback:**
-- If no `Task` tool is available, perform the Code Review yourself. Read the same artifacts, invoke the same skills, and produce the same structured verdict. Do not delegate to the platform's primary agent.
+- If spawning is unavailable, perform the Code Review yourself. Read the same artifacts, invoke the same skills, cite source/diff and observed verification results, and produce the same structured verdict. Label the review inline, not independent. Failed or unobserved required verification cannot be approved.
 
 After Code Review passes, declare: `Implementation complete. Code Review: APPROVE.`
 

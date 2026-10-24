@@ -71,6 +71,10 @@ function hasProsePlaceholder(value: string): boolean {
   return /\b(?:TODO|TBD|TBA|FIXME)\b/i.test(value) || TEMPLATE_TOKEN_PATTERN.test(value);
 }
 
+function normalizeEvidencePath(value: string): string {
+  return path.posix.normalize(value.replace(/\\/g, '/'));
+}
+
 function addError(
   errors: ValidationError[],
   errorType: string,
@@ -87,6 +91,7 @@ export function verifyBriefFile(content: string): BriefValidationResult {
   const requirementsFound: string[] = [];
   const tasksFound: BriefTask[] = [];
   const coveredRequirements = new Set<string>();
+  const evidencePaths = new Set<string>();
 
   const firstNonEmptyLine = content.split('\n').find(line => line.trim().length > 0);
   if (firstNonEmptyLine?.trim() !== '# Change Brief') {
@@ -189,6 +194,8 @@ export function verifyBriefFile(content: string): BriefValidationResult {
       const match = evidenceLines[index].match(evidencePattern);
       if (!match || hasProsePlaceholder(match[2]) || hasProsePlaceholder(match[3])) {
         addError(errors, 'Format Error', `Invalid Repository Evidence entry: ${evidenceLines[index]}`, 'Use - Existing: `path` - evidence or - New: `path` - purpose', evidenceSection.headingLine + index + 1);
+      } else {
+        evidencePaths.add(normalizeEvidencePath(match[2]));
       }
     }
   }
@@ -236,9 +243,24 @@ export function verifyBriefFile(content: string): BriefValidationResult {
       }
       if (!files || !/`[^`]+`/.test(files) || hasProsePlaceholder(files)) {
         addError(errors, 'Format Error', `Task ${taskStart.id} is missing valid Files`, 'Add - Files: with one or more backticked paths', taskLine);
+      } else {
+        const taskPaths = new Set(Array.from(files.matchAll(/`([^`]+)`/g), match => normalizeEvidencePath(match[1])));
+        for (const filePath of taskPaths) {
+          if (!evidencePaths.has(filePath)) {
+            warnings.push({
+              line: taskLine,
+              message: `Repository Evidence: task ${taskStart.id} references ${filePath} without an Existing or New entry`
+            });
+          }
+        }
       }
       if (!verify || hasProsePlaceholder(verify)) {
         addError(errors, 'Format Error', `Task ${taskStart.id} is missing a resolved Verify field`, 'Add - Verify: with a command or observable check', taskLine);
+      } else if (!/`[^`]*[^\s`][^`]*`/.test(verify) && !/^Check:\s*\S.*?\s*(?:=>|→)\s*\S.*$/i.test(verify)) {
+        warnings.push({
+          line: taskLine,
+          message: `Verification signal: task ${taskStart.id} should use a backticked command or Check: <action> => <observable outcome>; this heuristic does not establish correctness`
+        });
       }
       if (!implementsMatch) {
         addError(errors, 'Traceability Error', `Task ${taskStart.id} is missing _Implements`, 'Add _Implements: REQ-N_', taskLine);
@@ -320,12 +342,18 @@ export function createBriefCommand(): Command {
           console.log(formatError(error));
           console.log();
         }
-      } else {
-        console.log(chalk.green('✅ Brief validation passed.'));
-        console.log(`\nFound ${result.requirementsFound.length} requirements and ${result.tasksFound.length} tasks.`);
-      }
+    } else {
+      console.log(chalk.green('✅ Brief validation passed.'));
+      console.log(`\nFound ${result.requirementsFound.length} requirements and ${result.tasksFound.length} tasks.`);
+    }
 
-      process.exitCode = getExitCode(result);
+    if (opts.format !== 'json') {
+      for (const warning of result.warnings) {
+        console.log(chalk.yellow(`Warning${warning.line ? ` (line ${warning.line})` : ''}: ${warning.message}`));
+      }
+    }
+
+    process.exitCode = getExitCode(result);
 
       return;
     });

@@ -72,6 +72,15 @@ describe('Unit: skill-first planning contract', () => {
     expect(content).toContain('Transition approval is not brief approval');
   });
 
+  it('keeps brief review evidence-backed without relying on a named tool', async () => {
+    const content = await readTemplate('universal/skills/spec-driven-brief-planner/SKILL.md');
+    expect(content).toContain('Every task Files path must have a matching Repository Evidence entry');
+    expect(content).toContain('structured adversarial self-review inline');
+    expect(content).toContain('Do not rely on a tool literally named `Task`');
+    expect(content).toContain('Missing or failed required checks mean REQUEST CHANGES');
+    expect(content).toContain('Final Verification must exercise the changed user or system path');
+  });
+
   it.each(getPlatformDefinitions())('routes $id entry points to the shipped planner without native-agent assumptions', async definition => {
     const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'sds-flow-contract-'));
     tempDirs.push(directory);
