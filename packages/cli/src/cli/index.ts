@@ -77,7 +77,8 @@ const STEROIDS_FILES = {
   commands: ['spec-driven.command.md', 'spec-driven.md', 'inject-guidelines.md']
 } as const;
 
-const STEROIDS_SKILL_DIRS = [
+export const STEROIDS_SKILL_DIRS = [
+  'spec-driven-planner',
   'spec-driven-technical-designer',
   'spec-driven-task-implementer',
   'spec-driven-requirements-writer',

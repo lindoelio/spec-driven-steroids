@@ -7,12 +7,16 @@ import {
     expectContinuityStartup,
     expectIncrementalGuidelinesContract,
     expectSharedPlannerContract,
+    expectThinEntryPoint,
     expectTestingTrophyFallback
 } from '../helpers/template-test-helpers.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const standardsTemplatesRoot = path.resolve(__dirname, '../../templates');
+
+const AGENT_ENTRY = 'universal/agents/spec-driven.agent.md';
+const PLANNER_SKILL = 'universal/skills/spec-driven-planner/SKILL.md';
 
 async function readTemplate(relativePath: string): Promise<string> {
     const absolutePath = path.join(standardsTemplatesRoot, relativePath);
@@ -26,8 +30,8 @@ async function readRepositoryFile(relativePath: string): Promise<string> {
 
 describe('Unit: template validation guidance', () => {
     it('requires tasks and complete-spec validation in planner templates', async () => {
-        // Agent prompt delegates validation to shared protocol
-        const content = await readTemplate('universal/agents/spec-driven.agent.md');
+        // Planner skill delegates validation to shared protocol
+        const content = await readTemplate(PLANNER_SKILL);
         expect(content).toContain('Unified Quality Gate');
         expect(content).toContain('Never claim validation passed unless the command was actually run against the written file');
 
@@ -38,7 +42,7 @@ describe('Unit: template validation guidance', () => {
     });
 
     it('uses write-before-validate sequencing for planning artifacts', async () => {
-        const content = await readTemplate('universal/agents/spec-driven.agent.md');
+        const content = await readTemplate(PLANNER_SKILL);
 
         expect(content).toContain('Write `.specs/changes/<slug>/requirements.md`.');
         expect(content).toContain('Run the Unified Quality Gate');
@@ -53,7 +57,7 @@ describe('Unit: template validation guidance', () => {
 
     it('hardens Codex planner templates against phase-skipping', async () => {
         // Universal template is the source of truth for all platforms
-        const agentContent = await readTemplate('universal/agents/spec-driven.agent.md');
+        const agentContent = await readTemplate(PLANNER_SKILL);
 
         expect(agentContent).toContain('In a single user turn, you may complete at most one planning phase.');
         expect(agentContent).toContain('After finishing Phase 1, Phase 2, or Phase 3, you MUST stop');
@@ -61,16 +65,20 @@ describe('Unit: template validation guidance', () => {
     });
 
     it('hardens all planner wrappers against phase-skipping', async () => {
-        // Universal template is the source of truth
-        const content = await readTemplate('universal/agents/spec-driven.agent.md');
+        // Planner skill holds the contract; the wrapper only points at it
+        const content = await readTemplate(PLANNER_SKILL);
         expectSharedPlannerContract(content);
         expect(content).toContain('After a planning artifact is written, stop immediately and wait for approval.');
+
+        expectThinEntryPoint(await readTemplate(AGENT_ENTRY));
     });
 
     it('keeps continuity startup guidance aligned across planner templates', async () => {
-        // Universal template is the source of truth
-        const content = await readTemplate('universal/agents/spec-driven.agent.md');
+        // Planner skill holds the contract; the wrapper only points at it
+        const content = await readTemplate(PLANNER_SKILL);
         expectContinuityStartup(content);
+
+        expectThinEntryPoint(await readTemplate(AGENT_ENTRY));
     });
 
     it('requires tasks and complete-spec validation in decomposition/implementation skills', async () => {
@@ -128,7 +136,7 @@ describe('Unit: template validation guidance', () => {
     });
 
     it('requires mandatory repository context preflight in the spec-driven planner', async () => {
-        const content = await readTemplate('universal/agents/spec-driven.agent.md');
+        const content = await readTemplate(PLANNER_SKILL);
 
         expect(content).toContain('### Mandatory Context Preflight');
         expect(content).toContain('Read available project guideline files relevant to the phase');
@@ -290,14 +298,14 @@ describe('Unit: template validation guidance', () => {
     });
 
     it('completes non-exhaustive discovery during Phase 3 before task approval', async () => {
-        const agent = await readTemplate('universal/agents/spec-driven.agent.md');
+        const planner = await readTemplate(PLANNER_SKILL);
         const decomposer = await readTemplate('universal/skills/spec-driven-task-decomposer/SKILL.md');
         const implementer = await readTemplate('universal/skills/spec-driven-task-implementer/SKILL.md');
         const taskTemplate = await readTemplate('universal/skills/spec-driven-shared-protocol/references/document-templates.md');
         const taskAudit = await readTemplate('universal/skills/agent-work-auditor/artifacts/tasks.md');
 
-        expect(agent).toContain('execute every `Discovery Target` before decomposition');
-        expect(agent).toContain('Do not emit a discovery/inventory implementation task');
+        expect(planner).toContain('execute every `Discovery Target` before decomposition');
+        expect(planner).toContain('Do not emit a discovery/inventory implementation task');
         expect(decomposer).toContain('## Discovery Evidence');
         expect(decomposer).not.toContain('- [ ] 1.1 Inventory implementation touchpoints');
         expect(implementer).toContain('enter implementation with a stable task plan');
@@ -307,7 +315,7 @@ describe('Unit: template validation guidance', () => {
     });
 
     it('requires Red Team Review and Code Review in spec-driven planner', async () => {
-        const content = await readTemplate('universal/agents/spec-driven.agent.md');
+        const content = await readTemplate(PLANNER_SKILL);
         expect(content).toContain('Red Team Review');
         expect(content).toContain('Code Review');
         expect(content).toContain('Unified Quality Gate');

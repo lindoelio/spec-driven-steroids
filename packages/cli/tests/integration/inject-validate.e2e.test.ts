@@ -4,7 +4,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
 import { mockFs } from '@spec-driven-steroids/test-utils';
-import { expectIncrementalGuidelinesContract } from '../helpers/template-test-helpers.js';
+import { expectIncrementalGuidelinesContract, expectSharedPlannerContract, expectThinEntryPoint } from '../helpers/template-test-helpers.js';
 
 describe('CLI E2E: inject command', () => {
     let targetDir: string;
@@ -60,7 +60,8 @@ describe('CLI E2E: inject command', () => {
 
         const jetbrainsAgentContent = await fs.readFile(path.join(githubDir, 'agents', 'spec-driven.agent.md'), 'utf-8');
         const jetbrainsPromptContent = await fs.readFile(path.join(githubDir, 'prompts', 'inject-guidelines.prompt.md'), 'utf-8');
-        expect(jetbrainsAgentContent.includes('## Lifecycle')).toBe(true);
+        expectThinEntryPoint(jetbrainsAgentContent);
+        expect(await fs.pathExists(path.join(githubDir, 'skills', 'spec-driven-planner', 'SKILL.md'))).toBe(true);
         expectIncrementalGuidelinesContract(jetbrainsPromptContent);
     });
 
@@ -204,13 +205,17 @@ describe('CLI E2E: inject command', () => {
         const agentPath = path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md');
         const agentContent = await fs.readFile(agentPath, 'utf-8');
 
-        expect(agentContent.includes('## Lifecycle')).toBe(true);
-        expect(agentContent.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
-        expect(agentContent.includes('## Lane Selection')).toBe(true);
-        expect(agentContent.includes('### No Direct Lane')).toBe(true);
-        expect(agentContent.includes('In the full lane, before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
-        expect(agentContent.includes('SDS requires an approved planning artifact before implementation.')).toBe(true);
-        expect(agentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
+        expectThinEntryPoint(agentContent);
+
+        const plannerSkillContent = await fs.readFile(
+            path.join(targetDir, '.opencode', 'skills', 'spec-driven-planner', 'SKILL.md'),
+            'utf-8'
+        );
+        expectSharedPlannerContract(plannerSkillContent);
+        expect(plannerSkillContent.includes('## Lane Selection')).toBe(true);
+        expect(plannerSkillContent.includes('### No Direct Lane')).toBe(true);
+        expect(plannerSkillContent.includes('In the full lane, before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
+        expect(plannerSkillContent.includes('SDS requires an approved planning artifact before implementation.')).toBe(true);
 
         const commandPath = path.join(targetDir, '.opencode', 'commands', 'spec-driven.md');
         const commandContent = await fs.readFile(commandPath, 'utf-8');
@@ -232,17 +237,20 @@ describe('CLI E2E: inject command', () => {
 
         const githubAgentPath = path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md');
         const githubAgentContent = await fs.readFile(githubAgentPath, 'utf-8');
-        expect(githubAgentContent.includes('## Lifecycle')).toBe(true);
-        expect(githubAgentContent.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
-        expect(githubAgentContent.includes('In the full lane, before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
-        expect(githubAgentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
+        expectThinEntryPoint(githubAgentContent);
 
         const antigravitySkillPath = path.join(targetDir, '.agents', 'skills', 'spec-driven', 'SKILL.md');
         const antigravitySkillContent = await fs.readFile(antigravitySkillPath, 'utf-8');
-        expect(antigravitySkillContent.includes('## Lifecycle')).toBe(true);
-        expect(antigravitySkillContent.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
-        expect(antigravitySkillContent.includes('In the full lane, before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
-        expect(antigravitySkillContent.includes('### Non-Skippable Stop Rule')).toBe(true);
+        expectThinEntryPoint(antigravitySkillContent);
+
+        for (const root of ['.github', '.agents']) {
+            const plannerSkillContent = await fs.readFile(
+                path.join(targetDir, root, 'skills', 'spec-driven-planner', 'SKILL.md'),
+                'utf-8'
+            );
+            expectSharedPlannerContract(plannerSkillContent);
+            expect(plannerSkillContent.includes('In the full lane, before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
+        }
         delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
     });
 
@@ -254,17 +262,28 @@ describe('CLI E2E: inject command', () => {
         const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
-        const plannerFiles = [
+        const entryFiles = [
             path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md'),
             path.join(targetDir, '.agents', 'skills', 'spec-driven', 'SKILL.md'),
             path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md'),
             path.join(targetDir, '.codex', 'agents', 'spec-driven.toml')
         ];
 
-        for (const plannerFile of plannerFiles) {
-            const content = await fs.readFile(plannerFile, 'utf-8');
+        const plannerSkillFiles = [
+            path.join(targetDir, '.github', 'skills', 'spec-driven-planner', 'SKILL.md'),
+            path.join(targetDir, '.agents', 'skills', 'spec-driven-planner', 'SKILL.md'),
+            path.join(targetDir, '.opencode', 'skills', 'spec-driven-planner', 'SKILL.md'),
+            path.join(targetDir, '.codex', 'skills', 'spec-driven-planner', 'SKILL.md')
+        ];
+
+        for (const plannerSkillFile of plannerSkillFiles) {
+            const content = await fs.readFile(plannerSkillFile, 'utf-8');
             expect(content.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
             expect(content.includes('Non-Skippable Stop Rule')).toBe(true);
+        }
+
+        for (const entryFile of entryFiles) {
+            expectThinEntryPoint(await fs.readFile(entryFile, 'utf-8'));
         }
     });
 
@@ -332,7 +351,8 @@ describe('CLI E2E: inject command', () => {
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const injectedAgent = await fs.readFile(path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md'), 'utf-8');
-        expect(injectedAgent.includes('## Lifecycle')).toBe(true);
+        expectThinEntryPoint(injectedAgent);
+        expect(await fs.pathExists(path.join(targetDir, '.github', 'skills', 'spec-driven-planner', 'SKILL.md'))).toBe(true);
     });
 
     it('inject command loads continuity guidance at the start of planning phases', async () => {
@@ -343,15 +363,15 @@ describe('CLI E2E: inject command', () => {
         const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
-        const plannerFiles = [
-            path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md'),
-            path.join(targetDir, '.agents', 'skills', 'spec-driven', 'SKILL.md'),
-            path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md'),
-            path.join(targetDir, '.codex', 'agents', 'spec-driven.toml')
+        const plannerSkillFiles = [
+            path.join(targetDir, '.github', 'skills', 'spec-driven-planner', 'SKILL.md'),
+            path.join(targetDir, '.agents', 'skills', 'spec-driven-planner', 'SKILL.md'),
+            path.join(targetDir, '.opencode', 'skills', 'spec-driven-planner', 'SKILL.md'),
+            path.join(targetDir, '.codex', 'skills', 'spec-driven-planner', 'SKILL.md')
         ];
 
-        for (const plannerFile of plannerFiles) {
-            const content = await fs.readFile(plannerFile, 'utf-8');
+        for (const plannerSkillFile of plannerSkillFiles) {
+            const content = await fs.readFile(plannerSkillFile, 'utf-8');
             expect(content.includes('long-running-work-planning')).toBe(true);
             expect(content.includes('start of each planning phase')).toBe(true);
         }
@@ -464,9 +484,8 @@ describe('CLI E2E: inject command', () => {
 
         const agentContent = await fs.readFile(agentPath, 'utf-8');
         expect(agentContent.includes('name = "spec-driven"')).toBe(true);
-        expect(agentContent.includes('## Lifecycle')).toBe(true);
-        expect(agentContent.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
-        expect(agentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
+        expectThinEntryPoint(agentContent);
+        expect(await fs.pathExists(path.join(targetDir, '.codex', 'skills', 'spec-driven-planner', 'SKILL.md'))).toBe(true);
 
         const commandPath = path.join(targetDir, '.codex', 'skills', 'spec-driven', 'SKILL.md');
         expect(await fs.pathExists(commandPath)).toBe(true);
@@ -516,22 +535,19 @@ describe('CLI E2E: inject command', () => {
         const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
-        const opencodeAgentPath = path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md');
-        const opencodeAgentContent = await fs.readFile(opencodeAgentPath, 'utf-8');
-        expect(opencodeAgentContent).toContain('Red Team Review');
-        expect(opencodeAgentContent).toContain('Code Review');
-        expect(opencodeAgentContent).toContain('Unified Quality Gate');
-        expect(opencodeAgentContent).toContain('Red Team Review: PASS');
+        const plannerSkillFiles = [
+            path.join(targetDir, '.opencode', 'skills', 'spec-driven-planner', 'SKILL.md'),
+            path.join(targetDir, '.github', 'skills', 'spec-driven-planner', 'SKILL.md'),
+            path.join(targetDir, '.agents', 'skills', 'spec-driven-planner', 'SKILL.md')
+        ];
 
-        const githubAgentPath = path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md');
-        const githubAgentContent = await fs.readFile(githubAgentPath, 'utf-8');
-        expect(githubAgentContent).toContain('Red Team Review');
-        expect(githubAgentContent).toContain('Code Review');
-
-        const antigravitySkillPath = path.join(targetDir, '.agents', 'skills', 'spec-driven', 'SKILL.md');
-        const antigravitySkillContent = await fs.readFile(antigravitySkillPath, 'utf-8');
-        expect(antigravitySkillContent).toContain('Red Team Review');
-        expect(antigravitySkillContent).toContain('Code Review');
+        for (const plannerSkillFile of plannerSkillFiles) {
+            const plannerSkillContent = await fs.readFile(plannerSkillFile, 'utf-8');
+            expect(plannerSkillContent).toContain('Red Team Review');
+            expect(plannerSkillContent).toContain('Code Review');
+            expect(plannerSkillContent).toContain('Unified Quality Gate');
+            expect(plannerSkillContent).toContain('Red Team Review: PASS');
+        }
 
         delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
     });

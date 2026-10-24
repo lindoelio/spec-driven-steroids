@@ -4,6 +4,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
 import { mockFs } from '@spec-driven-steroids/test-utils';
+import { expectThinEntryPoint } from '../helpers/template-test-helpers.js';
 
 describe('CLI E2E: Gemini CLI injection', () => {
   let targetDir: string;
@@ -59,7 +60,8 @@ describe('CLI E2E: Gemini CLI injection', () => {
       expect(await fs.pathExists(agentPath)).toBe(true);
       const content = await fs.readFile(agentPath, 'utf-8');
       expect(content).toContain('name: spec-driven');
-      expect(content).toContain('## Lifecycle');
+      expectThinEntryPoint(content);
+      expect(await fs.pathExists(path.join(mockHomeDir, '.gemini', 'skills', 'spec-driven-planner', 'SKILL.md'))).toBe(true);
     });
 
     it('creates inject-guidelines command as TOML in ./.gemini/commands/', async () => {
@@ -145,7 +147,8 @@ describe('CLI E2E: Gemini CLI injection', () => {
       const agentPath = path.join(targetDir, '.gemini', 'agents', 'spec-driven.md');
       expect(await fs.pathExists(agentPath)).toBe(true);
       const content = await fs.readFile(agentPath, 'utf-8');
-      expect(content).toContain('## Lifecycle');
+      expectThinEntryPoint(content);
+      expect(await fs.pathExists(path.join(targetDir, '.gemini', 'skills', 'spec-driven-planner', 'SKILL.md'))).toBe(true);
     });
 
     it('creates inject-guidelines command as TOML in ./.gemini/commands/', async () => {

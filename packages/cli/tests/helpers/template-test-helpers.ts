@@ -18,6 +18,14 @@ export function expectSharedPlannerContract(content: string): void {
   expect(content).toContain('### Non-Skippable Stop Rule');
 }
 
+export function expectThinEntryPoint(content: string): void {
+  expect(content).toContain('spec-driven-planner');
+  expect(content).not.toContain('requirements -> design -> tasks -> Red Team Review');
+  expect(content).not.toContain('### Mandatory Full-Lane Triggers');
+  expect(content).not.toContain('### Non-Skippable Stop Rule');
+  expect(content).not.toContain('### Phase 1: Requirements');
+}
+
 export function expectContinuityStartup(content: string): void {
   expect(content).toContain('long-running-work-planning');
   expect(content).toMatch(/start of (each|the) (planning )?phase/i);
