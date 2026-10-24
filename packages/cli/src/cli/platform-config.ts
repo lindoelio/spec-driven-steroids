@@ -196,6 +196,22 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     specDrivenCommandFilename: '',
     injectGuidelinesCommandFilename: 'SKILL.md'
   },
+  'minimax-code': {
+    id: 'minimax-code',
+    format: FormatType.MARKDOWN,
+    skillsOnly: true,
+    frontmatter: {
+      fields: {
+        name: 'spec-driven',
+        description: SPEC_DRIVEN_DESCRIPTION
+      }
+    },
+    agentDirectory: 'skills/spec-driven',
+    agentFilename: 'SKILL.md',
+    commandDirectory: 'skills/inject-guidelines',
+    specDrivenCommandFilename: '',
+    injectGuidelinesCommandFilename: 'SKILL.md'
+  },
   'github-copilot-cli': {
     id: 'github-copilot-cli',
     format: FormatType.MARKDOWN,

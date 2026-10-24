@@ -82,6 +82,8 @@ const CLINE_EXTRA_SKILL_DIRS = ['spec-driven', 'inject-guidelines'] as const;
 
 const ANTIGRAVITY_EXTRA_SKILL_DIRS = ['spec-driven', 'inject-guidelines'] as const;
 
+const MINIMAX_CODE_EXTRA_SKILL_DIRS = ['spec-driven', 'inject-guidelines'] as const;
+
 const __filename = fileURLToPath(import.meta.url);
 
 function platformDisplayName(platform: string): string {
@@ -551,7 +553,8 @@ program
             removeOpenCodeGlobalSteroids(),
             removeClineSteroids(),
             removeAntigravityIdeSteroids(),
-            removeAntigravityCliSteroids()
+            removeAntigravityCliSteroids(),
+            removeMiniMaxCodeSteroids()
           ]
     );
 
@@ -625,6 +628,7 @@ async function runLegacyPlatformCleanup(platform: string): Promise<boolean> {
     case 'cline': return removeClineSteroids();
     case 'antigravity': return removeAntigravityIdeSteroids();
     case 'antigravity-cli': return removeAntigravityCliSteroids();
+    case 'minimax-code': return removeMiniMaxCodeSteroids();
     default:
       console.warn(chalk.yellow(`  ⚠️ No legacy cleanup available for ${platform}.`));
       return true;
@@ -729,6 +733,7 @@ function buildCleanPreview(): string {
   const qoderDir = path.join(os.homedir(), '.qoder');
   const antigravityIdeDir = path.join(os.homedir(), '.gemini', 'config');
   const antigravityCliDir = path.join(os.homedir(), '.gemini', 'antigravity-cli');
+  const minimaxCodeDir = path.join(os.homedir(), '.agents');
 
   const formatDir = (d: string) => d.replace(os.homedir(), '~');
 
@@ -776,6 +781,11 @@ function buildCleanPreview(): string {
     `    • skills/${STEROIDS_SKILL_DIRS.join('/, skills/')}/`,
     '',
     `  ${chalk.bold('Google Antigravity CLI (AGY)')} (${formatDir(antigravityCliDir)}):`,
+    `    • skills/spec-driven/SKILL.md`,
+    `    • skills/inject-guidelines/SKILL.md`,
+    `    • skills/${STEROIDS_SKILL_DIRS.join('/, skills/')}/`,
+    '',
+    `  ${chalk.bold('MiniMax Code')} (${formatDir(minimaxCodeDir)}):`,
     `    • skills/spec-driven/SKILL.md`,
     `    • skills/inject-guidelines/SKILL.md`,
     `    • skills/${STEROIDS_SKILL_DIRS.join('/, skills/')}/`,
@@ -1060,6 +1070,34 @@ async function removeAntigravityCliSteroids(): Promise<boolean> {
     return true;
   } catch (err) {
     console.warn(chalk.yellow(`  ⚠️ Google Antigravity CLI (AGY): ${err}`));
+    return false;
+  }
+}
+
+async function removeMiniMaxCodeSteroids(): Promise<boolean> {
+  try {
+    const minimaxCodeDir = path.join(os.homedir(), '.agents');
+
+    // Only SDS-owned skill directories are removed; unrelated skills in the shared
+    // Agent Skills directory are preserved.
+    await removeSteroidsSkillDirs(minimaxCodeDir);
+
+    const skillsDir = path.join(minimaxCodeDir, 'skills');
+    for (const skill of MINIMAX_CODE_EXTRA_SKILL_DIRS) {
+      const skillPath = path.join(skillsDir, skill);
+      if (await fs.pathExists(skillPath)) {
+        await fs.remove(skillPath);
+      }
+    }
+    const remaining = await fs.readdir(skillsDir).catch(() => []);
+    if (remaining.length === 0) {
+      await fs.remove(skillsDir);
+    }
+
+    console.log(chalk.green('  ✅ MiniMax Code cleaned.'));
+    return true;
+  } catch (err) {
+    console.warn(chalk.yellow(`  ⚠️ MiniMax Code: ${err}`));
     return false;
   }
 }

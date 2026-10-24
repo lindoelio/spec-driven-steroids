@@ -34,10 +34,13 @@ It injects:
 | GitHub Copilot CLI | user / project | Agents, commands, skills |
 | GitHub Copilot for VS Code | global / project | Agents, prompts, skills |
 | GitHub Copilot for JetBrains | project | Agents, prompts, skills |
+| MiniMax Code | global / project | Skills (`/skill:spec-driven`) |
 | OpenCode | global / project | Agents, commands, skills |
 | OpenAI Codex | project | Agents, command skills, skills |
 | Qoder CLI / IDE | user / project | Agents, commands, skills |
 | Qwen Code | user / project | Agents, commands, skills |
+
+MiniMax Code receives skills only. Project scope writes to `.minimax/skills`, the workspace directory its runtime reads with the highest priority. Global scope writes to `~/.agents/skills`, the shared Agent Skills directory. Cleanup removes only the SDS-owned skill directories and leaves other skills in that shared location untouched.
 
 ## Installation
 
@@ -299,6 +302,7 @@ This reviews `AGENTS.md`, `CONTRIBUTING.md`, `STYLEGUIDE.md`, `TESTING.md`, `ARC
 - Cline: `/spec-driven`
 - Antigravity IDE: `/spec-driven`
 - Antigravity CLI (AGY): `/spec-driven`
+- MiniMax Code: `/skill:spec-driven`
 - Codex: select the `spec-driven` skill with `/skills` or mention `$spec-driven`
 
 4. Approve the single brief or each full-lane planning phase, then move to implementation.

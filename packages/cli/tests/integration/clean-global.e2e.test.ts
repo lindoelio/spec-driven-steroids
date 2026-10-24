@@ -168,6 +168,22 @@ describe('CLI E2E: clean --global command', () => {
         // Should not throw
     });
 
+    it('clean --global removes MiniMax Code skills but preserves unrelated shared skills', async () => {
+        const sharedSkillsDir = path.join(os.homedir(), '.agents', 'skills');
+        await fs.outputFile(path.join(sharedSkillsDir, 'spec-driven', 'SKILL.md'), 'entry skill');
+        await fs.outputFile(path.join(sharedSkillsDir, 'spec-driven-planner', 'SKILL.md'), 'planner skill');
+        await fs.outputFile(path.join(sharedSkillsDir, 'long-running-work-planning', 'SKILL.md'), 'skill');
+        await fs.outputFile(path.join(sharedSkillsDir, 'some-external-skill', 'SKILL.md'), 'external skill content');
+
+        const program = (await import('../../src/cli/index.js')).default;
+        await program.parseAsync(['clean', '--global', '--yes'], { from: 'user' } as any);
+
+        expect(await fs.pathExists(path.join(sharedSkillsDir, 'spec-driven'))).toBe(false);
+        expect(await fs.pathExists(path.join(sharedSkillsDir, 'spec-driven-planner'))).toBe(false);
+        expect(await fs.pathExists(path.join(sharedSkillsDir, 'long-running-work-planning'))).toBe(false);
+        expect(await fs.pathExists(path.join(sharedSkillsDir, 'some-external-skill', 'SKILL.md'))).toBe(true);
+    });
+
     it('clean --global does NOT modify ~/.agents/skills/', async () => {
         const aliasDir = path.join(os.homedir(), '.agents', 'skills');
         await fs.ensureDir(aliasDir);

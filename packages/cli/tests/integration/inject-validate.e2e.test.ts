@@ -162,6 +162,36 @@ describe('CLI E2E: inject command', () => {
         expect(await fs.pathExists(path.join(globalAntigravityCliDir, 'commands'))).toBe(false);
     });
 
+    it('inject command with MiniMax Code platform creates .minimax skills directory (project scope)', async () => {
+        vi.spyOn(inquirer, 'prompt')
+            .mockResolvedValueOnce({ platforms: ['minimax-code'] })
+            .mockResolvedValueOnce({ scope: 'project' });
+
+        const program = (await import('../../src/cli/index.js')).default;
+        await program.parseAsync(['inject'], { from: 'user' } as any);
+
+        const minimaxDir = path.join(targetDir, '.minimax');
+        expect(await fs.pathExists(path.join(minimaxDir, 'skills', 'spec-driven', 'SKILL.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(minimaxDir, 'skills', 'inject-guidelines', 'SKILL.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(minimaxDir, 'skills', 'spec-driven-planner', 'SKILL.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(minimaxDir, 'skills', 'spec-driven-planner', 'references', 'lane-selection.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(minimaxDir, 'agents'))).toBe(false);
+        expect(await fs.pathExists(path.join(minimaxDir, 'commands'))).toBe(false);
+    });
+
+    it('inject command with MiniMax Code global scope writes to the shared Agent Skills directory', async () => {
+        vi.spyOn(inquirer, 'prompt')
+            .mockResolvedValueOnce({ platforms: ['minimax-code'] })
+            .mockResolvedValueOnce({ scope: 'global' });
+
+        const program = (await import('../../src/cli/index.js')).default;
+        await program.parseAsync(['inject'], { from: 'user' } as any);
+
+        const sharedSkillsDir = path.join(os.homedir(), '.agents', 'skills');
+        expect(await fs.pathExists(path.join(sharedSkillsDir, 'spec-driven', 'SKILL.md'))).toBe(true);
+        expect(await fs.pathExists(path.join(sharedSkillsDir, 'spec-driven-planner', 'SKILL.md'))).toBe(true);
+    });
+
     it('inject command displays single unified scope prompt for multiple global-capable platforms', async () => {
         const promptSpy = vi.spyOn(inquirer, 'prompt')
             .mockResolvedValueOnce({ platforms: ['opencode', 'antigravity'] })

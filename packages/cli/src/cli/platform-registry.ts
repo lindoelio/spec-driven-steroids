@@ -164,6 +164,21 @@ export const PLATFORM_DEFINITIONS: Record<string, PlatformDefinition> = {
       'skills'
     )
   },
+  'minimax-code': {
+    id: 'minimax-code',
+    displayName: 'MiniMax Code',
+    supportedScopes: ['global', 'project'],
+    config: PLATFORM_CONFIGS['minimax-code'],
+    // Global scope writes to the shared Agent Skills directory that MiniMax Code reads as an
+    // external user source. Project scope writes to the MiniMax-native workspace directory.
+    resolveRoot: (scope, context) => scope === 'global'
+      ? globalRoot(context, '.agents')
+      : projectRoot(context, '.minimax'),
+    resolveSkillsRoot: (scope, context) => path.join(
+      scope === 'global' ? globalRoot(context, '.agents') : projectRoot(context, '.minimax'),
+      'skills'
+    )
+  },
   'codex': {
     id: 'codex',
     displayName: 'OpenAI Codex',

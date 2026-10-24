@@ -64,4 +64,15 @@ describe('Unit: platform registry', () => {
     const ids = Object.keys(PLATFORM_DEFINITIONS);
     expect(new Set(ids).size).toBe(ids.length);
   });
+
+  it('resolves MiniMax Code skills to the directories its runtime reads', () => {
+    const definition = getPlatformDefinition('minimax-code');
+    expect(definition).toBeDefined();
+
+    const context = { cwd: '/tmp/example-project', home: '/tmp/home' };
+    expect(definition!.resolveRoot('project', context)).toBe('/tmp/example-project/.minimax');
+    expect(definition!.resolveSkillsRoot('project', context)).toBe('/tmp/example-project/.minimax/skills');
+    expect(definition!.resolveRoot('global', context)).toBe('/tmp/home/.agents');
+    expect(definition!.resolveSkillsRoot('global', context)).toBe('/tmp/home/.agents/skills');
+  });
 });

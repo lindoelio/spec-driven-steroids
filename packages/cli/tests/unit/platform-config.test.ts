@@ -129,6 +129,18 @@ describe('Unit: Platform Config', () => {
       expect(config?.injectGuidelinesCommandFilename).toBe('SKILL.md');
       expect(config?.commandAgents).toBeUndefined();
     });
+
+    it('returns config for minimax-code', () => {
+      const config = getPlatformConfig('minimax-code');
+      expect(config).toBeDefined();
+      expect(config?.format).toBe(FormatType.MARKDOWN);
+      expect(config?.skillsOnly).toBe(true);
+      expect(config?.agentDirectory).toBe('skills/spec-driven');
+      expect(config?.agentFilename).toBe('SKILL.md');
+      expect(config?.commandDirectory).toBe('skills/inject-guidelines');
+      expect(config?.injectGuidelinesCommandFilename).toBe('SKILL.md');
+      expect(config?.commandAgents).toBeUndefined();
+    });
   });
 
   describe('PLATFORM_CONFIGS', () => {
@@ -145,7 +157,8 @@ describe('Unit: Platform Config', () => {
         'codex',
         'antigravity',
         'antigravity-cli',
-        'cline'
+        'cline',
+        'minimax-code'
       ];
       
       for (const platform of expectedPlatforms) {

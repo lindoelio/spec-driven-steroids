@@ -30,7 +30,7 @@ describe('Integration: Transformation Pipeline', () => {
 
     it('applies correct format transformation per platform', async () => {
       // Test markdown platforms
-      const markdownPlatforms = ['github-vscode', 'claudecode', 'opencode', 'antigravity', 'antigravity-cli'];
+      const markdownPlatforms = ['github-vscode', 'claudecode', 'opencode', 'antigravity', 'antigravity-cli', 'minimax-code'];
       
       for (const platform of markdownPlatforms) {
         const results = await transformForPlatform(platform, templatesDir, tempDir);
@@ -135,20 +135,21 @@ describe('Integration: Transformation Pipeline', () => {
 
   describe('transformTemplates', () => {
     it('transforms for multiple platforms', async () => {
-      const platforms = ['github-vscode', 'codex', 'antigravity', 'antigravity-cli'];
-      
+      const platforms = ['github-vscode', 'codex', 'antigravity', 'antigravity-cli', 'minimax-code'];
+
       const results = await transformTemplates(
         platforms,
         templatesDir,
         (platform) => path.join(tempDir, platform)
       );
-      
+
       // github-vscode: 3 results (agent + spec-driven-command + inject-guidelines-command)
       // codex: 3 results (agent + spec-driven skill + inject-guidelines skill)
       // antigravity: 2 results (agent + inject-guidelines, skillsOnly skips spec-driven-command)
       // antigravity-cli: 2 results (agent + inject-guidelines, skillsOnly skips spec-driven-command)
-      // Total: 10
-      expect(results.length).toBe(10);
+      // minimax-code: 2 results (agent + inject-guidelines, skillsOnly skips spec-driven-command)
+      // Total: 12
+      expect(results.length).toBe(12);
       
       for (const result of results) {
         expect(result.success).toBe(true);
