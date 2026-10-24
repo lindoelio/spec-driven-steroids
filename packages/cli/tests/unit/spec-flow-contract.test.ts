@@ -25,13 +25,13 @@ describe('Unit: skill-first planning contract', () => {
     expect(content).not.toContain('Delegate this to');
   });
 
-  it('ships every explicitly referenced planning skill and tracks it for cleanup', async () => {
+  it('ships every referenced planning skill and tracks it for cleanup', async () => {
     const files = await collectFiles(path.join(templatesRoot, 'universal'));
     const references = new Set<string>();
     for (const file of files.filter(file => file.endsWith('.md'))) {
       const content = await fs.readFile(file, 'utf8');
-      for (const match of content.matchAll(/`(spec-driven-[a-z-]+)`\s+skill\b/g)) {
-        references.add(match[1]);
+      for (const match of content.matchAll(/\b(spec-driven-[a-z]+(?:-[a-z]+)*)\b/g)) {
+        if (match[1] !== 'spec-driven-steroids') references.add(match[1]);
       }
     }
 
@@ -89,6 +89,9 @@ describe('Unit: skill-first planning contract', () => {
     expect(content).toContain('implement one task by default after confirming prior implementation approval');
     expect(content).toContain('owns serialized ledger updates');
     expect(content).not.toContain('platform `Task` tool is available');
+    const phases = await readTemplate('universal/skills/spec-driven-planner/references/full-lane-phases.md');
+    expect(phases).toContain('When invoking a full-lane planning skill (requirements, design, or tasks)');
+    expect(phases).toContain('Implementation follows the approved execution scope');
   });
 
   it.each(getPlatformDefinitions())('routes $id entry points to the shipped planner without native-agent assumptions', async definition => {

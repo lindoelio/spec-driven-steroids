@@ -32,7 +32,7 @@ When this skill begins execution, create a todo list derived from the pending ta
 
 - Read the approved `tasks.md` for the target slug.
 - For each task that is `- [ ]` (pending), create a corresponding todo item.
-    - Skip completed tasks; recover any in-progress task under Interrupted Sessions before selecting new work.
+- Skip completed tasks; recover any in-progress task under Interrupted Sessions before selecting new work.
 
 ### Progress Rules
 

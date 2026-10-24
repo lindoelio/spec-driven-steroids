@@ -342,18 +342,18 @@ export function createBriefCommand(): Command {
           console.log(formatError(error));
           console.log();
         }
-    } else {
-      console.log(chalk.green('✅ Brief validation passed.'));
-      console.log(`\nFound ${result.requirementsFound.length} requirements and ${result.tasksFound.length} tasks.`);
-    }
-
-    if (opts.format !== 'json') {
-      for (const warning of result.warnings) {
-        console.log(chalk.yellow(`Warning${warning.line ? ` (line ${warning.line})` : ''}: ${warning.message}`));
+      } else {
+        console.log(chalk.green('✅ Brief validation passed.'));
+        console.log(`\nFound ${result.requirementsFound.length} requirements and ${result.tasksFound.length} tasks.`);
       }
-    }
 
-    process.exitCode = getExitCode(result);
+      if (opts.format !== 'json') {
+        for (const warning of result.warnings) {
+          console.log(chalk.yellow(`Warning${warning.line ? ` (line ${warning.line})` : ''}: ${warning.message}`));
+        }
+      }
+
+      process.exitCode = getExitCode(result);
 
       return;
     });

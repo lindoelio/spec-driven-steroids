@@ -59,7 +59,7 @@ Before invoking any phase-specific skill, you MUST collect and pass repository c
 
 ### Phase Orchestration
 
-When invoking any spec-driven phase skill, follow this sequence:
+When invoking a full-lane planning skill (requirements, design, or tasks), follow this sequence. Implementation follows the approved execution scope instead of stopping after every task:
 
 1. Run the mandatory context preflight
 2. Invoke the phase skill with the collected context
