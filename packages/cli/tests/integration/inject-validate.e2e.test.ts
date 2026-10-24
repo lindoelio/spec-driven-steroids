@@ -4,7 +4,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
 import { mockFs } from '@spec-driven-steroids/test-utils';
-import { expectIncrementalGuidelinesContract, expectSharedPlannerContract, expectThinEntryPoint, readPlannerContract } from '../helpers/template-test-helpers.js';
+import { expectIncrementalGuidelinesContract, expectSharedPlannerContract, expectThinEntryPoint, readPlannerContract, readRequiredSkillFiles } from '../helpers/template-test-helpers.js';
 
 describe('CLI E2E: inject command', () => {
     let targetDir: string;
@@ -302,6 +302,7 @@ describe('CLI E2E: inject command', () => {
                     json: async () => ({
                         version: 'remote-test-version',
                         files: {
+                            ...await readRequiredSkillFiles(),
                             'universal/agents/spec-driven.agent.md': '---\nname: Spec-Driven\n---\n\nREMOTE SPEC-DRIVEN AGENT\n\n## Phase Gatekeeper\n\nTest content.',
                             'universal/commands/inject-guidelines.command.md': '---\ndescription: Test\n---\n\nREMOTE INJECT GUIDELINES\n\nGenerate all six guideline documents by default.',
                             'universal/commands/spec-driven.command.md': '---\ndescription: Test\n---\n\nREMOTE SPEC-DRIVEN COMMAND',
@@ -675,8 +676,10 @@ describe('CLI E2E: inject command', () => {
                         json: async () => ({
                             version: 'test-version-abc',
                             files: {
+                                ...await readRequiredSkillFiles(),
                                 'universal/agents/spec-driven.agent.md': '---\nname: Spec-Driven\n---\n\ncontent',
-                                'universal/commands/spec-driven.command.md': '---\ndescription: Test\n---\n\ncontent'
+                                'universal/commands/spec-driven.command.md': '---\ndescription: Test\n---\n\ncontent',
+                                'universal/commands/inject-guidelines.command.md': '---\ndescription: Test\n---\n\ncontent'
                             }
                         })
                     } as Response;
@@ -736,6 +739,47 @@ describe('CLI E2E: inject command', () => {
         });
     });
 
+    it.each(['inject', 'repair', 'templates'])('uses the same incomplete-skill guard for %s', async action => {
+        const { createProgram } = await import('../../src/cli/index.js');
+        const program = createProgram();
+        if (action === 'repair') {
+            await program.parseAsync(['inject', '--platform', 'opencode', '--scope', 'project', '--yes'], { from: 'user' });
+        }
+        delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
+        const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+        vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => ({
+            ok: true,
+            json: async () => String(input).endsWith('/templates-manifest.json')
+                ? { version: 'incomplete-skills', bundleUrl: 'https://example.test/templates-bundle.json' }
+                : {
+                    version: 'incomplete-skills',
+                    files: {
+                        'universal/agents/spec-driven.agent.md': 'REMOTE BROKEN ROUTER',
+                        'universal/commands/spec-driven.command.md': 'REMOTE BROKEN COMMAND',
+                        'universal/commands/inject-guidelines.command.md': 'REMOTE GUIDELINES'
+                    }
+                }
+        }) as Response));
+        try {
+            const args = action === 'inject'
+                ? ['inject', '--platform', 'opencode', '--scope', 'project', '--yes']
+                : action === 'repair' ? ['repair', '--project'] : ['templates', 'info', '--json'];
+            await program.parseAsync(args, { from: 'user' });
+            if (action === 'templates') {
+                const info = JSON.parse(String(log.mock.calls[0][0]));
+                expect(info.source).toBe('bundled');
+                expect(info.fallbackReason).toContain('spec-driven-planner/SKILL.md');
+            } else {
+                const entry = await fs.readFile(path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md'), 'utf8');
+                expectThinEntryPoint(entry);
+                expect(entry).not.toContain('REMOTE BROKEN ROUTER');
+                expect(await fs.pathExists(path.join(targetDir, '.opencode', 'skills', 'spec-driven-planner', 'references', 'lane-selection.md'))).toBe(true);
+            }
+        } finally {
+            log.mockRestore();
+        }
+    });
+
     it('reports failure when a remote template bundle is missing a required file', async () => {
         delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
         vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
@@ -759,6 +803,7 @@ describe('CLI E2E: inject command', () => {
                     text: async () => JSON.stringify({
                         version: 'broken-remote',
                         files: {
+                            ...await readRequiredSkillFiles(),
                             'universal/commands/spec-driven.command.md': '---\ndescription: Test\n---\n\nCOMMAND ONLY'
                         }
                     })

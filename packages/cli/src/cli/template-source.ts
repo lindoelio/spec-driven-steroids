@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';
+import { getRequiredSkillFiles } from './skill-registry.js';
 import {
   MAX_TEMPLATE_JSON_BYTES,
   TemplateSourceError,
@@ -41,6 +42,7 @@ export interface ResolveTemplateSourceOptions {
   manifestUrl?: string;
   fetchImpl?: typeof fetch;
   source?: TemplateSourceKind;
+  requiredSkills?: readonly string[];
 }
 
 interface RemoteJsonResult<T> {
@@ -74,6 +76,14 @@ function getDefaultCacheDir(): string {
 
 function sha256(value: string): string {
   return crypto.createHash('sha256').update(value, 'utf8').digest('hex');
+}
+
+function assertRequiredSkills(availableFiles: string[], skills: readonly string[]): void {
+  const available = new Set(availableFiles);
+  const missing = getRequiredSkillFiles(skills).filter(file => !available.has(file));
+  if (missing.length > 0) {
+    throw new TemplateSourceError(`Template bundle is missing required skill files: ${missing.join(', ')}`, 'incompatible');
+  }
 }
 
 async function hashFile(filePath: string): Promise<string> {
@@ -289,7 +299,8 @@ export async function resolveTemplateSource(options: ResolveTemplateSourceOption
     cacheDir = getDefaultCacheDir(),
     manifestUrl = process.env.SDS_TEMPLATE_MANIFEST_URL ?? DEFAULT_TEMPLATE_MANIFEST_URL,
     fetchImpl = fetch,
-    source = configuredSource as TemplateSourceKind
+    source = configuredSource as TemplateSourceKind,
+    requiredSkills = []
   } = options;
 
   const warnings: string[] = [];
@@ -334,6 +345,8 @@ export async function resolveTemplateSource(options: ResolveTemplateSourceOption
 
     const cached = await isValidCachedBundle(cacheDir, manifest);
     if (cached) {
+      const marker = await readCacheMarker(path.dirname(cached));
+      assertRequiredSkills(Object.keys(marker?.files ?? {}), requiredSkills);
       warnings.push('Using cached template bundle.');
       return {
         source: 'remote',
@@ -362,6 +375,7 @@ export async function resolveTemplateSource(options: ResolveTemplateSourceOption
       );
     }
     assertCompatibleSchema(parsed.bundle.schemaVersion, 'Template bundle');
+    assertRequiredSkills(parsed.entries.map(([file]) => file), requiredSkills);
 
     const rootDir = await extractBundleToCache(cacheDir, parsed, digest);
 

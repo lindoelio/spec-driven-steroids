@@ -3,7 +3,7 @@ import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';
 
-import { STEROIDS_SKILL_DIRS } from '../../src/cli/index.js';
+import { STEROIDS_SKILL_DIRS } from '../../src/cli/skill-registry.js';
 import { collectFiles } from '../../src/cli/install-manifest.js';
 import { getPlatformDefinitions } from '../../src/cli/platform-registry.js';
 import { transformForPlatform } from '../../src/cli/transformation-pipeline.js';

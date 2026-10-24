@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { expect } from 'vitest';
+import { getRequiredSkillFiles, STEROIDS_SKILL_DIRS } from '../../src/cli/skill-registry.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,6 +16,13 @@ export async function readTemplate(relativePath: string): Promise<string> {
 export async function readPlannerContract(plannerDir = path.join(templatesRoot, 'universal/skills/spec-driven-planner')): Promise<string> {
   const files = ['SKILL.md', 'references/lane-selection.md', 'references/full-lane-phases.md'];
   return (await Promise.all(files.map(file => fs.readFile(path.join(plannerDir, file), 'utf8')))).join('\n');
+}
+
+export async function readRequiredSkillFiles(): Promise<Record<string, string>> {
+  const entries = await Promise.all(getRequiredSkillFiles(STEROIDS_SKILL_DIRS).map(async file =>
+    [file, await fs.readFile(path.join(templatesRoot, file), 'utf8')] as const
+  ));
+  return Object.fromEntries(entries);
 }
 
 export function expectSharedPlannerContract(content: string): void {

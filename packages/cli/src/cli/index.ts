@@ -8,6 +8,7 @@ import os from 'os';
 import { fileURLToPath } from 'url';
 
 import { resolveTemplateSource } from './template-source.js';
+import { STEROIDS_SKILL_DIRS } from './skill-registry.js';
 import {
   getOpenCodeGlobalConfigDir
 } from './opencode-scope.js';
@@ -76,23 +77,6 @@ const STEROIDS_FILES = {
   agents: ['spec-driven.agent.md'],
   commands: ['spec-driven.command.md', 'spec-driven.md', 'inject-guidelines.md']
 } as const;
-
-export const STEROIDS_SKILL_DIRS = [
-  'spec-driven-planner',
-  'spec-driven-technical-designer',
-  'spec-driven-task-implementer',
-  'spec-driven-requirements-writer',
-  'spec-driven-task-decomposer',
-  'spec-driven-brief-planner',
-  'spec-driven-shared-protocol',
-  'long-running-work-planning',
-  'project-guidelines-writer',
-  'agent-work-auditor',
-  'code-review-hardening',
-  'contextual-stewardship',
-  'quality-grading',
-  'universal-live-check'
-] as const;
 
 const CLINE_EXTRA_SKILL_DIRS = ['spec-driven', 'inject-guidelines'] as const;
 
@@ -261,6 +245,7 @@ program
     const targetDir = process.cwd();
     const bundledTemplatesDir = getBundledTemplatesDir();
     const templateSource = await resolveTemplateSource({
+      requiredSkills: STEROIDS_SKILL_DIRS,
       bundledTemplatesDir,
       cliVersion: getCliVersion(),
       source: opts.templates as 'bundled' | 'remote' | undefined
