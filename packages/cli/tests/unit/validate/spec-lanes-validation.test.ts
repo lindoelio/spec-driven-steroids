@@ -1,9 +1,11 @@
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import path from 'path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { verifySpec } from '../../../src/core/validate/spec.js';
 import { verifySpecStructure } from '../../../src/core/validate/structure.js';
+import { createBriefCommand } from '../../../src/core/validate/brief.js';
+import { createAllCommand } from '../../../src/core/validate/all.js';
 
 const validBrief = `# Change Brief
 
@@ -102,6 +104,42 @@ describe('Unit: spec lane validation', () => {
     expect(result.unexpectedFiles).toContain('requirements.md');
     expect(spec.valid).toBe(false);
     expect(spec.errors.some(error => error.context?.includes('Unexpected files found'))).toBe(true);
+    expect(spec.errors.some(error => error.context?.includes('Mixed lane artifacts: brief.md, requirements.md'))).toBe(true);
+  });
+
+  it.each(['brief', 'full'])('ignores inactive .archive snapshots for the %s lane', async lane => {
+    const specDir = createSpecDir();
+    mkdirSync(path.join(specDir, '.archive'));
+    for (const file of ['brief.md', 'requirements.md', 'design.md', 'tasks.md']) {
+      writeFileSync(path.join(specDir, '.archive', file), 'inactive snapshot');
+    }
+    const active = lane === 'brief' ? ['brief.md'] : ['requirements.md', 'design.md', 'tasks.md'];
+    for (const file of active) writeFileSync(path.join(specDir, file), lane === 'brief' ? validBrief : '');
+
+    const result = await verifySpecStructure('change', tempDir!);
+    expect(result.valid).toBe(true);
+    expect(result.lane).toBe(lane);
+    expect(result.unexpectedFiles).toEqual([]);
+  });
+
+  it.each([false, true])('reports no active lane without assuming missing full documents (archive: %s)', async archived => {
+    const specDir = createSpecDir();
+    if (archived) {
+      mkdirSync(path.join(specDir, '.archive'));
+      writeFileSync(path.join(specDir, '.archive', 'brief.md'), validBrief);
+    }
+
+    const structure = await verifySpecStructure('change', tempDir!);
+    expect(structure.valid).toBe(false);
+    expect(structure.missingFiles).toEqual([]);
+    expect(structure.errors).toHaveLength(1);
+    expect(structure.errors[0].context).toBe('No lane artifacts found');
+
+    const spec = await verifySpec('change', tempDir!);
+    expect(spec.valid).toBe(false);
+    expect(spec.errors).toHaveLength(1);
+    expect(spec.errors[0].context).toBe('No lane artifacts found');
+    expect(spec.requirementsErrors).toEqual([]);
   });
 
   it('rejects extra files in either lane', async () => {
@@ -136,5 +174,35 @@ describe('Unit: spec lane validation', () => {
     expect(result.valid).toBe(false);
     expect(result.lane).toBe('brief');
     expect(result.briefErrors.some(error => error.includes('REQ-9'))).toBe(true);
+  });
+
+  it('surfaces brief warnings in text and JSON without breaking aggregate success', async () => {
+    const specDir = createSpecDir();
+    const briefPath = path.join(specDir, 'brief.md');
+    writeFileSync(briefPath, validBrief.replace('- Verify: `pnpm test`', '- Verify: Tests pass'));
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const exitCode = process.exitCode;
+    try {
+      await createBriefCommand().parseAsync([briefPath], { from: 'user' });
+      expect(process.exitCode).toBe(0);
+      expect(log.mock.calls.flat().join('\n')).toContain('Verification signal: task 1');
+
+      log.mockClear();
+      await createBriefCommand().parseAsync([briefPath, '--format', 'json'], { from: 'user' });
+      expect(log).toHaveBeenCalledTimes(1);
+      const briefResult = JSON.parse(String(log.mock.calls[0][0]));
+      expect(briefResult.valid).toBe(true);
+      expect(briefResult.warnings).toHaveLength(1);
+
+      log.mockClear();
+      await createAllCommand().parseAsync(['--target-dir', tempDir!, '--format', 'json'], { from: 'user' });
+      const aggregate = JSON.parse(String(log.mock.calls[0][0]));
+      expect(aggregate.valid).toBe(true);
+      expect(aggregate.specs[0].warnings).toBe(1);
+      expect(process.exitCode).toBe(0);
+    } finally {
+      log.mockRestore();
+      process.exitCode = exitCode;
+    }
   });
 });

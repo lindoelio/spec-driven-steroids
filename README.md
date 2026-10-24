@@ -11,7 +11,7 @@ Inject Spec-Driven Development into AI coding tools without building a new UI.
 
 ```
 brief (default): brief → approval → implementation → compact review
-full (high risk): requirements → design → tasks → Red Team Review → implementation → Code Review
+full (deliberate): requirements → design → tasks → Red Team Review → implementation → Code Review
 ```
 
 Direct implementation remains the host harness's default behavior. Use SDS when the change should be specified and approved first.
@@ -29,7 +29,7 @@ It injects:
 | Antigravity IDE | global / project | Skills (`/spec-driven`) |
 | Antigravity CLI (AGY) | global / project | Skills (`/spec-driven`) |
 | Claude Code | project | Agents, commands, skills |
-| Cline | user / project | Agents, commands, skills |
+| Cline | user / project | Skills (`/spec-driven`) |
 | Gemini CLI | global / project | Agents, commands, skills |
 | GitHub Copilot CLI | user / project | Agents, commands, skills |
 | GitHub Copilot for VS Code | global / project | Agents, prompts, skills |
@@ -105,6 +105,8 @@ sds validate all --format json
 
 Mermaid validation is structural and best-effort; it checks diagram type and sequence participant references but is not a full Mermaid parser.
 
+Brief validation warns when task file paths lack matching Repository Evidence entries or a Verify field lacks a backticked command or `Check: <action> => <observable outcome>`. These warnings do not invalidate existing briefs or change successful aggregate exit codes. New plans must resolve them before approval; syntactic checks alone do not prove correctness.
+
 ### Other Commands
 
 ```bash
@@ -133,6 +135,10 @@ sds --version
 # Show help
 sds --help
 ```
+
+Remote templates are preferred by default. If a remote bundle or its intact cache lacks a required skill or planner reference, SDS falls back to the bundled templates. `sds templates info --json` reports the selected source and fallback reason.
+
+After upgrading, re-run `sds inject` for the intended platform and scope, or `sds repair --project` for a manifest-tracked project install. This installs the new planner skill together with its updated entry point. Review local customizations first: injection and repair can overwrite installed files. Existing installations do not change until refreshed.
 
 ### Validation
 
@@ -193,11 +199,13 @@ The CLI injects these universal skills that work across all platforms:
 
 | Skill | Purpose | Phase |
 |-------|--------|-------|
+| `spec-driven-planner` | Own lane selection, approvals, transitions, and portable orchestration | Both lanes |
 | `spec-driven-brief-planner` | Write, approve, implement, and review a compact brief | Brief lane |
 | `spec-driven-requirements-writer` | Write EARS-format requirements | 1 |
 | `spec-driven-technical-designer` | Create technical design with Mermaid | 2 |
 | `spec-driven-task-decomposer` | Decompose into atomic tasks | 3 |
 | `spec-driven-task-implementer` | Execute tasks from tasks.md | 4 |
+| `spec-driven-shared-protocol` | Supply context, validation, and quality-gate protocols | Both lanes |
 
 ### Universal Skills
 
@@ -215,7 +223,9 @@ The CLI injects these universal skills that work across all platforms:
 
 | Agent | Purpose |
 |-------|---------|
-| `spec-driven` | Main spec-driven workflow orchestrator |
+| `spec-driven` | Route to the authoritative planner skill, where native agents are supported |
+
+Skills own the workflow rules. Agents, commands, and entry skills are thin routers to `spec-driven-planner`; the skill wins if their instructions conflict. Native agents and sub-agent tools are not required.
 
 ## Spec Flow
 
@@ -224,9 +234,19 @@ The CLI injects these universal skills that work across all platforms:
 | Lane | Use When | Artifact | Approval |
 |------|----------|----------|----------|
 | `brief` | Default bounded change | `brief.md` | One approval before implementation |
-| `full` | High-risk, cross-boundary, migration, security, or public-contract change | `requirements.md`, `design.md`, `tasks.md` | Approval between every planning phase |
+| `full` | Explicitly requested, or separate requirements/design/tasks reviews offer a concrete, evidence-backed advantage | `requirements.md`, `design.md`, `tasks.md` | Approval between every planning phase and before implementation |
 
 SDS has no direct lane. Use the host harness without SDS when no planning artifact or approval is needed.
+
+Brief is the genuine default, not a low-risk keyword filter. A migration, security fix, or public-contract change does not automatically require full. The planner investigates affected behavior and uncertainty, then recommends full only when separate reviews would help resolve them. It explains that advantage and asks for confirmation; the ordinary brief path has only its artifact-approval stop.
+
+Use `lane:brief` or `lane:full` in your request to choose explicitly. Existing artifacts resume their lane unless you approve a transition. Every plan records a lane rationale; choosing brief despite a full recommendation also records the accepted residual risk. Destructive brief work must include a credible, executable recovery strategy and its verification; otherwise it requires full mitigation review. Neither lane replaces host permissions or authorizes destructive actions by itself.
+
+### Larger work and lane transitions
+
+A brief contains 1–5 requirements and 1–8 tasks, including tests. Larger work is split into coherent sibling briefs with separate slugs, verification, and approvals—not automatically escalated by task or file count. Optional `**Slice:** N/M` metadata identifies ordering; Intent and Non-Goals name sibling slugs and dependencies. Future slices are not implicitly approved.
+
+Lane transitions require approval before moving artifacts. Brief → full preserves the original brief under `.archive/`, carries evidence forward, and restarts requirements approval; completed implementation is not erased or automatically re-approved. Full → brief is offered only before requirements approval. Archive snapshots are never overwritten, and transition approval is not implementation approval.
 
 ### What gets generated
 
@@ -243,7 +263,7 @@ full lane:
 └── tasks.md
 ```
 
-The two layouts are mutually exclusive. `sds validate structure` and `sds validate spec` detect the lane automatically.
+The active layouts are mutually exclusive. Inactive snapshots may coexist under `.archive/`. `sds validate structure` and `sds validate spec` detect the lane automatically and report empty or mixed active layouts explicitly.
 
 ### Full workflow phases
 
@@ -251,6 +271,10 @@ The two layouts are mutually exclusive. `sds validate structure` and `sds valida
 2. **Design** - Mermaid diagrams, architecture sections
 3. **Tasks** - Execute non-exhaustive Discovery Targets, record evidence, then produce stable atomic tasks
 4. **Implementation** - Task execution with verification
+
+Human approval to enter implementation authorizes the approved plan's pending tasks without per-task permission stops. An explicit task or phase request takes precedence and limits execution. A standalone implementer invocation defaults to one task after confirming implementation approval. Resumption preserves the approved scope and verifies in-progress work before completion.
+
+Brief ends with one compact review; full retains Red Team Review and Code Review. Use an independent reviewer when spawning is available, otherwise disclose an inline adversarial self-review. Required verification must be observed passing: unavailable tools or failed checks cannot be turned into approval with a limitation note.
 
 ### Quick start
 
@@ -272,7 +296,7 @@ This reviews `AGENTS.md`, `CONTRIBUTING.md`, `STYLEGUIDE.md`, `TESTING.md`, `ARC
 
 - GitHub Copilot: `@spec-driven Add a rate limiter`
 - OpenCode: use the `Spec-Driven` agent
-- Cline: use the `Spec-Driven` agent or `/spec-driven`
+- Cline: `/spec-driven`
 - Antigravity IDE: `/spec-driven`
 - Antigravity CLI (AGY): `/spec-driven`
 - Codex: select the `spec-driven` skill with `/skills` or mention `$spec-driven`

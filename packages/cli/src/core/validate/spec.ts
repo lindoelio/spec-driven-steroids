@@ -225,6 +225,17 @@ async function verifyBriefSpec(
 
 async function verifySpec(slug: string, targetDir: string): Promise<SpecValidationResult> {
   const structureResult = await verifySpecStructure(slug, targetDir);
+  if (structureResult.errors.some(error => error.errorType === 'Lane Error')) {
+    return {
+      ...createValidationResult(false, structureResult.errors, structureResult.warnings),
+      lane: structureResult.lane,
+      briefErrors: [],
+      requirementsErrors: [],
+      designErrors: [],
+      tasksErrors: [],
+      traceabilityReport: { complete: false, orphans: [], circular: [] }
+    };
+  }
   return structureResult.lane === 'brief'
     ? verifyBriefSpec(slug, targetDir, structureResult)
     : verifyCompleteSpec(slug, targetDir, structureResult);

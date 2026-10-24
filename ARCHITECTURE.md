@@ -21,6 +21,7 @@ Paths in this table are relative to `packages/cli/src/`:
 | `cli/index.ts` | Commander entry point, injection orchestration, cleanup, and command registration |
 | `cli/platform-registry.ts` | Platform identity, scope support, destination resolution, and post-processing selection |
 | `cli/platform-config.ts` | File names, output formats, frontmatter, and command-agent mappings |
+| `cli/skill-registry.ts` | Shared shipped-skill inventory for installation, legacy cleanup, and remote compatibility checks |
 | `cli/template-source.ts`, `cli/template-bundle.ts` | Remote or bundled source resolution, bundle validation, and cache handling |
 | `cli/transformation-pipeline.ts`, `cli/format-transformer.ts` | Universal template transformation into platform artifacts |
 | `cli/install-manifest.ts` | Installed-file inventory, hashes, and manifest-based cleanup |
@@ -47,11 +48,15 @@ The source prompts live under `packages/cli/templates/universal/`. The pipeline 
 
 Installed artifacts are copies, not live links to source templates. Editing a repository template does not update an existing global installation until that installation is refreshed.
 
+The `spec-driven-planner` skill owns lane selection and orchestration. Its normative references separate lane selection/transitions from full-lane phases so brief execution need not load the full lifecycle. Agents, commands, and generated entry skills only route to it; skill instructions take precedence over wrappers. Phase skills own their artifact and execution contracts, and shared protocol references supply common validation and context rules. This works without native agents; missing spawning support uses sequential execution and disclosed inline adversarial review, not weaker approval or verification.
+
 ## Validation and host execution
 
 The `validate` command supports structure, brief, requirements, design, tasks, whole-spec, and aggregate checks. Full-spec validation combines document checks with cross-file traceability. Aggregate validation can restrict its input to changes relative to a Git ref.
 
 Validation is structural, not a proof that a design meets product needs or that implementation matches it. Mermaid checks are best-effort; they are not a full parser or renderer.
+
+Brief evidence-path coverage and minimum verification-signal checks emit compatibility warnings, not errors. Empty and mixed active lanes are errors; `.archive/` snapshots are inactive. Approval, slicing, recovery adequacy, and scope are host-interpreted contracts, not state inferred or enforced by these structural checks.
 
 The optional planning workflow has a brief lane and a full lane. Their artifacts and approval behavior are described in [README.md](README.md#spec-flow). Those approvals are instructions interpreted by the host agent, not an execution sandbox implemented by the CLI. Likewise, `/inject-guidelines` supplies instructions for document generation; it is not a standalone Markdown generator inside the Node.js runtime.
 
@@ -75,6 +80,8 @@ Install manifests record paths and file hashes. Cleanup preserves modified track
 The public npm package includes compiled CLI output, templates, README, license, and changelog, as declared in `packages/cli/package.json`. The other workspace packages are not published.
 
 Remote templates are preferred by default, with bundled templates as the fallback when remote resolution fails. Bundle schema, version, paths, size limits, compatibility, and optional manifest digest are checked before extraction. A missing digest is accepted with a warning; it is not equivalent to verified remote integrity. Security implications are described in [SECURITY.md](SECURITY.md#remote-templates-and-host-instructions).
+
+Injection, repair, and template inspection pass the same required-skill inventory to source resolution. Fresh remote bundles and hash-valid caches must contain each required `SKILL.md` and the planner's two normative references; missing files cause an `incompatible` fallback to bundled templates with an explicit reason. This presence check prevents missing-contract version skew; it does not prove semantic compatibility or instruction quality.
 
 Distribution has three independent workflows:
 

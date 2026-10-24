@@ -36,7 +36,7 @@ Run `pnpm typecheck` before considering code changes complete. Report which chec
 - Use ES module imports. Relative imports in the CLI and test utilities use `.js` extensions, even in TypeScript files.
 - Keep CLI implementation under `packages/cli/src/` and tests under `packages/cli/tests/`. Shared test utilities belong in `packages/test-utils/src/`.
 - Edit shipped prompt sources under `packages/cli/templates/`, not installed copies in AI-tool configuration directories. Update the corresponding template and integration tests.
-- When adding or removing shipped skills or legacy artifacts, review `STEROIDS_SKILL_DIRS` and `STEROIDS_FILES` in `packages/cli/src/cli/index.ts`.
+- When adding or removing shipped skills or legacy artifacts, review `STEROIDS_SKILL_DIRS` in `packages/cli/src/cli/skill-registry.ts` and `STEROIDS_FILES` in `packages/cli/src/cli/index.ts`.
 - Platform destinations and scope support belong in `platform-registry.ts`; output-format configuration belongs in `platform-config.ts`. Avoid adding parallel platform-specific routing in command handlers.
 - Exercise filesystem-changing commands in isolated test directories. Do not modify real global installations, publish packages, or push release tags unless requested.
 - Use current source and configuration as implementation evidence. Historical planning artifacts describe intent, not necessarily current behavior.

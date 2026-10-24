@@ -79,6 +79,32 @@ export async function verifySpecStructure(slug: string, targetDir: string): Prom
     !file.startsWith('.')
   );
 
+  const fullArtifacts = FULL_FILES.filter(file => files.includes(file));
+  if (!files.includes('brief.md') && fullArtifacts.length === 0) {
+    errors.push({
+      errorType: 'Lane Error',
+      context: 'No lane artifacts found',
+      message: 'No lane artifacts found',
+      suggestedFix: 'Create brief.md (default) or begin the full requirements/design/tasks workflow. Archived snapshots are not active artifacts.'
+    });
+    return {
+      ...createValidationResult(false, errors, warnings),
+      lane,
+      specDir,
+      filesFound: files,
+      missingFiles: [],
+      unexpectedFiles
+    };
+  }
+  if (files.includes('brief.md') && fullArtifacts.length > 0) {
+    errors.push({
+      errorType: 'Lane Error',
+      context: `Mixed lane artifacts: brief.md, ${fullArtifacts.join(', ')}`,
+      message: 'Brief and full artifacts cannot be active together',
+      suggestedFix: 'Resolve the active lane with the user. Archive inactive artifacts only after an approved transition; do not delete them silently.'
+    });
+  }
+
   for (const missingFile of missingFiles) {
     errors.push({
       errorType: 'Structure Error',

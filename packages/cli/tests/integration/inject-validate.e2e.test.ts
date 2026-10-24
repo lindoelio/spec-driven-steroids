@@ -4,7 +4,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
 import { mockFs } from '@spec-driven-steroids/test-utils';
-import { expectIncrementalGuidelinesContract } from '../helpers/template-test-helpers.js';
+import { expectIncrementalGuidelinesContract, expectSharedPlannerContract, expectThinEntryPoint, readPlannerContract, readRequiredSkillFiles } from '../helpers/template-test-helpers.js';
 
 describe('CLI E2E: inject command', () => {
     let targetDir: string;
@@ -60,7 +60,8 @@ describe('CLI E2E: inject command', () => {
 
         const jetbrainsAgentContent = await fs.readFile(path.join(githubDir, 'agents', 'spec-driven.agent.md'), 'utf-8');
         const jetbrainsPromptContent = await fs.readFile(path.join(githubDir, 'prompts', 'inject-guidelines.prompt.md'), 'utf-8');
-        expect(jetbrainsAgentContent.includes('## Lifecycle')).toBe(true);
+        expectThinEntryPoint(jetbrainsAgentContent);
+        expect(await fs.pathExists(path.join(githubDir, 'skills', 'spec-driven-planner', 'SKILL.md'))).toBe(true);
         expectIncrementalGuidelinesContract(jetbrainsPromptContent);
     });
 
@@ -204,19 +205,20 @@ describe('CLI E2E: inject command', () => {
         const agentPath = path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md');
         const agentContent = await fs.readFile(agentPath, 'utf-8');
 
-        expect(agentContent.includes('## Lifecycle')).toBe(true);
-        expect(agentContent.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
-        expect(agentContent.includes('## Lane Selection')).toBe(true);
-        expect(agentContent.includes('### No Direct Lane')).toBe(true);
-        expect(agentContent.includes('In the full lane, before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
-        expect(agentContent.includes('SDS requires an approved planning artifact before implementation.')).toBe(true);
-        expect(agentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
+        expectThinEntryPoint(agentContent);
+
+        const plannerSkillContent = await readPlannerContract(path.join(targetDir, '.opencode', 'skills', 'spec-driven-planner'));
+        expectSharedPlannerContract(plannerSkillContent);
+        expect(plannerSkillContent.includes('## Lane Selection')).toBe(true);
+        expect(plannerSkillContent.includes('### No Direct Lane')).toBe(true);
+        expect(plannerSkillContent.includes('In the full lane, before Phase 4 approval, only write the active spec files')).toBe(true);
+        expect(plannerSkillContent.includes('SDS requires an approved planning artifact before implementation.')).toBe(true);
 
         const commandPath = path.join(targetDir, '.opencode', 'commands', 'spec-driven.md');
         const commandContent = await fs.readFile(commandPath, 'utf-8');
 
         expect(commandContent.includes('agent: Spec-Driven')).toBe(true);
-        expect(commandContent.includes('Select the brief lane by default')).toBe(true);
+        expectThinEntryPoint(commandContent);
         expect(commandContent.includes('This toolkit has no direct lane')).toBe(true);
         delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
     });
@@ -232,17 +234,17 @@ describe('CLI E2E: inject command', () => {
 
         const githubAgentPath = path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md');
         const githubAgentContent = await fs.readFile(githubAgentPath, 'utf-8');
-        expect(githubAgentContent.includes('## Lifecycle')).toBe(true);
-        expect(githubAgentContent.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
-        expect(githubAgentContent.includes('In the full lane, before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
-        expect(githubAgentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
+        expectThinEntryPoint(githubAgentContent);
 
         const antigravitySkillPath = path.join(targetDir, '.agents', 'skills', 'spec-driven', 'SKILL.md');
         const antigravitySkillContent = await fs.readFile(antigravitySkillPath, 'utf-8');
-        expect(antigravitySkillContent.includes('## Lifecycle')).toBe(true);
-        expect(antigravitySkillContent.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
-        expect(antigravitySkillContent.includes('In the full lane, before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
-        expect(antigravitySkillContent.includes('### Non-Skippable Stop Rule')).toBe(true);
+        expectThinEntryPoint(antigravitySkillContent);
+
+        for (const root of ['.github', '.agents']) {
+            const plannerSkillContent = await readPlannerContract(path.join(targetDir, root, 'skills', 'spec-driven-planner'));
+            expectSharedPlannerContract(plannerSkillContent);
+            expect(plannerSkillContent.includes('In the full lane, before Phase 4 approval, only write the active spec files')).toBe(true);
+        }
         delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
     });
 
@@ -254,17 +256,28 @@ describe('CLI E2E: inject command', () => {
         const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
-        const plannerFiles = [
+        const entryFiles = [
             path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md'),
             path.join(targetDir, '.agents', 'skills', 'spec-driven', 'SKILL.md'),
             path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md'),
             path.join(targetDir, '.codex', 'agents', 'spec-driven.toml')
         ];
 
-        for (const plannerFile of plannerFiles) {
-            const content = await fs.readFile(plannerFile, 'utf-8');
+        const plannerSkillFiles = [
+            path.join(targetDir, '.github', 'skills', 'spec-driven-planner', 'SKILL.md'),
+            path.join(targetDir, '.agents', 'skills', 'spec-driven-planner', 'SKILL.md'),
+            path.join(targetDir, '.opencode', 'skills', 'spec-driven-planner', 'SKILL.md'),
+            path.join(targetDir, '.codex', 'skills', 'spec-driven-planner', 'SKILL.md')
+        ];
+
+        for (const plannerSkillFile of plannerSkillFiles) {
+            const content = await readPlannerContract(path.dirname(plannerSkillFile));
             expect(content.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
             expect(content.includes('Non-Skippable Stop Rule')).toBe(true);
+        }
+
+        for (const entryFile of entryFiles) {
+            expectThinEntryPoint(await fs.readFile(entryFile, 'utf-8'));
         }
     });
 
@@ -289,6 +302,7 @@ describe('CLI E2E: inject command', () => {
                     json: async () => ({
                         version: 'remote-test-version',
                         files: {
+                            ...await readRequiredSkillFiles(),
                             'universal/agents/spec-driven.agent.md': '---\nname: Spec-Driven\n---\n\nREMOTE SPEC-DRIVEN AGENT\n\n## Phase Gatekeeper\n\nTest content.',
                             'universal/commands/inject-guidelines.command.md': '---\ndescription: Test\n---\n\nREMOTE INJECT GUIDELINES\n\nGenerate all six guideline documents by default.',
                             'universal/commands/spec-driven.command.md': '---\ndescription: Test\n---\n\nREMOTE SPEC-DRIVEN COMMAND',
@@ -332,7 +346,8 @@ describe('CLI E2E: inject command', () => {
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
         const injectedAgent = await fs.readFile(path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md'), 'utf-8');
-        expect(injectedAgent.includes('## Lifecycle')).toBe(true);
+        expectThinEntryPoint(injectedAgent);
+        expect(await fs.pathExists(path.join(targetDir, '.github', 'skills', 'spec-driven-planner', 'SKILL.md'))).toBe(true);
     });
 
     it('inject command loads continuity guidance at the start of planning phases', async () => {
@@ -343,15 +358,15 @@ describe('CLI E2E: inject command', () => {
         const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
-        const plannerFiles = [
-            path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md'),
-            path.join(targetDir, '.agents', 'skills', 'spec-driven', 'SKILL.md'),
-            path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md'),
-            path.join(targetDir, '.codex', 'agents', 'spec-driven.toml')
+        const plannerSkillFiles = [
+            path.join(targetDir, '.github', 'skills', 'spec-driven-planner', 'SKILL.md'),
+            path.join(targetDir, '.agents', 'skills', 'spec-driven-planner', 'SKILL.md'),
+            path.join(targetDir, '.opencode', 'skills', 'spec-driven-planner', 'SKILL.md'),
+            path.join(targetDir, '.codex', 'skills', 'spec-driven-planner', 'SKILL.md')
         ];
 
-        for (const plannerFile of plannerFiles) {
-            const content = await fs.readFile(plannerFile, 'utf-8');
+        for (const plannerSkillFile of plannerSkillFiles) {
+            const content = await readPlannerContract(path.dirname(plannerSkillFile));
             expect(content.includes('long-running-work-planning')).toBe(true);
             expect(content.includes('start of each planning phase')).toBe(true);
         }
@@ -464,16 +479,15 @@ describe('CLI E2E: inject command', () => {
 
         const agentContent = await fs.readFile(agentPath, 'utf-8');
         expect(agentContent.includes('name = "spec-driven"')).toBe(true);
-        expect(agentContent.includes('## Lifecycle')).toBe(true);
-        expect(agentContent.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
-        expect(agentContent.includes('### Non-Skippable Stop Rule')).toBe(true);
+        expectThinEntryPoint(agentContent);
+        expect(await fs.pathExists(path.join(targetDir, '.codex', 'skills', 'spec-driven-planner', 'SKILL.md'))).toBe(true);
 
         const commandPath = path.join(targetDir, '.codex', 'skills', 'spec-driven', 'SKILL.md');
         expect(await fs.pathExists(commandPath)).toBe(true);
 
         const commandContent = await fs.readFile(commandPath, 'utf-8');
         expect(commandContent.includes('name: spec-driven')).toBe(true);
-        expect(commandContent.includes('Select the brief lane by default')).toBe(true);
+        expectThinEntryPoint(commandContent);
         expect(commandContent.includes('Every lane must write and validate a planning artifact')).toBe(true);
         expect(commandContent.includes('{{args}}')).toBe(false);
         expect(await fs.pathExists(path.join(targetDir, '.codex', 'commands', 'spec-driven.md'))).toBe(false);
@@ -516,22 +530,19 @@ describe('CLI E2E: inject command', () => {
         const program = (await import('../../src/cli/index.js')).default;
         await program.parseAsync(['inject'], { from: 'user' } as any);
 
-        const opencodeAgentPath = path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md');
-        const opencodeAgentContent = await fs.readFile(opencodeAgentPath, 'utf-8');
-        expect(opencodeAgentContent).toContain('Red Team Review');
-        expect(opencodeAgentContent).toContain('Code Review');
-        expect(opencodeAgentContent).toContain('Unified Quality Gate');
-        expect(opencodeAgentContent).toContain('Red Team Review: PASS');
+        const plannerSkillFiles = [
+            path.join(targetDir, '.opencode', 'skills', 'spec-driven-planner', 'SKILL.md'),
+            path.join(targetDir, '.github', 'skills', 'spec-driven-planner', 'SKILL.md'),
+            path.join(targetDir, '.agents', 'skills', 'spec-driven-planner', 'SKILL.md')
+        ];
 
-        const githubAgentPath = path.join(targetDir, '.github', 'agents', 'spec-driven.agent.md');
-        const githubAgentContent = await fs.readFile(githubAgentPath, 'utf-8');
-        expect(githubAgentContent).toContain('Red Team Review');
-        expect(githubAgentContent).toContain('Code Review');
-
-        const antigravitySkillPath = path.join(targetDir, '.agents', 'skills', 'spec-driven', 'SKILL.md');
-        const antigravitySkillContent = await fs.readFile(antigravitySkillPath, 'utf-8');
-        expect(antigravitySkillContent).toContain('Red Team Review');
-        expect(antigravitySkillContent).toContain('Code Review');
+        for (const plannerSkillFile of plannerSkillFiles) {
+            const plannerSkillContent = await readPlannerContract(path.dirname(plannerSkillFile));
+            expect(plannerSkillContent).toContain('Red Team Review');
+            expect(plannerSkillContent).toContain('Code Review');
+            expect(plannerSkillContent).toContain('Unified Quality Gate');
+            expect(plannerSkillContent).toContain('Red Team Review: PASS');
+        }
 
         delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
     });
@@ -665,8 +676,10 @@ describe('CLI E2E: inject command', () => {
                         json: async () => ({
                             version: 'test-version-abc',
                             files: {
+                                ...await readRequiredSkillFiles(),
                                 'universal/agents/spec-driven.agent.md': '---\nname: Spec-Driven\n---\n\ncontent',
-                                'universal/commands/spec-driven.command.md': '---\ndescription: Test\n---\n\ncontent'
+                                'universal/commands/spec-driven.command.md': '---\ndescription: Test\n---\n\ncontent',
+                                'universal/commands/inject-guidelines.command.md': '---\ndescription: Test\n---\n\ncontent'
                             }
                         })
                     } as Response;
@@ -726,6 +739,47 @@ describe('CLI E2E: inject command', () => {
         });
     });
 
+    it.each(['inject', 'repair', 'templates'])('uses the same incomplete-skill guard for %s', async action => {
+        const { createProgram } = await import('../../src/cli/index.js');
+        const program = createProgram();
+        if (action === 'repair') {
+            await program.parseAsync(['inject', '--platform', 'opencode', '--scope', 'project', '--yes'], { from: 'user' });
+        }
+        delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
+        const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+        vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => ({
+            ok: true,
+            json: async () => String(input).endsWith('/templates-manifest.json')
+                ? { version: 'incomplete-skills', bundleUrl: 'https://example.test/templates-bundle.json' }
+                : {
+                    version: 'incomplete-skills',
+                    files: {
+                        'universal/agents/spec-driven.agent.md': 'REMOTE BROKEN ROUTER',
+                        'universal/commands/spec-driven.command.md': 'REMOTE BROKEN COMMAND',
+                        'universal/commands/inject-guidelines.command.md': 'REMOTE GUIDELINES'
+                    }
+                }
+        }) as Response));
+        try {
+            const args = action === 'inject'
+                ? ['inject', '--platform', 'opencode', '--scope', 'project', '--yes']
+                : action === 'repair' ? ['repair', '--project'] : ['templates', 'info', '--json'];
+            await program.parseAsync(args, { from: 'user' });
+            if (action === 'templates') {
+                const info = JSON.parse(String(log.mock.calls[0][0]));
+                expect(info.source).toBe('bundled');
+                expect(info.fallbackReason).toContain('spec-driven-planner/SKILL.md');
+            } else {
+                const entry = await fs.readFile(path.join(targetDir, '.opencode', 'agents', 'spec-driven.agent.md'), 'utf8');
+                expectThinEntryPoint(entry);
+                expect(entry).not.toContain('REMOTE BROKEN ROUTER');
+                expect(await fs.pathExists(path.join(targetDir, '.opencode', 'skills', 'spec-driven-planner', 'references', 'lane-selection.md'))).toBe(true);
+            }
+        } finally {
+            log.mockRestore();
+        }
+    });
+
     it('reports failure when a remote template bundle is missing a required file', async () => {
         delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
         vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
@@ -749,6 +803,7 @@ describe('CLI E2E: inject command', () => {
                     text: async () => JSON.stringify({
                         version: 'broken-remote',
                         files: {
+                            ...await readRequiredSkillFiles(),
                             'universal/commands/spec-driven.command.md': '---\ndescription: Test\n---\n\nCOMMAND ONLY'
                         }
                     })

@@ -8,6 +8,11 @@ import { resolveTemplateSource } from '../../src/cli/template-source.js';
 import { MAX_TEMPLATE_FILES } from '../../src/cli/template-bundle.js';
 
 const tempDirs: string[] = [];
+const plannerFiles = {
+  'universal/skills/spec-driven-planner/SKILL.md': 'Planner skill',
+  'universal/skills/spec-driven-planner/references/lane-selection.md': 'Lane selection',
+  'universal/skills/spec-driven-planner/references/full-lane-phases.md': 'Full phases'
+};
 
 async function createTempDir(): Promise<string> {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'sds-template-source-'));
@@ -112,6 +117,59 @@ describe('Unit: remote template source hardening', () => {
     expect(second.rootDir).toBe(first.rootDir);
     expect(second.warnings).toContain('Using cached template bundle.');
     expect(fetchImpl).toHaveBeenCalledTimes(3);
+  });
+
+  it.each(Object.keys(plannerFiles))('rejects a remote bundle missing required planner file %s', async missingFile => {
+    const files: Record<string, string> = { ...plannerFiles };
+    delete files[missingFile];
+    const bundle = createBundle({ files });
+    const manifest = createManifest(bundle);
+    const result = await resolve({ requiredSkills: ['spec-driven-planner'], fetchImpl: createFetch(manifest, bundle) as unknown as typeof fetch });
+
+    expect(result.source).toBe('bundled');
+    expect(result.errorKind).toBe('incompatible');
+    expect(result.fallbackReason).toContain(missingFile);
+  });
+
+  it('uses a complete required planner from the network and cache', async () => {
+    const bundle = createBundle({ files: plannerFiles });
+    const manifest = createManifest(bundle);
+    const fetchImpl = createFetch(manifest, bundle);
+    const root = await createTempDir();
+    const options = { requiredSkills: ['spec-driven-planner'], fetchImpl: fetchImpl as unknown as typeof fetch };
+    expect((await resolve(options, root)).source).toBe('remote');
+    const cached = await resolve(options, root);
+    expect(cached.source).toBe('remote');
+    expect(cached.warnings).toContain('Using cached template bundle.');
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+  });
+
+  it('rejects an intact older cache that lacks newly required skills', async () => {
+    const bundle = createBundle();
+    const manifest = createManifest(bundle);
+    const fetchImpl = createFetch(manifest, bundle);
+    const root = await createTempDir();
+    await resolve({ fetchImpl: fetchImpl as unknown as typeof fetch }, root);
+    const result = await resolve({ requiredSkills: ['spec-driven-planner'], fetchImpl: fetchImpl as unknown as typeof fetch }, root);
+    expect(result.source).toBe('bundled');
+    expect(result.errorKind).toBe('incompatible');
+    expect(result.fallbackReason).toContain('spec-driven-planner/SKILL.md');
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+  });
+
+  it('restores a required planner reference removed from cache', async () => {
+    const bundle = createBundle({ files: plannerFiles });
+    const manifest = createManifest(bundle);
+    const fetchImpl = createFetch(manifest, bundle);
+    const root = await createTempDir();
+    const options = { requiredSkills: ['spec-driven-planner'], fetchImpl: fetchImpl as unknown as typeof fetch };
+    const first = await resolve(options, root);
+    const file = path.join(first.rootDir, 'universal/skills/spec-driven-planner/references/lane-selection.md');
+    await fs.remove(file);
+    const result = await resolve(options, root);
+    expect(result.source).toBe('remote');
+    expect(await fs.readFile(file, 'utf8')).toBe('Lane selection');
+    expect(fetchImpl).toHaveBeenCalledTimes(4);
   });
 
   it('re-downloads the bundle when cached files were modified', async () => {
