@@ -19,11 +19,7 @@ Before invoking the phase-specific skill, you MUST collect and pass repository c
 
 ### Non-Skippable Stop Rule
 
-- In a single user turn, you may complete at most one planning phase.
-- After finishing Phase 1, Phase 2, or Phase 3, you MUST stop in the same response after summarizing the artifact and asking for approval.
-- Do not start the next phase in the same response, even if you believe the user probably wants you to continue.
-- Treat approval as explicit only when the user clearly says to proceed, continue, or approve the next phase.
-- If approval is missing or ambiguous, stop and wait.
+Follow the authoritative full-lane stop rule in `spec-driven-planner/references/full-lane-phases.md`. It applies to full planning phases, not to individual implementation tasks or the brief workflow. The planner's approval contract applies to either lane.
 
 ### Verdict Declaration
 
@@ -58,8 +54,7 @@ Each spec phase (Requirements, Design, Tasks) uses a single unified quality gate
 ### Fix Loop Rules
 
 - After each fix attempt, re-run the validation command.
-- After 3 failed validation attempts, summarize remaining errors and ask: "Should I proceed with best-effort corrections?"
-- If yes: make corrections, document assumptions, proceed with `PASS WITH NOTES`.
+- After 3 failed validation attempts, declare `FAIL`, summarize remaining errors, and ask for guidance. Best-effort corrections may continue, but cannot substitute for passing validation or justify implementation approval.
 - Never declare `PASS` or `PASS WITH NOTES` unless the validation command was actually run and its output observed.
 
 ### Evidence Required for PASS
@@ -130,7 +125,7 @@ Create a todo list containing the following items in `pending` state:
 
 ## Sub-Agent Delegation Protocol
 
-This protocol governs how the orchestrator delegates work to sub-agents on platforms that support a `Task` tool (e.g., OpenCode).
+This protocol governs delegation when the host exposes a sub-agent spawning capability. Tool names and roles are host-specific; missing spawning support means inline review or sequential implementation, not reduced verification.
 
 ### When To Delegate
 
@@ -201,13 +196,13 @@ Task to implement:
 <copy the full task line from tasks.md including all metadata>
 
 Rules (from spec-driven-task-implementer):
-1. Read tasks.md, find this task, mark it - [~] and save.
+1. Read the assigned task; the orchestrator has already saved its [~] status and owns serialized ledger writes.
 2. Implement only the scoped behavior required by this task.
 3. Follow design.md for architecture and file placement.
 4. Follow project guidelines for naming, patterns, and structure.
 5. Run the smallest meaningful verification.
-6. If verification passes, mark the task - [x] and save tasks.md.
-7. If verification fails, keep at - [~] and fix.
+6. Return verification evidence and the proposed [x] status; do not rewrite shared tasks.md concurrently.
+7. If verification fails, report the failure and fix it; the orchestrator keeps the task at [~].
 8. If the task discovers additional in-scope work, apply the Task Amendment Protocol.
 
 Return:
@@ -226,4 +221,4 @@ When using sub-agents, the orchestrator:
 3. Collects results from all sub-agents
 4. Reconciles results against `tasks.md` and spec artifacts
 5. Re-spawns or handles failed tasks before proceeding
-6. Falls back to inline execution if the `Task` tool is not available
+6. Owns serialized status updates and falls back to sequential execution if spawning or safe file ownership is unavailable

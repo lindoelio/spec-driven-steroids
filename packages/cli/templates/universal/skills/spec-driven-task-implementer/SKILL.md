@@ -14,7 +14,7 @@ Your job is to:
 - verify each task before marking it complete
 - preserve the traceability chain from implementation back to `DES-*` and `REQ-*`
 
-Default path: validate the complete spec, pick the next eligible task, mark it in progress, implement only that scoped change, verify it, mark it complete, and stop. Continue to the next task only when the user explicitly asks for a phase or full-feature implementation.
+Default path: validate the complete spec and confirm human implementation approval, resolve the approved execution scope below, then implement and verify eligible tasks in dependency order. Never infer permission to implement from file existence or from another agent's recommendation.
 
 Read `references/task-execution-patterns.md` when you need examples for resuming interrupted work, choosing the smallest meaningful verification, or handling failed verification loops.
 
@@ -32,7 +32,7 @@ When this skill begins execution, create a todo list derived from the pending ta
 
 - Read the approved `tasks.md` for the target slug.
 - For each task that is `- [ ]` (pending), create a corresponding todo item.
-- Skip tasks that are already `- [x]` (completed) or `- [~]` (in progress).
+- Skip completed tasks; recover any in-progress task under Interrupted Sessions before selecting new work.
 
 ### Progress Rules
 
@@ -91,16 +91,20 @@ For each task:
 - Execute all pending tasks across all phases in dependency order
 
 ### Default Scope
-- Implement one task by default
-- Do not continue to the next task unless the user explicitly requested a phase or full feature
+
+- Human approval is required before any implementation. The orchestrator passes the approved scope; it cannot approve implementation on the user's behalf.
+- An explicit task or phase request limits execution to that scope, even when the full spec was previously approved.
+- Human approval to enter Phase 4 authorizes all pending tasks in the approved plan unless a narrower scope was explicitly requested. Continue without per-task permission stops, respecting dependencies and verification.
+- For a standalone task-implementer invocation that does not convey Phase 4 entry or phase/full-feature scope, implement one task by default after confirming prior implementation approval.
+- On resumption, recover in-progress work first and retain the previously approved scope. Do not widen a task request into a full feature or shrink an approved full execution to one task silently.
 
 ## Parallel Execution Protocol
 
-When the user requests a **phase** or **full feature** implementation and the platform exposes a `Task` tool for spawning sub-agents, you MAY execute independent tasks in parallel.
+Within an approved phase or full-plan scope, you MAY execute independent tasks in parallel when the host exposes a sub-agent spawning capability. Parallelism is optional, not a requirement for completion.
 
 ### Platform Detection
 
-Check whether your tool set includes a `Task` tool. If it does, you are on a platform that supports parallel sub-agent execution. If not, fall back to sequential execution.
+Discover available spawning capabilities regardless of tool name. If unavailable, execute sequentially with the same approval, status, and verification rules.
 
 ### Dependency Analysis
 
@@ -115,7 +119,7 @@ Example: If task 2.1 depends on 1.3, and task 2.2 also depends on 1.3, and 1.3 i
 
 ### Parallel Spawn Protocol
 
-For each task in an independent batch, launch a sub-agent via the `Task` tool:
+For each task in an independent batch, use the host's spawning interface, adapting argument names and available roles:
 
 - `subagent_type`: `general`
 - `description`: `Implement task <task-id>: <task title>`
@@ -123,37 +127,37 @@ For each task in an independent batch, launch a sub-agent via the `Task` tool:
   - The spec artifact paths: `.specs/changes/<slug>/requirements.md`, `.specs/changes/<slug>/design.md`, `.specs/changes/<slug>/tasks.md`.
   - The specific task ID and description to implement.
   - Full spec-driven-task-implementer rules (this skill).
-  - Instruction to read `tasks.md`, mark the task `- [~]`, implement, verify, and mark `- [x]`.
+  - Instruction to read the task, implement, verify, and return evidence without rewriting the shared task ledger concurrently.
   - Instruction to return: changed files list, verification outcome, and the updated task status.
 
-Launch all tasks in the same batch simultaneously (multiple `Task` tool calls in one response).
+The orchestrator saves each task as `[~]` before spawning. It owns serialized ledger updates and marks `[x]` only after reconciling each worker's result. If ledger updates or file ownership cannot be coordinated safely, execute sequentially.
 
 ### Result Collection
 
 When all sub-agents in a batch complete:
 
-1. Read `tasks.md` to confirm each task was marked `- [x]`.
+1. Reconcile each worker's changed files and observed verification with its task; save verified `[x]` transitions serially in `tasks.md`.
 2. If any task remains `- [~]` or verification failed, fix or re-spawn that task before proceeding.
 3. If all tasks in the batch succeeded, advance to the next independent batch.
 4. Repeat until all tasks in the requested scope are complete.
 
 ### Conflict Prevention
 
-- Do NOT spawn tasks in parallel if their `_Implements:` file sets overlap with each other.
+- Resolve planned file touchpoints through task metadata and linked design elements; `_Implements:` contains traceability IDs, not file paths. Do not spawn tasks whose actual file sets overlap.
 - Do NOT spawn tasks in parallel with the same `_Depends:` chain (they are sequentially dependent by definition).
 - If unsure about file overlap, default to sequential execution.
 
 ### Inline Fallback
 
-If the `Task` tool is not available, execute all tasks sequentially as described in the standard Task Selection Rules.
+If spawning is unavailable, execute all tasks sequentially as described in the standard Task Selection Rules.
 
 ### Parallel Execution Quality Bar
 
 Before spawning a parallel batch, verify:
 - [ ] all `_Depends:` for each task in the batch are satisfied
 - [ ] no task in the batch depends on another task in the same batch
-- [ ] `_Implements:` file sets are non-overlapping across tasks in the batch
-- [ ] platform `Task` tool is available
+- [ ] actual planned file sets are non-overlapping across tasks in the batch
+- [ ] spawning is available and shared ledger writes are serialized by the orchestrator
 
 ## Implementation Rules
 

@@ -1,6 +1,6 @@
 # Parallel Execution Patterns
 
-Use this reference when spawning sub-agent tasks on platforms that support the `Task` tool (e.g., OpenCode). These patterns assume the implementer has already verified all dependency and safety preconditions.
+Use this reference when the host supports sub-agent spawning, regardless of tool name. These patterns assume approval, dependency, file-ownership, and serialized-ledger preconditions have been verified.
 
 ## Dependency Graph Walkthrough
 
@@ -25,14 +25,14 @@ After Phase 1 is complete (1.1 and 1.2 are `[x]`), the dependency graph resolves
 - **Independent batch 1**: 2.1, 2.2 (both depend only on 1.2, which is done)
 - **Sequential after batch 1**: 3.1, 3.2 (depend on 1.2, but check file overlap with batch 1)
 
-Check `_Implements:` file sets before spawning. If 2.1 and 2.2 touch different files, spawn both in parallel. If they touch the same files, execute sequentially.
+Resolve actual file touchpoints from the tasks and linked design before spawning. `_Implements:` lists IDs, not paths. If file sets overlap, execute sequentially.
 
 ## Safe Parallel Batch Pattern
 
 A safe batch is a set of tasks where:
 1. All dependencies are `[x]`
 2. No cross-dependency within the batch
-3. Non-overlapping `_Implements:` file sets
+3. Non-overlapping actual file sets and a single owner for serialized task-ledger updates
 
 ```
 Launch sub-agents for:
@@ -52,7 +52,7 @@ src/service.ts overlaps → execute sequentially
 
 ## Sub-Agent Prompt Template
 
-Use this template when constructing the `Task` prompt for each sub-agent:
+Use this template with the host's available spawning interface:
 
 ```
 Implement Spec-Driven task <task-id>: <task title> from .specs/changes/<slug>/tasks.md.
@@ -66,12 +66,12 @@ Task to implement:
 <copy the full task line and description from tasks.md, including _Implements: and any _Discovered from: tags>
 
 Rules:
-1. Read tasks.md, find this task, mark it - [~] and save.
+1. Read the assigned task; the orchestrator already marked it [~] and owns serialized ledger writes.
 2. Implement only the scoped behavior required by this task.
 3. Follow design.md for architecture and file placement.
 4. Follow STYLEGUIDE.md and surrounding code for naming and patterns.
 5. Run the smallest meaningful verification.
-6. If verification passes, mark the task - [x] and save tasks.md.
+6. If verification passes, return evidence and proposed [x] status; do not concurrently rewrite tasks.md.
 7. If verification fails, keep the task at - [~] and fix.
 
 Return:
@@ -90,7 +90,7 @@ Return:
 
 ## Result Reconciliation
 
-After all sub-agents in a batch complete, read `tasks.md` and verify:
+After all sub-agents in a batch complete, reconcile results and save verified [x] transitions serially in `tasks.md`:
 
 1. Every task in the batch is `- [x]`
 2. No unexpected files were changed (compare each sub-agent's file list against the design's Code Anatomy)

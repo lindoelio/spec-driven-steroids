@@ -127,7 +127,7 @@ describe('Integration: Transformation Pipeline', () => {
       const content = await fs.readFile(commandResult!.outputPath, 'utf-8');
       expect(content).toContain('name: spec-driven');
       expect(content).toContain('description: Start an approved Spec-Driven workflow using the brief or full lane');
-      expect(content).toContain('Select the brief lane by default');
+      expect(content).toContain('Load and follow the `spec-driven-planner` skill');
       expect(content).toContain('Every lane must write and validate a planning artifact');
       expect(content).not.toContain('{{args}}');
     });

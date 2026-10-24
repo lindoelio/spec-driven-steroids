@@ -1,0 +1,113 @@
+import { afterEach, describe, expect, it } from 'vitest';
+import fs from 'fs-extra';
+import os from 'os';
+import path from 'path';
+
+import { STEROIDS_SKILL_DIRS } from '../../src/cli/skill-registry.js';
+import { collectFiles } from '../../src/cli/install-manifest.js';
+import { getPlatformDefinitions } from '../../src/cli/platform-registry.js';
+import { transformForPlatform } from '../../src/cli/transformation-pipeline.js';
+import { expectThinEntryPoint, readTemplate, templatesRoot } from '../helpers/template-test-helpers.js';
+
+describe('Unit: skill-first planning contract', () => {
+  const tempDirs: string[] = [];
+
+  afterEach(async () => {
+    await Promise.all(tempDirs.splice(0).map(directory => fs.remove(directory)));
+  });
+
+  it.each(['agents/spec-driven.agent.md', 'commands/spec-driven.command.md'])('keeps %s as a thin entry point', async source => {
+    const content = await readTemplate(`universal/${source}`);
+
+    expectThinEntryPoint(content);
+    expect(content.match(/`spec-driven-planner`/g)).toHaveLength(1);
+    expect(content).toMatch(/approval before implementation|before the selected lane's approval gate/);
+    expect(content).not.toContain('Delegate this to');
+  });
+
+  it('ships every referenced planning skill and tracks it for cleanup', async () => {
+    const files = await collectFiles(path.join(templatesRoot, 'universal'));
+    const references = new Set<string>();
+    for (const file of files.filter(file => file.endsWith('.md'))) {
+      const content = await fs.readFile(file, 'utf8');
+      for (const match of content.matchAll(/\b(spec-driven-[a-z]+(?:-[a-z]+)*)\b/g)) {
+        if (match[1] !== 'spec-driven-steroids') references.add(match[1]);
+      }
+    }
+
+    expect(references.has('spec-driven-planner')).toBe(true);
+    for (const name of references) {
+      expect(STEROIDS_SKILL_DIRS).toContain(name);
+      expect(await fs.pathExists(path.join(templatesRoot, 'universal', 'skills', name, 'SKILL.md'))).toBe(true);
+    }
+  });
+
+  it('defines the escalation considerations once without size-based triggers', async () => {
+    const files = await collectFiles(path.join(templatesRoot, 'universal'));
+    const contents = await Promise.all(files.filter(file => file.endsWith('.md')).map(file => fs.readFile(file, 'utf8')));
+    const allContent = contents.join('\n');
+    for (const sentinel of ['**Irreversibility:**', '**External contracts:**', '**Persistence:**', '**Architectural boundaries:**', '**Security posture:**', '**Critical runtime behavior:**']) {
+      expect(allContent.split(sentinel)).toHaveLength(2);
+    }
+    expect(allContent).not.toContain('more than 5 requirements');
+    expect(allContent).not.toContain('more than 8 implementation tasks');
+  });
+
+  it('requires full to earn its overhead and keeps ordinary brief approval as the only stop', async () => {
+    const content = await readTemplate('universal/skills/spec-driven-planner/references/lane-selection.md');
+    expect(content).toContain('concrete advantage from separate requirements, design, and tasks approval');
+    expect(content).toContain('not automatic escalation');
+    expect(content).toContain('Do not add a separate lane-confirmation stop');
+    expect(content).toContain('If explicit instructions contradict one another, ask one clarification');
+    expect(content).toContain('separate sibling slug per slice');
+    expect(content).toContain('including test tasks');
+  });
+
+  it('requires approved transitions and preserves archives and prior implementation', async () => {
+    const content = await readTemplate('universal/skills/spec-driven-planner/references/lane-selection.md');
+    expect(content).toContain('Request transition approval before moving artifacts');
+    expect(content).toContain('never overwrite an archive');
+    expect(content).toContain('Preserve source evidence, completed work, and verification results');
+    expect(content).toContain('only before Phase 1 requirements approval');
+    expect(content).toContain('Transition approval is not brief approval');
+  });
+
+  it('keeps brief review evidence-backed without relying on a named tool', async () => {
+    const content = await readTemplate('universal/skills/spec-driven-brief-planner/SKILL.md');
+    expect(content).toContain('Every task Files path must have a matching Repository Evidence entry');
+    expect(content).toContain('structured adversarial self-review inline');
+    expect(content).toContain('Do not rely on a tool literally named `Task`');
+    expect(content).toContain('Missing or failed required checks mean REQUEST CHANGES');
+    expect(content).toContain('Final Verification must exercise the changed user or system path');
+  });
+
+  it('keeps execution scope in the implementer with human approval and serialized ledger writes', async () => {
+    const content = await readTemplate('universal/skills/spec-driven-task-implementer/SKILL.md');
+    expect(content).toContain('Human approval to enter Phase 4 authorizes all pending tasks');
+    expect(content).toContain('An explicit task or phase request limits execution');
+    expect(content).toContain('it cannot approve implementation on the user\'s behalf');
+    expect(content).toContain('implement one task by default after confirming prior implementation approval');
+    expect(content).toContain('owns serialized ledger updates');
+    expect(content).not.toContain('platform `Task` tool is available');
+    const phases = await readTemplate('universal/skills/spec-driven-planner/references/full-lane-phases.md');
+    expect(phases).toContain('When invoking a full-lane planning skill (requirements, design, or tasks)');
+    expect(phases).toContain('Implementation follows the approved execution scope');
+  });
+
+  it.each(getPlatformDefinitions())('routes $id entry points to the shipped planner without native-agent assumptions', async definition => {
+    const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'sds-flow-contract-'));
+    tempDirs.push(directory);
+    const results = await transformForPlatform(definition.id, templatesRoot, directory);
+
+    for (const result of results.filter(result => !result.sourcePath.includes('inject-guidelines'))) {
+      expect(result.success).toBe(true);
+      const content = await fs.readFile(result.outputPath, 'utf8');
+      expectThinEntryPoint(content);
+      expect(content).not.toContain('Delegate this to');
+    }
+    if (definition.config.skillsOnly) {
+      const content = await fs.readFile(path.join(directory, 'skills', 'spec-driven', 'SKILL.md'), 'utf8');
+      expect(content).not.toMatch(/delegate.*agent|native agent/i);
+    }
+  });
+});

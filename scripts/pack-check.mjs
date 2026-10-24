@@ -27,7 +27,10 @@ try {
     'LICENSE',
     'CHANGELOG.md',
     'dist/cli/index.js',
-    'templates/universal/agents/spec-driven.agent.md'
+    'templates/universal/agents/spec-driven.agent.md',
+    'templates/universal/skills/spec-driven-planner/SKILL.md',
+    'templates/universal/skills/spec-driven-planner/references/lane-selection.md',
+    'templates/universal/skills/spec-driven-planner/references/full-lane-phases.md'
   ];
 
   for (const required of requiredFiles) {

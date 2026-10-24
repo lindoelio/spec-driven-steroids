@@ -15,6 +15,7 @@ import {
 } from '../cli/install-manifest.js';
 import { getPlatformDefinition } from '../cli/platform-registry.js';
 import { resolveTemplateSource } from '../cli/template-source.js';
+import { STEROIDS_SKILL_DIRS } from '../cli/skill-registry.js';
 import { transformTemplates } from '../cli/transformation-pipeline.js';
 import { flattenPromptFiles, resolveFlattenedPromptPaths } from '../cli/vscode-prompts.js';
 import { getBundledTemplatesDir, getCliVersion } from '../cli/version.js';
@@ -198,6 +199,7 @@ export function createRepairCommand(): Command {
       }
 
       const templateSource = await resolveTemplateSource({
+        requiredSkills: STEROIDS_SKILL_DIRS,
         bundledTemplatesDir: getBundledTemplatesDir(),
         cliVersion: getCliVersion()
       });
@@ -297,6 +299,7 @@ export function createTemplatesCommand(): Command {
       }
 
       const resolution = await resolveTemplateSource({
+        requiredSkills: STEROIDS_SKILL_DIRS,
         bundledTemplatesDir: getBundledTemplatesDir(),
         cliVersion: getCliVersion(),
         source: opts.source as 'bundled' | 'remote' | undefined
