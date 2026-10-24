@@ -8,7 +8,8 @@ import {
     expectIncrementalGuidelinesContract,
     expectSharedPlannerContract,
     expectThinEntryPoint,
-    expectTestingTrophyFallback
+    expectTestingTrophyFallback,
+    readPlannerContract
 } from '../helpers/template-test-helpers.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -19,6 +20,7 @@ const AGENT_ENTRY = 'universal/agents/spec-driven.agent.md';
 const PLANNER_SKILL = 'universal/skills/spec-driven-planner/SKILL.md';
 
 async function readTemplate(relativePath: string): Promise<string> {
+    if (relativePath === PLANNER_SKILL) return readPlannerContract();
     const absolutePath = path.join(standardsTemplatesRoot, relativePath);
     return fs.readFile(absolutePath, 'utf-8');
 }

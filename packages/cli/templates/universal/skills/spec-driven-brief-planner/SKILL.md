@@ -1,6 +1,6 @@
 ---
 name: spec-driven-brief-planner
-description: Use this skill when the Spec-Driven agent selects the brief lane for a bounded change that still requires a written plan and human approval before implementation. Default path: investigate targeted repository evidence, write and validate brief.md, stop for one approval, then implement the complete approved plan and run one compact review.
+description: Use this skill for the default brief workflow, directly or through the spec-driven-planner skill in any harness. Default path: inspect targeted evidence, write and validate brief.md, stop for one human approval, implement the approved plan, and run a compact evidence-backed review.
 ---
 
 # Spec-Driven Brief Planner
@@ -12,19 +12,11 @@ Use one compact artifact and one approval for changes that do not require the fu
 - Write `.specs/changes/<slug>/brief.md` before implementation.
 - Do not write implementation code until the user explicitly approves the brief.
 - Do not create `requirements.md`, `design.md`, or `tasks.md` in the brief lane.
-- If full-lane risk appears, stop and escalate before continuing.
+- For lane selection, slicing, safety, or transitions, follow `spec-driven-planner/references/lane-selection.md`. Do not decide full from task volume or incidental terminology.
 
-## Full-Lane Escalation
+## Lane Selection
 
-Escalate when any condition is true:
-
-- security, authentication, authorization, privacy, secrets, or compliance changes
-- persisted data, schema, migration, or persisted-format changes
-- public API, external contract, wire-format, or backward-compatibility changes
-- architecture changes across packages, services, or runtime boundaries
-- new production dependency, deployment, rollback, or infrastructure work
-- critical concurrency, availability, or performance behavior
-- more than 5 requirements or more than 8 implementation tasks
+Read the lane-selection reference in the `spec-driven-planner` skill before planning, including direct invocation of this skill. Brief is the normal path. Do not require a native agent or a separate lane approval. Record the lane rationale in Intent and any explicitly accepted lane risk under Risks.
 
 ## Planning Workflow
 
@@ -43,6 +35,8 @@ Escalate when any condition is true:
 # Change Brief
 
 **Lane:** brief
+
+**Slice:** N/M
 
 ## Intent
 
@@ -79,7 +73,7 @@ Escalate when any condition is true:
 - `final command or observable check`
 ```
 
-`## Risks` is optional. Every other section is required and must stay in the shown order.
+`**Slice:** N/M` is optional; omit it for unsliced work and resolve it to actual numbers when used. `## Risks` is optional unless required by the lane-selection policy. Every other section is required and must stay in the shown order.
 
 ## Brief Rules
 

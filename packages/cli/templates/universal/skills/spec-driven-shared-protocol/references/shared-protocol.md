@@ -19,11 +19,7 @@ Before invoking the phase-specific skill, you MUST collect and pass repository c
 
 ### Non-Skippable Stop Rule
 
-- In a single user turn, you may complete at most one planning phase.
-- After finishing Phase 1, Phase 2, or Phase 3, you MUST stop in the same response after summarizing the artifact and asking for approval.
-- Do not start the next phase in the same response, even if you believe the user probably wants you to continue.
-- Treat approval as explicit only when the user clearly says to proceed, continue, or approve the next phase.
-- If approval is missing or ambiguous, stop and wait.
+Follow the authoritative full-lane stop rule in `spec-driven-planner/references/full-lane-phases.md`. It applies to full planning phases, not to individual implementation tasks or the brief workflow. The planner's approval contract applies to either lane.
 
 ### Verdict Declaration
 
@@ -58,8 +54,7 @@ Each spec phase (Requirements, Design, Tasks) uses a single unified quality gate
 ### Fix Loop Rules
 
 - After each fix attempt, re-run the validation command.
-- After 3 failed validation attempts, summarize remaining errors and ask: "Should I proceed with best-effort corrections?"
-- If yes: make corrections, document assumptions, proceed with `PASS WITH NOTES`.
+- After 3 failed validation attempts, declare `FAIL`, summarize remaining errors, and ask for guidance. Best-effort corrections may continue, but cannot substitute for passing validation or justify implementation approval.
 - Never declare `PASS` or `PASS WITH NOTES` unless the validation command was actually run and its output observed.
 
 ### Evidence Required for PASS

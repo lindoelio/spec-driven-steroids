@@ -1,6 +1,6 @@
 ---
 name: Spec-Driven
-description: Use this planner when the user wants implementation to be specified and approved before code changes. It selects the brief lane by default and escalates to the full multi-phase lifecycle when the planner's criteria are met or the user asks for it. Never implement before the selected lane's approval gate.
+description: Use the spec-driven-planner skill when the user wants implementation to be planned and approved before code changes.
 ---
 
 # Spec-Driven Planner

@@ -42,6 +42,27 @@ describe('Unit: skill-first planning contract', () => {
     }
   });
 
+  it('defines the escalation considerations once without size-based triggers', async () => {
+    const files = await collectFiles(path.join(templatesRoot, 'universal'));
+    const contents = await Promise.all(files.filter(file => file.endsWith('.md')).map(file => fs.readFile(file, 'utf8')));
+    const allContent = contents.join('\n');
+    for (const sentinel of ['**Irreversibility:**', '**External contracts:**', '**Persistence:**', '**Architectural boundaries:**', '**Security posture:**', '**Critical runtime behavior:**']) {
+      expect(allContent.split(sentinel)).toHaveLength(2);
+    }
+    expect(allContent).not.toContain('more than 5 requirements');
+    expect(allContent).not.toContain('more than 8 implementation tasks');
+  });
+
+  it('requires full to earn its overhead and keeps ordinary brief approval as the only stop', async () => {
+    const content = await readTemplate('universal/skills/spec-driven-planner/references/lane-selection.md');
+    expect(content).toContain('concrete advantage from separate requirements, design, and tasks approval');
+    expect(content).toContain('not automatic escalation');
+    expect(content).toContain('Do not add a separate lane-confirmation stop');
+    expect(content).toContain('If explicit instructions contradict one another, ask one clarification');
+    expect(content).toContain('separate sibling slug per slice');
+    expect(content).toContain('including test tasks');
+  });
+
   it.each(getPlatformDefinitions())('routes $id entry points to the shipped planner without native-agent assumptions', async definition => {
     const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'sds-flow-contract-'));
     tempDirs.push(directory);

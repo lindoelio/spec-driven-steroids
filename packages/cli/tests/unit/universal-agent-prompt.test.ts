@@ -3,14 +3,13 @@ import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { expectThinEntryPoint } from '../helpers/template-test-helpers.js';
+import { expectThinEntryPoint, readPlannerContract } from '../helpers/template-test-helpers.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const templatesDir = path.resolve(__dirname, '../../templates');
 
 const agentPath = path.join(templatesDir, 'universal/agents/spec-driven.agent.md');
-const plannerSkillPath = path.join(templatesDir, 'universal/skills/spec-driven-planner/SKILL.md');
 
 describe('Unit: Universal Agent Prompt', () => {
   it('exists at the expected path', async () => {
@@ -25,7 +24,7 @@ describe('Unit: Universal Agent Prompt', () => {
   });
 
   it('keeps the normative planner contract in the planner skill', async () => {
-    const content = await fs.readFile(plannerSkillPath, 'utf-8');
+    const content = await readPlannerContract();
 
     expect(content).toContain('## Lifecycle');
     expect(content).toContain('## Lane Selection');
@@ -34,9 +33,9 @@ describe('Unit: Universal Agent Prompt', () => {
     expect(content).toContain('### No Direct Lane');
     expect(content).toContain('spec-driven-brief-planner` skill');
     expect(content.indexOf('If brief and full artifacts are mixed')).toBeLessThan(
-      content.indexOf('If `.specs/changes/<slug>/brief.md` exists')
+      content.indexOf('Honor an explicit `lane:brief`')
     );
-    expect(content).toContain('Run `sds validate structure <slug>` and `sds validate brief`');
+    expect(content).toContain('Otherwise choose brief');
     expect(content).toContain('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review');
     expect(content).toContain('Non-Skippable Stop Rule');
     expect(content).toContain('Phase 1: Requirements');
@@ -49,7 +48,7 @@ describe('Unit: Universal Agent Prompt', () => {
   });
 
   it('uses consistent terminology "skill" in the planner contract', async () => {
-    const content = await fs.readFile(plannerSkillPath, 'utf-8');
+    const content = await readPlannerContract();
 
     // Should invoke skills, not sub-agents directly (sub-agent terms are for platform delegation)
     expect(content).toContain('spec-driven-requirements-writer` skill');
@@ -64,7 +63,7 @@ describe('Unit: Universal Agent Prompt', () => {
   });
 
   it('delegates CLI validation to shared protocol via Unified Quality Gate', async () => {
-    const content = await fs.readFile(plannerSkillPath, 'utf-8');
+    const content = await readPlannerContract();
 
     // Planner contract references Unified Quality Gate and shared protocol
     expect(content).toContain('Unified Quality Gate');

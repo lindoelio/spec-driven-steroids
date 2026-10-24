@@ -12,6 +12,11 @@ export async function readTemplate(relativePath: string): Promise<string> {
   return fs.readFile(path.join(templatesRoot, relativePath), 'utf-8');
 }
 
+export async function readPlannerContract(plannerDir = path.join(templatesRoot, 'universal/skills/spec-driven-planner')): Promise<string> {
+  const files = ['SKILL.md', 'references/lane-selection.md', 'references/full-lane-phases.md'];
+  return (await Promise.all(files.map(file => fs.readFile(path.join(plannerDir, file), 'utf8')))).join('\n');
+}
+
 export function expectSharedPlannerContract(content: string): void {
   expect(content).toContain('## Lifecycle');
   expect(content).toContain('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review');

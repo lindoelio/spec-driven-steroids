@@ -53,7 +53,7 @@ export interface PlatformConfig {
 /**
  * Mapping of platform IDs to their configuration.
  */
-const SPEC_DRIVEN_DESCRIPTION = 'Use this planner when implementation must be specified and approved before code changes. It selects the brief lane by default or the full requirements -> design -> tasks lifecycle for high-risk work.';
+const SPEC_DRIVEN_DESCRIPTION = 'Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness.';
 
 export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
   'github-vscode': {

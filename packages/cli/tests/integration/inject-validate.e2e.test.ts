@@ -4,7 +4,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
 import { mockFs } from '@spec-driven-steroids/test-utils';
-import { expectIncrementalGuidelinesContract, expectSharedPlannerContract, expectThinEntryPoint } from '../helpers/template-test-helpers.js';
+import { expectIncrementalGuidelinesContract, expectSharedPlannerContract, expectThinEntryPoint, readPlannerContract } from '../helpers/template-test-helpers.js';
 
 describe('CLI E2E: inject command', () => {
     let targetDir: string;
@@ -207,21 +207,18 @@ describe('CLI E2E: inject command', () => {
 
         expectThinEntryPoint(agentContent);
 
-        const plannerSkillContent = await fs.readFile(
-            path.join(targetDir, '.opencode', 'skills', 'spec-driven-planner', 'SKILL.md'),
-            'utf-8'
-        );
+        const plannerSkillContent = await readPlannerContract(path.join(targetDir, '.opencode', 'skills', 'spec-driven-planner'));
         expectSharedPlannerContract(plannerSkillContent);
         expect(plannerSkillContent.includes('## Lane Selection')).toBe(true);
         expect(plannerSkillContent.includes('### No Direct Lane')).toBe(true);
-        expect(plannerSkillContent.includes('In the full lane, before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
+        expect(plannerSkillContent.includes('In the full lane, before Phase 4 approval, only write the active spec files')).toBe(true);
         expect(plannerSkillContent.includes('SDS requires an approved planning artifact before implementation.')).toBe(true);
 
         const commandPath = path.join(targetDir, '.opencode', 'commands', 'spec-driven.md');
         const commandContent = await fs.readFile(commandPath, 'utf-8');
 
         expect(commandContent.includes('agent: Spec-Driven')).toBe(true);
-        expect(commandContent.includes('Select the brief lane by default')).toBe(true);
+        expectThinEntryPoint(commandContent);
         expect(commandContent.includes('This toolkit has no direct lane')).toBe(true);
         delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
     });
@@ -244,12 +241,9 @@ describe('CLI E2E: inject command', () => {
         expectThinEntryPoint(antigravitySkillContent);
 
         for (const root of ['.github', '.agents']) {
-            const plannerSkillContent = await fs.readFile(
-                path.join(targetDir, root, 'skills', 'spec-driven-planner', 'SKILL.md'),
-                'utf-8'
-            );
+            const plannerSkillContent = await readPlannerContract(path.join(targetDir, root, 'skills', 'spec-driven-planner'));
             expectSharedPlannerContract(plannerSkillContent);
-            expect(plannerSkillContent.includes('In the full lane, before Phase 4 approval, only write the three spec files under `.specs/changes/<slug>/`: requirements.md, design.md, tasks.md. No other files are permitted in this directory.')).toBe(true);
+            expect(plannerSkillContent.includes('In the full lane, before Phase 4 approval, only write the active spec files')).toBe(true);
         }
         delete process.env.SPEC_DRIVEN_USE_BUNDLED_TEMPLATES;
     });
@@ -277,7 +271,7 @@ describe('CLI E2E: inject command', () => {
         ];
 
         for (const plannerSkillFile of plannerSkillFiles) {
-            const content = await fs.readFile(plannerSkillFile, 'utf-8');
+            const content = await readPlannerContract(path.dirname(plannerSkillFile));
             expect(content.includes('requirements -> design -> tasks -> Red Team Review -> implementation -> Code Review')).toBe(true);
             expect(content.includes('Non-Skippable Stop Rule')).toBe(true);
         }
@@ -371,7 +365,7 @@ describe('CLI E2E: inject command', () => {
         ];
 
         for (const plannerSkillFile of plannerSkillFiles) {
-            const content = await fs.readFile(plannerSkillFile, 'utf-8');
+            const content = await readPlannerContract(path.dirname(plannerSkillFile));
             expect(content.includes('long-running-work-planning')).toBe(true);
             expect(content.includes('start of each planning phase')).toBe(true);
         }
@@ -492,7 +486,7 @@ describe('CLI E2E: inject command', () => {
 
         const commandContent = await fs.readFile(commandPath, 'utf-8');
         expect(commandContent.includes('name: spec-driven')).toBe(true);
-        expect(commandContent.includes('Select the brief lane by default')).toBe(true);
+        expectThinEntryPoint(commandContent);
         expect(commandContent.includes('Every lane must write and validate a planning artifact')).toBe(true);
         expect(commandContent.includes('{{args}}')).toBe(false);
         expect(await fs.pathExists(path.join(targetDir, '.codex', 'commands', 'spec-driven.md'))).toBe(false);
@@ -542,7 +536,7 @@ describe('CLI E2E: inject command', () => {
         ];
 
         for (const plannerSkillFile of plannerSkillFiles) {
-            const plannerSkillContent = await fs.readFile(plannerSkillFile, 'utf-8');
+            const plannerSkillContent = await readPlannerContract(path.dirname(plannerSkillFile));
             expect(plannerSkillContent).toContain('Red Team Review');
             expect(plannerSkillContent).toContain('Code Review');
             expect(plannerSkillContent).toContain('Unified Quality Gate');
