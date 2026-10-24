@@ -81,6 +81,16 @@ describe('Unit: skill-first planning contract', () => {
     expect(content).toContain('Final Verification must exercise the changed user or system path');
   });
 
+  it('keeps execution scope in the implementer with human approval and serialized ledger writes', async () => {
+    const content = await readTemplate('universal/skills/spec-driven-task-implementer/SKILL.md');
+    expect(content).toContain('Human approval to enter Phase 4 authorizes all pending tasks');
+    expect(content).toContain('An explicit task or phase request limits execution');
+    expect(content).toContain('it cannot approve implementation on the user\'s behalf');
+    expect(content).toContain('implement one task by default after confirming prior implementation approval');
+    expect(content).toContain('owns serialized ledger updates');
+    expect(content).not.toContain('platform `Task` tool is available');
+  });
+
   it.each(getPlatformDefinitions())('routes $id entry points to the shipped planner without native-agent assumptions', async definition => {
     const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'sds-flow-contract-'));
     tempDirs.push(directory);

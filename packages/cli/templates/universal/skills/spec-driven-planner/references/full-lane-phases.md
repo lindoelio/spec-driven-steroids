@@ -161,7 +161,7 @@ Invoke the `spec-driven-task-implementer` skill.
 
 - Use `requirements.md`, `design.md`, and `tasks.md` as the source of truth.
 - Run the mandatory context preflight for `implementation` before selecting the first task.
-- Execute the requested task, requested phase, or next eligible pending task.
+- Pass the human-approved execution scope to the implementer skill; its scope hierarchy is authoritative. Do not independently narrow or expand it.
 - Update task status in `tasks.md` per task:
   - mark `[~]` when starting
   - mark `[x]` only after verification succeeds
@@ -170,7 +170,7 @@ Invoke the `spec-driven-task-implementer` skill.
 - Use the smallest meaningful verification for each task before marking it complete.
 - If implementation discovers additional in-scope work under existing `REQ-*`/`DES-*`, use the Task Amendment Protocol in `tasks.md` instead of treating it as scope creep.
 - If discovered work changes requirements, architecture, public contracts, migration scope, security posture, or operational risk, stop for mini-review before proceeding.
-- Continue implementation directly unless blocked by a real conflict, failed verification, or material ambiguity.
+- Continue within that scope unless blocked by a real conflict, failed verification, or material ambiguity.
 - After all implementation tasks complete, trigger Code Review.
 
 ### Code Review

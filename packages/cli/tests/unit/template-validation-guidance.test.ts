@@ -131,7 +131,7 @@ describe('Unit: template validation guidance', () => {
         expect(designerTemplateContent).toContain('Verified by Glob/Read');
 
         // Implementer SKILL.md should have task execution guidance
-        expect(implementerContent).toContain('Implement one task by default');
+        expect(implementerContent).toContain('implement one task by default after confirming prior implementation approval');
 
         // Context budget is in shared protocol
         expect(sharedProtocolContent).toContain('Context budget');
