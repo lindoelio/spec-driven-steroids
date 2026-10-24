@@ -89,4 +89,4 @@ Distribution has three independent workflows:
 - Template bundle publication on release tags or manual dispatch, updating the `templates-latest` assets
 - GitHub Pages deployment for landing-page changes on `main` or manual dispatch
 
-Changesets tracks public-package version changes. The root versioning script synchronizes the workspace-root version with the CLI package. Contribution and release responsibilities are documented in [CONTRIBUTING.md](CONTRIBUTING.md#changesets-and-publishing).
+Changesets tracks public-package version changes. The root versioning script synchronizes the workspace-root version with the CLI package. Contribution, direct-delivery, and release responsibilities are documented in [CONTRIBUTING.md](CONTRIBUTING.md#changesets-and-publishing).

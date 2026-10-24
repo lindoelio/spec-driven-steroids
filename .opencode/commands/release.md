@@ -13,14 +13,16 @@ User request / target version:
 
 ## Goal
 
-Prepare the requested package version, commit the release, create the matching `vX.Y.Z` tag, and push with tags so `.github/workflows/publish.yml` publishes to npm automatically.
+Prepare the requested package version, commit the release, deliver it to `main`, create the matching `vX.Y.Z` tag on the verified commit, and push that tag so `.github/workflows/publish.yml` publishes to npm automatically.
 
 Do not run `npm publish` or `pnpm publish` manually. Publication is done by GitHub Actions after the tag push.
 
+Follow `CONTRIBUTING.md#maintainer-delivery`. For the sole maintainer's authorized work, deliver directly to `main` using the owner's permitted admin bypass; do not introduce PR, code-owner, merge, or repeated release-approval gates. Preserve all validation, planning approvals, and safety permissions. This repository policy is not a rule to install into other projects.
+
 ## Required Inputs
 
-- Target version, for example `0.14.0`.
-- If the target version is missing or ambiguous, ask one short clarification question before changing files.
+- Resolve the target version from the request, approved release plan, existing release preparation, or pending Changesets.
+- Ask one short clarification only if those sources do not determine the version unambiguously. Do not ask for release authorization again when it is already part of the approved scope.
 
 ## Successful Release Process
 
@@ -29,6 +31,7 @@ Do not run `npm publish` or `pnpm publish` manually. Publication is done by GitH
    - Run `git diff --stat`.
    - Run `git log --oneline -10`.
    - Confirm the current branch and upstream state.
+   - Confirm the authenticated GitHub actor and permissions under the maintainer-delivery policy.
    - Never revert or overwrite unrelated user changes.
 
 2. Commit feature changes first, if any are present.
@@ -39,6 +42,7 @@ Do not run `npm publish` or `pnpm publish` manually. Publication is done by GitH
 
 3. Create a Changesets entry for the target version.
    - Read `packages/cli/package.json` to determine the current version.
+   - If the target version and changelog are already prepared, verify them and reuse that release commit; do not bump again or create a duplicate changeset.
    - Choose the bump type needed to reach the target version: `patch`, `minor`, or `major`.
    - Add `.changeset/release-X-Y-Z.md` with this shape:
 
@@ -65,14 +69,21 @@ Short release summary with the main user-facing changes.
    - Include any consumed changeset deletion if it appears in `git status`.
    - Commit with exactly `release: vX.Y.Z`, replacing `X.Y.Z` with the target version.
 
-7. Tag the release.
-   - Confirm there is no existing tag with `git tag --list vX.Y.Z`.
-   - Create an annotated tag: `git tag -a vX.Y.Z -m "release vX.Y.Z"`.
+7. Integrate and validate the exact release commit on `main`.
+   - Fetch `origin/main`, inspect any intervening commits, and integrate only authorized work with a fast-forward or normal merge. Never force-push or discard user changes.
+   - Push `main` directly; no PR or manual merge is required for the authenticated owner. Report a successful admin-bypass warning and continue.
+   - Wait for CI on the exact pushed commit. Fix in-scope failures before tagging; do not reuse another SHA's green status.
 
-8. Push to trigger publication.
-   - Run `git push --follow-tags`.
-   - Confirm the output pushed both the branch commit and the `vX.Y.Z` tag.
-   - Tell the user that `.github/workflows/publish.yml` will build, test, check the published npm version, and publish `spec-driven-steroids@X.Y.Z` if it is not already published.
+8. Tag the verified release commit.
+   - Check for the tag both locally and on the remote. If it already identifies the intended commit, resume publication monitoring rather than recreating it; stop on a conflicting tag without moving it.
+   - Recheck that the release commit's root and CLI versions match the target.
+   - Create an annotated tag on that exact `main` commit: `git tag -a vX.Y.Z <verified-commit> -m "release vX.Y.Z"`.
+
+9. Push the tag and verify publication.
+   - Send only the intended tag: `git push origin refs/tags/vX.Y.Z`.
+   - Confirm the remote tag resolves to the verified release commit.
+   - Monitor `.github/workflows/publish.yml` and `.github/workflows/publish-templates.yml` to completion; investigate failures instead of stopping after dispatch.
+   - Verify `spec-driven-steroids@X.Y.Z` in the npm registry and the matching template manifest. A successful upload may still be processing; report that state accurately and never republish or move the tag to work around propagation delay.
 
 ## Guardrails
 
@@ -81,4 +92,4 @@ Short release summary with the main user-facing changes.
 - Do not push a tag whose version does not match `packages/cli/package.json`.
 - Do not use `git reset --hard`, `git checkout --`, or any destructive cleanup unless explicitly approved.
 - Do not amend published commits unless explicitly asked.
-- If GitHub rejects or warns about a protected branch rule but the push succeeds, report the warning and continue.
+- If the owner-authorized push succeeds with a protected-branch bypass warning, report it and continue. If rejected, stop with the actual blocker; do not silently weaken protection or substitute a PR gate for the authorized maintainer path.

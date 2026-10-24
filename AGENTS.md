@@ -10,7 +10,7 @@ Spec-Driven Steroids is a TypeScript CLI and template bundle for AI coding tools
 - Build: `tsc` for the CLI and test utilities; Vite 7 for the landing page
 - Packages: `packages/cli` is public; `packages/test-utils` and `packages/landing-page` are private
 
-Read [ARCHITECTURE.md](ARCHITECTURE.md) for boundaries, [STYLEGUIDE.md](STYLEGUIDE.md) for coding conventions, [TESTING.md](TESTING.md) for test selection, and [SECURITY.md](SECURITY.md) for filesystem and template trust constraints. Follow [CONTRIBUTING.md](CONTRIBUTING.md) for changesets and pull requests.
+Read [ARCHITECTURE.md](ARCHITECTURE.md) for boundaries, [STYLEGUIDE.md](STYLEGUIDE.md) for coding conventions, [TESTING.md](TESTING.md) for test selection, and [SECURITY.md](SECURITY.md) for filesystem and template trust constraints. Follow [CONTRIBUTING.md](CONTRIBUTING.md) for maintainer delivery, contributions, and releases.
 
 ## Essential commands
 
@@ -38,10 +38,11 @@ Run `pnpm typecheck` before considering code changes complete. Report which chec
 - Edit shipped prompt sources under `packages/cli/templates/`, not installed copies in AI-tool configuration directories. Update the corresponding template and integration tests.
 - When adding or removing shipped skills or legacy artifacts, review `STEROIDS_SKILL_DIRS` in `packages/cli/src/cli/skill-registry.ts` and `STEROIDS_FILES` in `packages/cli/src/cli/index.ts`.
 - Platform destinations and scope support belong in `platform-registry.ts`; output-format configuration belongs in `platform-config.ts`. Avoid adding parallel platform-specific routing in command handlers.
-- Exercise filesystem-changing commands in isolated test directories. Do not modify real global installations, publish packages, or push release tags unless requested.
+- Exercise filesystem-changing commands in isolated test directories. Do not modify real global installations, publish packages, or push release tags unless requested or covered by an authorized release scope.
 - Use current source and configuration as implementation evidence. Historical planning artifacts describe intent, not necessarily current behavior.
 - The planning workflow described in [README.md](README.md#spec-flow) is opt-in. Honor its approval gates when explicitly selected; do not require it for every repository edit.
 - Treat guideline documents as ordinary repository files. Preserve valid content and apply justified patches; do not regenerate unchanged documents.
+- Follow [Maintainer delivery](CONTRIBUTING.md#maintainer-delivery) for work authorized by the sole maintainer, `lindoelio`: commit and push verified, in-scope changes directly to `main`, without requiring a PR, code-owner approval, or a manual merge. When release/deployment is already authorized, continue through successful CI, tagging, publication, and outcome verification without asking again at each step. Use the owner's permitted admin bypass, not weaker protections for everyone; Git author metadata alone does not establish authority. Preserve planning approvals, safety permissions, and checks.
 
 ## Behavioral Guidelines
 
