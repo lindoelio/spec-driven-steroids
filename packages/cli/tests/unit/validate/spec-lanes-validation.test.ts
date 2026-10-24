@@ -102,6 +102,42 @@ describe('Unit: spec lane validation', () => {
     expect(result.unexpectedFiles).toContain('requirements.md');
     expect(spec.valid).toBe(false);
     expect(spec.errors.some(error => error.context?.includes('Unexpected files found'))).toBe(true);
+    expect(spec.errors.some(error => error.context?.includes('Mixed lane artifacts: brief.md, requirements.md'))).toBe(true);
+  });
+
+  it.each(['brief', 'full'])('ignores inactive .archive snapshots for the %s lane', async lane => {
+    const specDir = createSpecDir();
+    mkdirSync(path.join(specDir, '.archive'));
+    for (const file of ['brief.md', 'requirements.md', 'design.md', 'tasks.md']) {
+      writeFileSync(path.join(specDir, '.archive', file), 'inactive snapshot');
+    }
+    const active = lane === 'brief' ? ['brief.md'] : ['requirements.md', 'design.md', 'tasks.md'];
+    for (const file of active) writeFileSync(path.join(specDir, file), lane === 'brief' ? validBrief : '');
+
+    const result = await verifySpecStructure('change', tempDir!);
+    expect(result.valid).toBe(true);
+    expect(result.lane).toBe(lane);
+    expect(result.unexpectedFiles).toEqual([]);
+  });
+
+  it.each([false, true])('reports no active lane without assuming missing full documents (archive: %s)', async archived => {
+    const specDir = createSpecDir();
+    if (archived) {
+      mkdirSync(path.join(specDir, '.archive'));
+      writeFileSync(path.join(specDir, '.archive', 'brief.md'), validBrief);
+    }
+
+    const structure = await verifySpecStructure('change', tempDir!);
+    expect(structure.valid).toBe(false);
+    expect(structure.missingFiles).toEqual([]);
+    expect(structure.errors).toHaveLength(1);
+    expect(structure.errors[0].context).toBe('No lane artifacts found');
+
+    const spec = await verifySpec('change', tempDir!);
+    expect(spec.valid).toBe(false);
+    expect(spec.errors).toHaveLength(1);
+    expect(spec.errors[0].context).toBe('No lane artifacts found');
+    expect(spec.requirementsErrors).toEqual([]);
   });
 
   it('rejects extra files in either lane', async () => {

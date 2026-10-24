@@ -63,6 +63,15 @@ describe('Unit: skill-first planning contract', () => {
     expect(content).toContain('including test tasks');
   });
 
+  it('requires approved transitions and preserves archives and prior implementation', async () => {
+    const content = await readTemplate('universal/skills/spec-driven-planner/references/lane-selection.md');
+    expect(content).toContain('Request transition approval before moving artifacts');
+    expect(content).toContain('never overwrite an archive');
+    expect(content).toContain('Preserve source evidence, completed work, and verification results');
+    expect(content).toContain('only before Phase 1 requirements approval');
+    expect(content).toContain('Transition approval is not brief approval');
+  });
+
   it.each(getPlatformDefinitions())('routes $id entry points to the shipped planner without native-agent assumptions', async definition => {
     const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'sds-flow-contract-'));
     tempDirs.push(directory);
