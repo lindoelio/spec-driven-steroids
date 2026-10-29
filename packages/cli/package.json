@@ -40,8 +40,8 @@
         "@spec-driven-steroids/test-utils": "workspace:*",
         "@types/fs-extra": "^11.0.4",
         "@types/inquirer": "^9.0.7",
-        "@types/node": "^20.19.0",
-        "typescript": "^5.9.3"
+        "@types/node": "^26.6.5",
+        "typescript": "^7.0.2"
     },
     "repository": {
         "type": "git",
