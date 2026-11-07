@@ -3,13 +3,13 @@ package stewardship
 import (
 	"errors"
 	"fmt"
+	"github.com/lindoelio/spec-driven-steroids/internal/proc"
 	"io"
 	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 )
 
@@ -271,11 +271,10 @@ func acquireFileLock(lockPath string, timeout time.Duration) (func(), error) {
 			_ = os.Remove(lockPath)
 			continue
 		}
-		if owner > 0 {
-			if err := syscall.Kill(owner, 0); err != nil {
-				_ = os.Remove(lockPath)
-				continue
-			}
+		if owner > 0 && !proc.Alive(owner) {
+			// The owner died, so the lock is stale and can be taken.
+			_ = os.Remove(lockPath)
+			continue
 		}
 
 		if time.Since(startedAt) > timeout {
