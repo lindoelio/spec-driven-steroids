@@ -50,6 +50,16 @@ jobs:
             echo "The binary reports $BINARY_VERSION, but the declared version is $DECLARED_VERSION" >&2
             exit 1
           fi
+          # A sentinel proves that the version of the binary comes from the
+          # stamp and not from the copy embedded in the source, which would
+          # make the check above pass without a stamp at all.
+          go build -trimpath \
+            -ldflags "-X github.com/lindoelio/spec-driven-steroids/internal/version.Version=0.0.0-stamp" \
+            -o "${RUNNER_TEMP}/sds-stamp" ./cmd/sds
+          if [ "$("${RUNNER_TEMP}/sds-stamp" --version)" != "0.0.0-stamp" ]; then
+            echo "The stamp does not reach the binary." >&2
+            exit 1
+          fi
 
   test:
     name: Test
@@ -82,6 +92,15 @@ jobs:
 
       - name: Run the static checks
         run: go vet ./...
+
+      - name: Check the formatting
+        run: |
+          UNFORMATTED="$(gofmt -l cmd internal)"
+          if [ -n "$UNFORMATTED" ]; then
+            echo "These files are not formatted:" >&2
+            echo "$UNFORMATTED" >&2
+            exit 1
+          fi
 
   cross-compile:
     name: Cross compile ${{ matrix.goos }}-${{ matrix.goarch }}
@@ -263,3 +282,27 @@ jobs:
             throw "The binary reports $binary, but the declared version is $declared"
           }
           .\dist\sds.exe --help | Out-Null
+
+      - name: Inject and clean on the platform
+        shell: pwsh
+        run: |
+          $binary = Join-Path (Get-Location) 'dist\sds.exe'
+          $work = Join-Path ([System.IO.Path]::GetTempPath()) ("sds-" + [System.Guid]::NewGuid())
+          New-Item -ItemType Directory -Path $work | Out-Null
+          Push-Location $work
+          try {
+            & $binary inject --platform claudecode --scope project --yes --templates bundled
+            if ($LASTEXITCODE -ne 0) { throw "the injection failed with $LASTEXITCODE" }
+            & $binary doctor
+            if ($LASTEXITCODE -ne 0) { throw "the doctor failed with $LASTEXITCODE" }
+            & $binary clean --project --platform claudecode --yes
+            if ($LASTEXITCODE -ne 0) { throw "the cleanup failed with $LASTEXITCODE" }
+            & $binary clean --project --yes
+            if ($LASTEXITCODE -ne 0) { throw "the cleanup of the scope failed with $LASTEXITCODE" }
+            $left = @(Get-ChildItem -Path $work -Recurse -File).Count
+            if ($left -ne 0) { throw "the cleanup left $left file(s) behind" }
+          }
+          finally {
+            Pop-Location
+            Remove-Item -Path $work -Recurse -Force -ErrorAction SilentlyContinue
+          }

@@ -127,6 +127,16 @@ jobs:
             echo "::error::The binary reports ${BINARY_VERSION}, but the declared version is ${{ steps.version.outputs.version }}."
             exit 1
           fi
+          # A sentinel proves that the version of the binary comes from the
+          # stamp and not from the copy embedded in the source, which would
+          # make the check above pass without a stamp at all.
+          go build -trimpath \
+            -ldflags "-X github.com/lindoelio/spec-driven-steroids/internal/version.Version=0.0.0-stamp" \
+            -o "${RUNNER_TEMP}/sds-stamp" ./cmd/sds
+          if [ "$("${RUNNER_TEMP}/sds-stamp" --version)" != "0.0.0-stamp" ]; then
+            echo "::error::The stamp does not reach the binary."
+            exit 1
+          fi
 
       - name: Packaged artifact smoke check
         run: node scripts/pack-check.mjs
@@ -419,6 +429,17 @@ jobs:
           set -euo pipefail
           PUBLISHED="$(npm view "spec-driven-steroids" version 2>/dev/null || true)"
           if [ "${PUBLISHED}" = "${VERSION}" ]; then
+            # The version is on the registry. A release of the native
+            # implementation always declares the platform packages, so a
+            # published package without them belongs to another release and
+            # the version has to move.
+            DECLARES_PLATFORMS="$(npm view "spec-driven-steroids@${VERSION}" optionalDependencies --json 2>/dev/null || true)"
+            case "${DECLARES_PLATFORMS}" in
+              null|"")
+                echo "::error::spec-driven-steroids@${VERSION} is already published without the platform packages. A release needs a version that was never published. Run 'node scripts/set-version.mjs' with a new version."
+                exit 1
+                ;;
+            esac
             echo "spec-driven-steroids@${PUBLISHED} is already published."
             exit 0
           fi
