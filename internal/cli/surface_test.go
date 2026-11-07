@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -121,4 +123,67 @@ func TestTheExitCodeDoesNotLeakBetweenInvocations(t *testing.T) {
 	if code := Run([]string{"--version"}); code != 0 {
 		t.Errorf("the second invocation returned %d, want 0: the exit code leaked", code)
 	}
+}
+
+// TestTheCapturedFailuresMatchTheContract checks that the failure output and
+// the exit code of the previous release are preserved.
+//
+// The fixtures record what the previous release printed and the code it
+// exited with. A test that hardcodes the same strings proves nothing: the
+// captured bytes are the contract.
+func TestTheCapturedFailuresMatchTheContract(t *testing.T) {
+	cases := []struct {
+		arguments []string
+		fixture   string
+	}{
+		{arguments: []string{"bogus-cmd"}, fixture: "err-unknown-command.txt"},
+		{arguments: []string{"inject", "--bogus"}, fixture: "err-unknown-option.txt"},
+		{arguments: []string{"inject", "--platform", "bogus", "--yes"}, fixture: "err-unknown-platform.txt"},
+		{arguments: []string{"--version"}, fixture: "version.txt"},
+	}
+
+	for _, test := range cases {
+		t.Run(test.fixture, func(t *testing.T) {
+			expected, err := os.ReadFile(filepath.Join(fixtureDirectory, test.fixture))
+			if err != nil {
+				t.Fatalf("the captured fixture is not available: %v", err)
+			}
+
+			output, code := runCapturing(test.arguments)
+			actual := fmt.Sprintf("%sexit=%d\n", output, code)
+			if actual != string(expected) {
+				t.Errorf("the output differs:\n--- expected ---\n%s\n--- actual ---\n%s", expected, actual)
+			}
+		})
+	}
+}
+
+// runCapturing runs the command with both streams captured and returns what
+// they carried together with the exit code.
+func runCapturing(arguments []string) (string, int) {
+	reader, writer, err := os.Pipe()
+	if err != nil {
+		return "", -1
+	}
+
+	originalOut := os.Stdout
+	originalErr := os.Stderr
+	os.Stdout = writer
+	os.Stderr = writer
+
+	captured := make(chan string, 1)
+	go func() {
+		data, _ := io.ReadAll(reader)
+		captured <- string(data)
+	}()
+
+	code := Run(arguments)
+
+	os.Stdout = originalOut
+	os.Stderr = originalErr
+	_ = writer.Close()
+	output := <-captured
+	_ = reader.Close()
+
+	return output, code
 }

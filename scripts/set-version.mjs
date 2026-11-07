@@ -30,6 +30,7 @@ if (!SEMVER.test(requested)) {
 
 fs.writeFileSync(versionPath, `${requested}\n`);
 fs.writeFileSync(embeddedPath, `${requested}\n`);
+writeVersionFixture(requested);
 
 for (const manifestPath of [
   path.resolve(root, 'package.json'),
@@ -51,8 +52,7 @@ console.log(`Declared version is now ${requested}.`);
 
 // The platform packages are the npm manifests of the release binaries, one per
 // operating system and architecture pair.
-function platformManifestPaths() {
-  const platformRoot = path.resolve(root, 'packages/platform');
+function platformManifestPaths() {  const platformRoot = path.resolve(root, 'packages/platform');
   if (!fs.existsSync(platformRoot)) {
     return [];
   }
@@ -68,4 +68,17 @@ function platformManifestPaths() {
 function indentationOf(manifestPath) {
   const match = /\n(\s+)"/.exec(fs.readFileSync(manifestPath, 'utf8'));
   return match ? match[1] : '  ';
+}
+
+// The captured version output records the version of the release it was
+// captured from, so it moves with the declaration. The exit code of the
+// command does not change.
+function writeVersionFixture(version) {
+  const fixturePath = path.resolve(root, 'internal/testdata/fixtures/command-surface/version.txt');
+  if (!fs.existsSync(fixturePath)) {
+    return;
+  }
+  const captured = fs.readFileSync(fixturePath, 'utf8').split('\n');
+  captured[0] = version;
+  fs.writeFileSync(fixturePath, captured.join('\n'));
 }

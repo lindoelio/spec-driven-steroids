@@ -168,7 +168,7 @@ func TestCaptureValidatorGoldenFixtures(t *testing.T) {
 		t.Skipf("the oracle is not built: %v", err)
 	}
 
-	cases := buildCorpus(t, root)
+	cases, _ := buildCorpus(t, root)
 	fixture := goldenFixture{
 		SchemaVersion: goldenSchemaVersion,
 		Description: "Golden fixtures of the validate command. Every case carries the input " +
@@ -389,4 +389,65 @@ func relativeWorkspacePath(t *testing.T, workspace string, directory string) str
 	}
 
 	return filepath.ToSlash(relative)
+}
+
+// TestTheLiveCorpusCoversTheCapturedFixture checks that the corpus the suite
+// builds and the captured fixture describe the same cases.
+//
+// The differential harness compares the Go implementation with the oracle
+// while the oracle exists. The golden fixture carries the recorded behavior
+// of every case for the time when it does not. A source that disappears must
+// not shrink the corpus silently: a case that vanishes from the corpus stops
+// being checked, and nothing would say so.
+//
+// The cases that belong to the removed TypeScript tree are declared, so the
+// difference between the corpus and the fixture stays a known difference.
+func TestTheLiveCorpusCoversTheCapturedFixture(t *testing.T) {
+	root := repositoryRoot(t)
+
+	cases, missing := buildCorpus(t, root)
+	live := map[string]bool{}
+	for _, testCase := range cases {
+		live[testCase.name] = true
+	}
+
+	fixture := readGoldenFixture(t)
+	captured := map[string]bool{}
+	for _, testCase := range fixture.Cases {
+		captured[testCase.Name] = true
+	}
+
+	// A case the corpus builds and the fixture does not know is a behavior
+	// that was never recorded.
+	for name := range live {
+		if !captured[name] {
+			t.Errorf("the corpus builds the case %q, which the captured fixture does not carry", name)
+		}
+	}
+
+	// A case the fixture carries and the corpus does not build belongs to a
+	// source that is gone. The only sources that are gone are the ones the
+	// removal of the TypeScript tree took with it.
+	removed := map[string]bool{}
+	for _, source := range missing {
+		removed[source] = true
+	}
+	for name := range captured {
+		if live[name] {
+			continue
+		}
+		if !belongsToARemovedSource(name) {
+			t.Errorf("the captured case %q is not built by the corpus, and it does not belong to a removed source", name)
+		}
+	}
+
+	if len(missing) > 0 {
+		t.Logf("the corpus skips %d source(s) that are gone: %v", len(missing), missing)
+	}
+}
+
+// belongsToARemovedSource reports whether a captured case belongs to the
+// fixtures or the templates of the removed TypeScript tree.
+func belongsToARemovedSource(name string) bool {
+	return strings.HasPrefix(name, "fixture-") || strings.HasPrefix(name, "template-")
 }

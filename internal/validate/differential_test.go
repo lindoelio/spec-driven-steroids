@@ -160,7 +160,7 @@ func TestValidateMatchesOracle(t *testing.T) {
 		t.Skipf("the TypeScript oracle is not built: %v", err)
 	}
 
-	cases := buildCorpus(t, root)
+	cases, _ := buildCorpus(t, root)
 
 	if len(cases) == 0 {
 		t.Fatal("empty corpus")
@@ -276,6 +276,9 @@ type corpusBuilder struct {
 	base string
 	// files caches the collected content of every workspace.
 	files map[string][]workspaceFile
+	// missing records the sources the corpus could not use, so a source
+	// that disappears cannot shrink the corpus without anyone noticing.
+	missing []string
 }
 
 // newCorpusBuilder creates a builder that materializes the workspaces under a
@@ -315,6 +318,7 @@ func (b *corpusBuilder) copySpec(workspace string, slug string, source string) {
 	for _, file := range []string{"requirements.md", "design.md", "tasks.md"} {
 		path := filepath.Join(source, file)
 		if _, err := os.Stat(path); err != nil {
+			b.missing = append(b.missing, path)
 			continue
 		}
 		b.copy(workspace, specPath(slug, file), path)
@@ -409,7 +413,10 @@ func workspacePath(relative string) string {
 }
 
 // buildCorpus assembles the differential corpus.
-func buildCorpus(t *testing.T, root string) []validateCase {
+//
+// It also returns the sources it could not use, so the caller can tell a
+// corpus that shrank from one that always covered the same ground.
+func buildCorpus(t *testing.T, root string) ([]validateCase, []string) {
 	t.Helper()
 
 	builder := newCorpusBuilder(t)
@@ -440,6 +447,7 @@ func buildCorpus(t *testing.T, root string) []validateCase {
 		for _, file := range []string{"requirements.md", "design.md", "tasks.md"} {
 			path := filepath.Join(directory, file)
 			if _, err := os.Stat(path); err != nil {
+				builder.missing = append(builder.missing, path)
 				continue
 			}
 			for _, format := range []string{"text", "json"} {
@@ -460,6 +468,7 @@ func buildCorpus(t *testing.T, root string) []validateCase {
 	for _, file := range []string{"requirements.md", "design.md", "tasks.md"} {
 		path := filepath.Join(templates, file)
 		if _, err := os.Stat(path); err != nil {
+			builder.missing = append(builder.missing, path)
 			continue
 		}
 		for _, format := range []string{"text", "json"} {
@@ -480,7 +489,7 @@ func buildCorpus(t *testing.T, root string) []validateCase {
 	cases = append(cases, buildAggregateCorpus(t, builder)...)
 	cases = append(cases, buildUsageCorpus(t, builder, specDir)...)
 
-	return cases
+	return cases, builder.missing
 }
 
 // buildMutationCorpus assembles the mutated variants of the repository spec.
