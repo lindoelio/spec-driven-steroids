@@ -1,14 +1,12 @@
 package stewardship
 
 import (
-	"errors"
 	"fmt"
-	"github.com/lindoelio/spec-driven-steroids/internal/proc"
+	"github.com/lindoelio/spec-driven-steroids/internal/lockfile"
 	"io"
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -240,65 +238,12 @@ func ensureDir(dir string) error {
 
 // withWriteLock runs an operation while holding the scope write lock.
 func (s *RuleStore) withWriteLock(operation func() error) error {
-	release, err := acquireFileLock(filepath.Join(s.scopeDir, writeLockName), lockTimeout)
+	release, err := lockfile.Acquire(s.scopeDir, writeLockName, lockTimeout)
 	if err != nil {
 		return err
 	}
 	defer release()
 	return operation()
-}
-
-// acquireFileLock creates an exclusive lock file and waits for it when it is
-// held by another live process.
-func acquireFileLock(lockPath string, timeout time.Duration) (func(), error) {
-	if err := ensureDir(filepath.Dir(lockPath)); err != nil {
-		return nil, err
-	}
-	startedAt := time.Now()
-	for {
-		file, err := os.OpenFile(lockPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644)
-		if err == nil {
-			_, _ = file.WriteString(strconv.Itoa(os.Getpid()))
-			_ = file.Close()
-			return func() { _ = os.Remove(lockPath) }, nil
-		}
-		if !errors.Is(err, os.ErrExist) {
-			return nil, err
-		}
-
-		owner, ownerErr := readLockOwner(lockPath)
-		if ownerErr != nil {
-			_ = os.Remove(lockPath)
-			continue
-		}
-		if owner > 0 && !proc.Alive(owner) {
-			// The owner died, so the lock is stale and can be taken.
-			_ = os.Remove(lockPath)
-			continue
-		}
-
-		if time.Since(startedAt) > timeout {
-			return nil, fmt.Errorf("Timed out waiting for stewardship write lock: %s", lockPath)
-		}
-		time.Sleep(lockPollInterval)
-	}
-}
-
-// readLockOwner reads the process id recorded in a lock file.
-func readLockOwner(lockPath string) (int, error) {
-	content, err := os.ReadFile(lockPath)
-	if err != nil {
-		return 0, err
-	}
-	trimmed := strings.TrimSpace(string(content))
-	if trimmed == "" {
-		return 0, nil
-	}
-	owner, err := strconv.Atoi(trimmed)
-	if err != nil {
-		return 0, nil
-	}
-	return owner, nil
 }
 
 // atomicWriteFile writes a file through a temporary file and a rename.

@@ -9,14 +9,12 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"github.com/lindoelio/spec-driven-steroids/internal/proc"
+	"github.com/lindoelio/spec-driven-steroids/internal/lockfile"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -215,7 +213,7 @@ func (s *Store) WithWriteLock(operation func() error) error {
 // it. A caller that reads the manifests and writes them back holds the lock
 // across the whole sequence.
 func (s *Store) Lock() (func(), error) {
-	return acquireFileLock(filepath.Join(s.Dir, writeLockName), lockTimeout)
+	return lockfile.Acquire(s.Dir, writeLockName, lockTimeout)
 }
 
 // Write writes a manifest under the name its kind and scope imply.
@@ -583,52 +581,3 @@ const (
 	lockTimeout      = 5 * time.Second
 	lockPollInterval = 25 * time.Millisecond
 )
-
-// acquireFileLock creates an exclusive lock file and waits for it when it is
-// held by another live process.
-func acquireFileLock(lockPath string, timeout time.Duration) (func(), error) {
-	if err := os.MkdirAll(filepath.Dir(lockPath), 0o755); err != nil {
-		return nil, err
-	}
-	startedAt := time.Now()
-	for {
-		file, err := os.OpenFile(lockPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644)
-		if err == nil {
-			_, _ = file.WriteString(strconv.Itoa(os.Getpid()))
-			_ = file.Close()
-			return func() { _ = os.Remove(lockPath) }, nil
-		}
-		if !errors.Is(err, os.ErrExist) {
-			return nil, err
-		}
-
-		owner, ownerErr := readLockOwner(lockPath)
-		if ownerErr != nil {
-			_ = os.Remove(lockPath)
-			continue
-		}
-		if owner > 0 && !proc.Alive(owner) {
-			// The owner died, so the lock is stale and can be taken.
-			_ = os.Remove(lockPath)
-			continue
-		}
-
-		if time.Since(startedAt) > timeout {
-			return nil, fmt.Errorf("Timed out waiting for the manifest write lock: %s", lockPath)
-		}
-		time.Sleep(lockPollInterval)
-	}
-}
-
-// readLockOwner reads the process id recorded in a lock file.
-func readLockOwner(lockPath string) (int, error) {
-	raw, err := os.ReadFile(lockPath)
-	if err != nil {
-		return 0, err
-	}
-	owner, err := strconv.Atoi(strings.TrimSpace(string(raw)))
-	if err != nil {
-		return 0, err
-	}
-	return owner, nil
-}
