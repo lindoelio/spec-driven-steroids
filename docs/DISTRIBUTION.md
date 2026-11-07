@@ -108,7 +108,7 @@ generated tree, and commits and pushes the result to `main`.
 | `.claude-plugin/marketplace.json` | Claude Code, and Codex, which accepts the same path |
 | `.agents/plugins/marketplace.json` | Codex, natively |
 | `.cursor-plugin/marketplace.json` | Cursor |
-| `plugins/{owner}/{name}/` | The MiniMax Code community registry |
+| `plugins/{owner}/{name}/` | The MiniMax Code community registry: the package subtree, whose manifest is the portable one |
 | `gemini-extension.json` | The Gemini CLI extension gallery, at the root of the tree |
 | `plugin.json`, `skills/`, the vendor manifests | The portable Agent Plugin package every catalog references |
 
@@ -122,12 +122,41 @@ and the runbook below matches it.
 | Claude Code | **Automated** | The catalog travels in the push of the distribution tree; a user adds the repository as a marketplace |
 | Codex | **Automated** | The catalog travels in the same push |
 | Cursor | **Manual** | The vendor reviews every submission: a vendor account, a submission form and a human review |
-| MiniMax Code | **Manual** | The package subtree reaches the community registry through a pull request that a vendor reviews |
+| MiniMax Code | **Manual** | The package reaches the community registry through a pull request that a vendor reviews. The archive carries `.minimax-plugin/plugin.json` at its root, so the root of the tree is the plugin and the folder is named after the plugin |
 | Gemini CLI | **Manual** | The gallery discovers extensions through the `gemini-cli-extension` repository topic, and registering that topic is a one-time manual action |
 
 The automated steps are the ones that need nothing but a git push of the
 distribution tree. The steps that need a vendor account, a submission form or
 a human review stay manual by design, and the pipeline does not attempt them.
+
+## The release runbook
+
+The publication happens on a tag, and the workflow refuses to publish a tag
+that does not match the declared version. The steps below are the whole
+release:
+
+```bash
+# 1. the version moves. The script is the single write path: it writes the
+#    declaration, the copy the binary embeds, the npm manifests and the
+#    captured version output.
+node scripts/set-version.mjs 0.24.0
+
+# 2. the change is committed.
+git add -A
+git commit -m "chore(release): v0.24.0"
+
+# 3. the tag is pushed with the commit. The workflow starts on the tag.
+git tag v0.24.0
+git push origin main --tags
+```
+
+The workflow then publishes, in this order: the release assets with their
+checksums, the platform packages, the main package, the Homebrew formula, the
+template bundle and the distribution tree.
+
+Before the tag, the continuous integration of the same commit has to pass. It
+builds the module on Linux, macOS and Windows, runs the suite, runs the binary
+on each of them, and checks the shape of the published packages.
 
 ## The npm channel
 
@@ -159,6 +188,12 @@ package digest against the checksum published with the GitHub Release.
 The publication order is asserted in the workflow itself: the platform packages
 are published first, and the main package job depends on them and refuses to
 publish while any of them is missing from the registry.
+
+A release needs a version that the registry has never seen. The version
+`0.23.0` is the TypeScript implementation, so the first release of the native
+implementation carries a higher version. The workflow refuses to publish when
+the declared version is already on the registry with a different shape, because
+the registry does not let a published version change.
 
 See [the installer documentation](../packages/cli/README.md#installing-the-binary-manually) for
 the manual path, used when the installation scripts are disabled.
