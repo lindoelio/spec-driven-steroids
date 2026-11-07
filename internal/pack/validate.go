@@ -100,6 +100,11 @@ func validateTreeContent(outDir string) []string {
 			return nil
 		}
 
+		if relative == miniMaxIconPath {
+			// The icon of the package is an image the marketplace
+			// requires inside it.
+			return nil
+		}
 		native, readErr := isNativeBinary(current)
 		if readErr != nil {
 			violations = append(violations, violation(treeMarketplace, "%s could not be read: %v", relative, readErr))
@@ -180,31 +185,18 @@ func validatePortable(outDir string) []string {
 			"the package holds no skill directory below %s/", canonicalSkillsDir))
 	}
 
-	references, ok := arrayField(object, "skills")
-	if !ok {
-		return append(violations, violation(portableMarketplace, "%s declares no skills array", PortableManifestPath))
-	}
-
-	referenced := map[string]bool{}
-	for _, reference := range references {
-		text, isText := reference.(string)
-		if !isText || strings.TrimSpace(text) == "" {
-			violations = append(violations, violation(portableMarketplace,
-				"%s declares a skill that is not a path", PortableManifestPath))
-			continue
-		}
-		cleaned := path.Clean(text)
-		referenced[cleaned] = true
-		if !existsInside(outDir, cleaned) {
-			violations = append(violations, violation(portableMarketplace,
-				"%s references the skill %q, which the package does not hold", PortableManifestPath, text))
-		}
+	// The Agent Plugins schema accepts no property beyond the ones it
+	// declares, and the skills are discovered from the folder that carries
+	// them. A manifest that lists them would not pass the schema.
+	if _, declares := object["skills"]; declares {
+		violations = append(violations, violation(portableMarketplace,
+			"%s declares a skills array, which the Agent Plugins schema does not accept", PortableManifestPath))
 	}
 
 	for _, skill := range packaged {
-		if !referenced[path.Join(canonicalSkillsDir, skill)] {
+		if !existsInside(outDir, path.Join(canonicalSkillsDir, skill, "SKILL.md")) {
 			violations = append(violations, violation(portableMarketplace,
-				"%s does not reference the packaged skill %q", PortableManifestPath, skill))
+				"the packaged skill %q holds no SKILL.md", skill))
 		}
 	}
 
@@ -593,7 +585,7 @@ func validateCatalogs(outDir string) []string {
 			path: catalogPath,
 			facts: catalogFacts{
 				source:  stringField(plugin, "source"),
-				version: stringField(plugin, "version"),
+				version: catalogVersion(object, plugin),
 			},
 		})
 	}
@@ -617,6 +609,22 @@ func validateCatalogs(outDir string) []string {
 	}
 
 	return violations
+}
+
+// catalogVersion returns the version of the package that a catalog names.
+//
+// The catalog of the Claude Code and of the Codex names the version of the
+// package in the entry, and the catalog of the Cursor names it in the
+// metadata of the marketplace, because its schema accepts no other field in
+// the entry.
+func catalogVersion(catalog map[string]any, plugin map[string]any) string {
+	if version := stringField(plugin, "version"); version != "" {
+		return version
+	}
+	if metadata, ok := catalog["metadata"].(map[string]any); ok {
+		return stringField(metadata, "version")
+	}
+	return ""
 }
 
 // readObject reads a JSON object from a path.

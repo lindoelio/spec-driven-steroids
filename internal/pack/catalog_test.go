@@ -66,6 +66,14 @@ func TestCatalogsReferenceTheSamePackageDirectoryAndVersion(t *testing.T) {
 
 		currentSource, _ := plugin["source"].(string)
 		currentVersion, _ := plugin["version"].(string)
+		if currentVersion == "" {
+			// The catalog of the Cursor names the version in the
+			// metadata of the marketplace, because its schema accepts
+			// no other field in the entry.
+			if metadata, ok := object["metadata"].(map[string]any); ok {
+				currentVersion, _ = metadata["version"].(string)
+			}
+		}
 
 		if index == 0 {
 			source, version = currentSource, currentVersion

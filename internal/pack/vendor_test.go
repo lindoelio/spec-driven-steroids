@@ -32,22 +32,23 @@ func TestPortableManifestDeclaresThePackage(t *testing.T) {
 		t.Errorf("the portable manifest declares the author %q", name)
 	}
 
-	references, ok := object["skills"].([]any)
-	if !ok {
-		t.Fatalf("the portable manifest declares the skills %v", object["skills"])
+	// The Agent Plugins schema accepts no property it does not declare, and
+	// the skills are discovered from the folder that carries them.
+	if _, declares := object["skills"]; declares {
+		t.Errorf("the portable manifest declares the skills %v, which the schema does not accept", object["skills"])
 	}
 
 	skills, err := canonicalSkills()
 	if err != nil {
 		t.Fatalf("read the canonical skills: %v", err)
 	}
-	if len(references) != len(skills) {
-		t.Fatalf("the portable manifest references %d skills, expected %d", len(references), len(skills))
+	if len(skills) == 0 {
+		t.Fatal("the canonical tree holds no skill")
 	}
-	for index, skill := range skills {
-		reference, _ := references[index].(string)
-		if reference != "skills/"+skill {
-			t.Errorf("the portable manifest references %q at %d, expected %q", reference, index, "skills/"+skill)
+	for _, skill := range skills {
+		reference := filepath.Join("skills", skill, "SKILL.md")
+		if _, err := os.Stat(filepath.Join(outDir, filepath.FromSlash(reference))); err != nil {
+			t.Errorf("the package holds no skill at %q: %v", reference, err)
 		}
 	}
 }
@@ -78,11 +79,19 @@ func TestVendorManifestsShareThePackageMetadata(t *testing.T) {
 	if declared, _ := miniMax["author"].(string); declared != "lindoelio" {
 		t.Errorf("%s declares the author %q", MiniMaxManifestPath, declared)
 	}
-	if declared, _ := miniMax["icon"].(string); declared != "https://example.com/icon.png" {
-		t.Errorf("%s declares the icon %q", MiniMaxManifestPath, declared)
+	// The marketplace of the MiniMax Code takes the icon from a file inside
+	// the package and lists the plugin under one of its own categories.
+	if declared, _ := miniMax["icon"].(string); declared != miniMaxIconPath {
+		t.Errorf("%s declares the icon %q, expected %q", MiniMaxManifestPath, declared, miniMaxIconPath)
 	}
-	if declared, _ := miniMax["category"].(string); declared != "productivity" {
-		t.Errorf("%s declares the category %q", MiniMaxManifestPath, declared)
+	if declared, _ := miniMax["category"].(string); declared != "Productivity" {
+		t.Errorf("%s declares the category %q, expected %q", MiniMaxManifestPath, declared, "Productivity")
+	}
+	if queries, ok := miniMax["exampleQueries"].([]any); !ok || len(queries) == 0 {
+		t.Errorf("%s declares the example queries %v", MiniMaxManifestPath, miniMax["exampleQueries"])
+	}
+	if _, err := os.Stat(filepath.Join(outDir, miniMaxIconPath)); err != nil {
+		t.Errorf("the package holds no icon file: %v", err)
 	}
 	if schema, _ := miniMax["schemaVersion"].(float64); schema != 1 {
 		t.Errorf("%s declares the schema version %v", MiniMaxManifestPath, schema)

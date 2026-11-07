@@ -54,6 +54,21 @@ type catalogPlugin struct {
 	Category string `json:"category"`
 }
 
+// cursorCatalogPlugin is the entry of a plugin in the catalog of the Cursor
+// marketplace.
+//
+// The schema of that marketplace accepts a name, a source, a description and
+// the minimum client versions, and nothing else. The version of the package
+// lives in the metadata of the marketplace.
+type cursorCatalogPlugin struct {
+	// Name is the plugin identifier.
+	Name string `json:"name"`
+	// Description is the plugin description.
+	Description string `json:"description"`
+	// Source is where the package is fetched from.
+	Source string `json:"source"`
+}
+
 // catalogMetadata is the metadata of a marketplace.
 type catalogMetadata struct {
 	// Description is the marketplace description.
@@ -93,7 +108,7 @@ type cursorCatalog struct {
 	// Metadata is the marketplace metadata.
 	Metadata catalogMetadata `json:"metadata"`
 	// Plugins are the installable packages.
-	Plugins []catalogPlugin `json:"plugins"`
+	Plugins []cursorCatalogPlugin `json:"plugins"`
 }
 
 // marketplaceName returns the identifier of the marketplace that serves the
@@ -137,7 +152,7 @@ func cursorCatalogJSON(meta packageMeta) ([]byte, error) {
 		Name:     marketplaceName(meta),
 		Owner:    catalogOwner{Name: meta.owner},
 		Metadata: catalogMetadata{Description: meta.description, Version: meta.version},
-		Plugins:  []catalogPlugin{catalogPluginEntry(meta)},
+		Plugins:  []cursorCatalogPlugin{cursorCatalogPluginEntry(meta)},
 	}
 	return marshalJSON(catalog)
 }
@@ -194,7 +209,15 @@ func buildTree(meta packageMeta) (*tree, error) {
 		return nil, err
 	}
 
+	// The icon travels with the package: the marketplace of the MiniMax
+	// Code requires the icon of a plugin to be a file inside it.
+	icon, err := packageIcon()
+	if err != nil {
+		return nil, err
+	}
+
 	planned := &tree{}
+	planned.add(miniMaxIconPath, icon)
 	planned.add(PortableManifestPath, portable)
 	planned.add(ClaudeManifestPath, claude)
 	planned.add(CursorManifestPath, cursor)
@@ -244,4 +267,14 @@ func canonicalSkillFiles() ([]string, error) {
 	}
 	sort.Strings(files)
 	return files, nil
+}
+
+// cursorCatalogPluginEntry returns the catalog entry of the package for the
+// Cursor marketplace.
+func cursorCatalogPluginEntry(meta packageMeta) cursorCatalogPlugin {
+	return cursorCatalogPlugin{
+		Name:        meta.name,
+		Description: meta.description,
+		Source:      packageSource,
+	}
 }

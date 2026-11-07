@@ -78,6 +78,7 @@ func TestRenderProducesTheDocumentedTree(t *testing.T) {
 		".cursor-plugin/plugin.json",
 		".minimax-plugin/plugin.json",
 		"gemini-extension.json",
+		"icon.png",
 		"plugin.json",
 		"plugins/lindoelio/spec-driven-steroids/plugin.json",
 	}

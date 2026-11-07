@@ -58,8 +58,6 @@ type portableManifest struct {
 	Version string `json:"version"`
 	// Author is the plugin author.
 	Author manifestAuthor `json:"author"`
-	// Skills are the packaged skill directories, relative to the package root.
-	Skills []string `json:"skills"`
 	// MCPServers points at the MCP configuration, absent without one.
 	MCPServers string `json:"mcpServers,omitempty"`
 }
@@ -151,10 +149,12 @@ type miniMaxManifest struct {
 	Description string `json:"description"`
 	// Author is the plugin author.
 	Author string `json:"author"`
-	// Icon is the plugin icon path or URL.
+	// Icon is the path of the icon file inside the package.
 	Icon string `json:"icon"`
 	// Category is the marketplace category.
 	Category string `json:"category"`
+	// ExampleQueries are the example prompts of the plugin.
+	ExampleQueries []string `json:"exampleQueries"`
 	// Apps are the packaged applications, empty when there are none.
 	Apps []string `json:"apps"`
 	// MCPServers are the packaged MCP configuration files, empty when there
@@ -187,7 +187,6 @@ func portableManifestJSON(meta packageMeta) ([]byte, error) {
 		Description: meta.description,
 		Version:     meta.version,
 		Author:      manifestAuthor{Name: meta.author},
-		Skills:      skillReferences(meta.skills),
 	}
 	if meta.hasMCP() {
 		manifest.MCPServers = mcpPath
@@ -261,17 +260,18 @@ func codexManifestJSON(meta packageMeta) ([]byte, error) {
 // and every capability the package does not carry stays an empty array.
 func miniMaxManifestJSON(meta packageMeta) ([]byte, error) {
 	manifest := miniMaxManifest{
-		SchemaVersion: 1,
-		Name:          meta.name,
-		DisplayName:   meta.name,
-		Version:       meta.version,
-		Description:   meta.description,
-		Author:        meta.author,
-		Icon:          meta.icon,
-		Category:      meta.category,
-		Apps:          []string{},
-		MCPServers:    []string{},
-		Skills:        miniMaxSkillReferences(meta.skills),
+		SchemaVersion:  1,
+		Name:           meta.name,
+		DisplayName:    meta.name,
+		Version:        meta.version,
+		Description:    meta.description,
+		Author:         meta.author,
+		Icon:           miniMaxIconPath,
+		Category:       miniMaxCategory(meta.category),
+		ExampleQueries: miniMaxExampleQueries,
+		Apps:           []string{},
+		MCPServers:     []string{},
+		Skills:         miniMaxSkillReferences(meta.skills),
 	}
 	if meta.hasMCP() {
 		manifest.MCPServers = []string{MCPConfigPath}
