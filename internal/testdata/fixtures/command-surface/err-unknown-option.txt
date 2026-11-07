@@ -1,0 +1,2 @@
+error: unknown option '--bogus'
+exit=1

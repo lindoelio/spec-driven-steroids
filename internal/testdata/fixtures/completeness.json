@@ -1,0 +1,547 @@
+{
+  "schemaVersion": 1,
+  "generatedFrom": ".specs/changes/go-rewrite-universal-agents/requirements.md",
+  "criteria": [
+    {
+      "criterion": "REQ-1.1",
+      "coveredBy": [
+        "internal/cli/surface_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-1.2",
+      "coveredBy": [
+        "internal/cli/surface_test.go",
+        "internal/validate/differential_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-1.3",
+      "coveredBy": [
+        "scripts/pack-check.mjs"
+      ]
+    },
+    {
+      "criterion": "REQ-1.4",
+      "coveredBy": [
+        "scripts/pack-check.mjs"
+      ]
+    },
+    {
+      "criterion": "REQ-1.5",
+      "coveredBy": [
+        "scripts/set-version.mjs",
+        "internal/version/version_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-1.6",
+      "coveredBy": [
+        "scripts/pack-check.mjs"
+      ]
+    },
+    {
+      "criterion": "REQ-1.7",
+      "coveredBy": [
+        "internal/version/version_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-1.8",
+      "coveredBy": [
+        "internal/version/version_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-1.9",
+      "coveredBy": [
+        "internal/cli/surface_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-2.1",
+      "coveredBy": [
+        "internal/config/config_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-2.2",
+      "coveredBy": [
+        "internal/config/config_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-2.3",
+      "coveredBy": [
+        "internal/config/config_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-2.4",
+      "coveredBy": [
+        "internal/config/config_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-2.5",
+      "coveredBy": [
+        "internal/cleanup/cleanup_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-2.6",
+      "coveredBy": [
+        "internal/cli/surface_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-2.7",
+      "coveredBy": [
+        "internal/cleanup/cleanup_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-3.1",
+      "coveredBy": [
+        "internal/descriptor/descriptor_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-3.2",
+      "coveredBy": [
+        "internal/emit/emit_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-3.3",
+      "coveredBy": [
+        "internal/emit/emit_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-3.4",
+      "coveredBy": [
+        "internal/emit/emit_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-3.5",
+      "coveredBy": [
+        "internal/manifest/manifest_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-3.6",
+      "coveredBy": [
+        "internal/descriptor/descriptor_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-3.7",
+      "coveredBy": [
+        "internal/descriptor/descriptor_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-3.8",
+      "coveredBy": [
+        "internal/descriptor/descriptor_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-3.9",
+      "coveredBy": [
+        "internal/descriptor/descriptor_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-4.1",
+      "coveredBy": [
+        "internal/manifest/manifest_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-4.2",
+      "coveredBy": [
+        "internal/cleanup/cleanup_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-4.3",
+      "coveredBy": [
+        "internal/cleanup/cleanup_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-4.4",
+      "coveredBy": [
+        "internal/cleanup/cleanup_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-4.5",
+      "coveredBy": [
+        "internal/manifest/manifest_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-4.6",
+      "coveredBy": [
+        "internal/manifest/manifest_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-4.7",
+      "coveredBy": [
+        "internal/manifest/manifest_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-4.8",
+      "coveredBy": [
+        "internal/manifest/manifest_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-4.9",
+      "coveredBy": [
+        "internal/cleanup/scope.go"
+      ]
+    },
+    {
+      "criterion": "REQ-5.1",
+      "coveredBy": [
+        "internal/assets/canonical/skills/project-guidelines-writer/SKILL.md"
+      ]
+    },
+    {
+      "criterion": "REQ-5.2",
+      "coveredBy": [
+        "internal/assets/canonical/commands/inject-guidelines.command.md"
+      ]
+    },
+    {
+      "criterion": "REQ-5.3",
+      "coveredBy": [
+        "internal/assets/canonical/skills/project-guidelines-writer/SKILL.md"
+      ]
+    },
+    {
+      "criterion": "REQ-5.4",
+      "coveredBy": [
+        "internal/cli/manifest.go"
+      ]
+    },
+    {
+      "criterion": "REQ-5.5",
+      "coveredBy": [
+        "internal/assets/canonical/skills/project-guidelines-writer/SKILL.md"
+      ]
+    },
+    {
+      "criterion": "REQ-5.6",
+      "coveredBy": [
+        "internal/assets/canonical/skills/project-guidelines-writer/SKILL.md"
+      ]
+    },
+    {
+      "criterion": "REQ-5.7",
+      "coveredBy": [
+        "internal/assets/canonical/skills/code-review-hardening/SKILL.md"
+      ]
+    },
+    {
+      "criterion": "REQ-5.8",
+      "coveredBy": [
+        "CONVENTIONS.md"
+      ]
+    },
+    {
+      "criterion": "REQ-6.1",
+      "coveredBy": [
+        "internal/validate/differential_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-6.2",
+      "coveredBy": [
+        "internal/validate/differential_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-6.3",
+      "coveredBy": [
+        "internal/stewardship/"
+      ]
+    },
+    {
+      "criterion": "REQ-6.4",
+      "coveredBy": [
+        "internal/stewardship/"
+      ]
+    },
+    {
+      "criterion": "REQ-6.5",
+      "coveredBy": [
+        "internal/validate/differential_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-6.6",
+      "coveredBy": [
+        "internal/stewardship/"
+      ]
+    },
+    {
+      "criterion": "REQ-7.1",
+      "coveredBy": [
+        "internal/bundle/contract_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-7.2",
+      "coveredBy": [
+        "internal/bundle/source_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-7.3",
+      "coveredBy": [
+        "internal/bundle/source_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-7.4",
+      "coveredBy": [
+        "internal/bundle/source_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-7.5",
+      "coveredBy": [
+        "internal/assets/assets.go"
+      ]
+    },
+    {
+      "criterion": "REQ-7.6",
+      "coveredBy": [
+        "internal/bundle/difftest/"
+      ]
+    },
+    {
+      "criterion": "REQ-8.1",
+      "coveredBy": [
+        "internal/version/version_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-8.2",
+      "coveredBy": [
+        "internal/version/version_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-8.3",
+      "coveredBy": [
+        "internal/version/version_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-8.4",
+      "coveredBy": [
+        ".github/workflows/ci.yml"
+      ]
+    },
+    {
+      "criterion": "REQ-8.5",
+      "coveredBy": [
+        ".github/workflows/publish.yml"
+      ]
+    },
+    {
+      "criterion": "REQ-8.6",
+      "coveredBy": [
+        "docs/DISTRIBUTION.md"
+      ]
+    },
+    {
+      "criterion": "REQ-9.1",
+      "coveredBy": [
+        "internal/pack/package_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-9.2",
+      "coveredBy": [
+        "internal/pack/package_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-9.3",
+      "coveredBy": [
+        "internal/pack/package_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-9.4",
+      "coveredBy": [
+        "internal/pack/vendor_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-9.5",
+      "coveredBy": [
+        "internal/pack/validate_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-9.6",
+      "coveredBy": [
+        "internal/pack/package_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-10.1",
+      "coveredBy": [
+        "internal/pack/catalog_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-10.2",
+      "coveredBy": [
+        "internal/pack/catalog_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-10.3",
+      "coveredBy": [
+        "internal/pack/validate_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-10.4",
+      "coveredBy": [
+        "internal/pack/catalog_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-10.5",
+      "coveredBy": [
+        "internal/pack/publish_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-10.6",
+      "coveredBy": [
+        "internal/pack/publish_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-10.7",
+      "coveredBy": [
+        "internal/pack/catalog_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-11.1",
+      "coveredBy": [
+        "scripts/pack-check.mjs"
+      ]
+    },
+    {
+      "criterion": "REQ-11.2",
+      "coveredBy": [
+        "scripts/pack-check.mjs"
+      ]
+    },
+    {
+      "criterion": "REQ-11.3",
+      "coveredBy": [
+        "packages/cli/README.md"
+      ]
+    },
+    {
+      "criterion": "REQ-11.4",
+      "coveredBy": [
+        ".github/workflows/publish.yml"
+      ]
+    },
+    {
+      "criterion": "REQ-12.1",
+      "coveredBy": [
+        "internal/manifest/manifest_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-12.2",
+      "coveredBy": [
+        "internal/cleanup/cleanup_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-12.3",
+      "coveredBy": [
+        "internal/cleanup/cleanup_test.go"
+      ]
+    },
+    {
+      "criterion": "REQ-12.4",
+      "coveredBy": [
+        "internal/cleanup/cleanup_test.go"
+      ]
+    }
+  ],
+  "commandSurface": [
+    {
+      "command": "inject",
+      "fixture": "internal/testdata/fixtures/command-surface/help-inject.txt"
+    },
+    {
+      "command": "clean",
+      "fixture": "internal/testdata/fixtures/command-surface/help-clean.txt"
+    },
+    {
+      "command": "doctor",
+      "fixture": "internal/testdata/fixtures/command-surface/help-doctor.txt"
+    },
+    {
+      "command": "repair",
+      "fixture": "internal/testdata/fixtures/command-surface/help-repair.txt"
+    },
+    {
+      "command": "uninstall",
+      "fixture": "internal/testdata/fixtures/command-surface/help-uninstall.txt"
+    },
+    {
+      "command": "templates",
+      "fixture": "internal/testdata/fixtures/command-surface/help-templates.txt"
+    },
+    {
+      "command": "validate",
+      "fixture": "internal/testdata/fixtures/command-surface/help-validate.txt"
+    },
+    {
+      "command": "stewardship",
+      "fixture": "internal/testdata/fixtures/command-surface/help-stewardship.txt"
+    },
+    {
+      "command": "package",
+      "fixture": "internal/testdata/fixtures/command-surface/help-package.txt"
+    },
+    {
+      "command": "--version",
+      "fixture": "internal/testdata/fixtures/command-surface/version.txt"
+    },
+    {
+      "command": "--help",
+      "fixture": "internal/testdata/fixtures/command-surface/help-root.txt"
+    }
+  ],
+  "report": {
+    "criteria": 81,
+    "covered": 81,
+    "missing": [],
+    "absentEvidence": [],
+    "absentFixtures": []
+  }
+}

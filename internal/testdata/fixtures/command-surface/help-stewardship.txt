@@ -1,0 +1,34 @@
+Usage: spec-driven-steroids stewardship [options] [command]
+
+Manage contextual knowledge for Spec-Driven workflows.
+
+The stewardship command stores, retrieves, and manages architectural decisions,
+business rules, and workflow conventions extracted from spec files. These rules
+are injected into spec-driven phases to guide agents with established patterns.
+
+Subcommands:
+  capabilities   - Report available capabilities
+  retrieve       - Search for rules by query and domain
+  store          - Persist a new rule
+  extract        - Extract decision candidates from spec files
+  trace          - Show rule provenance and version history
+  inject         - Retrieve context for a spec phase
+  manage         - List, deprecate, archive, or move rules
+
+Use --help with any subcommand for specific options and examples.
+
+Options:
+  -h, --help                    display help for command
+
+Commands:
+  capabilities                  Report available stewardship capabilities
+  retrieve [options] <query>    Search for rules in the knowledge graph
+  store [options] <domain>      Persist a new rule to the knowledge graph
+  extract [options] <filePath>  Extract decision candidates from a design.md or
+                                requirements.md file
+  trace [options] <ruleId>      Show full provenance and version history for a
+                                rule
+  inject [options] <phase>      Retrieve and format relevant context for a spec
+                                phase
+  manage [options] <action>     List, deprecate, archive, or move rules
+  help [command]                display help for command

@@ -1,0 +1,31 @@
+{
+    "name": "@spec-driven-steroids/darwin-x64",
+    "version": "0.23.0",
+    "description": "The Spec-Driven Steroids release binary for macOS on x64.",
+    "license": "MIT",
+    "author": "Lindoélio Lázaro <lindoelio@gmail.com>",
+    "homepage": "https://github.com/lindoelio/spec-driven-steroids#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/lindoelio/spec-driven-steroids.git"
+    },
+    "os": [
+        "darwin"
+    ],
+    "cpu": [
+        "x64"
+    ],
+    "bin": {
+        "sds": "bin/sds",
+        "spec-driven-steroids": "bin/sds"
+    },
+    "files": [
+        "bin",
+        "package.json"
+    ],
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

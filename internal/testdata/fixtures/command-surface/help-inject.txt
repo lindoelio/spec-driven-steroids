@@ -1,0 +1,14 @@
+Usage: spec-driven-steroids inject [options]
+
+Inject platform-specific Spec-Driven configs
+
+Options:
+  --platform <ids>      Comma-separated platform IDs (skips the platform
+                        prompt)
+  --scope <scope>       Injection scope: global or project
+  --templates <source>  Template source: bundled or remote
+  --dry-run             Show planned files without writing them
+  --json                Emit a machine-readable JSON summary
+  --backup              Back up existing platform roots before writing
+  --yes                 Skip prompts when --platform is provided
+  -h, --help            display help for command

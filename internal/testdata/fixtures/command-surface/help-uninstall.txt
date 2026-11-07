@@ -1,0 +1,13 @@
+Usage: spec-driven-steroids uninstall [options]
+
+Remove manifest-tracked SDS files for a platform and scope
+
+Options:
+  --platform <platform>  Limit to one platform
+  --scope <scope>        Scope: global or project (default: "global")
+  --project              Shortcut for --scope project
+  --force                Remove files even if modified
+  --dry-run              Show what would be removed
+  --json                 Emit JSON
+  -y, --yes              Skip confirmation prompt
+  -h, --help             display help for command

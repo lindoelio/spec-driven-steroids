@@ -48,8 +48,10 @@ MiniMax Code receives skills only. Project scope writes to `.minimax/skills`, th
 npm install -g spec-driven-steroids
 ```
 
+The CLI is a single native binary with no runtime dependency: it needs no Node.js runtime and ships no dependency tree. The npm package installs the binary that matches your operating system and architecture.
+
 Requirements:
-- Node.js `>=20`
+- A supported operating system and architecture: Linux, macOS, or Windows on x64 or arm64
 - `pnpm` for local development
 
 ## CLI Usage
@@ -57,6 +59,29 @@ Requirements:
 The CLI provides two command names:
 - `sds` (short alias - recommended)
 - `spec-driven-steroids` (full name)
+
+The command surface is `inject`, `clean`, `doctor`, `repair`, `uninstall`, `templates`, `validate`, `stewardship`, and `package`, together with `--version` and `--help`. The command names, argument names, and exit codes match the previous release.
+
+### Artifact Root
+
+Every managed artifact lives in one predictable directory:
+
+| Scope | Artifact root |
+|-------|---------------|
+| Project | `.agents/` inside the working directory |
+| User (global) | `~/.agents/` under the home directory |
+
+Both roots use the same internal layout, so a skill installed at user scope and the same skill installed at project scope occupy structurally identical paths:
+
+```text
+.agents/
+├── skills/<skill-name>/SKILL.md
+├── skills/<skill-name>/references/*
+├── agents/<agent-name>.md
+└── commands/<command-name>.md
+```
+
+The user artifact root additionally holds the `stewardship/` subtree that keeps the rule graph. A project artifact shadows a user artifact of the same name. The CLI owns only the paths it records in an install manifest and never removes content it did not create.
 
 ### Inject Command
 
@@ -131,6 +156,10 @@ sds uninstall --platform opencode --scope project --yes
 # Inspect the resolved template source
 sds templates info
 sds templates info --json
+
+# Render the portable distribution package and the marketplace catalogs
+sds package --out ./dist/sds-distribution
+sds package --dry-run --json
 
 # Show version
 sds --version
@@ -293,7 +322,7 @@ sds inject
 /inject-guidelines
 ```
 
-This reviews `AGENTS.md`, `CONTRIBUTING.md`, `STYLEGUIDE.md`, `TESTING.md`, `ARCHITECTURE.md`, and `SECURITY.md`, creating missing files unless explicitly skipped. Existing documents receive only justified, targeted updates; files that need no changes are not rewritten. Guidelines are ordinary Markdown without generator branding or ownership markers. Legacy managed-section delimiters are removed without regenerating their content.
+This reviews `AGENTS.md`, `CONVENTIONS.md`, `TESTING.md`, `ARCHITECTURE.md`, and `SECURITY.md`, creating missing files unless explicitly skipped. Existing `CONTRIBUTING.md` and `STYLEGUIDE.md` content is merged into `CONVENTIONS.md` at the section level, preserving the original wording of user-authored rules. Existing documents receive only justified, targeted updates; files that need no changes are not rewritten. Guidelines are ordinary Markdown without generator branding or ownership markers. Legacy managed-section delimiters are removed without regenerating their content.
 
 3. Start the spec flow:
 
@@ -314,16 +343,17 @@ For complex long-running tasks, SDS injects `long-running-work-planning`. It kee
 ## Package Layout
 
 ```
+cmd/sds/                   # Native CLI entry point
+internal/                  # Go packages, one per subsystem
 packages/
 ├── cli/                    # Main CLI package
-│   ├── src/
-│   │   ├── cli/           # Injection commands
-│   │   ├── core/validate/ # Validation modules
-│   │   └── context-stewardship/ # Knowledge graph
-│   └── templates/          # Platform templates & skills
-├── test-utils/             # Test fixtures and mocks
-└── landing-page/         # Documentation site
+│   ├── bin/install.mjs     # Installer that verifies the platform digest
+│   └── package.json        # Main package, no JavaScript entrypoint
+├── platform/<os>-<cpu>/   # Release packages, one binary and its digest each
+└── landing-page/           # Documentation site
 ```
+
+The Go module at the repository root is the runtime. The TypeScript implementation was removed once the Go suite reproduced the recorded behavior; the fixtures under `internal/testdata/fixtures/` carry that proof.
 
 ## Development
 
@@ -333,19 +363,23 @@ pnpm build
 pnpm test
 ```
 
+`pnpm build` and `pnpm test` drive the Go module: the build stamps the declared version into the binary, and the test runs `go test ./...`.
+
 Useful commands:
-- `pnpm typecheck` - Type check all packages
-- `pnpm lint` - Lint all packages with Biome
-- `pnpm test:coverage` - Run tests with enforced coverage thresholds
-- `pnpm pack:check` - Build, pack, install the tarball, and run `sds --version`
-- `pnpm changeset` - Create a changeset
-- `pnpm changeset:version` - Version bump
+- `go build ./...` - Build the Go module
+- `go test ./...` - Run the Go test suite
+- `go vet ./...` - Run the Go static checks
+- `pnpm build:go` - Build the native binary with the declared version stamped in
+- `pnpm vet` - Run the Go static checks
+- `pnpm lint` - Report the Go files that `gofmt` would rewrite
+- `pnpm pack:check` - Pack the public package and verify the installer trust boundary
+- `pnpm completeness` - Rebuild the fixture completeness manifest
+- `pnpm version:set` - Write the declared version to every versioned file
 
 ## Repository Docs
 
 - [AGENTS.md](AGENTS.md) - AI agent guidance
-- [CONTRIBUTING.md](CONTRIBUTING.md) - PR process
-- [STYLEGUIDE.md](STYLEGUIDE.md) - Code conventions
+- [CONVENTIONS.md](CONVENTIONS.md) - Contribution workflow and code conventions
 - [TESTING.md](TESTING.md) - Testing strategy
 - [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
 - [SECURITY.md](SECURITY.md) - Security policy

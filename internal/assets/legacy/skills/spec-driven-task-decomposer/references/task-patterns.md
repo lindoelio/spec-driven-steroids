@@ -1,0 +1,102 @@
+# Task Patterns
+
+Use this reference when tasks feel too broad, phases feel uneven, or acceptance-criteria tests need better grouping.
+
+## Atomic Task Pattern
+
+- Good: one focused change with one clear verification target.
+- Split the task if the title naturally contains `and` or spans unrelated files.
+
+## Phase Pattern Defaults
+
+1. Foundation or setup
+2. Main feature delivery
+3. Supporting behavior or publication flow
+4. Acceptance Criteria Testing
+5. Final Checkpoint
+
+If the design's Code Anatomy coverage is `Representative` or `Initial Discovery Only`, execute every Discovery Target and record evidence before writing Phase 1 tasks.
+
+## Per-Phase Test Pattern
+
+Any phase that contains one or more implementation tasks must include at least one `Test:` task to verify the work just completed before moving to the next phase.
+
+```markdown
+## Phase 2: Feature Delivery
+
+- [ ] 2.1 Add denial feedback path
+  - Return a user-visible denial response when authorization fails.
+  - _Depends: 1.3_
+  - _Implements: DES-1, REQ-2.1_
+
+- [ ] 2.2 Test: verify denial feedback is returned
+  - Confirm the denial response is returned when authorization fails.
+  - Test type: integration
+  - _Depends: 2.1_
+  - _Implements: REQ-2.1_
+```
+
+The per-phase test task validates the phase's output. The dedicated `Acceptance Criteria Testing` phase remains the penultimate cross-cutting verification of all requirements.
+
+## Phase 3 Discovery Pattern
+
+Use this before implementation phases for non-exhaustive Code Anatomy:
+
+```markdown
+## Discovery Evidence
+
+- Target: `Grep for request handlers and exports`
+  - Result: `src/example/handler.ts` and `src/example/index.ts`
+  - Plan impact: Tasks 1.1 and 2.1 cover the discovered touchpoints
+```
+
+Discovery is complete only after every target has a result and plan impact. If discovery changes approved design boundaries or risk, return to design review before writing `tasks.md`.
+
+## Grouped Test Guidance
+
+Group acceptance criteria into one test task only when a single flow naturally proves them together.
+
+- Good grouping: remote-template success plus injected output from the same inject run.
+- Bad grouping: wrapper prompt alignment plus workflow publication.
+
+## Parallel-Friendly Decomposition
+
+When decomposing feature-delivery tasks on a platform that supports sub-agent parallelism (e.g., OpenCode), structure tasks to maximize independent work.
+
+### Independence Indicators
+
+A task is ready for parallel execution when:
+- All `_Depends:` are satisfied by tasks in an earlier phase or already-completed tasks
+- Its file set (`_Implements:` targets) does not overlap with other tasks in the same phase
+- It has no cross-dependency with other tasks in its batch
+
+### Structuring for Parallelism
+
+- Keep feature-delivery tasks focused on distinct files or modules
+- Avoid coupling tasks through shared infrastructure files (configs, types, schema) unless a dedicated foundation task handles them first
+- Push shared setup into an early sequential phase, then parallelize the feature-delivery phase
+- Prefer one test file per acceptance criteria test task to avoid file conflicts during parallel test execution
+
+### Example: Sequential vs Parallel-Friendly
+
+**Sequential (poor for parallelism):**
+```markdown
+- [ ] 2.1 Add denial feedback and audit logging
+  - _Implements: DES-1, DES-2
+```
+Single task touching two independent concerns → no parallelism opportunity.
+
+**Parallel-friendly:**
+```markdown
+- [ ] 2.1 Add denial feedback path
+  - _Depends: 1.3
+  - _Implements: DES-1
+- [ ] 2.2 Add audit logging
+  - _Depends: 1.3
+  - _Implements: DES-2
+```
+Two independent tasks with the same dependency but distinct file sets → parallel batch.
+
+### Annotation
+
+Do NOT add `_Parallel:` annotations in `tasks.md`. The implementer determines parallel batches dynamically from dependency analysis. The decomposer's job is to create independent work units; the implementer decides when parallelism is safe.

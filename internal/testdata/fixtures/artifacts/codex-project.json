@@ -1,0 +1,510 @@
+{
+  "platform": "codex",
+  "scope": "project",
+  "native": false,
+  "roots": {
+    "root": ".codex",
+    "skills": ".codex/skills"
+  },
+  "files": [
+    {
+      "root": "root",
+      "path": "agents/spec-driven.toml",
+      "sha256": "83e0608c6428f288205689db9289e9f2d7b9492783bafb46575b0ffded501a41",
+      "bytes": 796,
+      "content": "bmFtZSA9ICJzcGVjLWRyaXZlbiIKZGVzY3JpcHRpb24gPSAiVXNlIHRoZSBzcGVjLWRyaXZlbi1wbGFubmVyIHNraWxsIHdoZW4gdGhlIHVzZXIgd2FudHMgaW1wbGVtZW50YXRpb24gdG8gYmUgcGxhbm5lZCBhbmQgYXBwcm92ZWQgYmVmb3JlIGNvZGUgY2hhbmdlcy4iCmRldmVsb3Blcl9pbnN0cnVjdGlvbnMgPSAiIiIKIyBTcGVjLURyaXZlbiBQbGFubmVyCgpVc2UgdGhpcyBwbGFubmVyIHdoZW4gaW1wbGVtZW50YXRpb24gbXVzdCBiZSBzcGVjaWZpZWQgYW5kIGFwcHJvdmVkIGJlZm9yZSBjb2RlIGNoYW5nZXMuIERpcmVjdCBpbXBsZW1lbnRhdGlvbiBiZWxvbmdzIHRvIHRoZSBob3N0IGhhcm5lc3Mgb3V0c2lkZSB0aGlzIHRvb2xraXQuCgpMb2FkIGFuZCBmb2xsb3cgdGhlIGBzcGVjLWRyaXZlbi1wbGFubmVyYCBza2lsbC4gSXQgb3ducyBsYW5lIHNlbGVjdGlvbiwgdGhlIGxpZmVjeWNsZSwgcGhhc2UgZ2F0ZXMsIGFydGlmYWN0IHJlcXVpcmVtZW50cywgdHJhY2VhYmlsaXR5LCBhbmQgdGhlIHJldmlldyBwcm90b2NvbHMuIElmIHRoYXQgc2tpbGwgaXMgbm90IGF2YWlsYWJsZSBpbiB0aGlzIGhhcm5lc3MsIHN0b3AgYW5kIHRlbGwgdGhlIHVzZXIgaW5zdGVhZCBvZiBpbXByb3Zpc2luZyBhIGZsb3cuCgoqKk5ldmVyIGltcGxlbWVudCBiZWZvcmUgdGhlIHNlbGVjdGVkIGxhbmUncyBhcHByb3ZhbCBnYXRlLioqIEV2ZXJ5IGludm9jYXRpb24gcHJvZHVjZXMgYW4gYXBwcm92ZWQgcGxhbm5pbmcgYXJ0aWZhY3QgZmlyc3QuCiIiIgpzYW5kYm94X21vZGUgPSAid29ya3NwYWNlLXdyaXRlIg=="
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/artifacts/code.md",
+      "sha256": "75be30e9f54359176d17d68f06c058b5e85898e9efc3f76e9988dd4df50de6ab",
+      "bytes": 1184
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/artifacts/design.md",
+      "sha256": "bf020324efb1613fb87f3b8c70b7c7f9f459fe12d900cfed9d28dd63d2228b7e",
+      "bytes": 2876
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/artifacts/requirements.md",
+      "sha256": "16c201c6f3b0e583d03009d9187cb0181703c835687e9006abf707ca0b70051d",
+      "bytes": 2128
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/artifacts/tasks.md",
+      "sha256": "0d690dabf1d9c09677daf292b25c366dd29ca235a996ebad516f48f4861b7bc3",
+      "bytes": 2462
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/auditor.json",
+      "sha256": "eb5dd502f06a116f96032b9cd4226cff96928f249c8cdee60393456ccd0e4b7f",
+      "bytes": 686
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/dimensions/completeness.md",
+      "sha256": "b8f2e7bd2ae003c4ce796b02794cad207c3b5f72f7a5212bb8905da4050030db",
+      "bytes": 1815
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/dimensions/consistency.md",
+      "sha256": "5dc7ef21c9629458eb70f6f35dded7d9ccde047ca8439200c3d6b9f1d09d8462",
+      "bytes": 2235
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/dimensions/correctness.md",
+      "sha256": "87f55d636624add28ffb32b52a05d49a79adc7bdc49fbf0a780947e4c891052e",
+      "bytes": 1671
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/dimensions/maintainability.md",
+      "sha256": "2c93c528756df7de209dd274f2ac2805da288908d74b8cd299c84d49b043081c",
+      "bytes": 1601
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/dimensions/safety.md",
+      "sha256": "40541e41eed5cfe1be1d9dfc60919c5f6f28e43beb6e0bfe7b7d5f6acc6a6c6d",
+      "bytes": 1793
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/dimensions/traceability.md",
+      "sha256": "83741b4501bb2f21a9f1f69903d8ccc634e8f4e7c0dff30bb743e39038b07794",
+      "bytes": 1642
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/extensions/spec-driven.md",
+      "sha256": "a122eb5f28f7e32ef32cb6ab39cecdddd13c7d8e983dfe8126abd23eb2f088c6",
+      "bytes": 3005
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/modules/docs.md",
+      "sha256": "47df61f27fbe98840085af6c16ea9216c7a7b6e5342feb51cba740db901c32e5",
+      "bytes": 981
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/modules/feat.md",
+      "sha256": "c544a8a789b239bc37d6d95fd1ec12be3d8bf52b9c26cbf36b60036de7f4c429",
+      "bytes": 981
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/modules/fix.md",
+      "sha256": "72337bd89fbdecb7c096de9d5ff47f4d1d61ea02c9ad157a373bf39aa7c9a925",
+      "bytes": 983
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/modules/general.md",
+      "sha256": "ce5049bbadb77e1bca60950b39516484fc2dc4d1e646df759c4d1aea67be68f6",
+      "bytes": 707
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/modules/hotfix.md",
+      "sha256": "342b571726b854488f8c2d59eec1322128c9adf316a5c3db756dc40722ca9791",
+      "bytes": 972
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/modules/migrate.md",
+      "sha256": "0bb154cf6955a2712d4138d8bc0de7a73bb5dd6d4719726d8db1985fd479121a",
+      "bytes": 1161
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/modules/refactor.md",
+      "sha256": "6c7c0ed7b194e7463043767c478e8eb1f240dccdf48ab742189429ed619c3433",
+      "bytes": 963
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/references/artifact-type-detection.md",
+      "sha256": "3c33818ed2494f1e0c2f686acfeaf600774218e199810a59014704f6f063bafc",
+      "bytes": 1995
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/references/change-type-detection.md",
+      "sha256": "f11a26ecc779f6d553c045819838341edc4866dd76574adf0ca630f939f1a8ff",
+      "bytes": 1985
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/references/finding-severity.md",
+      "sha256": "137fab84ff1878bc71506eec974aeffd6c71e2ee92e9051c647a93b0e960df66",
+      "bytes": 2406
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/references/migration/dimensions/DIM-01-comprehension.md",
+      "sha256": "fdbd7ff60944843f4f257e323b8403df563b31ec76de496e8771893bd658b5a5",
+      "bytes": 1311
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/references/migration/dimensions/DIM-02-fidelity.md",
+      "sha256": "d04107161147a2f07b884576c8762f5901e61146e936fa537f87656242d2bbe7",
+      "bytes": 1312
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/references/migration/dimensions/DIM-03-contract.md",
+      "sha256": "a4dd3ac699e2f66ffe1419dadcff441b3c444a1680b30c99ac94395059a6c1a6",
+      "bytes": 1214
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/references/migration/dimensions/DIM-04-data-model.md",
+      "sha256": "d58f01a81d3a9bc78a6f70a2fcf7f9af874ab0f47dc31c086248124628628884",
+      "bytes": 1203
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/references/migration/dimensions/DIM-05-side-effects.md",
+      "sha256": "7d0757b947054ff78398679b00e0124b4492ab3f5dcf53cd668871f0fbc7dcac",
+      "bytes": 1425
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/references/migration/dimensions/DIM-06-edge-cases.md",
+      "sha256": "5e0a905bba4f65abba9cd978effe60809f8e65d041e6717ad0cc4dcad98c1d14",
+      "bytes": 1402
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/references/migration/dimensions/DIM-07-inventory.md",
+      "sha256": "4e58d988b228f4d1e4f6011c898633d875329519ef960937227751c879b674c5",
+      "bytes": 1406
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/references/migration/dimensions/DIM-08-assumptions.md",
+      "sha256": "5f6557e2e13208575594e02995bcb1fc4e43a6237ff9ab2752b390c39e5026cd",
+      "bytes": 1377
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/references/migration/migrate-strategy.md",
+      "sha256": "069e9a22cca60d7add16930cfb21e121789ef90fccda0a9005f6a648b98ed3fc",
+      "bytes": 2169
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/references/migration/phase-0-inventory.md",
+      "sha256": "bb69cf3c384d092bf536af15e3cd212dc15b17130b0c839b49d384482092c7b0",
+      "bytes": 2588
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/references/migration/prove-it-challenges.md",
+      "sha256": "1f222d08d4f0d84e044fc7a3d5c956a930e5cbb33f42f64a9c909cf413a672ac",
+      "bytes": 3462
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/references/output-format.md",
+      "sha256": "2a78edcbd5830bc9af59b7d7d9a7b707d8352f0a5568ddbf8694fd4ae9ef655c",
+      "bytes": 2458
+    },
+    {
+      "root": "skills",
+      "path": "agent-work-auditor/SKILL.md",
+      "sha256": "4aed218fdddba790242424564a9753dae8f6106daf78345946244a39cab411f0",
+      "bytes": 7135
+    },
+    {
+      "root": "skills",
+      "path": "code-review-hardening/references/change-type-strategies.md",
+      "sha256": "a2b2c41c0aafdcf536128b7cc0aec8b9e237b9c875f1fe7c29cf4af45a26e235",
+      "bytes": 8009
+    },
+    {
+      "root": "skills",
+      "path": "code-review-hardening/references/escalation.md",
+      "sha256": "fb50ac4388f34d7598dd02e0c10980245db5367a25f788b358c16f2ee56f3784",
+      "bytes": 4326
+    },
+    {
+      "root": "skills",
+      "path": "code-review-hardening/references/finding-severity.md",
+      "sha256": "bac6592f6369e864b06314de03dc286b8570f1bd1135fe3db7d826b51268e4eb",
+      "bytes": 8513
+    },
+    {
+      "root": "skills",
+      "path": "code-review-hardening/references/review-checklist.md",
+      "sha256": "e93a2736cfd4d9bba47479dbf37a482e5d2e65dd670b9b17d62bdcd47d1a4306",
+      "bytes": 10103
+    },
+    {
+      "root": "skills",
+      "path": "code-review-hardening/SKILL.md",
+      "sha256": "f5cde5f5196bc9ca7db5807bf1c31746bd415eb7622ead54bba6eeb74e123e31",
+      "bytes": 10488
+    },
+    {
+      "root": "skills",
+      "path": "contextual-stewardship/SKILL.md",
+      "sha256": "8935d497ab087c323b6e47a13f5aa77f97594bf45bf92dd9ee5a8b4f9a286478",
+      "bytes": 10512
+    },
+    {
+      "root": "skills",
+      "path": "inject-guidelines/SKILL.md",
+      "sha256": "7f49752f1e0f2290197eeb86d46c6f68f38222eeba09cfce963e52e270a9101b",
+      "bytes": 4391
+    },
+    {
+      "root": "skills",
+      "path": "long-running-work-planning/references/decision-framework.md",
+      "sha256": "0ad83a5b4cd0cbec3e8ccc3cb199e937bd00c562e66e37f7183d0b1a9a426c58",
+      "bytes": 4184
+    },
+    {
+      "root": "skills",
+      "path": "long-running-work-planning/SKILL.md",
+      "sha256": "d608f11fe99844354c50ba054044e3f57a89252b86d19a3a0e716e28d7d766da",
+      "bytes": 6588
+    },
+    {
+      "root": "skills",
+      "path": "project-guidelines-writer/SKILL.md",
+      "sha256": "ed374e728b31aa8e8f36720faac50b41fca1fe24c3ffa1a791a77486ab1ab909",
+      "bytes": 15632
+    },
+    {
+      "root": "skills",
+      "path": "quality-grading/references/craft/score-3.md",
+      "sha256": "61c8abaca5d63c59cc5555e7991019b1f58b59627cf16f91a22a127bd1a0ce70",
+      "bytes": 838
+    },
+    {
+      "root": "skills",
+      "path": "quality-grading/references/craft/score-4.md",
+      "sha256": "aa1c032b4386cd3f3bb34451fde534e013a5827cd398d2b7baf2dea1a51b7598",
+      "bytes": 1598
+    },
+    {
+      "root": "skills",
+      "path": "quality-grading/references/design-quality/score-3-spec.md",
+      "sha256": "3c08e7a02a64a0780485db175fa2b15a0afcdcf795c7ea20c4060a675d30478a",
+      "bytes": 588
+    },
+    {
+      "root": "skills",
+      "path": "quality-grading/references/design-quality/score-3.md",
+      "sha256": "234890a40815ea3a0d52a7e54277b7aafdd0ded8cb489212ec641ffa5b1aaf4f",
+      "bytes": 793
+    },
+    {
+      "root": "skills",
+      "path": "quality-grading/references/design-quality/score-4-design.md",
+      "sha256": "56d94ba62599bd7e479fcf815dfebfc9f420d22daf0607bb915296848af8d81a",
+      "bytes": 997
+    },
+    {
+      "root": "skills",
+      "path": "quality-grading/references/design-quality/score-4.md",
+      "sha256": "b338f6ea9a0c9aa91b0082a79180adcbc343421b563712b2d74b56ca6ed6fedf",
+      "bytes": 1522
+    },
+    {
+      "root": "skills",
+      "path": "quality-grading/references/functionality/score-3-spec.md",
+      "sha256": "afea881b0016f9f9c95cef78c566fb698cc19684bd9784d796d6b57f56a7e3a6",
+      "bytes": 728
+    },
+    {
+      "root": "skills",
+      "path": "quality-grading/references/functionality/score-3.md",
+      "sha256": "c8389a5a72b3c135f14296e23624bd318c1c350d63265a63756c4021435c918e",
+      "bytes": 968
+    },
+    {
+      "root": "skills",
+      "path": "quality-grading/references/functionality/score-4.md",
+      "sha256": "f3887571736c45460142d81d6219a9b24d64a7f473203a04c150d88cbb5ae4ca",
+      "bytes": 2277
+    },
+    {
+      "root": "skills",
+      "path": "quality-grading/references/originality/score-3-spec.md",
+      "sha256": "50a034482c0151955a401a9fa20a08e83518ea3924b6071375d57724e94311e6",
+      "bytes": 786
+    },
+    {
+      "root": "skills",
+      "path": "quality-grading/references/originality/score-3.md",
+      "sha256": "fc0d38d9dfa78bb6db7c860aba7135001a415ec3d893d28b5a4377c598ad4720",
+      "bytes": 947
+    },
+    {
+      "root": "skills",
+      "path": "quality-grading/references/originality/score-4.md",
+      "sha256": "59193e1bfc57bf2b3eab525ab464406fa8e7cc4ffc72f3b9eee46b57b1b770ff",
+      "bytes": 1660
+    },
+    {
+      "root": "skills",
+      "path": "quality-grading/SKILL.md",
+      "sha256": "5e2683c1ba767b96e6f41250fae4d4b16ddbed5d3101af9f8d900adc8153dcef",
+      "bytes": 10459
+    },
+    {
+      "root": "skills",
+      "path": "spec-driven-brief-planner/SKILL.md",
+      "sha256": "da4a971067482aa67f747d07fbe9d8e99edbdc21c3d8460786fec0638d3f1de1",
+      "bytes": 7829
+    },
+    {
+      "root": "skills",
+      "path": "spec-driven-planner/references/full-lane-phases.md",
+      "sha256": "19723518d2ad842efe603b5b90e42366c8ba6ef086fd7af13a4436ad60fa2a5e",
+      "bytes": 13874
+    },
+    {
+      "root": "skills",
+      "path": "spec-driven-planner/references/lane-selection.md",
+      "sha256": "30c148dd9eb8b4621be6a30b3ce197b7db90dfd7d323c675483d166470a2d869",
+      "bytes": 6775
+    },
+    {
+      "root": "skills",
+      "path": "spec-driven-planner/SKILL.md",
+      "sha256": "8a373c9b9b46b26f743f9293306dde8977e4219fc9b0d341be0d8a173b75feed",
+      "bytes": 3849
+    },
+    {
+      "root": "skills",
+      "path": "spec-driven-requirements-writer/references/requirements-patterns.md",
+      "sha256": "5b76150dae09fcb80db962a3973cf22c6d981cacdd6b26c83b9a3af084aa7f60",
+      "bytes": 1108
+    },
+    {
+      "root": "skills",
+      "path": "spec-driven-requirements-writer/SKILL.md",
+      "sha256": "28d1b9e1a14242bd5752fcea19318790fb50a7b1edd58a34a65550d5c5c47540",
+      "bytes": 7645
+    },
+    {
+      "root": "skills",
+      "path": "spec-driven-shared-protocol/references/document-templates.md",
+      "sha256": "e9855429ec42042bf52cdb50479bcf7facb4ae7ee0a19ea77b72aacd2d4573e0",
+      "bytes": 9256
+    },
+    {
+      "root": "skills",
+      "path": "spec-driven-shared-protocol/references/shared-protocol.md",
+      "sha256": "4905197611378205a0ee36e81fc2414eae2c7d9a6f2279ce9d2f792349e5a8cf",
+      "bytes": 8831
+    },
+    {
+      "root": "skills",
+      "path": "spec-driven-shared-protocol/SKILL.md",
+      "sha256": "87ddb52cdb5b70aac42a97010db9a7ee5f6de60776b7ae75e097e79f7bef3f4d",
+      "bytes": 511
+    },
+    {
+      "root": "skills",
+      "path": "spec-driven-task-decomposer/references/task-patterns.md",
+      "sha256": "1a51e47397aee2eaafcd3c1dc4684252a6af0e5eb900d1c0ee1853ac1548193a",
+      "bytes": 3943
+    },
+    {
+      "root": "skills",
+      "path": "spec-driven-task-decomposer/SKILL.md",
+      "sha256": "0f89b3e1c686d2503f9033630226330e98c7b28a7238bd7b2860ce82c8aaa545",
+      "bytes": 10827
+    },
+    {
+      "root": "skills",
+      "path": "spec-driven-task-implementer/references/parallel-execution-patterns.md",
+      "sha256": "d693eead510e36302a89bb08b2b0ce88d3f5c342bc5f4a9cdf4846b7e625cce6",
+      "bytes": 4034
+    },
+    {
+      "root": "skills",
+      "path": "spec-driven-task-implementer/references/task-execution-patterns.md",
+      "sha256": "edbb7621dba2753e1f26ce44048c17ee39fe7b373185b0bae3632f0eaa58f1bd",
+      "bytes": 1913
+    },
+    {
+      "root": "skills",
+      "path": "spec-driven-task-implementer/SKILL.md",
+      "sha256": "42145b0eaf33ae6b85e7c8bd8469472e5e718aec0680b5c3d168c6d1fe04554b",
+      "bytes": 13141
+    },
+    {
+      "root": "skills",
+      "path": "spec-driven-technical-designer/references/design-section-guide.md",
+      "sha256": "a694f84dbd1962d54c7a84c12cbff74534f7bdaf4f44a20fbe3ea5346edfbc1c",
+      "bytes": 1775
+    },
+    {
+      "root": "skills",
+      "path": "spec-driven-technical-designer/SKILL.md",
+      "sha256": "1bb7a3d9fc1124806b1b14c4b5ae26ee26e1bd3431e4cd421242b668b04d8821",
+      "bytes": 10014
+    },
+    {
+      "root": "skills",
+      "path": "spec-driven/SKILL.md",
+      "sha256": "2496e2d22ae6c399b9c746808933fd6888da785ed1e618749c8f4524a397b79f",
+      "bytes": 647
+    },
+    {
+      "root": "skills",
+      "path": "universal-live-check/references/backend-checks.md",
+      "sha256": "f84224d1bf7cdaf7146abc544d2fa8b25cb6e492b8d832a79b047254661a9131",
+      "bytes": 5236
+    },
+    {
+      "root": "skills",
+      "path": "universal-live-check/references/cli-checks.md",
+      "sha256": "821c993404517e2004fee1d0f9a8d3502c26c3851d4faf46bf63236c6389f45d",
+      "bytes": 4626
+    },
+    {
+      "root": "skills",
+      "path": "universal-live-check/references/embedded-checks.md",
+      "sha256": "8179df025bcdfdba2ba7067b9683bae97e885d898bdb700085e0272b1a4611c3",
+      "bytes": 6026
+    },
+    {
+      "root": "skills",
+      "path": "universal-live-check/references/frontend-checks.md",
+      "sha256": "b3d5b9de7ce6719ffa0221849f7e4b61d68937ba30820940b75552ca6b633b2a",
+      "bytes": 4584
+    },
+    {
+      "root": "skills",
+      "path": "universal-live-check/references/libs-checks.md",
+      "sha256": "67b71b045ce837ee6d0231896e4b57d1f88ea7a76d729a573ef3612f4acc54f3",
+      "bytes": 5660
+    },
+    {
+      "root": "skills",
+      "path": "universal-live-check/references/mobile-checks.md",
+      "sha256": "898c4abca2861c812ca44fcd7d5b9a01ae4b23127e880c58c41984e1f0933da3",
+      "bytes": 4570
+    },
+    {
+      "root": "skills",
+      "path": "universal-live-check/SKILL.md",
+      "sha256": "4927bfdc63adf3e4c1a7f69dc4f734c0aa41acbbc58ae890420f2bc5811d3660",
+      "bytes": 13103
+    }
+  ]
+}

@@ -1,10 +1,12 @@
 name: Publish Templates
 
+# The template bundle is published as part of the unified release in
+# publish.yml. This workflow republishes it on demand, for example after the
+# canonical tree changed without a version bump. It no longer reacts to the
+# release tag, so one release publishes the bundle once.
+
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - 'v*'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -14,88 +16,66 @@ permissions:
 
 jobs:
   publish-templates:
+    name: Publish the template bundle
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v5
-        with:
-          version: 10.29.2
-
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build packages
-        run: pnpm build
-
-      - name: Validate template-related tests
-        run: pnpm --filter spec-driven-steroids test
 
       - name: Build template bundle assets
         run: |
-          node -e '
-            const crypto = require("crypto");
-            const fs = require("fs");
-            const path = require("path");
+          node <<'NODE'
+          const crypto = require('node:crypto');
+          const fs = require('node:fs');
+          const path = require('node:path');
 
-            const repoRoot = process.cwd();
-            const templatesRoot = path.join(repoRoot, "packages/cli/templates");
-            const outputDir = path.join(repoRoot, ".template-release");
+          // The bundle version derives from the declared version, which is
+          // declared once in the VERSION file at the repository root.
+          const version = fs.readFileSync('VERSION', 'utf8').trim();
+          const canonicalRoot = path.join('internal', 'assets', 'canonical');
+          const outputDir = '.template-release';
 
-            fs.rmSync(outputDir, { recursive: true, force: true });
-            fs.mkdirSync(outputDir, { recursive: true });
-
-            function walk(dir, prefix) {
-              prefix = prefix || "";
-              const entries = fs.readdirSync(dir, { withFileTypes: true });
-              const files = {};
-
-              for (const entry of entries) {
-                const absolutePath = path.join(dir, entry.name);
-                const relativePath = path.posix.join(prefix, entry.name);
-
-                if (entry.isDirectory()) {
-                  Object.assign(files, walk(absolutePath, relativePath));
-                  continue;
-                }
-
-                files[relativePath] = fs.readFileSync(absolutePath, "utf8");
+          function walk(directory, prefix) {
+            const files = {};
+            for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+              const absolute = path.join(directory, entry.name);
+              const relative = path.posix.join(prefix, entry.name);
+              if (entry.isDirectory()) {
+                Object.assign(files, walk(absolute, relative));
+                continue;
               }
-
-              return files;
+              files[relative] = fs.readFileSync(absolute, 'utf8');
             }
+            return files;
+          }
 
-            const cliVersion = require("./packages/cli/package.json").version;
-            const version = cliVersion + "-" + (process.env.GITHUB_SHA || "local").slice(0, 8);
-            const bundleFileName = "templates-bundle.json";
-            const bundle = {
-              schemaVersion: 1,
-              version: version,
-              files: walk(templatesRoot)
-            };
-            const bundleText = JSON.stringify(bundle, null, 2);
-            const sha256 = crypto.createHash("sha256").update(bundleText, "utf8").digest("hex");
-            const manifest = {
-              schemaVersion: 1,
-              version: version,
-              bundleUrl: "https://github.com/" + process.env.GITHUB_REPOSITORY + "/releases/download/templates-latest/" + bundleFileName,
-              sha256: sha256,
-              minCliVersion: cliVersion,
-              publishedAt: new Date().toISOString()
-            };
+          const bundle = {
+            schemaVersion: 1,
+            version,
+            files: walk(canonicalRoot, 'universal')
+          };
+          const bundleText = JSON.stringify(bundle, null, 2);
+          const sha256 = crypto.createHash('sha256').update(bundleText, 'utf8').digest('hex');
+          const manifest = {
+            schemaVersion: 1,
+            version,
+            bundleUrl: 'https://github.com/' + process.env.GITHUB_REPOSITORY + '/releases/download/templates-latest/templates-bundle.json',
+            sha256,
+            minCliVersion: version,
+            publishedAt: new Date().toISOString()
+          };
 
-            fs.writeFileSync(path.join(outputDir, "templates-manifest.json"), JSON.stringify(manifest, null, 2));
-            fs.writeFileSync(path.join(outputDir, bundleFileName), bundleText);
-          '
+          fs.rmSync(outputDir, { recursive: true, force: true });
+          fs.mkdirSync(outputDir, { recursive: true });
+          fs.writeFileSync(path.join(outputDir, 'templates-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+          fs.writeFileSync(path.join(outputDir, 'templates-bundle.json'), bundleText);
+          NODE
 
       - name: Publish template release assets
         uses: ncipollo/release-action@v1

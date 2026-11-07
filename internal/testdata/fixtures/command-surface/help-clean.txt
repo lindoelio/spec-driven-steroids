@@ -1,0 +1,14 @@
+Usage: spec-driven-steroids clean [options]
+
+Remove globally injected Spec-Driven Steroids
+
+Options:
+  --global               Clean global steroids from all platforms (default)
+  --project              Clean project-level steroids in the current directory
+  --platform <platform>  Limit cleanup to one platform
+  --force                Remove files even if they were modified after
+                         installation
+  --dry-run              Show what would be removed without deleting anything
+  --json                 Emit a machine-readable JSON summary
+  -y, --yes              Skip confirmation prompt
+  -h, --help             display help for command

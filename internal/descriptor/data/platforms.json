@@ -1,0 +1,2571 @@
+[
+  {
+    "id": "antigravity",
+    "displayName": "Google Antigravity IDE",
+    "scopes": [
+      "global",
+      "project"
+    ],
+    "scopeFallback": "project",
+    "pathVariants": [
+      {
+        "name": "root",
+        "project": {
+          "segments": [
+            {
+              "literal": ".agents"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "literal": ".gemini"
+            },
+            {
+              "literal": "config"
+            }
+          ]
+        }
+      },
+      {
+        "name": "skills",
+        "project": {
+          "segments": [
+            {
+              "literal": ".agents"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "literal": ".gemini"
+            },
+            {
+              "literal": "config"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        }
+      }
+    ],
+    "artifacts": [
+      {
+        "kind": "agent",
+        "source": "agents/spec-driven.agent.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "skills/spec-driven",
+        "filename": "SKILL.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "spec-driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "spec-driven-command",
+        "source": "commands/spec-driven.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "skills/spec-driven",
+        "filename": "SKILL.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "spec-driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        },
+        "skipScopes": [
+          "global",
+          "project"
+        ]
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "source": "commands/inject-guidelines.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "skills/inject-guidelines",
+        "filename": "SKILL.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "inject-guidelines",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "skills",
+        "source": "skills",
+        "mode": "copy",
+        "targetVariant": "skills",
+        "scopeModes": {
+          "project": "native"
+        }
+      }
+    ],
+    "skipRules": [],
+    "collisionRules": [
+      {
+        "first": "agent",
+        "skip": "spec-driven-command"
+      }
+    ],
+    "postInjectActions": [],
+    "legacyRoots": [
+      {
+        "scope": "global",
+        "segments": [
+          {
+            "literal": ".gemini"
+          },
+          {
+            "literal": "config"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "skills/spec-driven/SKILL.md",
+            "kind": "agent"
+          },
+          {
+            "path": "skills/inject-guidelines/SKILL.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      },
+      {
+        "scope": "project",
+        "segments": [
+          {
+            "literal": ".agents"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "skills/spec-driven/SKILL.md",
+            "kind": "agent"
+          },
+          {
+            "path": "skills/inject-guidelines/SKILL.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      }
+    ],
+    "legacyProjectRoot": [
+      {
+        "literal": ".agents"
+      }
+    ],
+    "legacyDerivations": [
+      {
+        "kind": "agent",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "agent",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "skills",
+        "scope": "global",
+        "transformation": "canonical-tree"
+      },
+      {
+        "kind": "skills",
+        "scope": "project",
+        "transformation": "canonical-tree"
+      }
+    ]
+  },
+  {
+    "id": "antigravity-cli",
+    "displayName": "Google Antigravity CLI (AGY)",
+    "scopes": [
+      "global",
+      "project"
+    ],
+    "scopeFallback": "project",
+    "pathVariants": [
+      {
+        "name": "root",
+        "project": {
+          "segments": [
+            {
+              "literal": ".agents"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "literal": ".gemini"
+            },
+            {
+              "literal": "antigravity-cli"
+            }
+          ]
+        }
+      },
+      {
+        "name": "skills",
+        "project": {
+          "segments": [
+            {
+              "literal": ".agents"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "literal": ".gemini"
+            },
+            {
+              "literal": "antigravity-cli"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        }
+      }
+    ],
+    "artifacts": [
+      {
+        "kind": "agent",
+        "source": "agents/spec-driven.agent.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "skills/spec-driven",
+        "filename": "SKILL.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "spec-driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "spec-driven-command",
+        "source": "commands/spec-driven.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "skills/spec-driven",
+        "filename": "SKILL.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "spec-driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        },
+        "skipScopes": [
+          "global",
+          "project"
+        ]
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "source": "commands/inject-guidelines.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "skills/inject-guidelines",
+        "filename": "SKILL.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "inject-guidelines",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "skills",
+        "source": "skills",
+        "mode": "copy",
+        "targetVariant": "skills",
+        "scopeModes": {
+          "project": "native"
+        }
+      }
+    ],
+    "skipRules": [],
+    "collisionRules": [
+      {
+        "first": "agent",
+        "skip": "spec-driven-command"
+      }
+    ],
+    "postInjectActions": [],
+    "legacyRoots": [
+      {
+        "scope": "global",
+        "segments": [
+          {
+            "literal": ".gemini"
+          },
+          {
+            "literal": "antigravity-cli"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "skills/spec-driven/SKILL.md",
+            "kind": "agent"
+          },
+          {
+            "path": "skills/inject-guidelines/SKILL.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      },
+      {
+        "scope": "project",
+        "segments": [
+          {
+            "literal": ".agents"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "skills/spec-driven/SKILL.md",
+            "kind": "agent"
+          },
+          {
+            "path": "skills/inject-guidelines/SKILL.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      }
+    ],
+    "legacyProjectRoot": [
+      {
+        "literal": ".agents"
+      }
+    ],
+    "legacyDerivations": [
+      {
+        "kind": "agent",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "agent",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "skills",
+        "scope": "global",
+        "transformation": "canonical-tree"
+      },
+      {
+        "kind": "skills",
+        "scope": "project",
+        "transformation": "canonical-tree"
+      }
+    ]
+  },
+  {
+    "id": "claudecode",
+    "displayName": "Claude Code",
+    "scopes": [
+      "project"
+    ],
+    "scopeFallback": "project",
+    "pathVariants": [
+      {
+        "name": "root",
+        "project": {
+          "segments": [
+            {
+              "literal": ".claude"
+            }
+          ]
+        }
+      },
+      {
+        "name": "skills",
+        "project": {
+          "segments": [
+            {
+              "literal": ".claude"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        }
+      }
+    ],
+    "artifacts": [
+      {
+        "kind": "agent",
+        "source": "agents/spec-driven.agent.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "agents",
+        "filename": "spec-driven.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "spec-driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "spec-driven-command",
+        "source": "commands/spec-driven.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "commands",
+        "filename": "spec-driven.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "spec-driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        },
+        "commandAgent": "Spec-Driven"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "source": "commands/inject-guidelines.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "commands",
+        "filename": "inject-guidelines.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "inject-guidelines",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "skills",
+        "source": "skills",
+        "mode": "copy",
+        "targetVariant": "skills"
+      }
+    ],
+    "skipRules": [],
+    "collisionRules": [
+      {
+        "first": "agent",
+        "skip": "spec-driven-command"
+      }
+    ],
+    "postInjectActions": [],
+    "legacyRoots": [
+      {
+        "scope": "project",
+        "segments": [
+          {
+            "literal": ".claude"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "agents/spec-driven.md",
+            "kind": "agent"
+          },
+          {
+            "path": "commands/spec-driven.md",
+            "kind": "spec-driven-command"
+          },
+          {
+            "path": "commands/inject-guidelines.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      }
+    ],
+    "legacyProjectRoot": [
+      {
+        "literal": ".claude"
+      }
+    ],
+    "legacyDerivations": [
+      {
+        "kind": "agent",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "spec-driven-command",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "skills",
+        "scope": "project",
+        "transformation": "canonical-tree"
+      }
+    ]
+  },
+  {
+    "id": "cline",
+    "displayName": "Cline",
+    "scopes": [
+      "global",
+      "project"
+    ],
+    "scopeFallback": "project",
+    "pathVariants": [
+      {
+        "name": "root",
+        "project": {
+          "segments": [
+            {
+              "literal": ".cline"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "literal": ".cline"
+            }
+          ]
+        }
+      },
+      {
+        "name": "skills",
+        "project": {
+          "segments": [
+            {
+              "literal": ".cline"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "literal": ".cline"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        }
+      }
+    ],
+    "artifacts": [
+      {
+        "kind": "agent",
+        "source": "agents/spec-driven.agent.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "skills/spec-driven",
+        "filename": "SKILL.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "spec-driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "spec-driven-command",
+        "source": "commands/spec-driven.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "skills/spec-driven",
+        "filename": "SKILL.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "spec-driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        },
+        "skipScopes": [
+          "global",
+          "project"
+        ]
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "source": "commands/inject-guidelines.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "skills/inject-guidelines",
+        "filename": "SKILL.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "inject-guidelines",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "skills",
+        "source": "skills",
+        "mode": "copy",
+        "targetVariant": "skills"
+      }
+    ],
+    "skipRules": [],
+    "collisionRules": [
+      {
+        "first": "agent",
+        "skip": "spec-driven-command"
+      }
+    ],
+    "postInjectActions": [],
+    "legacyRoots": [
+      {
+        "scope": "global",
+        "segments": [
+          {
+            "literal": ".cline"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "skills/spec-driven/SKILL.md",
+            "kind": "agent"
+          },
+          {
+            "path": "skills/inject-guidelines/SKILL.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      },
+      {
+        "scope": "project",
+        "segments": [
+          {
+            "literal": ".cline"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "skills/spec-driven/SKILL.md",
+            "kind": "agent"
+          },
+          {
+            "path": "skills/inject-guidelines/SKILL.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      }
+    ],
+    "legacyProjectRoot": [
+      {
+        "literal": ".cline"
+      }
+    ],
+    "legacyDerivations": [
+      {
+        "kind": "agent",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "agent",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "skills",
+        "scope": "global",
+        "transformation": "canonical-tree"
+      },
+      {
+        "kind": "skills",
+        "scope": "project",
+        "transformation": "canonical-tree"
+      }
+    ]
+  },
+  {
+    "id": "codex",
+    "displayName": "OpenAI Codex",
+    "scopes": [
+      "project"
+    ],
+    "scopeFallback": "project",
+    "pathVariants": [
+      {
+        "name": "root",
+        "project": {
+          "segments": [
+            {
+              "literal": ".codex"
+            }
+          ]
+        }
+      },
+      {
+        "name": "skills",
+        "project": {
+          "segments": [
+            {
+              "literal": ".codex"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        }
+      }
+    ],
+    "artifacts": [
+      {
+        "kind": "agent",
+        "source": "agents/spec-driven.agent.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "agents",
+        "filename": "spec-driven.toml",
+        "serialization": "toml",
+        "frontmatter": {
+          "name": "spec-driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "spec-driven-command",
+        "source": "commands/spec-driven.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "skills/spec-driven",
+        "filename": "SKILL.md",
+        "serialization": "command-skill",
+        "frontmatter": {
+          "name": "spec-driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        },
+        "substitutions": [
+          {
+            "from": "{{args}}",
+            "to": "the user's request"
+          },
+          {
+            "from": "$ARGUMENTS",
+            "to": "the user's request"
+          }
+        ],
+        "bodyWrapper": "skill-preamble"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "source": "commands/inject-guidelines.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "skills/inject-guidelines",
+        "filename": "SKILL.md",
+        "serialization": "command-skill",
+        "frontmatter": {
+          "name": "inject-guidelines",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        },
+        "substitutions": [
+          {
+            "from": "{{args}}",
+            "to": "the user's request"
+          },
+          {
+            "from": "$ARGUMENTS",
+            "to": "the user's request"
+          }
+        ],
+        "bodyWrapper": "skill-preamble"
+      },
+      {
+        "kind": "skills",
+        "source": "skills",
+        "mode": "copy",
+        "targetVariant": "skills"
+      }
+    ],
+    "skipRules": [],
+    "collisionRules": [
+      {
+        "first": "agent",
+        "skip": "spec-driven-command"
+      }
+    ],
+    "postInjectActions": [
+      {
+        "action": "remove-codex-legacy-commands",
+        "scope": "project",
+        "target": "commands"
+      }
+    ],
+    "legacyRoots": [
+      {
+        "scope": "project",
+        "segments": [
+          {
+            "literal": ".codex"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "agents/spec-driven.toml",
+            "kind": "agent"
+          },
+          {
+            "path": "commands/spec-driven.md",
+            "kind": "spec-driven-command"
+          },
+          {
+            "path": "commands/inject-guidelines.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      }
+    ],
+    "legacyProjectRoot": [
+      {
+        "literal": ".codex"
+      }
+    ],
+    "legacyDerivations": [
+      {
+        "kind": "agent",
+        "scope": "project",
+        "transformation": "toml"
+      },
+      {
+        "kind": "spec-driven-command",
+        "scope": "project",
+        "transformation": "command-skill"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "project",
+        "transformation": "command-skill"
+      },
+      {
+        "kind": "skills",
+        "scope": "project",
+        "transformation": "canonical-tree"
+      }
+    ]
+  },
+  {
+    "id": "gemini-cli",
+    "displayName": "Gemini CLI",
+    "scopes": [
+      "global",
+      "project"
+    ],
+    "scopeFallback": "project",
+    "pathVariants": [
+      {
+        "name": "root",
+        "project": {
+          "segments": [
+            {
+              "literal": ".gemini"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "literal": ".gemini"
+            }
+          ]
+        }
+      },
+      {
+        "name": "skills",
+        "project": {
+          "segments": [
+            {
+              "literal": ".gemini"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "literal": ".gemini"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        }
+      }
+    ],
+    "artifacts": [
+      {
+        "kind": "agent",
+        "source": "agents/spec-driven.agent.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "agents",
+        "filename": "spec-driven.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "spec-driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "spec-driven-command",
+        "source": "commands/spec-driven.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "commands",
+        "filename": "spec-driven.toml",
+        "serialization": "toml-command",
+        "frontmatter": {
+          "name": "Spec-Driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "source": "commands/inject-guidelines.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "commands",
+        "filename": "inject-guidelines.toml",
+        "serialization": "toml-command",
+        "frontmatter": {
+          "name": "inject-guidelines",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "skills",
+        "source": "skills",
+        "mode": "copy",
+        "targetVariant": "skills"
+      }
+    ],
+    "skipRules": [],
+    "collisionRules": [
+      {
+        "first": "agent",
+        "skip": "spec-driven-command"
+      }
+    ],
+    "postInjectActions": [],
+    "legacyRoots": [
+      {
+        "scope": "global",
+        "segments": [
+          {
+            "literal": ".gemini"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "agents/spec-driven.md",
+            "kind": "agent"
+          },
+          {
+            "path": "commands/spec-driven.toml",
+            "kind": "spec-driven-command"
+          },
+          {
+            "path": "commands/inject-guidelines.toml",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "commands/spec-driven.md",
+            "kind": "spec-driven-command"
+          },
+          {
+            "path": "commands/inject-guidelines.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      },
+      {
+        "scope": "project",
+        "segments": [
+          {
+            "literal": ".gemini"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "agents/spec-driven.md",
+            "kind": "agent"
+          },
+          {
+            "path": "commands/spec-driven.toml",
+            "kind": "spec-driven-command"
+          },
+          {
+            "path": "commands/inject-guidelines.toml",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "commands/spec-driven.md",
+            "kind": "spec-driven-command"
+          },
+          {
+            "path": "commands/inject-guidelines.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      }
+    ],
+    "legacyProjectRoot": [
+      {
+        "literal": ".gemini"
+      }
+    ],
+    "legacyDerivations": [
+      {
+        "kind": "agent",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "agent",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "spec-driven-command",
+        "scope": "global",
+        "transformation": "toml-command"
+      },
+      {
+        "kind": "spec-driven-command",
+        "scope": "project",
+        "transformation": "toml-command"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "global",
+        "transformation": "toml-command"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "project",
+        "transformation": "toml-command"
+      },
+      {
+        "kind": "skills",
+        "scope": "global",
+        "transformation": "canonical-tree"
+      },
+      {
+        "kind": "skills",
+        "scope": "project",
+        "transformation": "canonical-tree"
+      }
+    ]
+  },
+  {
+    "id": "github-copilot-cli",
+    "displayName": "GitHub Copilot CLI",
+    "scopes": [
+      "global",
+      "project"
+    ],
+    "scopeFallback": "project",
+    "pathVariants": [
+      {
+        "name": "root",
+        "project": {
+          "segments": [
+            {
+              "literal": ".github"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "anchor": "copilotCliConfig"
+            }
+          ]
+        }
+      },
+      {
+        "name": "skills",
+        "project": {
+          "segments": [
+            {
+              "literal": ".github"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "anchor": "copilotCliConfig"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        }
+      }
+    ],
+    "artifacts": [
+      {
+        "kind": "agent",
+        "source": "agents/spec-driven.agent.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "agents",
+        "filename": "spec-driven.agent.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "Spec-Driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "spec-driven-command",
+        "source": "commands/spec-driven.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "commands",
+        "filename": "spec-driven.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "Spec-Driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        },
+        "commandAgent": "Spec-Driven"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "source": "commands/inject-guidelines.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "commands",
+        "filename": "inject-guidelines.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "inject-guidelines",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "skills",
+        "source": "skills",
+        "mode": "copy",
+        "targetVariant": "skills"
+      }
+    ],
+    "skipRules": [],
+    "collisionRules": [
+      {
+        "first": "agent",
+        "skip": "spec-driven-command"
+      }
+    ],
+    "postInjectActions": [],
+    "legacyRoots": [
+      {
+        "scope": "global",
+        "segments": [
+          {
+            "anchor": "copilotCliConfig"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "agents/spec-driven.agent.md",
+            "kind": "agent"
+          },
+          {
+            "path": "commands/spec-driven.md",
+            "kind": "spec-driven-command"
+          },
+          {
+            "path": "commands/inject-guidelines.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      },
+      {
+        "scope": "project",
+        "segments": [
+          {
+            "literal": ".github"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "agents/spec-driven.agent.md",
+            "kind": "agent"
+          },
+          {
+            "path": "commands/spec-driven.md",
+            "kind": "spec-driven-command"
+          },
+          {
+            "path": "commands/inject-guidelines.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      }
+    ],
+    "legacyProjectRoot": [
+      {
+        "literal": ".github"
+      }
+    ],
+    "legacyDerivations": [
+      {
+        "kind": "agent",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "agent",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "spec-driven-command",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "spec-driven-command",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "skills",
+        "scope": "global",
+        "transformation": "canonical-tree"
+      },
+      {
+        "kind": "skills",
+        "scope": "project",
+        "transformation": "canonical-tree"
+      }
+    ]
+  },
+  {
+    "id": "github-jetbrains",
+    "displayName": "GitHub Copilot for JetBrains",
+    "scopes": [
+      "project"
+    ],
+    "scopeFallback": "project",
+    "pathVariants": [
+      {
+        "name": "root",
+        "project": {
+          "segments": [
+            {
+              "literal": ".github"
+            }
+          ]
+        }
+      },
+      {
+        "name": "skills",
+        "project": {
+          "segments": [
+            {
+              "literal": ".github"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        }
+      }
+    ],
+    "artifacts": [
+      {
+        "kind": "agent",
+        "source": "agents/spec-driven.agent.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "agents",
+        "filename": "spec-driven.agent.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "Spec-Driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "spec-driven-command",
+        "source": "commands/spec-driven.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "prompts",
+        "filename": "spec-driven.prompt.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "Spec-Driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        },
+        "commandAgent": "Spec-Driven"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "source": "commands/inject-guidelines.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "prompts",
+        "filename": "inject-guidelines.prompt.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "inject-guidelines",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "skills",
+        "source": "skills",
+        "mode": "copy",
+        "targetVariant": "skills"
+      }
+    ],
+    "skipRules": [],
+    "collisionRules": [
+      {
+        "first": "agent",
+        "skip": "spec-driven-command"
+      }
+    ],
+    "postInjectActions": [],
+    "legacyRoots": [
+      {
+        "scope": "project",
+        "segments": [
+          {
+            "literal": ".github"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "agents/spec-driven.agent.md",
+            "kind": "agent"
+          },
+          {
+            "path": "prompts/spec-driven.prompt.md",
+            "kind": "spec-driven-command"
+          },
+          {
+            "path": "prompts/inject-guidelines.prompt.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      }
+    ],
+    "legacyProjectRoot": [
+      {
+        "literal": ".github"
+      }
+    ],
+    "legacyDerivations": [
+      {
+        "kind": "agent",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "spec-driven-command",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "skills",
+        "scope": "project",
+        "transformation": "canonical-tree"
+      }
+    ]
+  },
+  {
+    "id": "github-vscode",
+    "displayName": "GitHub Copilot for VS Code",
+    "scopes": [
+      "global",
+      "project"
+    ],
+    "scopeFallback": "project",
+    "pathVariants": [
+      {
+        "name": "root",
+        "project": {
+          "segments": [
+            {
+              "literal": ".github"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "anchor": "vscodeUserProfile"
+            },
+            {
+              "literal": "prompts"
+            }
+          ]
+        }
+      },
+      {
+        "name": "skills",
+        "project": {
+          "segments": [
+            {
+              "literal": ".github"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "anchor": "copilotSkills"
+            }
+          ]
+        }
+      }
+    ],
+    "artifacts": [
+      {
+        "kind": "agent",
+        "source": "agents/spec-driven.agent.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "agents",
+        "filename": "spec-driven.agent.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "Spec-Driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "spec-driven-command",
+        "source": "commands/spec-driven.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "prompts",
+        "filename": "spec-driven.prompt.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "Spec-Driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        },
+        "commandAgent": "Spec-Driven"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "source": "commands/inject-guidelines.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "prompts",
+        "filename": "inject-guidelines.prompt.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "inject-guidelines",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "skills",
+        "source": "skills",
+        "mode": "copy",
+        "targetVariant": "skills"
+      }
+    ],
+    "skipRules": [
+      {
+        "scope": "global",
+        "kinds": [
+          "inject-guidelines-command"
+        ]
+      }
+    ],
+    "collisionRules": [
+      {
+        "first": "agent",
+        "skip": "spec-driven-command"
+      }
+    ],
+    "postInjectActions": [
+      {
+        "action": "flatten-vscode-prompts",
+        "scope": "global"
+      }
+    ],
+    "legacyRoots": [
+      {
+        "scope": "global",
+        "segments": [
+          {
+            "anchor": "vscodeUserProfile"
+          },
+          {
+            "literal": "prompts"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "agents/spec-driven.agent.md",
+            "kind": "agent"
+          },
+          {
+            "path": "spec-driven.agent.md",
+            "kind": "agent"
+          },
+          {
+            "path": "spec-driven.prompt.md",
+            "kind": "spec-driven-command"
+          },
+          {
+            "path": "inject-guidelines.prompt.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "inject-guidelines.md",
+            "kind": "inject-guidelines-command"
+          }
+        ]
+      },
+      {
+        "scope": "global",
+        "segments": [
+          {
+            "anchor": "copilotSkills"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      },
+      {
+        "scope": "project",
+        "segments": [
+          {
+            "literal": ".github"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "agents/spec-driven.agent.md",
+            "kind": "agent"
+          },
+          {
+            "path": "prompts/spec-driven.prompt.md",
+            "kind": "spec-driven-command"
+          },
+          {
+            "path": "prompts/inject-guidelines.prompt.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      }
+    ],
+    "legacyProjectRoot": [
+      {
+        "literal": ".github"
+      }
+    ],
+    "legacyDerivations": [
+      {
+        "kind": "agent",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "agent",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "spec-driven-command",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "spec-driven-command",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "skills",
+        "scope": "global",
+        "transformation": "canonical-tree"
+      },
+      {
+        "kind": "skills",
+        "scope": "project",
+        "transformation": "canonical-tree"
+      }
+    ]
+  },
+  {
+    "id": "minimax-code",
+    "displayName": "MiniMax Code",
+    "scopes": [
+      "global",
+      "project"
+    ],
+    "scopeFallback": "project",
+    "pathVariants": [
+      {
+        "name": "root",
+        "project": {
+          "segments": [
+            {
+              "literal": ".minimax"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "literal": ".agents"
+            }
+          ]
+        }
+      },
+      {
+        "name": "skills",
+        "project": {
+          "segments": [
+            {
+              "literal": ".minimax"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "literal": ".agents"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        }
+      }
+    ],
+    "artifacts": [
+      {
+        "kind": "agent",
+        "source": "agents/spec-driven.agent.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "skills/spec-driven",
+        "filename": "SKILL.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "spec-driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "spec-driven-command",
+        "source": "commands/spec-driven.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "skills/spec-driven",
+        "filename": "SKILL.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "spec-driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        },
+        "skipScopes": [
+          "global",
+          "project"
+        ]
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "source": "commands/inject-guidelines.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "skills/inject-guidelines",
+        "filename": "SKILL.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "inject-guidelines",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "skills",
+        "source": "skills",
+        "mode": "copy",
+        "targetVariant": "skills",
+        "scopeModes": {
+          "global": "native"
+        }
+      }
+    ],
+    "skipRules": [],
+    "collisionRules": [
+      {
+        "first": "agent",
+        "skip": "spec-driven-command"
+      }
+    ],
+    "postInjectActions": [],
+    "legacyRoots": [
+      {
+        "scope": "global",
+        "segments": [
+          {
+            "literal": ".agents"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "skills/spec-driven/SKILL.md",
+            "kind": "agent"
+          },
+          {
+            "path": "skills/inject-guidelines/SKILL.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      },
+      {
+        "scope": "project",
+        "segments": [
+          {
+            "literal": ".minimax"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "skills/spec-driven/SKILL.md",
+            "kind": "agent"
+          },
+          {
+            "path": "skills/inject-guidelines/SKILL.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      }
+    ],
+    "legacyProjectRoot": [
+      {
+        "literal": ".minimax"
+      }
+    ],
+    "legacyDerivations": [
+      {
+        "kind": "agent",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "agent",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "skills",
+        "scope": "global",
+        "transformation": "canonical-tree"
+      },
+      {
+        "kind": "skills",
+        "scope": "project",
+        "transformation": "canonical-tree"
+      }
+    ]
+  },
+  {
+    "id": "opencode",
+    "displayName": "OpenCode",
+    "scopes": [
+      "global",
+      "project"
+    ],
+    "scopeFallback": "project",
+    "pathVariants": [
+      {
+        "name": "root",
+        "project": {
+          "segments": [
+            {
+              "literal": ".opencode"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "anchor": "opencodeConfig"
+            }
+          ]
+        }
+      },
+      {
+        "name": "skills",
+        "project": {
+          "segments": [
+            {
+              "literal": ".opencode"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "anchor": "opencodeConfig"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        }
+      }
+    ],
+    "artifacts": [
+      {
+        "kind": "agent",
+        "source": "agents/spec-driven.agent.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "agents",
+        "filename": "spec-driven.agent.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "Spec-Driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        },
+        "additionalFields": {
+          "mode": "primary"
+        }
+      },
+      {
+        "kind": "spec-driven-command",
+        "source": "commands/spec-driven.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "commands",
+        "filename": "spec-driven.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "Spec-Driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        },
+        "commandAgent": "Spec-Driven",
+        "additionalFields": {
+          "mode": "primary"
+        }
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "source": "commands/inject-guidelines.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "commands",
+        "filename": "inject-guidelines.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "inject-guidelines",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        },
+        "commandAgent": "build",
+        "additionalFields": {
+          "mode": "primary"
+        }
+      },
+      {
+        "kind": "skills",
+        "source": "skills",
+        "mode": "copy",
+        "targetVariant": "skills"
+      }
+    ],
+    "skipRules": [],
+    "collisionRules": [
+      {
+        "first": "agent",
+        "skip": "spec-driven-command"
+      }
+    ],
+    "postInjectActions": [
+      {
+        "action": "opencode-project-config",
+        "scope": "project",
+        "target": "opencode.json"
+      }
+    ],
+    "legacyRoots": [
+      {
+        "scope": "global",
+        "segments": [
+          {
+            "anchor": "opencodeConfig"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "agents/spec-driven.agent.md",
+            "kind": "agent"
+          },
+          {
+            "path": "commands/spec-driven.md",
+            "kind": "spec-driven-command"
+          },
+          {
+            "path": "commands/inject-guidelines.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      },
+      {
+        "scope": "project",
+        "segments": [
+          {
+            "literal": ".opencode"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "agents/spec-driven.agent.md",
+            "kind": "agent"
+          },
+          {
+            "path": "commands/spec-driven.md",
+            "kind": "spec-driven-command"
+          },
+          {
+            "path": "commands/inject-guidelines.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      }
+    ],
+    "legacyProjectRoot": [
+      {
+        "literal": ".opencode"
+      }
+    ],
+    "legacyDerivations": [
+      {
+        "kind": "agent",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "agent",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "spec-driven-command",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "spec-driven-command",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "skills",
+        "scope": "global",
+        "transformation": "canonical-tree"
+      },
+      {
+        "kind": "skills",
+        "scope": "project",
+        "transformation": "canonical-tree"
+      }
+    ]
+  },
+  {
+    "id": "qoder",
+    "displayName": "Qoder CLI / IDE",
+    "scopes": [
+      "global",
+      "project"
+    ],
+    "scopeFallback": "project",
+    "pathVariants": [
+      {
+        "name": "root",
+        "project": {
+          "segments": [
+            {
+              "literal": ".qoder"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "literal": ".qoder"
+            }
+          ]
+        }
+      },
+      {
+        "name": "skills",
+        "project": {
+          "segments": [
+            {
+              "literal": ".qoder"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "literal": ".qoder"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        }
+      }
+    ],
+    "artifacts": [
+      {
+        "kind": "agent",
+        "source": "agents/spec-driven.agent.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "agents",
+        "filename": "spec-driven.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "spec-driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "spec-driven-command",
+        "source": "commands/spec-driven.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "commands",
+        "filename": "spec-driven.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "spec-driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "source": "commands/inject-guidelines.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "commands",
+        "filename": "inject-guidelines.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "spec-driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "skills",
+        "source": "skills",
+        "mode": "copy",
+        "targetVariant": "skills"
+      }
+    ],
+    "skipRules": [],
+    "collisionRules": [
+      {
+        "first": "agent",
+        "skip": "spec-driven-command"
+      }
+    ],
+    "postInjectActions": [],
+    "legacyRoots": [
+      {
+        "scope": "global",
+        "segments": [
+          {
+            "literal": ".qoder"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "agents/spec-driven.md",
+            "kind": "agent"
+          },
+          {
+            "path": "commands/spec-driven.md",
+            "kind": "spec-driven-command"
+          },
+          {
+            "path": "commands/inject-guidelines.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      },
+      {
+        "scope": "project",
+        "segments": [
+          {
+            "literal": ".qoder"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "agents/spec-driven.md",
+            "kind": "agent"
+          },
+          {
+            "path": "commands/spec-driven.md",
+            "kind": "spec-driven-command"
+          },
+          {
+            "path": "commands/inject-guidelines.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      }
+    ],
+    "legacyProjectRoot": [
+      {
+        "literal": ".qoder"
+      }
+    ],
+    "legacyDerivations": [
+      {
+        "kind": "agent",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "agent",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "spec-driven-command",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "spec-driven-command",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "skills",
+        "scope": "global",
+        "transformation": "canonical-tree"
+      },
+      {
+        "kind": "skills",
+        "scope": "project",
+        "transformation": "canonical-tree"
+      }
+    ]
+  },
+  {
+    "id": "qwen-code",
+    "displayName": "Qwen Code",
+    "scopes": [
+      "global",
+      "project"
+    ],
+    "scopeFallback": "project",
+    "pathVariants": [
+      {
+        "name": "root",
+        "project": {
+          "segments": [
+            {
+              "literal": ".qwen"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "literal": ".qwen"
+            }
+          ]
+        }
+      },
+      {
+        "name": "skills",
+        "project": {
+          "segments": [
+            {
+              "literal": ".qwen"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        },
+        "global": {
+          "segments": [
+            {
+              "literal": ".qwen"
+            },
+            {
+              "literal": "skills"
+            }
+          ]
+        }
+      }
+    ],
+    "artifacts": [
+      {
+        "kind": "agent",
+        "source": "agents/spec-driven.agent.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "agents",
+        "filename": "spec-driven.agent.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "Spec-Driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "spec-driven-command",
+        "source": "commands/spec-driven.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "commands",
+        "filename": "spec-driven.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "Spec-Driven",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        },
+        "commandAgent": "Spec-Driven"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "source": "commands/inject-guidelines.command.md",
+        "mode": "serialize",
+        "targetVariant": "root",
+        "targetDir": "commands",
+        "filename": "inject-guidelines.md",
+        "serialization": "markdown",
+        "frontmatter": {
+          "name": "inject-guidelines",
+          "description": "Use the spec-driven-planner skill when implementation must be planned and approved before code changes, in any supported harness."
+        }
+      },
+      {
+        "kind": "skills",
+        "source": "skills",
+        "mode": "copy",
+        "targetVariant": "skills"
+      }
+    ],
+    "skipRules": [],
+    "collisionRules": [
+      {
+        "first": "agent",
+        "skip": "spec-driven-command"
+      }
+    ],
+    "postInjectActions": [],
+    "legacyRoots": [
+      {
+        "scope": "global",
+        "segments": [
+          {
+            "literal": ".qwen"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "agents/spec-driven.agent.md",
+            "kind": "agent"
+          },
+          {
+            "path": "commands/spec-driven.md",
+            "kind": "spec-driven-command"
+          },
+          {
+            "path": "commands/inject-guidelines.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      },
+      {
+        "scope": "project",
+        "segments": [
+          {
+            "literal": ".qwen"
+          }
+        ],
+        "candidates": [
+          {
+            "path": "agents/spec-driven.agent.md",
+            "kind": "agent"
+          },
+          {
+            "path": "commands/spec-driven.md",
+            "kind": "spec-driven-command"
+          },
+          {
+            "path": "commands/inject-guidelines.md",
+            "kind": "inject-guidelines-command"
+          },
+          {
+            "path": "skills",
+            "kind": "skills"
+          }
+        ]
+      }
+    ],
+    "legacyProjectRoot": [
+      {
+        "literal": ".qwen"
+      }
+    ],
+    "legacyDerivations": [
+      {
+        "kind": "agent",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "agent",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "spec-driven-command",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "spec-driven-command",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "global",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "inject-guidelines-command",
+        "scope": "project",
+        "transformation": "markdown"
+      },
+      {
+        "kind": "skills",
+        "scope": "global",
+        "transformation": "canonical-tree"
+      },
+      {
+        "kind": "skills",
+        "scope": "project",
+        "transformation": "canonical-tree"
+      }
+    ]
+  }
+]

@@ -1,0 +1,2 @@
+error: unknown command 'bogus-cmd'
+exit=1

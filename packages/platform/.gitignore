@@ -1,0 +1,2 @@
+# The release binary is copied into this directory by the release pipeline.
+bin/

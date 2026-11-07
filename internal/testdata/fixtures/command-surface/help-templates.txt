@@ -1,0 +1,11 @@
+Usage: spec-driven-steroids templates [options] <action>
+
+Inspect the resolved template source
+
+Arguments:
+  action             Action: info
+
+Options:
+  --source <source>  Template source: bundled or remote
+  --json             Emit JSON
+  -h, --help         display help for command

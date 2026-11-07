@@ -1,0 +1,52 @@
+{
+  "vscodeUserProfile": {
+    "win32": [
+      { "env": "APPDATA", "fallback": [{ "anchor": "home" }, { "literal": "AppData" }, { "literal": "Roaming" }] },
+      { "literal": "Code" },
+      { "literal": "User" }
+    ],
+    "darwin": [
+      { "anchor": "home" },
+      { "literal": "Library" },
+      { "literal": "Application Support" },
+      { "literal": "Code" },
+      { "literal": "User" }
+    ],
+    "default": [
+      { "anchor": "home" },
+      { "literal": ".config" },
+      { "literal": "Code" },
+      { "literal": "User" }
+    ]
+  },
+  "copilotSkills": {
+    "win32": [
+      { "env": "USERPROFILE", "fallback": [{ "anchor": "home" }] },
+      { "literal": ".copilot" },
+      { "literal": "skills" }
+    ],
+    "default": [
+      { "anchor": "home" },
+      { "literal": ".copilot" },
+      { "literal": "skills" }
+    ]
+  },
+  "copilotCliConfig": {
+    "win32": [
+      { "env": "APPDATA", "fallback": [{ "anchor": "home" }, { "literal": "AppData" }, { "literal": "Roaming" }] },
+      { "literal": "github-copilot" }
+    ],
+    "default": [
+      { "anchor": "home" },
+      { "literal": ".config" },
+      { "literal": "github-copilot" }
+    ]
+  },
+  "opencodeConfig": {
+    "default": [
+      { "anchor": "home" },
+      { "literal": ".config" },
+      { "literal": "opencode" }
+    ]
+  }
+}

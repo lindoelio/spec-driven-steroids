@@ -1,0 +1,7 @@
+Usage: spec-driven-steroids doctor [options]
+
+Check installed SDS files for missing or modified artifacts
+
+Options:
+  --format <text|json>  Output format (text or json) (default: "text")
+  -h, --help            display help for command

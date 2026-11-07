@@ -1,0 +1,11 @@
+Usage: spec-driven-steroids repair [options]
+
+Re-inject missing files for manifest-tracked installs
+
+Options:
+  --platform <platform>  Limit to one platform
+  --scope <scope>        Scope: global or project (default: "global")
+  --project              Shortcut for --scope project
+  --dry-run              Show what would be written
+  --json                 Emit JSON
+  -h, --help             display help for command

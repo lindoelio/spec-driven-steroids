@@ -19,6 +19,8 @@ Coordinate public disclosure with the maintainer. No response-time commitment or
 
 Injection writes platform files and installation manifests. Use an isolated project or temporary home when experimenting. Global scope can change instructions shared by unrelated repositories.
 
+Every managed artifact belongs in the artifact root: `.agents/` inside the working directory at project scope and `~/.agents/` under the home directory at user scope. Both roots are shared with other tools, so the CLI owns exactly the paths it records in an install manifest and never removes content it did not create. A platform that cannot read the artifact root receives a platform-side artifact, and the descriptor records that the CLI owns the files it placed there without owning the directory itself.
+
 Manifest-based cleanup compares installed-file hashes and skips modified files unless `--force` is supplied. Preserve this behavior when changing cleanup, and do not delete whole platform directories containing unrelated user files. The legacy cleanup path also needs preservation tests; it cannot rely on a modern install manifest being present.
 
 Injection and repair can overwrite installed artifacts. In particular, repair re-emits templates and copies skills with overwrite enabled; it is not limited to filling missing files. Review local customizations before running it. The injection command supports a backup option, and filesystem-changing commands expose dry-run modes for previewing installation changes.
@@ -40,11 +42,15 @@ These checks have distinct limits:
 
 Use the explicit bundled source when remote instructions are not appropriate for the environment. Inspect template-source settings and the actual source selected before investigating an unexpected prompt.
 
-The CLI copies prompt text; it does not execute that text as Node.js code. The host AI tool may interpret it and take actions with its own permissions. Prompt approval rules are not a replacement for the host's permission controls, human review, or filesystem isolation.
+The bundled fallback is embedded in the binary, so injection succeeds with no network access and no installed template directory. The embedded tree is the canonical artifact content; it carries the same prompt trust boundary as a remote bundle.
+
+The CLI copies prompt text; it does not execute that text as code. The host AI tool may interpret it and take actions with its own permissions. Prompt approval rules are not a replacement for the host's permission controls, human review, or filesystem isolation.
 
 ## Dependencies and release security
 
 CI installs the lockfile with frozen dependency resolution, audits production dependencies, and verifies a packed installation. Dependabot is configured for weekly npm and GitHub Actions updates.
+
+The native binary has no runtime dependency and no dependency tree to audit; the published npm platform packages carry the digest used to verify the binary they ship.
 
 The public package requests npm provenance through `publishConfig`. The publishing workflow grants OIDC token permission and verifies the release tag against the package version. Preserve these checks when changing publication; do not commit publishing credentials or broaden workflow permissions without a specific need.
 

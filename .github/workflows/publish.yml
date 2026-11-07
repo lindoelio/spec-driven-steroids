@@ -1,4 +1,4 @@
-name: Publish Package
+name: Publish Release
 
 on:
   push:
@@ -7,83 +7,662 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # The Go toolchain is pinned: the module declares the same version in go.mod.
+  GO_VERSION: '1.27.3'
+  # The external destinations the release pipeline updates. Both repositories
+  # are described in docs/DISTRIBUTION.md.
+  HOMEBREW_TAP_REPOSITORY: 'lindoelio/homebrew-spec-driven-steroids'
+  DISTRIBUTION_REPOSITORY: 'lindoelio/spec-driven-steroids-distribution'
+  # The marketplace owner and the portable package identity.
+  MARKETPLACE_OWNER: 'lindoelio'
+  MARKETPLACE_PACKAGE: 'spec-driven-steroids'
 
 permissions:
   contents: read
   id-token: write
 
 jobs:
-  publish:
+  # The tag check and the checks run before anything is published: every
+  # publish job needs this one, so a mismatch or a failing check stops the
+  # release before a single artifact reaches a channel.
+  verify:
+    name: Verify the release
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v5
+      - name: Setup Go
+        uses: actions/setup-go@v7
         with:
-          version: 10.29.2
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Verify the tag matches the declared version
+        id: version
+        run: |
+          set -euo pipefail
+          DECLARED_VERSION="$(tr -d '[:space:]' < VERSION)"
+          EXPECTED_TAG="$(node scripts/create-release-tag.mjs)"
+          if [ "${GITHUB_REF_NAME}" != "${EXPECTED_TAG}" ]; then
+            echo "::error::The release tag ${GITHUB_REF_NAME} does not match the declared version ${DECLARED_VERSION}. Nothing was published."
+            exit 1
+          fi
+          echo "version=${DECLARED_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${EXPECTED_TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify every npm manifest carries the declared version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+
+          const version = process.env.VERSION;
+          const platformRoot = path.join('packages', 'platform');
+          const manifests = ['package.json', path.join('packages', 'cli', 'package.json')];
+
+          if (fs.existsSync(platformRoot)) {
+            for (const entry of fs.readdirSync(platformRoot, { withFileTypes: true })) {
+              if (!entry.isDirectory()) {
+                continue;
+              }
+              const manifestPath = path.join(platformRoot, entry.name, 'package.json');
+              if (fs.existsSync(manifestPath)) {
+                manifests.push(manifestPath);
+              }
+            }
+          }
+
+          const problems = [];
+          for (const manifestPath of manifests) {
+            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            if (manifest.version !== version) {
+              problems.push(`${manifestPath} declares ${manifest.version}`);
+            }
+            for (const [name, range] of Object.entries(manifest.optionalDependencies ?? {})) {
+              // The repository keeps the workspace protocol, so a fresh
+              // clone installs the local platform packages. The concrete
+              // versions are written at publication time, by
+              // scripts/prepare-publish.mjs.
+              if (range !== version && range !== 'workspace:*') {
+                problems.push(`${manifestPath} declares ${name}@${range}`);
+              }
+            }
+          }
+
+          if (problems.length > 0) {
+            console.error(`The npm manifests do not carry the declared version ${version}:`);
+            for (const problem of problems) {
+              console.error(`  ${problem}`);
+            }
+            console.error('Run `node scripts/set-version.mjs <version>` before releasing.');
+            process.exit(1);
+          }
+          NODE
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Run the test suite
+        run: go test ./...
+
+      - name: Build the release binary
+        run: node scripts/build-go.mjs
+
+      - name: Run the built binary
+        run: |
+          set -euo pipefail
+          BINARY_VERSION="$(./dist/sds --version)"
+          if [ "${BINARY_VERSION}" != "${{ steps.version.outputs.version }}" ]; then
+            echo "::error::The binary reports ${BINARY_VERSION}, but the declared version is ${{ steps.version.outputs.version }}."
+            exit 1
+          fi
+
+      - name: Packaged artifact smoke check
+        run: node scripts/pack-check.mjs
+
+  # The binaries are cross compiled for every supported operating system and
+  # architecture pair. The release assets are published from these binaries.
+  build:
+    name: Cross compile ${{ matrix.platform }}
+    needs: verify
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            platform: linux-x64
+            asset: sds-linux-amd64
+          - goos: linux
+            goarch: arm64
+            platform: linux-arm64
+            asset: sds-linux-arm64
+          - goos: darwin
+            goarch: amd64
+            platform: darwin-x64
+            asset: sds-darwin-amd64
+          - goos: darwin
+            goarch: arm64
+            platform: darwin-arm64
+            asset: sds-darwin-arm64
+          - goos: windows
+            goarch: amd64
+            platform: win32-x64
+            asset: sds-windows-amd64.exe
+          - goos: windows
+            goarch: arm64
+            platform: win32-arm64
+            asset: sds-windows-arm64.exe
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Cross compile ${{ matrix.goos }}-${{ matrix.goarch }}
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: '0'
+        run: |
+          set -euo pipefail
+          DECLARED_VERSION="$(tr -d '[:space:]' < VERSION)"
+          mkdir -p dist
+          go build \
+            -trimpath \
+            -ldflags "-s -w -X github.com/lindoelio/spec-driven-steroids/internal/version.Version=${DECLARED_VERSION}" \
+            -o "dist/${{ matrix.asset }}" \
+            ./cmd/sds
+
+      - name: Upload the binary
+        uses: actions/upload-artifact@v7
+        with:
+          name: binary-${{ matrix.platform }}
+          path: dist/${{ matrix.asset }}
+          if-no-files-found: error
+          retention-days: 1
+
+  # The release assets and their checksums are published before any npm
+  # package, so a user never receives a package that points at a binary that
+  # does not exist yet.
+  release:
+    name: Publish the GitHub Release
+    needs: [verify, build]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+
+    steps:
+      - name: Download the binaries
+        uses: actions/download-artifact@v8
+        with:
+          pattern: binary-*
+          path: dist
+          merge-multiple: true
+
+      - name: Compute the checksums
+        run: |
+          set -euo pipefail
+          cd dist
+          sha256sum sds-* > "${RUNNER_TEMP}/checksums.txt"
+          mv "${RUNNER_TEMP}/checksums.txt" checksums.txt
+          cat checksums.txt
+
+      - name: Publish the release assets
+        run: |
+          set -euo pipefail
+          TAG="${{ needs.verify.outputs.tag }}"
+          if gh release view "${TAG}" > /dev/null 2>&1; then
+            gh release upload "${TAG}" dist/sds-* dist/checksums.txt --clobber
+          else
+            gh release create "${TAG}" dist/sds-* dist/checksums.txt \
+              --title "Spec-Driven Steroids ${TAG}" \
+              --notes "The native sds binary for every supported platform, with the checksums of each asset." \
+              --verify-tag
+          fi
+
+  # The platform packages are published before the main package that declares
+  # them as optional dependencies: a main package published first would
+  # resolve to a platform package that does not exist yet.
+  npm-platform:
+    name: Publish @spec-driven-steroids/${{ matrix.platform }}
+    needs: [verify, release]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux-x64
+            asset: sds-linux-amd64
+          - platform: linux-arm64
+            asset: sds-linux-arm64
+          - platform: darwin-x64
+            asset: sds-darwin-amd64
+          - platform: darwin-arm64
+            asset: sds-darwin-arm64
+          - platform: win32-x64
+            asset: sds-windows-amd64.exe
+          - platform: win32-arm64
+            asset: sds-windows-arm64.exe
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
-          cache: pnpm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Download the binaries
+        uses: actions/download-artifact@v8
+        with:
+          pattern: binary-*
+          path: dist
+          merge-multiple: true
 
-      - name: Verify tag matches package version
+      - name: Download the release checksums
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
-          PACKAGE_VERSION=$(node -p "require('./packages/cli/package.json').version")
-          if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
-            echo "Tag $GITHUB_REF_NAME does not match package version $PACKAGE_VERSION" >&2
-            exit 1
-          fi
+          set -euo pipefail
+          mkdir -p release
+          gh release download "${{ needs.verify.outputs.tag }}" --pattern checksums.txt --dir release
 
-      - name: Typecheck
-        run: pnpm typecheck
-
-      - name: Build packages
-        run: pnpm build
-
-      - name: Lint
-        run: pnpm lint
-
-      - name: Run tests
-        run: pnpm test
-
-      - name: Run coverage
-        run: pnpm test:coverage
-
-      - name: Package smoke test
-        run: pnpm pack:check
-
-      - name: Check published version
-        id: package_version
+      - name: Stage the platform package
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          ASSET: ${{ matrix.asset }}
+          VERSION: ${{ needs.verify.outputs.version }}
         run: |
-          LOCAL_VERSION=$(node -p "require('./packages/cli/package.json').version")
-          PUBLISHED_VERSION=$(npm view spec-driven-steroids version 2>/dev/null || true)
-          echo "local_version=$LOCAL_VERSION" >> "$GITHUB_OUTPUT"
-          echo "published_version=$PUBLISHED_VERSION" >> "$GITHUB_OUTPUT"
-          if [ "$LOCAL_VERSION" = "$PUBLISHED_VERSION" ]; then
-            echo "already_published=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "already_published=false" >> "$GITHUB_OUTPUT"
-          fi
+          node <<'NODE'
+          const crypto = require('node:crypto');
+          const fs = require('node:fs');
+          const path = require('node:path');
 
-      - name: Publish to npm
-        if: steps.package_version.outputs.already_published != 'true'
+          const platform = process.env.PLATFORM;
+          const asset = process.env.ASSET;
+          const version = process.env.VERSION;
+
+          // The digest published with the platform package is cross checked
+          // against the checksum published with the GitHub Release.
+          const releaseChecksums = new Map();
+          for (const line of fs.readFileSync(path.join('release', 'checksums.txt'), 'utf8').split('\n')) {
+            const match = /^([a-f0-9]{64})\s+(.+)$/.exec(line.trim());
+            if (match) {
+              releaseChecksums.set(match[2], match[1]);
+            }
+          }
+
+          const releaseDigest = releaseChecksums.get(asset);
+          if (!releaseDigest) {
+            console.error(`The release publishes no checksum for ${asset}.`);
+            process.exit(1);
+          }
+
+          const source = path.join('dist', asset);
+          const digest = crypto.createHash('sha256').update(fs.readFileSync(source)).digest('hex');
+          if (digest !== releaseDigest) {
+            console.error(`The binary ${asset} has the digest ${digest}, but the release publishes ${releaseDigest}.`);
+            process.exit(1);
+          }
+
+          const packageDir = path.join('packages', 'platform', platform);
+          const binaryTarget = path.join(packageDir, 'bin', asset.endsWith('.exe') ? 'sds.exe' : 'sds');
+          fs.mkdirSync(path.dirname(binaryTarget), { recursive: true });
+          fs.copyFileSync(source, binaryTarget);
+          fs.chmodSync(binaryTarget, 0o755);
+
+          const manifestPath = path.join(packageDir, 'package.json');
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          manifest.version = version;
+          manifest.sha256 = digest;
+          fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 4)}\n`);
+
+          console.log(`Staged ${manifest.name}@${version} with the digest ${digest}, which matches the release checksum.`);
+          NODE
+
+      - name: Publish the platform package
+        working-directory: packages/platform/${{ matrix.platform }}
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          set -euo pipefail
+          PUBLISHED="$(npm view "@spec-driven-steroids/${{ matrix.platform }}" version 2>/dev/null || true)"
+          if [ "${PUBLISHED}" = "${VERSION}" ]; then
+            echo "@spec-driven-steroids/${{ matrix.platform }}@${PUBLISHED} is already published."
+            exit 0
+          fi
+          npm publish --provenance --access public
+
+  # The main package is published after every platform package it declares.
+  npm-main:
+    name: Publish the main package
+    needs: [verify, release, npm-platform]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+
+      - name: Assert every platform package is published
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          set -euo pipefail
+          for PLATFORM in linux-x64 linux-arm64 darwin-x64 darwin-arm64 win32-x64 win32-arm64; do
+            PUBLISHED=""
+            for ATTEMPT in $(seq 1 10); do
+              PUBLISHED="$(npm view "@spec-driven-steroids/${PLATFORM}" version 2>/dev/null || true)"
+              if [ "${PUBLISHED}" = "${VERSION}" ]; then
+                break
+              fi
+              sleep 6
+            done
+            if [ "${PUBLISHED}" != "${VERSION}" ]; then
+              echo "::error::@spec-driven-steroids/${PLATFORM}@${VERSION} is not published. The main package is published after the platform packages it declares, so the release stops here."
+              exit 1
+            fi
+            echo "@spec-driven-steroids/${PLATFORM}@${PUBLISHED} is published."
+          done
+
+      - name: Prepare the main package
+        run: node scripts/prepare-publish.mjs
+
+      - name: Publish the main package
         working-directory: packages/cli
-        run: npm publish
-
-      - name: Summarize publish result
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
         run: |
-          if [ "${{ steps.package_version.outputs.already_published }}" = "true" ]; then
-            echo "spec-driven-steroids@${{ steps.package_version.outputs.local_version }} is already published." >> "$GITHUB_STEP_SUMMARY"
+          set -euo pipefail
+          PUBLISHED="$(npm view "spec-driven-steroids" version 2>/dev/null || true)"
+          if [ "${PUBLISHED}" = "${VERSION}" ]; then
+            echo "spec-driven-steroids@${PUBLISHED} is already published."
+            exit 0
+          fi
+          npm publish --provenance --access public
+
+  # The Homebrew formula references the published release assets.
+  homebrew:
+    name: Update the Homebrew formula
+    needs: [verify, release]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+
+    steps:
+      - name: Download the release checksums
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          gh release download "${{ needs.verify.outputs.tag }}" --pattern checksums.txt --dir release
+
+      - name: Update the formula
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
+          TAG: ${{ needs.verify.outputs.tag }}
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          set -euo pipefail
+          checksum_of() {
+            awk -v asset="$1" '$2 == asset { print $1 }' release/checksums.txt
+          }
+
+          DARWIN_ARM64="$(checksum_of sds-darwin-arm64)"
+          DARWIN_AMD64="$(checksum_of sds-darwin-amd64)"
+          LINUX_ARM64="$(checksum_of sds-linux-arm64)"
+          LINUX_AMD64="$(checksum_of sds-linux-amd64)"
+
+          for DIGEST in "${DARWIN_ARM64}" "${DARWIN_AMD64}" "${LINUX_ARM64}" "${LINUX_AMD64}"; do
+            if [ -z "${DIGEST}" ]; then
+              echo "::error::The release publishes no checksum for one of the formula assets."
+              exit 1
+            fi
+          done
+
+          BASE_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}"
+          TAP_DIR="${RUNNER_TEMP}/homebrew-tap"
+
+          git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/${HOMEBREW_TAP_REPOSITORY}.git" "${TAP_DIR}"
+          mkdir -p "${TAP_DIR}/Formula"
+
+          cat > "${TAP_DIR}/Formula/spec-driven-steroids.rb" <<FORMULA
+          class SpecDrivenSteroids < Formula
+            desc "Inject Spec-Driven workflow into your favorite AI Agents. Rigorous. Simple. Frictionless."
+            homepage "https://github.com/${GITHUB_REPOSITORY}"
+            license "MIT"
+            version "${VERSION}"
+
+            on_macos do
+              on_arm do
+                url "${BASE_URL}/sds-darwin-arm64"
+                sha256 "${DARWIN_ARM64}"
+              end
+
+              on_intel do
+                url "${BASE_URL}/sds-darwin-amd64"
+                sha256 "${DARWIN_AMD64}"
+              end
+            end
+
+            on_linux do
+              on_arm do
+                url "${BASE_URL}/sds-linux-arm64"
+                sha256 "${LINUX_ARM64}"
+              end
+
+              on_intel do
+                url "${BASE_URL}/sds-linux-amd64"
+                sha256 "${LINUX_AMD64}"
+              end
+            end
+
+            def install
+              bin.install Dir["sds-*"].first => "sds"
+            end
+
+            test do
+              assert_match version.to_s, shell_output("#{bin}/sds --version")
+            end
+          end
+          FORMULA
+
+          cd "${TAP_DIR}"
+          git config user.name "spec-driven-steroids release pipeline"
+          git config user.email "release@spec-driven-steroids.dev"
+          git add Formula/spec-driven-steroids.rb
+          if git diff --cached --quiet; then
+            echo "The formula already references ${VERSION}."
           else
-            echo "Published spec-driven-steroids@${{ steps.package_version.outputs.local_version }} to npm." >> "$GITHUB_STEP_SUMMARY"
+            git commit -m "spec-driven-steroids ${VERSION}"
+            git push origin HEAD:main
+          fi
+
+  # The template bundle is published from the canonical tree the binary
+  # embeds, with the declared version.
+  templates:
+    name: Publish the template bundle
+    needs: [verify, release]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Build the template bundle
+        run: |
+          node <<'NODE'
+          const crypto = require('node:crypto');
+          const fs = require('node:fs');
+          const path = require('node:path');
+
+          const version = fs.readFileSync('VERSION', 'utf8').trim();
+          const canonicalRoot = path.join('internal', 'assets', 'canonical');
+          const outputDir = '.template-release';
+
+          function walk(directory, prefix) {
+            const files = {};
+            for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+              const absolute = path.join(directory, entry.name);
+              const relative = path.posix.join(prefix, entry.name);
+              if (entry.isDirectory()) {
+                Object.assign(files, walk(absolute, relative));
+                continue;
+              }
+              files[relative] = fs.readFileSync(absolute, 'utf8');
+            }
+            return files;
+          }
+
+          const bundle = {
+            schemaVersion: 1,
+            version,
+            files: walk(canonicalRoot, 'universal')
+          };
+          const bundleText = JSON.stringify(bundle, null, 2);
+          const digest = crypto.createHash('sha256').update(bundleText, 'utf8').digest('hex');
+          const manifest = {
+            schemaVersion: 1,
+            version,
+            bundleUrl: 'https://github.com/' + process.env.GITHUB_REPOSITORY + '/releases/download/templates-latest/templates-bundle.json',
+            sha256: digest,
+            minCliVersion: version,
+            publishedAt: new Date().toISOString()
+          };
+
+          fs.rmSync(outputDir, { recursive: true, force: true });
+          fs.mkdirSync(outputDir, { recursive: true });
+          fs.writeFileSync(path.join(outputDir, 'templates-bundle.json'), bundleText);
+          fs.writeFileSync(path.join(outputDir, 'templates-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+          NODE
+
+      - name: Publish the template bundle
+        uses: ncipollo/release-action@v1
+        with:
+          tag: templates-latest
+          name: templates-latest
+          allowUpdates: true
+          removeArtifacts: true
+          artifactErrorsFailBuild: true
+          replacesArtifacts: true
+          artifacts: .template-release/templates-manifest.json,.template-release/templates-bundle.json
+          body: Latest published template bundle for runtime injection.
+
+  # The distribution tree is generated outside this working tree, because the
+  # repository ignores the path the Codex catalog lives at, and it is pushed to
+  # the distribution repository.
+  distribution:
+    name: Publish the distribution tree
+    needs: [verify, release]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Build the binary
+        run: node scripts/build-go.mjs
+
+      - name: Generate the distribution tree
+        run: |
+          set -euo pipefail
+          # The tree is generated outside this working tree: the repository
+          # ignores .agents/, so a tree generated inside it would lose the
+          # Codex catalog at .agents/plugins/marketplace.json on commit.
+          ./dist/sds package \
+            --out "${RUNNER_TEMP}/distribution" \
+            --owner "${MARKETPLACE_OWNER}" \
+            --name "${MARKETPLACE_PACKAGE}" \
+            --icon "https://opengraph.githubassets.com/1/${GITHUB_REPOSITORY}" \
+            --category "development"
+
+      - name: Push the distribution tree
+        env:
+          DISTRIBUTION_REPOSITORY_TOKEN: ${{ secrets.DISTRIBUTION_REPOSITORY_TOKEN }}
+        run: |
+          set -euo pipefail
+          REPOSITORY_DIR="${RUNNER_TEMP}/distribution-repository"
+
+          git clone "https://x-access-token:${DISTRIBUTION_REPOSITORY_TOKEN}@github.com/${DISTRIBUTION_REPOSITORY}.git" "${REPOSITORY_DIR}"
+          cd "${REPOSITORY_DIR}"
+
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -R "${RUNNER_TEMP}/distribution/." .
+
+          git config user.name "spec-driven-steroids release pipeline"
+          git config user.email "release@spec-driven-steroids.dev"
+          git add --all
+          if git diff --cached --quiet; then
+            echo "The distribution tree already carries the declared version."
+          else
+            git commit -m "spec-driven-steroids ${{ needs.verify.outputs.version }}"
+            git push origin HEAD:main
           fi

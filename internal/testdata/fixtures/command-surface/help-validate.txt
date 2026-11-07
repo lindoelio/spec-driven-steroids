@@ -1,0 +1,40 @@
+Usage: spec-driven-steroids validate [options] [command]
+
+Validate Spec-Driven specs for correctness and completeness.
+
+The validate command checks specs in .specs/changes/<slug>/ for:
+  • structure   - Required files for brief or full lanes
+  • brief       - Compact change brief structure and traceability
+  • requirements - EARS patterns, REQ-X numbering, acceptance criteria
+  • design      - Mermaid diagrams, DES-X numbering, _Implements tags
+  • tasks       - Phase structure, task status, traceability links
+  • spec        - Cross-file validation and traceability matrix
+  • all         - Aggregate every spec in .specs/changes
+
+All subcommands support --format <text|json> for output control.
+Use --help with any subcommand for specific options and examples.
+
+Options:
+  -h, --help                     display help for command
+
+Commands:
+  structure [options] <slug>     Validate that a spec directory contains either
+                                 brief.md or the full requirements/design/tasks
+                                 set
+  brief [options] <path>         Validate a brief.md file for structure,
+                                 bounded scope, and requirement-to-task
+                                 traceability
+  requirements [options] <path>  Validate a requirements.md file for EARS
+                                 patterns, REQ-X numbering, and acceptance
+                                 criteria
+  design [options] <path>        Validate a design.md file for Mermaid
+                                 diagrams, DES-X numbering, and traceability
+                                 links
+  tasks [options] <path>         Validate a tasks.md file for phase structure,
+                                 task checkboxes, status markers, and
+                                 traceability
+  spec [options] <slug>          Validate a brief or full spec with cross-file
+                                 traceability
+  all [options]                  Validate all specs under .specs/changes in one
+                                 aggregated result
+  help [command]                 display help for command

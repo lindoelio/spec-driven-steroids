@@ -1,0 +1,1248 @@
+{
+  "comment": "Shared cases for the differential harness. The Node driver runs them against the previous release and the Go driver runs them against the port, and the harness diffs the results.",
+  "cases": [
+    {
+      "kind": "manifest",
+      "name": "manifest/valid",
+      "payload": "{\"schemaVersion\":1,\"version\":\"v1.2.3\",\"bundleUrl\":\"https://example.test/templates-bundle.json\",\"sha256\":\"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\",\"minCliVersion\":\"1.0.0\",\"publishedAt\":\"2024-05-05T12:00:00.000Z\"}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/minimal",
+      "payload": "{\"version\":\"v1\",\"bundleUrl\":\"https://example.test/templates-bundle.json\"}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/missing-bundle-url",
+      "payload": "{\"version\":\"v1\"}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/empty-bundle-url",
+      "payload": "{\"version\":\"v1\",\"bundleUrl\":\"\"}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/bundle-url-not-a-string",
+      "payload": "{\"version\":\"v1\",\"bundleUrl\":42}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/bundle-url-not-a-url",
+      "payload": "{\"version\":\"v1\",\"bundleUrl\":\"not a url\"}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/bundle-url-not-https",
+      "payload": "{\"version\":\"v1\",\"bundleUrl\":\"http://example.test/bundle.json\"}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/bundle-url-normalized",
+      "payload": "{\"version\":\"v1\",\"bundleUrl\":\"HTTPS://Example.Test/bundle.json\"}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/bundle-url-without-path",
+      "payload": "{\"version\":\"v1\",\"bundleUrl\":\"https://example.test\"}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/bad-sha256",
+      "payload": "{\"version\":\"v1\",\"bundleUrl\":\"https://example.test/bundle.json\",\"sha256\":\"abc\"}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/uppercase-sha256",
+      "payload": "{\"version\":\"v1\",\"bundleUrl\":\"https://example.test/bundle.json\",\"sha256\":\"0123456789ABCDEF0123456789abcdef0123456789abcdef0123456789abcdef\"}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/sha256-not-a-string",
+      "payload": "{\"version\":\"v1\",\"bundleUrl\":\"https://example.test/bundle.json\",\"sha256\":42}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/bad-min-cli-version",
+      "payload": "{\"version\":\"v1\",\"bundleUrl\":\"https://example.test/bundle.json\",\"minCliVersion\":\"1.0\"}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/schema-version-not-a-number",
+      "payload": "{\"schemaVersion\":\"1\",\"version\":\"v1\",\"bundleUrl\":\"https://example.test/bundle.json\"}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/schema-version-unsupported",
+      "payload": "{\"schemaVersion\":99,\"version\":\"v1\",\"bundleUrl\":\"https://example.test/bundle.json\"}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/schema-version-zero",
+      "payload": "{\"schemaVersion\":0,\"version\":\"v1\",\"bundleUrl\":\"https://example.test/bundle.json\"}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/published-at-not-a-string",
+      "payload": "{\"version\":\"v1\",\"bundleUrl\":\"https://example.test/bundle.json\",\"publishedAt\":42}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/version-missing",
+      "payload": "{\"bundleUrl\":\"https://example.test/bundle.json\"}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/version-not-a-string",
+      "payload": "{\"version\":42,\"bundleUrl\":\"https://example.test/bundle.json\"}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/version-not-allowed",
+      "payload": "{\"version\":\"has space\",\"bundleUrl\":\"https://example.test/bundle.json\"}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/version-with-dot",
+      "payload": "{\"version\":\".hidden\",\"bundleUrl\":\"https://example.test/bundle.json\"}"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/not-an-object",
+      "payload": "[]"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/not-json",
+      "payload": "not json"
+    },
+    {
+      "kind": "manifest",
+      "name": "manifest/empty",
+      "payload": ""
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/valid",
+      "payload": "{\"schemaVersion\":1,\"version\":\"v1\",\"files\":{\"universal/agents/spec-driven.agent.md\":\"Agent\",\"universal/skills/spec-driven-planner/SKILL.md\":\"Planner\"}}"
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/no-files",
+      "payload": "{\"version\":\"v1\",\"files\":{}}"
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/no-files-member",
+      "payload": "{\"version\":\"v1\"}"
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/files-not-an-object",
+      "payload": "{\"version\":\"v1\",\"files\":[]}"
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/content-not-a-string",
+      "payload": "{\"version\":\"v1\",\"files\":{\"a.md\":42}}"
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/absolute-path",
+      "payload": "{\"version\":\"v1\",\"files\":{\"/etc/passwd\":\"x\"}}"
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/windows-drive-path",
+      "payload": "{\"version\":\"v1\",\"files\":{\"C:\\\\Windows\\\\system.ini\":\"x\"}}"
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/parent-segment",
+      "payload": "{\"version\":\"v1\",\"files\":{\"../../escape.txt\":\"x\"}}"
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/current-segment",
+      "payload": "{\"version\":\"v1\",\"files\":{\"./a.md\":\"x\"}}"
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/empty-segment",
+      "payload": "{\"version\":\"v1\",\"files\":{\"a//b.md\":\"x\"}}"
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/null-byte",
+      "payload": "{\"version\":\"v1\",\"files\":{\"a\\u0000b.md\":\"x\"}}"
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/duplicate-path",
+      "payload": "{\"version\":\"v1\",\"files\":{\"universal/a.md\":\"x\",\"universal\\\\a.md\":\"y\"}}"
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/schema-version-not-a-number",
+      "payload": "{\"schemaVersion\":\"1\",\"version\":\"v1\",\"files\":{\"a.md\":\"x\"}}"
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/not-an-object",
+      "payload": "[]"
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/version-not-allowed",
+      "payload": "{\"version\":\"..\",\"files\":{\"a.md\":\"x\"}}"
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/version-missing",
+      "payload": "{\"files\":{\"a.md\":\"x\"}}"
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/too-many-files",
+      "spec": {
+        "version": "v1",
+        "fileCount": 2001
+      }
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/max-files",
+      "spec": {
+        "version": "v1",
+        "fileCount": 2000
+      }
+    },
+    {
+      "kind": "bundle",
+      "name": "bundle/oversized",
+      "spec": {
+        "version": "v1",
+        "oversizeBytes": 5242881
+      }
+    },
+    {
+      "kind": "semver",
+      "name": "semver/equal",
+      "left": "1.0.0",
+      "right": "1.0.0"
+    },
+    {
+      "kind": "semver",
+      "name": "semver/patch",
+      "left": "1.0.1",
+      "right": "1.0.0"
+    },
+    {
+      "kind": "semver",
+      "name": "semver/minor",
+      "left": "1.1.0",
+      "right": "1.0.9"
+    },
+    {
+      "kind": "semver",
+      "name": "semver/major",
+      "left": "2.0.0",
+      "right": "1.9.9"
+    },
+    {
+      "kind": "semver",
+      "name": "semver/release-over-prerelease",
+      "left": "1.0.0",
+      "right": "1.0.0-alpha"
+    },
+    {
+      "kind": "semver",
+      "name": "semver/prerelease-over-release",
+      "left": "1.0.0-alpha",
+      "right": "1.0.0"
+    },
+    {
+      "kind": "semver",
+      "name": "semver/prerelease-order",
+      "left": "1.0.0-alpha",
+      "right": "1.0.0-beta"
+    },
+    {
+      "kind": "semver",
+      "name": "semver/prerelease-prefix",
+      "left": "1.0.0-alpha",
+      "right": "1.0.0-alpha.1"
+    },
+    {
+      "kind": "semver",
+      "name": "semver/prerelease-numeric",
+      "left": "1.0.0-rc.10",
+      "right": "1.0.0-rc.9"
+    },
+    {
+      "kind": "semver",
+      "name": "semver/case-order",
+      "left": "1.0.0-A",
+      "right": "1.0.0-a"
+    },
+    {
+      "kind": "semver",
+      "name": "semver/short-version",
+      "left": "1.0",
+      "right": "1.0.0"
+    },
+    {
+      "kind": "semver",
+      "name": "semver/build-metadata",
+      "left": "1.0.0-alpha+build",
+      "right": "1.0.0-alpha"
+    },
+    {
+      "kind": "semver",
+      "name": "semver/empty-prerelease",
+      "left": "1.0.0-",
+      "right": "1.0.0"
+    },
+    {
+      "kind": "host",
+      "name": "host/manifest-host",
+      "hostname": "example.test",
+      "manifestHost": "example.test"
+    },
+    {
+      "kind": "host",
+      "name": "host/manifest-host-case",
+      "hostname": "EXAMPLE.test",
+      "manifestHost": "example.test"
+    },
+    {
+      "kind": "host",
+      "name": "host/github",
+      "hostname": "github.com",
+      "manifestHost": "example.test"
+    },
+    {
+      "kind": "host",
+      "name": "host/release-asset",
+      "hostname": "objects.githubusercontent.com",
+      "manifestHost": "example.test"
+    },
+    {
+      "kind": "host",
+      "name": "host/release-asset-bare",
+      "hostname": "githubusercontent.com",
+      "manifestHost": "example.test"
+    },
+    {
+      "kind": "host",
+      "name": "host/foreign",
+      "hostname": "evil.example",
+      "manifestHost": "example.test"
+    },
+    {
+      "kind": "host",
+      "name": "host/configured",
+      "hostname": "mirror.test",
+      "manifestHost": "example.test",
+      "allowedHosts": "mirror.test, other.test"
+    },
+    {
+      "kind": "host",
+      "name": "host/configured-case",
+      "hostname": "MIRROR.test",
+      "manifestHost": "example.test",
+      "allowedHosts": " Mirror.Test "
+    },
+    {
+      "kind": "host",
+      "name": "host/not-configured",
+      "hostname": "other.test",
+      "manifestHost": "example.test",
+      "allowedHosts": "mirror.test"
+    },
+    {
+      "kind": "path",
+      "name": "path/plain",
+      "path": "universal/skills/planner/SKILL.md"
+    },
+    {
+      "kind": "path",
+      "name": "path/backslashes",
+      "path": "universal\\skills\\planner\\SKILL.md"
+    },
+    {
+      "kind": "path",
+      "name": "path/empty",
+      "path": ""
+    },
+    {
+      "kind": "path",
+      "name": "path/absolute",
+      "path": "/etc/passwd"
+    },
+    {
+      "kind": "path",
+      "name": "path/drive",
+      "path": "C:\\Windows\\system.ini"
+    },
+    {
+      "kind": "path",
+      "name": "path/parent",
+      "path": "../escape.txt"
+    },
+    {
+      "kind": "path",
+      "name": "path/current",
+      "path": "./a.md"
+    },
+    {
+      "kind": "path",
+      "name": "path/empty-segment",
+      "path": "a//b.md"
+    },
+    {
+      "kind": "path",
+      "name": "path/null-byte",
+      "path": "a\u0000b.md"
+    },
+    {
+      "kind": "inside",
+      "name": "inside/inside",
+      "root": "/tmp/sds-difftest-root",
+      "relative": "universal/skills/planner/SKILL.md"
+    },
+    {
+      "kind": "inside",
+      "name": "inside/parent",
+      "root": "/tmp/sds-difftest-root",
+      "relative": "../escape.txt"
+    },
+    {
+      "kind": "inside",
+      "name": "inside/absolute",
+      "root": "/tmp/sds-difftest-root",
+      "relative": "/etc/passwd"
+    },
+    {
+      "kind": "inside",
+      "name": "inside/nested-parent",
+      "root": "/tmp/sds-difftest-root",
+      "relative": "a/../../escape.txt"
+    },
+    {
+      "kind": "inside",
+      "name": "inside/sibling-name",
+      "root": "/tmp/sds-difftest-root",
+      "relative": "..sibling/file.md"
+    },
+    {
+      "kind": "inside",
+      "name": "inside/dot-prefixed-name",
+      "root": "/tmp/sds-difftest-root",
+      "relative": "..hidden/file.md"
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/download",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        },
+        {
+          "action": "listFiles"
+        },
+        {
+          "action": "marker"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/cache-reuse",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        },
+        {
+          "action": "resolve"
+        },
+        {
+          "action": "marker"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/missing-planner-file",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/skills/spec-driven-planner/SKILL.md",
+            "content": "Planner skill"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve",
+          "requiredSkills": [
+            "spec-driven-planner"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/complete-planner",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/skills/spec-driven-planner/SKILL.md",
+            "content": "Planner skill"
+          },
+          {
+            "path": "universal/skills/spec-driven-planner/references/lane-selection.md",
+            "content": "Lane selection"
+          },
+          {
+            "path": "universal/skills/spec-driven-planner/references/full-lane-phases.md",
+            "content": "Full phases"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve",
+          "requiredSkills": [
+            "spec-driven-planner"
+          ]
+        },
+        {
+          "action": "resolve",
+          "requiredSkills": [
+            "spec-driven-planner"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/cache-lacks-required-skills",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        },
+        {
+          "action": "resolve",
+          "requiredSkills": [
+            "spec-driven-planner"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/restores-removed-reference",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/skills/spec-driven-planner/SKILL.md",
+            "content": "Planner skill"
+          },
+          {
+            "path": "universal/skills/spec-driven-planner/references/lane-selection.md",
+            "content": "Lane selection"
+          },
+          {
+            "path": "universal/skills/spec-driven-planner/references/full-lane-phases.md",
+            "content": "Full phases"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve",
+          "requiredSkills": [
+            "spec-driven-planner"
+          ]
+        },
+        {
+          "action": "removeFile",
+          "path": "universal/skills/spec-driven-planner/references/lane-selection.md"
+        },
+        {
+          "action": "resolve",
+          "requiredSkills": [
+            "spec-driven-planner"
+          ]
+        },
+        {
+          "action": "listFiles"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/redownloads-modified-file",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        },
+        {
+          "action": "writeFile",
+          "path": "universal/agents/spec-driven.agent.md",
+          "content": "tampered"
+        },
+        {
+          "action": "resolve"
+        },
+        {
+          "action": "listFiles"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/traversal-version",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "..",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "createFile",
+          "path": "sentinel.txt",
+          "content": "keep me"
+        },
+        {
+          "action": "resolve"
+        },
+        {
+          "action": "exists",
+          "path": "sentinel.txt"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/traversal-file-path",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "../../escape.txt",
+            "content": "x"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/absolute-file-path",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "/etc/passwd",
+            "content": "x"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/drive-file-path",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "C:\\Windows\\system.ini",
+            "content": "x"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/digest-mismatch",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/non-https-bundle-url",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "http://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/unapproved-host",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://evil.example/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/allowed-host-override",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://evil.example/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "env": {
+        "SDS_TEMPLATE_ALLOWED_HOSTS": "evil.example"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/incompatible-schema",
+      "bundle": {
+        "version": "v1",
+        "schemaVersion": 99,
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "schemaVersion": 99,
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/newer-cli-required",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}",
+        "minCliVersion": "99.0.0"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/legacy-manifest-without-digest",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        },
+        {
+          "action": "resolve"
+        },
+        {
+          "action": "listFiles"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/too-many-files",
+      "bundleSpec": {
+        "version": "v1",
+        "fileCount": 2001
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/oversized-bundle",
+      "bundleSpec": {
+        "version": "v1",
+        "oversizeBytes": 5242881
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/network-failure",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "fetchError": "offline",
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/version-mismatch",
+      "bundle": {
+        "version": "v2",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/legacy-bundled-environment",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "env": {
+        "SPEC_DRIVEN_USE_BUNDLED_TEMPLATES": "true"
+      },
+      "useDefaultSource": true,
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "bundled",
+      "name": "bundled/cli-info"
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/schema-version-zero",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "schemaVersion": 0,
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/bundle-schema-version-zero",
+      "bundle": {
+        "version": "v1",
+        "schemaVersion": 0,
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/invalid-manifest-url",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "manifestUrl": "not a url",
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/cache-retention",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        },
+        {
+          "action": "resolve",
+          "version": "v2"
+        },
+        {
+          "action": "resolve",
+          "version": "v3"
+        },
+        {
+          "action": "resolve",
+          "version": "v4"
+        },
+        {
+          "action": "listCache"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/http-error",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "status": 404,
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/manifest-not-json",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "manifestPayload": "not json",
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ]
+    },
+    {
+      "kind": "resolve",
+      "name": "resolve/oversized-response",
+      "bundle": {
+        "version": "v1",
+        "files": [
+          {
+            "path": "universal/agents/spec-driven.agent.md",
+            "content": "Agent"
+          }
+        ]
+      },
+      "manifest": {
+        "version": "v1",
+        "bundleUrl": "https://example.test/templates-bundle.json",
+        "sha256": "{{digest}}"
+      },
+      "steps": [
+        {
+          "action": "resolve"
+        }
+      ],
+      "bundlePayloadBytes": 8388609
+    }
+  ]
+}

@@ -1,0 +1,258 @@
+---
+name: spec-driven-task-implementer
+description: Use this skill when an approved Spec-Driven change has reached Phase 4 and the user wants a task, phase, or full feature implemented from .specs/changes/<slug>. It executes tasks in order, updates task status immediately, verifies each task before completion, and should not be used before implementation approval.
+---
+
+# Spec-Driven Task Implementer Skill
+
+Implement approved spec-driven work by executing tasks from `tasks.md` in a disciplined, traceable loop.
+
+Your job is to:
+- implement only what the spec and task plan require
+- keep changes small, scoped, and consistent with the repository
+- update task status in `tasks.md` as work progresses
+- verify each task before marking it complete
+- preserve the traceability chain from implementation back to `DES-*` and `REQ-*`
+
+Default path: validate the complete spec and confirm human implementation approval, resolve the approved execution scope below, then implement and verify eligible tasks in dependency order. Never infer permission to implement from file existence or from another agent's recommendation.
+
+Read `references/task-execution-patterns.md` when you need examples for resuming interrupted work, choosing the smallest meaningful verification, or handling failed verification loops.
+
+Read `references/parallel-execution-patterns.md` when executing a phase or full feature on a platform that supports sub-agent parallelism (e.g., OpenCode).
+
+## Shared Protocol
+
+Follow the Context Preflight and Phase Gate protocols in the `spec-driven-shared-protocol` skill's `references/shared-protocol.md`.
+
+## Per-Phase Todo List
+
+When this skill begins execution, create a todo list derived from the pending tasks in the approved `tasks.md` for the target slug. Each pending task becomes a todo item. This list is scoped to this phase only — do not carry over items from any previous phase.
+
+### Item Derivation
+
+- Read the approved `tasks.md` for the target slug.
+- For each task that is `- [ ]` (pending), create a corresponding todo item.
+- Skip completed tasks; recover any in-progress task under Interrupted Sessions before selecting new work.
+
+### Progress Rules
+
+- Mark an item `in_progress` when starting that task.
+- Mark an item `completed` only after the task has been verified and marked `- [x]` in `tasks.md`.
+- Do not mark an item `completed` until verification passes.
+- Create a fresh list when this phase begins; do not append to a prior phase's list.
+
+## Source Of Truth
+
+Use these files in this order:
+1. `requirements.md` for the intended behavior
+2. `design.md` for architectural boundaries and file placement
+3. `tasks.md` for execution order and task scope
+4. project guideline files for local conventions
+5. contextual-stewardship rules for active project decisions
+
+If these inputs conflict, stop and resolve the conflict before continuing.
+
+`Code Anatomy` is not a closed completion checklist unless `design.md` says `Coverage: Exhaustive`. New non-exhaustive specs complete discovery during Phase 3 and enter implementation with a stable task plan. For a legacy approved spec that already contains a discovery/inventory task, execute that task first.
+
+## Task Status Rules
+
+`tasks.md` is the progress ledger and must stay accurate. Use checkbox states:
+- `- [ ]` pending
+- `- [~]` in progress
+- `- [x]` completed
+
+### Hard Rule
+
+Update `tasks.md` immediately when a task changes state. Mark `- [~]` before implementation, `- [x]` only after verification succeeds. Do not batch status updates.
+
+## Execution Loop
+
+For each task:
+1. Find the target task in `tasks.md`
+2. Confirm it is pending and all `_Depends:` tasks are complete
+3. Change the task to `- [~]` and save `tasks.md`
+4. Implement only the scoped behavior required by the task
+5. If the task discovers additional in-scope work, follow the Task Amendment Protocol before marking the task complete
+6. Run the smallest meaningful verification
+7. If verification passes, change the task to `- [x]` and save `tasks.md`
+8. If verification fails, keep the task in progress until the issue is fixed or escalated
+
+## Task Selection Rules
+
+### Implementing a Specific Task
+- Implement only that task unless a required dependency must be finished first
+- Do not opportunistically work ahead on unrelated tasks
+
+### Implementing a Phase
+- Execute pending tasks in that phase in dependency order
+- Complete one task fully before starting the next
+
+### Implementing a Full Feature
+- Execute all pending tasks across all phases in dependency order
+
+### Default Scope
+
+- Human approval is required before any implementation. The orchestrator passes the approved scope; it cannot approve implementation on the user's behalf.
+- An explicit task or phase request limits execution to that scope, even when the full spec was previously approved.
+- Human approval to enter Phase 4 authorizes all pending tasks in the approved plan unless a narrower scope was explicitly requested. Continue without per-task permission stops, respecting dependencies and verification.
+- For a standalone task-implementer invocation that does not convey Phase 4 entry or phase/full-feature scope, implement one task by default after confirming prior implementation approval.
+- On resumption, recover in-progress work first and retain the previously approved scope. Do not widen a task request into a full feature or shrink an approved full execution to one task silently.
+
+## Parallel Execution Protocol
+
+Within an approved phase or full-plan scope, you MAY execute independent tasks in parallel when the host exposes a sub-agent spawning capability. Parallelism is optional, not a requirement for completion.
+
+### Platform Detection
+
+Discover available spawning capabilities regardless of tool name. If unavailable, execute sequentially with the same approval, status, and verification rules.
+
+### Dependency Analysis
+
+Before spawning sub-agents, analyze the dependency graph:
+
+1. Read all pending tasks in the requested scope from `tasks.md`.
+2. Build a dependency graph from `_Depends:` tags.
+3. Identify **independent batches**: groups of pending tasks whose `_Depends:` are all satisfied and that do not depend on each other.
+4. Tasks within the same batch can execute in parallel. Tasks across batches must execute sequentially.
+
+Example: If task 2.1 depends on 1.3, and task 2.2 also depends on 1.3, and 1.3 is already `[x]`, then 2.1 and 2.2 form an independent batch and can spawn in parallel.
+
+### Parallel Spawn Protocol
+
+For each task in an independent batch, use the host's spawning interface, adapting argument names and available roles:
+
+- `subagent_type`: `general`
+- `description`: `Implement task <task-id>: <task title>`
+- Prompt: provide a standalone brief containing:
+  - The spec artifact paths: `.specs/changes/<slug>/requirements.md`, `.specs/changes/<slug>/design.md`, `.specs/changes/<slug>/tasks.md`.
+  - The specific task ID and description to implement.
+  - Full spec-driven-task-implementer rules (this skill).
+  - Instruction to read the task, implement, verify, and return evidence without rewriting the shared task ledger concurrently.
+  - Instruction to return: changed files list, verification outcome, and the updated task status.
+
+The orchestrator saves each task as `[~]` before spawning. It owns serialized ledger updates and marks `[x]` only after reconciling each worker's result. If ledger updates or file ownership cannot be coordinated safely, execute sequentially.
+
+### Result Collection
+
+When all sub-agents in a batch complete:
+
+1. Reconcile each worker's changed files and observed verification with its task; save verified `[x]` transitions serially in `tasks.md`.
+2. If any task remains `- [~]` or verification failed, fix or re-spawn that task before proceeding.
+3. If all tasks in the batch succeeded, advance to the next independent batch.
+4. Repeat until all tasks in the requested scope are complete.
+
+### Conflict Prevention
+
+- Resolve planned file touchpoints through task metadata and linked design elements; `_Implements:` contains traceability IDs, not file paths. Do not spawn tasks whose actual file sets overlap.
+- Do NOT spawn tasks in parallel with the same `_Depends:` chain (they are sequentially dependent by definition).
+- If unsure about file overlap, default to sequential execution.
+
+### Inline Fallback
+
+If spawning is unavailable, execute all tasks sequentially as described in the standard Task Selection Rules.
+
+### Parallel Execution Quality Bar
+
+Before spawning a parallel batch, verify:
+- [ ] all `_Depends:` for each task in the batch are satisfied
+- [ ] no task in the batch depends on another task in the same batch
+- [ ] actual planned file sets are non-overlapping across tasks in the batch
+- [ ] spawning is available and shared ledger writes are serialized by the orchestrator
+
+## Implementation Rules
+
+- Follow `design.md` for architecture and file placement
+- Follow `CONVENTIONS.md` and surrounding code for naming, structure, and patterns
+- Keep changes minimal and scoped to the active task
+- Do not add features that are not required by the spec
+- Do not refactor unrelated code while implementing the task
+- Respect package and module boundaries
+- Do not treat files outside `Required Touchpoints` as scope creep when `Known Impact Surface` or `Discovery Targets` identify them as possible in-scope work
+
+## Task Amendment Protocol
+
+If implementation discovers files, entrypoints, exports, tests, integrations, or verification work not listed in `tasks.md`:
+
+1. Determine whether the discovered work maps to existing `REQ-*` and `DES-*` scope.
+2. If it is in scope and does not change product behavior, public contracts, architecture, or risk materially, add an amendment task to `tasks.md` before doing the newly discovered work.
+3. The amendment task must include `_Discovered from: <task-id or discovery target>_` and `_Implements: DES-X, REQ-Y.Z_`.
+4. If the discovered work changes requirements, architecture, public contracts, migration scope, security posture, or operational risk, keep the current task `- [~]` and request a mini-review before proceeding.
+5. Do not mark the originating implementation task complete until amendments are recorded or an explicit no-amendment rationale is documented.
+
+Amendments are not scope creep when they preserve approved requirements and design intent, but they should represent genuinely unexpected implementation findings after Phase 3 discovery.
+
+## Test Task Rules
+
+Tasks in `Acceptance Criteria Testing` phase or prefixed with `Test:` should create or update tests rather than production behavior.
+
+### Test Naming
+- Remove the `Test:` prefix when writing actual test names
+- Use pure behavior descriptions in test titles
+- Do not include `REQ-*` or `DES-*` IDs in test names or code comments
+
+Good: `it('rejects invalid email addresses', async () => { ... })`
+
+Bad: `it('Test: rejects invalid email addresses // REQ-2.1', async () => { ... })`
+
+## Verification Rules
+
+Before marking any task `- [x]`, verify:
+- the implementation matches the task description
+- the implementation still matches the linked requirements and design intent
+- relevant tests pass
+- no new failures were introduced in the touched scope
+
+Use the smallest meaningful verification first.
+
+## Conflict Policy
+
+Stop and surface the issue if:
+- `requirements.md`, `design.md`, and `tasks.md` disagree materially
+- the design does not fit the codebase reality in a safe way
+- a task requires a breaking change not described in the spec
+
+When a conflict appears:
+1. Do not mark the task complete
+2. Summarize the conflict clearly
+3. Propose the smallest reasonable resolution
+4. Ask for clarification only if you cannot safely proceed
+
+## Recovery Rules
+
+### Interrupted Sessions
+If work resumes after interruption:
+1. Read `tasks.md` first
+2. Locate any `- [~]` task
+3. Verify the code and file state for that task
+4. Resume that task before starting new work
+
+### Test Failures During Implementation
+If verification fails:
+1. Keep the current task at `- [~]`
+2. Fix the implementation or test as appropriate
+3. Re-run the relevant verification
+
+## Quality Bar (Self-Check)
+
+Before marking a task complete, verify:
+- [ ] active task status in `tasks.md` is accurate
+- [ ] task dependencies were satisfied before starting
+- [ ] changes are scoped to the active task
+- [ ] implementation matches requirements and design intent
+- [ ] relevant verification was run and passed
+
+## Response Behavior
+
+If the requested task or phase is implementable, execute it directly.
+
+If material ambiguity or a blocking spec conflict prevents safe implementation, ask a short clarification instead.
+
+## Things To Avoid
+
+- adding HTML comments such as `<!-- TBD -->`, `<!-- KNOWN ISSUE -->`
+- adding scope that is not requested
+- silently diverging from the design
+- marking tasks complete without verification
+- batching multiple task status updates after the fact
+- treating non-exhaustive Code Anatomy as a closed file list
+- creating additional files in `.specs/changes/<slug>/`. Only write to tasks.md for status updates and task amendments allowed by the Task Amendment Protocol

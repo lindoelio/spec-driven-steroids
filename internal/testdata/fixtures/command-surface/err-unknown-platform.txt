@@ -1,0 +1,2 @@
+Error: Unknown platform(s): bogus
+exit=2

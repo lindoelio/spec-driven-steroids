@@ -1,4 +1,4 @@
 packages:
   - "packages/cli"
-  - "packages/test-utils"
   - "packages/landing-page"
+  - "packages/platform/*"

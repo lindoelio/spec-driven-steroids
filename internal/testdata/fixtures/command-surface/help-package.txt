@@ -1,0 +1,16 @@
+Usage: spec-driven-steroids package [options]
+
+Render the portable Agent Plugin package and the marketplace catalogs
+
+Options:
+  --out <dir>            Directory the distribution tree is written to
+  --owner <owner>        Marketplace owner name
+  --name <name>          Portable package name
+  --description <text>   Package description
+  --author <author>      Package author
+  --icon <icon>          Package icon path
+  --category <category>  Marketplace category
+  --mcp <path>           Optional MCP configuration file
+  --dry-run              Compute the tree without writing it
+  --json                 Emit a machine-readable JSON summary
+  -h, --help             display help for command

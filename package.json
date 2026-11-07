@@ -10,29 +10,22 @@
     "author": "Lindoélio Lázaro <lindoelio@gmail.com>",
     "license": "MIT",
     "scripts": {
-        "build": "pnpm -r build",
-        "clean": "pnpm -r clean",
-        "dev:landing": "pnpm --filter @spec-driven-steroids/landing-page dev",
-        "lint": "pnpm -r lint && biome check scripts",
-        "test": "pnpm -r test",
-        "test:ui": "vitest --ui",
-        "test:coverage": "pnpm -r test:coverage",
+        "build:go": "node scripts/build-go.mjs",
+        "build": "node scripts/build-go.mjs",
+        "test": "go test ./...",
+        "test:validate": "go test ./internal/validate/...",
+        "vet": "go vet ./...",
+        "lint": "gofmt -l cmd internal",
+        "typecheck": "go vet ./...",
         "pack:check": "node scripts/pack-check.mjs",
-        "typecheck": "pnpm -r typecheck",
-        "changeset": "changeset",
-        "changeset:version": "changeset version && node scripts/sync-root-version.mjs",
-        "changeset:publish": "changeset publish",
+        "version:set": "node scripts/set-version.mjs",
+        "completeness": "node scripts/build-completeness.mjs",
         "release:tag": "git tag -a $(node scripts/create-release-tag.mjs) -m \"release $(node scripts/create-release-tag.mjs)\"",
-        "release:push-tags": "git push --follow-tags"
+        "release:push-tags": "git push --follow-tags",
+        "dev:landing": "pnpm --filter @spec-driven-steroids/landing-page dev"
     },
     "devDependencies": {
-        "@biomejs/biome": "^2.6.2",
-        "@changesets/cli": "^2.29.8",
-        "@types/node": "^20.19.0",
-        "@vitest/coverage-v8": "^3.2.7",
-        "@vitest/ui": "^3.2.7",
-        "typescript": "^5.9.3",
-        "vitest": "^3.2.7"
+        "@biomejs/biome": "^2.6.2"
     },
     "packageManager": "pnpm@10.29.2",
     "engines": {

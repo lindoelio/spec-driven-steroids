@@ -48,14 +48,96 @@ MiniMax Code receives skills only. Project scope writes to `.minimax/skills`, th
 npm install -g spec-driven-steroids
 ```
 
+The CLI is a single native binary with no runtime dependency: it needs no Node.js runtime and ships no dependency tree. The npm package installs the binary that matches your operating system and architecture.
+
 Requirements:
-- Node.js `>=20`
+- A supported operating system and architecture: Linux, macOS, or Windows on x64 or arm64
 
 The CLI provides two command names:
 - `sds` (short alias - recommended)
 - `spec-driven-steroids` (full name)
 
+### How the npm package installs the binary
+
+The npm package is a main package with no JavaScript entrypoint. It declares the
+platform packages as optional dependencies, and the registry resolves exactly
+one of them for your host, because each platform package declares the
+operating system and the architecture it applies to in npm's own vocabulary.
+
+The installer copies the binary out of the platform package the registry
+resolved, verifies it against the digest published with that package, and
+places it only when the digest matches. It performs no network access of its
+own: the registry is the only transport.
+
+| Platform package | Binary inside the package |
+|-------------------|---------------------------|
+| `@spec-driven-steroids/linux-x64` | `bin/sds` |
+| `@spec-driven-steroids/linux-arm64` | `bin/sds` |
+| `@spec-driven-steroids/darwin-x64` | `bin/sds` |
+| `@spec-driven-steroids/darwin-arm64` | `bin/sds` |
+| `@spec-driven-steroids/win32-x64` | `bin/sds.exe` |
+| `@spec-driven-steroids/win32-arm64` | `bin/sds.exe` |
+
+The package name is the host identity npm reports, so the platform package
+your host resolves is:
+
+```bash
+node -p "process.platform + '-' + process.arch"
+```
+
+### Installing the binary manually
+
+When the installation scripts are disabled (`npm install --ignore-scripts`, or
+a policy that blocks them), the installer never runs and therefore cannot print
+anything. The binary still reaches your machine inside the platform package the
+registry resolved, at:
+
+```text
+node_modules/@spec-driven-steroids/<platform>-<arch>/bin/sds
+```
+
+Link it yourself with the package name your host resolves:
+
+```bash
+# Linux and macOS
+npm link @spec-driven-steroids/linux-x64
+
+# Windows
+npm link @spec-driven-steroids/win32-x64
+```
+
+`npm link` creates the symlink in the global npm bin directory, so `sds` and
+`spec-driven-steroids` are on your PATH afterwards. On Linux and macOS the
+same link can be created by hand:
+
+```bash
+ln -sf "$(npm root)/@spec-driven-steroids/linux-x64/bin/sds" "$(npm prefix -g)/bin/sds"
+```
+
 ## CLI Usage
+
+The command surface is `inject`, `clean`, `doctor`, `repair`, `uninstall`, `templates`, `validate`, `stewardship`, and `package`, together with `--version` and `--help`. The command names, argument names, and exit codes match the previous release.
+
+### Artifact Root
+
+Every managed artifact lives in one predictable directory:
+
+| Scope | Artifact root |
+|-------|---------------|
+| Project | `.agents/` inside the working directory |
+| User (global) | `~/.agents/` under the home directory |
+
+Both roots use the same internal layout, so a skill installed at user scope and the same skill installed at project scope occupy structurally identical paths:
+
+```text
+.agents/
+├── skills/<skill-name>/SKILL.md
+├── skills/<skill-name>/references/*
+├── agents/<agent-name>.md
+└── commands/<command-name>.md
+```
+
+The user artifact root additionally holds the `stewardship/` subtree that keeps the rule graph. A project artifact shadows a user artifact of the same name. The CLI owns only the paths it records in an install manifest and never removes content it did not create.
 
 ### Inject Command
 
@@ -130,6 +212,10 @@ sds uninstall --platform opencode --scope project --yes
 # Inspect the resolved template source
 sds templates info
 sds templates info --json
+
+# Render the portable distribution package and the marketplace catalogs
+sds package --out ./dist/sds-distribution
+sds package --dry-run --json
 
 # Show version
 sds --version
@@ -292,7 +378,7 @@ sds inject
 /inject-guidelines
 ```
 
-This reviews `AGENTS.md`, `CONTRIBUTING.md`, `STYLEGUIDE.md`, `TESTING.md`, `ARCHITECTURE.md`, and `SECURITY.md`, creating missing files unless explicitly skipped. Existing documents receive only justified, targeted updates; files that need no changes are not rewritten. Guidelines are ordinary Markdown without generator branding or ownership markers. Legacy managed-section delimiters are removed without regenerating their content.
+This reviews `AGENTS.md`, `CONVENTIONS.md`, `TESTING.md`, `ARCHITECTURE.md`, and `SECURITY.md`, creating missing files unless explicitly skipped. Existing `CONTRIBUTING.md` and `STYLEGUIDE.md` content is merged into `CONVENTIONS.md` at the section level, preserving the original wording of user-authored rules. Existing documents receive only justified, targeted updates; files that need no changes are not rewritten. Guidelines are ordinary Markdown without generator branding or ownership markers. Legacy managed-section delimiters are removed without regenerating their content.
 
 3. Start the spec flow:
 
@@ -313,11 +399,13 @@ For complex long-running tasks, SDS injects `long-running-work-planning`. It kee
 ## Package Contents
 
 ```
-dist/              # Built CLI and validation modules
-templates/          # Platform templates and universal skills
+sds                # Native CLI binary for the resolved platform
+templates/         # Platform templates and universal skills
 README.md
 LICENSE
 ```
+
+The npm package resolves exactly one platform package for your operating system and architecture and installs the binary it ships, verified against the digest published with that package. The binary needs no Node.js runtime.
 
 ## Links
 

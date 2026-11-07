@@ -13,49 +13,165 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # The Go toolchain is pinned: the module declares the same version in go.mod.
+  GO_VERSION: '1.27.3'
+
 jobs:
-  verify:
+  build:
+    name: Build
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: [20.x, 22.x, 24.x]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v5
+      - name: Setup Go
+        uses: actions/setup-go@v7
         with:
-          version: 10.29.2
+          go-version: ${{ env.GO_VERSION }}
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: pnpm
+          node-version: 24
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Build the module
+        run: go build ./...
 
-      - name: Typecheck
-        run: pnpm typecheck
+      - name: Build the release binary
+        run: node scripts/build-go.mjs
 
-      - name: Build
-        run: pnpm build
+      - name: Check the stamped version
+        run: |
+          DECLARED_VERSION="$(tr -d '[:space:]' < VERSION)"
+          BINARY_VERSION="$(./dist/sds --version)"
+          if [ "$BINARY_VERSION" != "$DECLARED_VERSION" ]; then
+            echo "The binary reports $BINARY_VERSION, but the declared version is $DECLARED_VERSION" >&2
+            exit 1
+          fi
 
-      - name: Lint
-        run: pnpm lint
+  test:
+    name: Test
+    runs-on: ubuntu-latest
 
-      - name: Test
-        run: pnpm test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
 
-      - name: Coverage
-        run: pnpm test:coverage
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Run the test suite
+        run: go test ./...
+
+  vet:
+    name: Vet
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Run the static checks
+        run: go vet ./...
+
+  cross-compile:
+    name: Cross compile ${{ matrix.goos }}-${{ matrix.goarch }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # The supported operating system and architecture pairs. The Go names
+        # are the build targets; the npm names are the platform package names
+        # the registry resolves, which use npm's own vocabulary.
+        include:
+          - goos: linux
+            goarch: amd64
+            platform: linux-x64
+            asset: sds-linux-amd64
+          - goos: linux
+            goarch: arm64
+            platform: linux-arm64
+            asset: sds-linux-arm64
+          - goos: darwin
+            goarch: amd64
+            platform: darwin-x64
+            asset: sds-darwin-amd64
+          - goos: darwin
+            goarch: arm64
+            platform: darwin-arm64
+            asset: sds-darwin-arm64
+          - goos: windows
+            goarch: amd64
+            platform: win32-x64
+            asset: sds-windows-amd64.exe
+          - goos: windows
+            goarch: arm64
+            platform: win32-arm64
+            asset: sds-windows-arm64.exe
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Cross compile ${{ matrix.goos }}-${{ matrix.goarch }}
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: '0'
+        run: |
+          DECLARED_VERSION="$(tr -d '[:space:]' < VERSION)"
+          mkdir -p dist
+          go build \
+            -trimpath \
+            -ldflags "-s -w -X github.com/lindoelio/spec-driven-steroids/internal/version.Version=${DECLARED_VERSION}" \
+            -o "dist/${{ matrix.asset }}" \
+            ./cmd/sds
+
+  smoke:
+    name: Packaged artifact smoke check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Build the release binary
+        run: node scripts/build-go.mjs
+
+      - name: Run the built binary
+        run: |
+          DECLARED_VERSION="$(tr -d '[:space:]' < VERSION)"
+          BINARY_VERSION="$(./dist/sds --version)"
+          if [ "$BINARY_VERSION" != "$DECLARED_VERSION" ]; then
+            echo "The binary reports $BINARY_VERSION, but the declared version is $DECLARED_VERSION" >&2
+            exit 1
+          fi
+          ./dist/sds --help > /dev/null
 
       - name: Package smoke test
-        run: pnpm pack:check
-
-      - name: Audit production dependencies
-        run: pnpm audit --prod
+        run: node scripts/pack-check.mjs

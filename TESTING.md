@@ -4,11 +4,9 @@ Tests verify CLI behavior, filesystem effects, template transformation, and vali
 
 ## Tooling and prerequisites
 
-The CLI suite runs with Vitest 3 and V8 coverage from the workspace root dependencies. Tests use the Node environment and a configured 30-second timeout.
+The Go module is the runtime and its suite runs with `go test ./...`. The repository holds no JavaScript test runner for the CLI; the TypeScript implementation was removed once the Go suite reproduced the recorded behavior.
 
-Set up and build the workspace as described in [AGENTS.md](AGENTS.md#essential-commands) before testing a clean checkout. `@spec-driven-steroids/test-utils` exports compiled files from `dist/`. The CLI's `test` and `test:coverage` scripts run `tsc` before Vitest, but that does not replace building the shared workspace dependency.
-
-Tests in the integration suite import the CLI from `src/`, except for `tests/integration/dist-smoke.test.ts`, which imports `dist/cli/index.js`. Do not generalize the smoke test's compiled-import requirement to every integration test.
+Set up the workspace as described in [AGENTS.md](AGENTS.md#essential-commands) before testing a clean checkout. The Go suite needs the module dependencies only (`go mod download`); the workspace install is needed for the landing page and the release scripts.
 
 ## Run the relevant suite
 
@@ -16,61 +14,67 @@ Run these commands from the workspace root:
 
 | Command | Scope |
 | --- | --- |
-| `pnpm test` | Package test scripts; the CLI defines the current test suite |
-| `pnpm test:coverage` | CLI suite with coverage enforcement |
-| `pnpm --filter spec-driven-steroids test:ui` | CLI Vitest UI after compiling the CLI |
+| `go test ./...` | Go module suite |
+| `go vet ./...` | Go static checks |
+| `go test ./internal/validate/...` | Validator parity, including the golden replay |
+| `go test ./internal/emit/...` | Emission behavior against the recorded artifacts |
+| `node scripts/pack-check.mjs` | npm package shape and installer trust boundary |
+| `node scripts/build-completeness.mjs` | Fixture completeness manifest |
 
-To run one test file after building the workspace:
-
-```bash
-pnpm --filter spec-driven-steroids exec vitest run tests/unit/template-source.test.ts
-```
-
-To check prompt contracts and injection together:
+To run one package or one test:
 
 ```bash
-pnpm --filter spec-driven-steroids exec vitest run tests/unit/template-validation-guidance.test.ts tests/integration/inject-validate.e2e.test.ts
+go test ./internal/manifest/...
+go test ./internal/validate/... -run Golden
+go test ./internal/cli/... -v -run TestInject
 ```
 
-Direct `vitest` invocation does not perform the compilation included in package test scripts. Rebuild first when a test depends on changed compiled output.
+`go test ./...` runs the recorded-fixture comparisons in-process; they are fast. The live differential against the previous implementation was removed with that implementation.
 
 ## Test locations and responsibilities
 
 | Location | Responsibility |
 | --- | --- |
-| `packages/cli/tests/unit/` | Parsers, validators, template-source checks, formatting helpers, scope resolution, and rule-storage logic |
-| `packages/cli/tests/integration/` | CLI injection, installation lifecycle, non-interactive behavior, platform outputs, and compiled entry-point smoke tests |
-| `packages/cli/tests/helpers/` | Shared template assertions and other suite helpers |
-| `packages/test-utils/src/` | Filesystem helpers and reusable fixtures |
+| `internal/*/` | Go package tests: parity checks against the recorded fixtures, descriptor and emission behavior, command-surface rendering |
+| `internal/testdata/fixtures/` | Recorded behavioral fixtures and the frozen canonical bodies used as the oracle |
+| `internal/assets/guidance_test.go` | The shipped guidance contract, including the consolidation of the contribution rules |
+| `internal/cli/` | Command-surface rendering, exit codes, and the completeness manifest |
 
-Use `*.test.ts` filenames; CLI workflow tests also use `*.e2e.test.ts`. Import the Vitest APIs used by a test explicitly, following neighboring tests. Describe observable behavior in test names.
+Go tests use the `testing` package, name the file `<subject>_test.go`, and live next to the package they exercise. Describe observable behavior in test names.
 
 For filesystem or platform changes, cover the resulting paths and file contents, not just a successful exit. For cleanup changes, include unrelated user files and modified installed files so preservation is exercised. For validator fixes, include a failing input and a valid counterpart.
 
+## The recorded fixtures are the baseline
+
+The Go implementation replaced a TypeScript CLI. Before the TypeScript tree was removed, the two were compared case by case and the recorded results were frozen under `internal/testdata/fixtures/`:
+
+| Fixture | Content |
+| --- | --- |
+| `command-surface/` | The rendered help of every command, the version output, and the error output for unknown commands and options |
+| `artifacts/` | The emitted paths and byte contents per platform and scope |
+| `validator/validate-golden.json` | Every validator case with its workspace inputs, stdout, stderr, and exit code |
+| `completeness.json` | The evidence file behind every acceptance criterion |
+
+A change that alters observable behavior has to update the matching fixture in the same commit. A test that regenerates the fixture it compares against proves nothing: the fixtures are inputs, never outputs.
+
+The validator replay is self-contained, so it runs without the previous implementation present. The live differential harnesses skip when the oracle is absent.
+
 ## Isolate side effects
 
-The `mockFs` helper creates real temporary directories; it is not an in-memory filesystem. Clean up every test-owned directory and restore process-wide state:
+Tests create real temporary directories; they are not in-memory filesystems. Clean up every test-owned directory and restore process-wide state:
 
-- Save and restore the working directory when using `process.chdir`
-- Redirect home directories, `SDS_CONFIG_DIR`, caches, and rule-storage roots when the tested path uses them; do not rely on the developer's configuration
-- Restore environment variables, mocks, globals, and `process.exitCode` when changed
-- Use bundled templates for injection tests through `SPEC_DRIVEN_USE_BUNDLED_TEMPLATES=true` or an explicit bundled source
-- Test remote-source behavior with controlled fetch responses and isolated cache directories
-
-See `inject-validate.e2e.test.ts`, `manifest-clean.e2e.test.ts`, and `template-source.test.ts` for existing patterns.
+- Save and restore the working directory when a test changes it
+- Redirect the home directory, `SDS_CONFIG_DIR`, `SDS_TEMPLATE_CACHE_DIR`, and `SDS_HOME` when the tested path uses them; do not rely on the developer's configuration
+- Restore environment variables and process state when a test changes them
+- Use the bundled templates for injection tests instead of a remote source
+- Test remote-source behavior with an isolated cache directory
 
 ## Coverage and release confidence
 
-The root and CLI Vitest configurations currently enforce these thresholds:
+The suite has no enforced coverage threshold. The completeness manifest plays that role for the acceptance criteria: it records, for every criterion of the change, the file that implements it and the fixture that demonstrates it. Rebuild it with `node scripts/build-completeness.mjs` and keep it at full coverage.
 
-| Statements | Branches | Functions | Lines |
-| --- | --- | --- | --- |
-| 70% | 65% | 75% | 70% |
+CI runs the Go build, the Go test suite, `go vet`, a cross-compilation check for every supported operating system and architecture pair, and the packaged-artifact smoke check. Platform-path tests simulate other environments; passing them is not evidence of execution on native Windows or macOS runners.
 
-Keep the two configurations consistent when intentionally changing coverage policy. Do not lower thresholds merely to hide missing coverage.
-
-CI runs the suite on Linux with Node.js 20, 22, and 24. Platform-path tests simulate other environments; passing them is not evidence of execution on native Windows or macOS runners.
-
-The package smoke check installs an npm tarball in a temporary prefix and invokes the installed CLI. It checks packaging and startup, not the behavior of every command. Its prerequisite and command are listed in [AGENTS.md](AGENTS.md#essential-commands).
+The package smoke check packs the npm tarball, installs it in a temporary prefix, and verifies the installer's trust boundary. It checks packaging and startup, not the behavior of every command.
 
 Template contract tests check emitted instructions and file placement. They do not execute a host LLM or prove that it follows approval, incremental-edit, or no-op instructions. Behavioral evaluation of generated documents requires a separate run in the host AI tool.

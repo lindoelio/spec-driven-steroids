@@ -1,15 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const packageJsonPath = path.resolve('packages/cli/package.json');
-const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-const version = packageJson.version;
+const versionPath = path.resolve('VERSION');
+const version = fs.readFileSync(versionPath, 'utf8').trim();
 
 if (!version) {
-  console.error('Could not resolve version from packages/cli/package.json');
+  console.error('Could not resolve the declared version from VERSION');
   process.exit(1);
 }
 
-const tag = `v${version}`;
-
-process.stdout.write(tag);
+process.stdout.write(`v${version}`);

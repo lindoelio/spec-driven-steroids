@@ -1,33 +1,56 @@
 # Architecture
 
-Spec-Driven Steroids is a local Node.js CLI plus a distributable prompt and skill bundle. It installs instructions into AI coding tools, validates planning artifacts, and stores project-scoped rules. The host AI tool, not the CLI, interprets prompts and performs coding or guideline-generation work.
+Spec-Driven Steroids is a local Go CLI plus a distributable prompt and skill bundle. It installs instructions into AI coding tools, validates planning artifacts, and stores project-scoped rules. The host AI tool, not the CLI, interprets prompts and performs coding or guideline-generation work.
 
 ## Package boundaries
 
 | Package | Visibility | Responsibility |
 | --- | --- | --- |
-| `packages/cli` | Public: `spec-driven-steroids` | CLI commands, validators, rule management, and shipped templates |
-| `packages/test-utils` | Private | Shared test fixtures and filesystem helpers |
+| `cmd/sds` | Entry point | Native binary that wires the command surface |
+| `internal/*` | Internal | One Go package per subsystem |
+| `packages/cli` | Public: `spec-driven-steroids` | Main npm package: the installer that verifies the platform digest |
+| `packages/platform/<os>-<cpu>` | Public | One release package per platform, holding the binary and its digest |
 | `packages/landing-page` | Private | Vite site, deployed separately to GitHub Pages |
 
-The CLI and test utilities compile with TypeScript to native ES modules. The CLI is not bundled: runtime dependencies remain npm dependencies. The landing page has a separate browser build.
+The CLI is a single Go module at the repository root with no runtime dependency: the canonical artifacts are embedded with the standard library. The TypeScript implementation was removed after the Go suite reproduced the recorded behavior; the fixtures under `internal/testdata/fixtures/` hold that proof and are the regression baseline. The landing page has a separate browser build.
 
 ## Implementation boundaries
 
-Paths in this table are relative to `packages/cli/src/`:
+Paths in this table are relative to `internal/`:
 
-| Module | Responsibility |
+| Package | Responsibility |
 | --- | --- |
-| `cli/index.ts` | Commander entry point, injection orchestration, cleanup, and command registration |
-| `cli/platform-registry.ts` | Platform identity, scope support, destination resolution, and post-processing selection |
-| `cli/platform-config.ts` | File names, output formats, frontmatter, and command-agent mappings |
-| `cli/skill-registry.ts` | Shared shipped-skill inventory for installation, legacy cleanup, and remote compatibility checks |
-| `cli/template-source.ts`, `cli/template-bundle.ts` | Remote or bundled source resolution, bundle validation, and cache handling |
-| `cli/transformation-pipeline.ts`, `cli/format-transformer.ts` | Universal template transformation into platform artifacts |
-| `cli/install-manifest.ts` | Installed-file inventory, hashes, and manifest-based cleanup |
-| `commands/manifest-commands.ts` | Doctor, repair, uninstall, and template-source inspection |
-| `core/validate/` | Brief/full structure checks, document validation, traceability, and text/JSON results |
-| `context-stewardship/` | Rule storage, lifecycle, retrieval, scope resolution, and phase-context assembly |
+| `cli/` | Command surface: inject, clean, doctor, repair, uninstall, templates, validate, stewardship, package |
+| `cmdr/` | Dependency-free command-line framework whose observable behavior matches the previous `commander` release |
+| `config/` | Artifact root resolution and the internal state directories |
+| `descriptor/` | Platform descriptors and the descriptor data |
+| `emit/` | Canonical and platform-side artifact emission |
+| `manifest/` | Installed-file inventory, hashes, and manifest-based cleanup |
+| `bundle/` | Remote or bundled source resolution, bundle validation, and cache handling |
+| `cleanup/` | Legacy-installation recognition and manifest-driven removal |
+| `validate/` | Brief/full structure checks, document validation, traceability, and text/JSON results |
+| `stewardship/` | Rule storage, lifecycle, retrieval, scope resolution, and phase-context assembly |
+| `pack/` | Portable package rendering, vendor manifests, and marketplace catalogs |
+| `serialize/` | Artifact serialization |
+| `fsutil/` | Filesystem helpers |
+| `assets/` | Embedded canonical artifact tree and the frozen pre-change baseline |
+| `version/` | Single version source shared by the binary, the npm package, and the Homebrew formula |
+
+## Artifact root
+
+Every managed artifact lives in the platform-neutral artifact root: `.agents/` inside the working directory at project scope and `~/.agents/` under the home directory at user scope. Both roots use the same internal layout, so a skill installed at user scope and the same skill installed at project scope occupy structurally identical paths.
+
+```text
+.agents/
+├── skills/<skill-name>/SKILL.md
+├── skills/<skill-name>/references/*
+├── agents/<agent-name>.md
+└── commands/<command-name>.md
+```
+
+The user artifact root additionally holds the `stewardship/` subtree that holds the rule graph. Resolution walks from the most specific scope to the least specific, so a project artifact shadows a user artifact of the same name; the resolved artifact set, the layer that supplied each artifact, the effective root, and the written paths are reported by the doctor and inject commands.
+
+A platform that cannot read the artifact root receives a platform-side artifact that carries the same canonical bytes. The CLI owns exactly the paths it records in an install manifest: it never removes a directory it did not create, never rewrites a path it did not write, and never continues upward past the directory that owns a removed file.
 
 ## Injection data flow
 
@@ -44,7 +67,7 @@ flowchart TD
     Files --> Manifest["Record installed paths and SHA-256 hashes"]
 ```
 
-The source prompts live under `packages/cli/templates/universal/`. The pipeline emits Markdown, TOML, or command skills according to platform configuration. Platform-specific post-processing handles differences such as flattened global prompt paths.
+The canonical tree lives under `internal/assets/canonical/` and is the single source the binary embeds and the marketplace package ships. The pipeline emits Markdown, TOML, or command skills according to platform configuration. Platform-specific post-processing handles differences such as flattened global prompt paths.
 
 Installed artifacts are copies, not live links to source templates. Editing a repository template does not update an existing global installation until that installation is refreshed.
 
@@ -58,7 +81,7 @@ Validation is structural, not a proof that a design meets product needs or that 
 
 Brief evidence-path coverage and minimum verification-signal checks emit compatibility warnings, not errors. Empty and mixed active lanes are errors; `.archive/` snapshots are inactive. Approval, slicing, recovery adequacy, and scope are host-interpreted contracts, not state inferred or enforced by these structural checks.
 
-The optional planning workflow has a brief lane and a full lane. Their artifacts and approval behavior are described in [README.md](README.md#spec-flow). Those approvals are instructions interpreted by the host agent, not an execution sandbox implemented by the CLI. Likewise, `/inject-guidelines` supplies instructions for document generation; it is not a standalone Markdown generator inside the Node.js runtime.
+The optional planning workflow has a brief lane and a full lane. Their artifacts and approval behavior are described in [README.md](README.md#spec-flow). Those approvals are instructions interpreted by the host agent, not an execution sandbox implemented by the CLI. Likewise, `/inject-guidelines` supplies instructions for document generation; it is not a standalone Markdown generator inside the CLI runtime.
 
 ## Persistent state
 
@@ -66,10 +89,10 @@ The CLI uses separate local storage areas:
 
 | State | Location and control |
 | --- | --- |
-| Installed agent, command, and skill files | Project or user directories resolved by the platform registry |
+| Installed agent, command, and skill files | The artifact root: `.agents/` at project scope, `~/.agents/` at user scope |
 | Install manifests | `installs/` under the resolved config directory; `SDS_CONFIG_DIR` overrides it, otherwise platform/XDG defaults apply |
 | Remote template cache | Platform-specific cache directory; overridable with `SDS_TEMPLATE_CACHE_DIR` |
-| Rule graph | `~/.agents/stewardship/` by default, or `stewardship/` under `SDS_HOME` |
+| Rule graph | The `stewardship/` subtree of the user artifact root, `~/.agents/stewardship/` |
 
 Rule storage uses JSON files with lifecycle state, provenance, and version history. Writes use a lock and temporary-file rename. Project identities combine repository/path information to distinguish checkouts; project-scoped retrieval falls back to global rules. Retrieval uses lexical overlap, recency, and confidence, despite the engine's `SemanticRetrievalEngine` name. It does not use embeddings or an external vector database.
 
@@ -89,4 +112,4 @@ Distribution has three independent workflows:
 - Template bundle publication on release tags or manual dispatch, updating the `templates-latest` assets
 - GitHub Pages deployment for landing-page changes on `main` or manual dispatch
 
-Changesets tracks public-package version changes. The root versioning script synchronizes the workspace-root version with the CLI package. Contribution, direct-delivery, and release responsibilities are documented in [CONTRIBUTING.md](CONTRIBUTING.md#changesets-and-publishing).
+The version is declared once, in the `VERSION` file at the repository root, and every published artifact derives from it. The release script writes that declaration and every place that derives from it. Contribution, direct-delivery, and release responsibilities are documented in [CONVENTIONS.md](CONVENTIONS.md#versioning-and-publishing).
