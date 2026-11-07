@@ -67,6 +67,7 @@ For third-party contributions or an explicitly requested PR, open it against `ma
 - The Go test suite
 - The release binary, its stamped version, and a smoke run
 - The cross-compilation matrix for the six supported os/cpu pairs
+- The built binary on macOS and Windows, with an injection and a cleanup
 - The npm package shape and the installer trust boundary
 
 Workflow configuration does not establish repository branch-protection settings. Do not assume a required approval count or signed-commit policy from these files.

@@ -11,7 +11,10 @@ import path from 'node:path';
 const root = process.cwd();
 const version = fs.readFileSync(path.resolve(root, 'VERSION'), 'utf8').trim();
 const outputDir = process.argv[2] ?? path.resolve(root, 'dist');
-const output = path.join(outputDir, 'sds');
+// Windows only runs a program whose name carries the extension, so the
+// binary is named there the way the platform package names it.
+const binaryName = process.platform === 'win32' ? 'sds.exe' : 'sds';
+const output = path.join(outputDir, binaryName);
 
 execFileSync('go', [
   'build',

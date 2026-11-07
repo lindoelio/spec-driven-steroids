@@ -175,3 +175,91 @@ jobs:
 
       - name: Package smoke test
         run: node scripts/pack-check.mjs
+
+  # The release ships binaries for macOS and Windows, and the Homebrew tap
+  # serves macOS first. The cross compilation proves that they build, but
+  # only running them proves that they work on the platform they serve.
+  smoke-darwin:
+    name: Darwin smoke check (${{ matrix.runner }})
+    runs-on: ${{ matrix.runner }}
+
+    strategy:
+      matrix:
+        runner:
+          - macos-latest
+          - macos-15-intel
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Build the release binary
+        run: node scripts/build-go.mjs
+
+      - name: Run the built binary
+        run: |
+          set -euo pipefail
+          DECLARED_VERSION="$(tr -d '[:space:]' < VERSION)"
+          BINARY_VERSION="$(./dist/sds --version)"
+          if [ "$BINARY_VERSION" != "$DECLARED_VERSION" ]; then
+            echo "The binary reports $BINARY_VERSION, but the declared version is $DECLARED_VERSION" >&2
+            exit 1
+          fi
+          ./dist/sds --help > /dev/null
+
+      - name: Inject and clean on the platform
+        run: |
+          set -euo pipefail
+          BINARY="$(pwd)/dist/sds"
+          WORK="$(mktemp -d)"
+          cd "$WORK"
+          "$BINARY" inject --platform claudecode --scope project --yes --templates bundled
+          "$BINARY" doctor
+          "$BINARY" clean --project --platform claudecode --yes
+          "$BINARY" clean --project --yes
+          LEFT="$(find . -type f | wc -l | tr -d ' ')"
+          if [ "$LEFT" != "0" ]; then
+            echo "The cleanup left $LEFT file(s) behind." >&2
+            exit 1
+          fi
+
+  smoke-windows:
+    name: Windows smoke check
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Build the release binary
+        run: node scripts/build-go.mjs
+
+      - name: Run the built binary
+        shell: pwsh
+        run: |
+          $declared = (Get-Content VERSION -Raw).Trim()
+          $binary = (.\dist\sds.exe --version).Trim()
+          if ($binary -ne $declared) {
+            throw "The binary reports $binary, but the declared version is $declared"
+          }
+          .\dist\sds.exe --help | Out-Null
