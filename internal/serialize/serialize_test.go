@@ -110,3 +110,24 @@ func TestAnUnknownWrapperIsRejected(t *testing.T) {
 		t.Errorf("the declared wrapper was refused: %v", err)
 	}
 }
+
+// TestARepeatedKeyDropsTheFrontmatter checks that a frontmatter with a
+// repeated key is ignored, the way the previous implementation ignored it.
+//
+// The parser of the previous implementation refused a mapping with a
+// repeated key, so it transformed the body without any frontmatter. A key
+// that appears twice is not a mapping, and an artifact that carries it twice
+// is not a valid document.
+func TestARepeatedKeyDropsTheFrontmatter(t *testing.T) {
+	source := ParseSource("---\nname: n\ndescription: d\ntags: y\ntags: y\n---\n\nBODY")
+
+	if len(source.Frontmatter) != 0 {
+		t.Errorf("the frontmatter was kept: %v", source.Frontmatter)
+	}
+	if len(source.FrontmatterOrder) != 0 {
+		t.Errorf("the order of the frontmatter was kept: %v", source.FrontmatterOrder)
+	}
+	if source.Body != "BODY" {
+		t.Errorf("the body is %q, want %q", source.Body, "BODY")
+	}
+}

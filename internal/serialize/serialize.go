@@ -143,6 +143,13 @@ func ParseSource(content string) Source {
 
 	for index := 0; index+1 < len(mapping.Content); index += 2 {
 		key := mapping.Content[index].Value
+		if _, repeated := source.Frontmatter[key]; repeated {
+			// A mapping with a repeated key is not a mapping, and the
+			// previous implementation dropped the whole frontmatter when
+			// it read one. The same happens here, so an artifact never
+			// carries a key twice.
+			return Source{Frontmatter: map[string]string{}, Body: source.Body}
+		}
 		value, ok := frontmatterValue(mapping.Content[index+1])
 		if !ok {
 			continue
