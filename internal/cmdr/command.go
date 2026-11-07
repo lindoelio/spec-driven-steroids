@@ -670,10 +670,14 @@ func (c *Command) suggestCommand(name string) string {
 
 // suggestOption returns the suggestion commander appends to an unknown option
 // message.
+//
+// Commander walks the parents of the command and collects the long flag of
+// every option each of them shows, including the implicit help option, so a
+// mistyped help flag is suggested like any other.
 func (c *Command) suggestOption(flag string) string {
 	candidates := []string{}
 	for command := c; command != nil; command = command.parent {
-		for _, opt := range command.options {
+		for _, opt := range visibleOptions(command) {
 			if opt.long != "" {
 				candidates = append(candidates, opt.long)
 			}
@@ -728,8 +732,11 @@ func (c *Command) checkNumberOfArguments() error {
 
 // printHelpOnStderr prints the help text on stderr. Commander does the same
 // when a parent command is invoked without a subcommand and exits with code 1.
+//
+// The help that follows a failure is measured against the standard error, so
+// it is wrapped at the width of that stream.
 func (c *Command) printHelpOnStderr() error {
-	fmt.Fprint(c.errWriter(), c.HelpString())
+	fmt.Fprint(c.errWriter(), c.ErrorHelpString())
 	return NewUsageError("error: missing required command")
 }
 

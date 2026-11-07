@@ -89,6 +89,15 @@ func (r *helpRenderer) visibleCommands(cmd *Command) []*Command {
 
 // visibleOptions returns the options including the implicit help option.
 func (r *helpRenderer) visibleOptions(cmd *Command) []*Option {
+	return visibleOptions(cmd)
+}
+
+// visibleOptions returns the options of a command including the implicit help
+// option.
+//
+// The implicit help option is part of the surface the user sees, so it also
+// belongs to the candidates the suggestion for an unknown option compares.
+func visibleOptions(cmd *Command) []*Option {
 	options := make([]*Option, 0, len(cmd.options)+1)
 	options = append(options, cmd.options...)
 
