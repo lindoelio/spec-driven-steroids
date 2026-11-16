@@ -50,13 +50,29 @@ MiniMax Code receives skills only. Project scope writes to `.minimax/skills`, th
 ```bash
 # Stable release (TypeScript 0.23.0, unchanged)
 npm install -g spec-driven-steroids
-
-# Native preview (no stewardship knowledge graph)
-npm install -g spec-driven-steroids@next
 ```
 
-The preview binaries are attached to the GitHub prerelease `v1.0.0-next.N`
-first; the npm `@next` line follows once the npm account is ready.
+The native preview has no npm line yet. Download the binary for your platform
+from the GitHub prerelease, verify it against `checksums.txt`, and put it on
+your `PATH`:
+
+```bash
+VERSION=1.0.0-next.1
+OS=darwin   # linux, or windows with the .exe suffix
+ARCH=arm64  # amd64
+TAG="v${VERSION}"
+ASSET="sds-${OS}-${ARCH}"
+
+curl -fsSL -o "${ASSET}" "https://github.com/lindoelio/spec-driven-steroids/releases/download/${TAG}/${ASSET}"
+curl -fsSL -o checksums.txt "https://github.com/lindoelio/spec-driven-steroids/releases/download/${TAG}/checksums.txt"
+shasum -a 256 -c --ignore-missing checksums.txt
+chmod +x "${ASSET}" && sudo mv "${ASSET}" /usr/local/bin/sds
+sds --version
+```
+
+Windows publishes `sds-windows-<arch>.exe` and verifies the checksum with
+`Get-FileHash`. The npm `@next` line follows once the npm account is ready;
+the GitHub prerelease is the preview channel until then.
 
 The CLI is a single native binary with no runtime dependency: the binary needs no Node.js runtime and ships no dependency tree. The npm package installs the binary that matches your operating system and architecture through a thin Node launcher; the launcher is the only JavaScript that runs, and the binary does the work.
 
