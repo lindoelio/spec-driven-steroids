@@ -27,7 +27,7 @@ Injection and repair can overwrite installed artifacts. In particular, repair re
 
 A dry-run is not a sandbox: template-source resolution may still access the network or populate its cache. Do not interpret it as permission to trust arbitrary source URLs or local manifests.
 
-Install manifests, caches, and rule graphs are local files, not encrypted secret stores. Do not put tokens, credentials, private keys, or confidential customer data in templates, rule content, fixtures, or command output. Keep storage paths scoped and preserve the rule store's scope-ID validation, locking, and atomic-write behavior.
+Install manifests and caches are local files, not encrypted secret stores. Do not put tokens, credentials, private keys, or confidential customer data in templates, fixtures, or command output. Keep storage paths scoped and preserve the manifest locking and atomic-write behavior.
 
 ## Remote templates and host instructions
 

@@ -64,7 +64,7 @@ The validator replay is self-contained, so it runs without the previous implemen
 Tests create real temporary directories; they are not in-memory filesystems. Clean up every test-owned directory and restore process-wide state:
 
 - Save and restore the working directory when a test changes it
-- Redirect the home directory, `SDS_CONFIG_DIR`, `SDS_TEMPLATE_CACHE_DIR`, and `SDS_HOME` when the tested path uses them; do not rely on the developer's configuration
+- Redirect the home directory, `SDS_CONFIG_DIR`, and `SDS_TEMPLATE_CACHE_DIR` when the tested path uses them; do not rely on the developer's configuration
 - Restore environment variables and process state when a test changes them
 - Use the bundled templates for injection tests instead of a remote source
 - Test remote-source behavior with an isolated cache directory

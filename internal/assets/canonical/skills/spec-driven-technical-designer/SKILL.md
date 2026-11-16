@@ -27,7 +27,7 @@ When this skill begins execution, create a todo list containing the following it
 
 1. Read approved requirements.md
 2. Read project guidelines
-3. Retrieve contextual memory (architecture)
+3. Review repository evidence for architectural patterns and constraints
 4. Inspect existing codebase patterns
 5. Classify change type
 6. Design architecture with design elements
@@ -185,15 +185,9 @@ If enough information is available, produce the full `design.md` content directl
 
 If material ambiguity blocks a sound design, ask a short clarification first. Do not produce a low-confidence architecture.
 
-## Contextual Stewardship Integration
+## Repository Evidence
 
-At the start of this phase, invoke the `contextual-stewardship` skill to retrieve established architectural patterns:
-
-```text
-Invoke: contextual-stewardship skill
-Action: retrieve
-Query: architecture
-```
+Ground architectural patterns in the repository: read the existing code, `ARCHITECTURE.md`, `SECURITY.md`, and the approved requirements before choosing a design.
 
 ## Things To Avoid
 

@@ -139,7 +139,6 @@ Code Anatomy is not exhaustive unless explicitly marked `Coverage: Exhaustive`. 
 | AGENTS.md | Read before design | Follow repository agent constraints and validation commands |
 | ARCHITECTURE.md | Read before design | Preserve documented package boundaries |
 | src/example/service.ts | Verified by Glob/Read | Reuse existing service naming and module placement |
-| contextual-stewardship:architecture | Retrieved before design | Apply active architecture rules |
 
 ## Data Models
 
@@ -230,7 +229,6 @@ This implementation is organized into 4 phases with at least one test task per i
 
 - Follow `TESTING.md` for test placement and command selection.
 - Follow `CONVENTIONS.md` and the design document's `Repository Context Evidence` for naming, file placement, and package boundaries.
-- Apply contextual-stewardship workflow rules retrieved for this phase.
 - If design Code Anatomy coverage is not `Exhaustive`, execute every Discovery Target during Phase 3 and record the evidence below before writing implementation tasks.
 
 ## Discovery Evidence

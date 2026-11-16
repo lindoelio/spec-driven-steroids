@@ -81,16 +81,18 @@ func runPackage(command *cmdr.Command) error {
 		return err
 	}
 
-	violations, err := pack.Validate(result.OutDir)
-	if err != nil {
-		return err
-	}
-	if len(violations) > 0 {
-		for _, violation := range violations {
-			fmt.Fprintln(os.Stderr, red("Error: "+violation))
+	if !options.DryRun {
+		violations, err := pack.Validate(result.OutDir)
+		if err != nil {
+			return err
 		}
-		setExitCode(1)
-		return nil
+		if len(violations) > 0 {
+			for _, violation := range violations {
+				fmt.Fprintln(os.Stderr, red("Error: "+violation))
+			}
+			setExitCode(1)
+			return nil
+		}
 	}
 
 	if command.OptBool("json") {

@@ -56,8 +56,8 @@ func TestTheCanonicalTreeHoldsFourteenSkillsOneAgentAndTwoCommands(t *testing.T)
 		}
 	}
 
-	if len(skills) != 14 {
-		t.Errorf("the canonical tree holds %d skills, want 14: %v", len(skills), skills)
+	if len(skills) != 13 {
+		t.Errorf("the canonical tree holds %d skills, want 13: %v", len(skills), skills)
 	}
 	if agents != 1 {
 		t.Errorf("the canonical tree holds %d agents, want 1", agents)

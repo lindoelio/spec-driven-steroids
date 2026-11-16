@@ -18,8 +18,9 @@ const fixtureDirectory = "../testdata/fixtures/command-surface"
 // every command against the captured fixtures.
 //
 // The previous release's contract is the baseline: every command it exposed
-// keeps its name, its argument names and its help output. The package command
-// is the only addition, and the root help records it.
+// keeps its name, its argument names and its help output, except the removed
+// stewardship command. The package command is the only addition, and the root
+// help records it.
 func TestTheCommandSurfaceMatchesTheCapturedContract(t *testing.T) {
 	cases := []struct {
 		arguments []string
@@ -32,7 +33,6 @@ func TestTheCommandSurfaceMatchesTheCapturedContract(t *testing.T) {
 		{arguments: []string{"uninstall"}, fixture: "help-uninstall.txt"},
 		{arguments: []string{"templates"}, fixture: "help-templates.txt"},
 		{arguments: []string{"validate"}, fixture: "help-validate.txt"},
-		{arguments: []string{"stewardship"}, fixture: "help-stewardship.txt"},
 		{arguments: []string{"package"}, fixture: "help-package.txt"},
 	}
 
@@ -60,10 +60,19 @@ func TestTheCommandSurfaceMatchesTheCapturedContract(t *testing.T) {
 }
 
 // TestTheRootHelpKeepsThePreviousCommands checks that the root help still
-// lists every command of the previous release.
+// lists every command of the previous release except the removed stewardship
+// command, and that it matches the current root fixture byte for byte.
 func TestTheRootHelpKeepsThePreviousCommands(t *testing.T) {
 	program := NewProgram()
 	help := program.HelpString()
+
+	current, err := os.ReadFile(filepath.Join(fixtureDirectory, "help-root-current.txt"))
+	if err != nil {
+		t.Fatalf("the captured fixture is not available: %v", err)
+	}
+	if help != string(current) {
+		t.Errorf("the root help differs:\n--- expected ---\n%s\n--- actual ---\n%s", current, help)
+	}
 
 	previous, err := os.ReadFile(filepath.Join(fixtureDirectory, "help-root.txt"))
 	if err != nil {
@@ -92,6 +101,13 @@ func TestTheRootHelpKeepsThePreviousCommands(t *testing.T) {
 		}
 		name := strings.Fields(trimmed)[0]
 		if name == "Usage:" || name == "Options:" || name == "Commands:" {
+			continue
+		}
+		// The stewardship command was removed with its knowledge graph.
+		if name == "stewardship" {
+			if listed[name] {
+				t.Errorf("the root help still lists the removed command %q", name)
+			}
 			continue
 		}
 		if !listed[name] {

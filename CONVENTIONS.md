@@ -20,7 +20,6 @@ internal/              Go packages, one per subsystem
   bundle/              Remote template bundle resolution
   cleanup/             Manifest-driven cleanup
   validate/            Spec validators
-  stewardship/         Rule storage, retrieval, and lifecycle
   pack/                Portable package and marketplace catalogs
   config/              Artifact root and internal state directories
   cmdr/                Dependency-free command-line framework

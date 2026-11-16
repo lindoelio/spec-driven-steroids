@@ -3,7 +3,7 @@ package bundle
 // The skill registry names the skills the canonical tree carries and the
 // files a bundle must provide for them.
 
-// steroidSkillDirs are the fourteen skill directories the canonical tree
+// steroidSkillDirs are the thirteen skill directories the canonical tree
 // carries and a template bundle must provide.
 var steroidSkillDirs = []string{
 	"spec-driven-planner",
@@ -17,7 +17,6 @@ var steroidSkillDirs = []string{
 	"project-guidelines-writer",
 	"agent-work-auditor",
 	"code-review-hardening",
-	"contextual-stewardship",
 	"quality-grading",
 	"universal-live-check",
 }
@@ -26,7 +25,7 @@ var steroidSkillDirs = []string{
 // entry point.
 const plannerSkill = "spec-driven-planner"
 
-// RequiredSkills returns the fourteen required skill directory names.
+// RequiredSkills returns the thirteen required skill directory names.
 func RequiredSkills() []string {
 	skills := make([]string, len(steroidSkillDirs))
 	copy(skills, steroidSkillDirs)

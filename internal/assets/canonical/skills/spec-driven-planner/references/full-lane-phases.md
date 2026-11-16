@@ -52,10 +52,9 @@ At the start of each planning phase, load the `long-running-work-planning` skill
 Before invoking any phase-specific skill, you MUST collect and pass repository context into that skill invocation:
 
 - Read available project guideline files relevant to the phase (`AGENTS.md`, `ARCHITECTURE.md`, `CONVENTIONS.md`, `TESTING.md`, `SECURITY.md`).
-- Invoke `contextual-stewardship` in `inject` or `retrieve` mode for the current phase (`requirements`, `design`, `tasks`, or `implementation`).
 - For design and implementation phases, inspect targeted existing code patterns with `Glob`, `Grep`, and `Read` before proposing file placement, abstractions, naming, or tests.
 - Summarize the applicable constraints and pattern evidence in the phase artifact or implementation notes.
-- If guidelines, contextual memory, and code evidence conflict, stop and resolve the conflict before continuing.
+- If guidelines and code evidence conflict, stop and resolve the conflict before continuing.
 
 ### Phase Orchestration
 

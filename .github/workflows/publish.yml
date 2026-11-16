@@ -31,6 +31,10 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       tag: ${{ steps.version.outputs.tag }}
+      channel: ${{ steps.version.outputs.channel }}
+      dist_tag: ${{ steps.version.outputs.dist_tag }}
+      template_tag: ${{ steps.version.outputs.template_tag }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
 
     steps:
       - name: Checkout repository
@@ -58,6 +62,20 @@ jobs:
           fi
           echo "version=${DECLARED_VERSION}" >> "$GITHUB_OUTPUT"
           echo "tag=${EXPECTED_TAG}" >> "$GITHUB_OUTPUT"
+          # A tag with a prerelease suffix (v1.0.0-next.0) ships the native
+          # preview: npm dist-tag next, templates-next, GitHub prerelease.
+          # A plain tag ships the stable channel: npm latest, templates-latest.
+          if [[ "${EXPECTED_TAG}" == *-next.* ]]; then
+            echo "channel=next" >> "$GITHUB_OUTPUT"
+            echo "dist_tag=next" >> "$GITHUB_OUTPUT"
+            echo "template_tag=templates-next" >> "$GITHUB_OUTPUT"
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "channel=latest" >> "$GITHUB_OUTPUT"
+            echo "dist_tag=latest" >> "$GITHUB_OUTPUT"
+            echo "template_tag=templates-latest" >> "$GITHUB_OUTPUT"
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Verify every npm manifest carries the declared version
         env:
@@ -195,9 +213,10 @@ jobs:
           set -euo pipefail
           DECLARED_VERSION="$(tr -d '[:space:]' < VERSION)"
           mkdir -p dist
+          MANIFEST_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ needs.verify.outputs.template_tag }}/templates-manifest.json"
           go build \
             -trimpath \
-            -ldflags "-s -w -X github.com/lindoelio/spec-driven-steroids/internal/version.Version=${DECLARED_VERSION}" \
+            -ldflags "-s -w -X github.com/lindoelio/spec-driven-steroids/internal/version.Version=${DECLARED_VERSION} -X github.com/lindoelio/spec-driven-steroids/internal/bundle.DefaultManifestURL=${MANIFEST_URL}" \
             -o "dist/${{ matrix.asset }}" \
             ./cmd/sds
 
@@ -244,13 +263,19 @@ jobs:
         run: |
           set -euo pipefail
           TAG="${{ needs.verify.outputs.tag }}"
+          if [ "${{ needs.verify.outputs.prerelease }}" = "true" ]; then
+            PRERELEASE="--prerelease"
+          else
+            PRERELEASE=""
+          fi
           if gh release view "${TAG}" > /dev/null 2>&1; then
             gh release upload "${TAG}" dist/sds-* dist/checksums.txt --clobber
           else
+            # shellcheck disable=SC2086
             gh release create "${TAG}" dist/sds-* dist/checksums.txt \
               --title "Spec-Driven Steroids ${TAG}" \
               --notes "The native sds binary for every supported platform, with the checksums of each asset." \
-              --verify-tag
+              --verify-tag ${PRERELEASE}
           fi
 
   # The platform packages are published before the main package that declares
@@ -366,14 +391,15 @@ jobs:
         working-directory: packages/platform/${{ matrix.platform }}
         env:
           VERSION: ${{ needs.verify.outputs.version }}
+          DIST_TAG: ${{ needs.verify.outputs.dist_tag }}
         run: |
           set -euo pipefail
-          PUBLISHED="$(npm view "@spec-driven-steroids/${{ matrix.platform }}" version 2>/dev/null || true)"
+          PUBLISHED="$(npm view "@spec-driven-steroids/${{ matrix.platform }}@${VERSION}" version 2>/dev/null || true)"
           if [ "${PUBLISHED}" = "${VERSION}" ]; then
             echo "@spec-driven-steroids/${{ matrix.platform }}@${PUBLISHED} is already published."
             exit 0
           fi
-          npm publish --provenance --access public
+          npm publish --tag "${DIST_TAG}" --provenance --access public
 
   # The main package is published after every platform package it declares.
   npm-main:
@@ -405,7 +431,7 @@ jobs:
           for PLATFORM in linux-x64 linux-arm64 darwin-x64 darwin-arm64 win32-x64 win32-arm64; do
             PUBLISHED=""
             for ATTEMPT in $(seq 1 10); do
-              PUBLISHED="$(npm view "@spec-driven-steroids/${PLATFORM}" version 2>/dev/null || true)"
+              PUBLISHED="$(npm view "@spec-driven-steroids/${PLATFORM}@${VERSION}" version 2>/dev/null || true)"
               if [ "${PUBLISHED}" = "${VERSION}" ]; then
                 break
               fi
@@ -425,9 +451,10 @@ jobs:
         working-directory: packages/cli
         env:
           VERSION: ${{ needs.verify.outputs.version }}
+          DIST_TAG: ${{ needs.verify.outputs.dist_tag }}
         run: |
           set -euo pipefail
-          PUBLISHED="$(npm view "spec-driven-steroids" version 2>/dev/null || true)"
+          PUBLISHED="$(npm view "spec-driven-steroids@${VERSION}" version 2>/dev/null || true)"
           if [ "${PUBLISHED}" = "${VERSION}" ]; then
             # The version is on the registry. A release of the native
             # implementation always declares the platform packages, so a
@@ -443,11 +470,14 @@ jobs:
             echo "spec-driven-steroids@${PUBLISHED} is already published."
             exit 0
           fi
-          npm publish --provenance --access public
+          npm publish --tag "${DIST_TAG}" --provenance --access public
 
-  # The Homebrew formula references the published release assets.
+  # The Homebrew formula references the published release assets. The native
+  # preview (@next) does not touch the tap: the tap keeps serving the stable
+  # channel until the stable promotion.
   homebrew:
     name: Update the Homebrew formula
+    if: needs.verify.outputs.channel == 'latest'
     needs: [verify, release]
     runs-on: ubuntu-latest
 
@@ -600,7 +630,7 @@ jobs:
           const manifest = {
             schemaVersion: 1,
             version,
-            bundleUrl: 'https://github.com/' + process.env.GITHUB_REPOSITORY + '/releases/download/templates-latest/templates-bundle.json',
+            bundleUrl: 'https://github.com/' + process.env.GITHUB_REPOSITORY + '/releases/download/${{ needs.verify.outputs.template_tag }}/templates-bundle.json',
             sha256: digest,
             minCliVersion: version,
             publishedAt: new Date().toISOString()
@@ -615,20 +645,23 @@ jobs:
       - name: Publish the template bundle
         uses: ncipollo/release-action@v1
         with:
-          tag: templates-latest
-          name: templates-latest
+          tag: ${{ needs.verify.outputs.template_tag }}
+          name: ${{ needs.verify.outputs.template_tag }}
           allowUpdates: true
           removeArtifacts: true
           artifactErrorsFailBuild: true
           replacesArtifacts: true
           artifacts: .template-release/templates-manifest.json,.template-release/templates-bundle.json
-          body: Latest published template bundle for runtime injection.
+          body: Published template bundle for runtime injection.
 
   # The distribution tree is generated outside this working tree, because the
   # repository ignores the path the Codex catalog lives at, and it is pushed to
-  # the distribution repository.
+  # the distribution repository. The native preview (@next) does not touch the
+  # distribution repository: the tree keeps serving the stable channel until
+  # the stable promotion.
   distribution:
     name: Publish the distribution tree
+    if: needs.verify.outputs.channel == 'latest'
     needs: [verify, release]
     runs-on: ubuntu-latest
 

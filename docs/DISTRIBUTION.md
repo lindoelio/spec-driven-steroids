@@ -19,6 +19,31 @@ match that declared version.
 | Template bundle | The `templates-latest` release of this repository | Automated: the bundle the CLI resolves when it reads the templates remotely |
 | AI tool marketplaces | `https://github.com/lindoelio/spec-driven-steroids-distribution` | Automated for the tree, manual for the vendor submissions and the topic registration |
 
+## Release channels: latest and next
+
+Two release lines share this pipeline. The tag decides the channel: a plain
+tag (`v1.0.0`) ships the stable channel, a tag with a prerelease suffix
+(`v1.0.0-next.0`) ships the native preview.
+
+| | `latest` (stable) | `next` (native preview) |
+| --- | --- | --- |
+| npm dist-tag | `latest` | `next` |
+| GitHub release | regular | prerelease |
+| Template bundle | `templates-latest` | `templates-next` |
+| Homebrew formula | updated | skipped |
+| Distribution tree | pushed | skipped |
+
+The `latest` line stays on the TypeScript implementation until the stable
+native promotion. The `next` line carries the native binary without the
+stewardship knowledge graph. Each line resolves its own template bundle, so
+neither line can strand the other: the stable CLI keeps resolving the
+14-skill `templates-latest`, the preview resolves the 13-skill
+`templates-next`.
+
+Rollback is additive: removing the `next` dist-tag unpublishes the preview
+from the tag without touching `latest`, and the `templates-next` release can
+be deleted or repointed without affecting `templates-latest`.
+
 ## Release precondition: the two external repositories
 
 The Homebrew tap and the marketplace distribution repository live outside this

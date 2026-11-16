@@ -252,13 +252,22 @@ func filterManifests(manifests []*manifest.Manifest, scope, platform, projectDir
 			continue
 		}
 		if scope == "project" {
-			root, err := filepath.Abs(current.Root)
+			// Both sides are resolved through symlinks: t.TempDir and the
+			// working directory disagree on macOS (/var vs /private/var),
+			// and a project reached through a symlink is still the project.
+			root, err := filepath.EvalSymlinks(current.Root)
 			if err != nil {
-				continue
+				root, err = filepath.Abs(current.Root)
+				if err != nil {
+					continue
+				}
 			}
-			base, err := filepath.Abs(projectDir)
+			base, err := filepath.EvalSymlinks(projectDir)
 			if err != nil {
-				continue
+				base, err = filepath.Abs(projectDir)
+				if err != nil {
+					continue
+				}
 			}
 			if root != base && !hasPathPrefix(root, base) {
 				continue

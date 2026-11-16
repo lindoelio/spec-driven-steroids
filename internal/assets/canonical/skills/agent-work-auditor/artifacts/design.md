@@ -23,7 +23,7 @@ Guidance for auditing design documents (architecture, technical specifications).
 - Terminology matches requirements
 - Diagram style is consistent
 - Section structure is standard
-- Repository Context Evidence shows guidelines, contextual memory, and inspected code patterns that shaped the design
+- Repository Context Evidence shows guidelines, repository evidence, and inspected code patterns that shaped the design
 - File placement, naming, and boundaries follow the recorded evidence
 
 ### Traceability

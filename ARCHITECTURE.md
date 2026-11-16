@@ -20,7 +20,7 @@ Paths in this table are relative to `internal/`:
 
 | Package | Responsibility |
 | --- | --- |
-| `cli/` | Command surface: inject, clean, doctor, repair, uninstall, templates, validate, stewardship, package |
+| `cli/` | Command surface: inject, clean, doctor, repair, uninstall, templates, validate, package |
 | `cmdr/` | Dependency-free command-line framework whose observable behavior matches the previous `commander` release |
 | `config/` | Artifact root resolution and the internal state directories |
 | `descriptor/` | Platform descriptors and the descriptor data |
@@ -29,7 +29,6 @@ Paths in this table are relative to `internal/`:
 | `bundle/` | Remote or bundled source resolution, bundle validation, and cache handling |
 | `cleanup/` | Legacy-installation recognition and manifest-driven removal |
 | `validate/` | Brief/full structure checks, document validation, traceability, and text/JSON results |
-| `stewardship/` | Rule storage, lifecycle, retrieval, scope resolution, and phase-context assembly |
 | `pack/` | Portable package rendering, vendor manifests, and marketplace catalogs |
 | `serialize/` | Artifact serialization |
 | `fsutil/` | Filesystem helpers |
@@ -48,7 +47,7 @@ Every managed artifact lives in the platform-neutral artifact root: `.agents/` i
 └── commands/<command-name>.md
 ```
 
-The user artifact root additionally holds the `stewardship/` subtree that holds the rule graph. Resolution walks from the most specific scope to the least specific, so a project artifact shadows a user artifact of the same name; the resolved artifact set, the layer that supplied each artifact, the effective root, and the written paths are reported by the doctor and inject commands.
+Resolution walks from the most specific scope to the least specific, so a project artifact shadows a user artifact of the same name; the resolved artifact set, the layer that supplied each artifact, the effective root, and the written paths are reported by the doctor and inject commands.
 
 A platform that cannot read the artifact root receives a platform-side artifact that carries the same canonical bytes. The CLI owns exactly the paths it records in an install manifest: it never removes a directory it did not create, never rewrites a path it did not write, and never continues upward past the directory that owns a removed file.
 
@@ -92,9 +91,6 @@ The CLI uses separate local storage areas:
 | Installed agent, command, and skill files | The artifact root: `.agents/` at project scope, `~/.agents/` at user scope |
 | Install manifests | `installs/` under the resolved config directory; `SDS_CONFIG_DIR` overrides it, otherwise platform/XDG defaults apply |
 | Remote template cache | Platform-specific cache directory; overridable with `SDS_TEMPLATE_CACHE_DIR` |
-| Rule graph | The `stewardship/` subtree of the user artifact root, `~/.agents/stewardship/` |
-
-Rule storage uses JSON files with lifecycle state, provenance, and version history. Writes use a lock and temporary-file rename. Project identities combine repository/path information to distinguish checkouts; project-scoped retrieval falls back to global rules. Retrieval uses lexical overlap, recency, and confidence, despite the engine's `SemanticRetrievalEngine` name. It does not use embeddings or an external vector database.
 
 Install manifests record paths and file hashes. Cleanup preserves modified tracked files unless forced and removes only empty parent directories. Repair has different semantics: it re-emits platform files and copies skills with overwrite enabled. See [SECURITY.md](SECURITY.md#filesystem-and-local-data) before operating on existing installations.
 

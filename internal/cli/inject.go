@@ -428,11 +428,90 @@ func writeCanonicalTree(plan *emit.Plan, artifactRoot string) error {
 }
 
 // writeFile writes a file, creating the directories it needs.
+//
+// A destination that is a symbolic link, or that sits below one inside the
+// project or the home tree, is refused: following it would write outside the
+// roots the CLI owns. Links above those trees (the OS mounts) are not ours
+// to judge.
 func writeFile(path string, content []byte) error {
+	if err := refuseSymlink(path, config.Default()); err != nil {
+		return err
+	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
 	return os.WriteFile(path, content, 0o644)
+}
+
+// refuseSymlink reports a destination that would write through a symbolic
+// link inside a managed tree.
+func refuseSymlink(path string, resolver config.Resolver) error {
+	if info, err := os.Lstat(path); err == nil && info.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("refuse to write through the symbolic link %s", path)
+	}
+	resolved, err := resolveExisting(path)
+	if err != nil {
+		return nil
+	}
+	for _, root := range managedRoots(resolver) {
+		rel, err := filepath.Rel(root, resolved)
+		if err != nil || rel == "." || rel == ".." || strings.HasPrefix(rel, ".."+string(os.PathSeparator)) {
+			continue
+		}
+		parts := strings.Split(rel, string(os.PathSeparator))
+		current := root
+		for _, part := range parts[:len(parts)-1] {
+			current = filepath.Join(current, part)
+			if info, err := os.Lstat(current); err == nil && info.Mode()&os.ModeSymlink != 0 {
+				return fmt.Errorf("refuse to write through the symbolic link %s", current)
+			}
+		}
+	}
+	return nil
+}
+
+// resolveExisting resolves the deepest existing ancestor of a path and
+// rejoins the remainder, so a destination that does not exist yet is still
+// judged in resolved terms.
+func resolveExisting(path string) (string, error) {
+	absolute, err := filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
+	current := absolute
+	var tail []string
+	for {
+		resolved, err := filepath.EvalSymlinks(current)
+		if err == nil {
+			for index := len(tail) - 1; index >= 0; index-- {
+				resolved = filepath.Join(resolved, tail[index])
+			}
+			return resolved, nil
+		}
+		parent := filepath.Dir(current)
+		if parent == current {
+			return "", err
+		}
+		tail = append(tail, filepath.Base(current))
+		current = parent
+	}
+}
+
+// managedRoots returns the resolved project and home directories the CLI
+// writes into.
+func managedRoots(resolver config.Resolver) []string {
+	var roots []string
+	for _, root := range []string{resolver.WorkDir, resolver.Home()} {
+		if root == "" {
+			continue
+		}
+		if resolved, err := filepath.EvalSymlinks(root); err == nil {
+			roots = append(roots, resolved)
+		} else if absolute, err := filepath.Abs(root); err == nil {
+			roots = append(roots, absolute)
+		}
+	}
+	return roots
 }
 
 // recordManifests writes the canonical and the platform manifests.
@@ -601,9 +680,5 @@ func timestamp() string {
 }
 
 func stdinIsTerminal() bool {
-	info, err := os.Stdin.Stat()
-	if err != nil {
-		return false
-	}
-	return info.Mode()&os.ModeCharDevice != 0
+	return cmdr.IsTerminal(os.Stdin)
 }

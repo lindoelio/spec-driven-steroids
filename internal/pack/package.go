@@ -25,6 +25,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -33,6 +34,14 @@ import (
 
 // SchemaIdentifier is the Agent Plugins schema the portable manifest declares.
 const SchemaIdentifier = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
+
+// The identity patterns the package metadata must satisfy. An owner or a name
+// outside these patterns would escape the package subtree path or break a
+// vendor schema, so the tree is rejected before anything is written.
+var (
+	packageNamePattern  = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*$`)
+	packageOwnerPattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]*$`)
+)
 
 // Options configures a packaging run.
 type Options struct {
@@ -178,6 +187,13 @@ func buildMeta(options Options) (packageMeta, error) {
 		}
 	}
 
+	if !packageNamePattern.MatchString(meta.name) {
+		return packageMeta{}, fmt.Errorf("pack: the package name %q must start with a letter or digit and hold only letters, digits, '.', '_' and '-'", meta.name)
+	}
+	if !packageOwnerPattern.MatchString(meta.owner) {
+		return packageMeta{}, fmt.Errorf("pack: the owner %q must start with a letter or digit and hold only letters, digits, '.', '_' and '-'", meta.owner)
+	}
+
 	skills, err := canonicalSkills()
 	if err != nil {
 		return packageMeta{}, err
@@ -287,9 +303,18 @@ func (t *tree) paths() []string {
 }
 
 // write writes the tree below a directory.
+//
+// A destination that escapes the directory is rejected instead of written.
 func (t *tree) write(outDir string) error {
+	base, err := filepath.Abs(outDir)
+	if err != nil {
+		return fmt.Errorf("pack: resolve the output directory: %w", err)
+	}
 	for _, item := range t.entries {
-		target := filepath.Join(outDir, filepath.FromSlash(item.destination))
+		target := filepath.Join(base, filepath.FromSlash(item.destination))
+		if target != base && !strings.HasPrefix(target, base+string(os.PathSeparator)) {
+			return fmt.Errorf("pack: %s escapes the output directory", item.destination)
+		}
 		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
 			return fmt.Errorf("pack: create the directory of %s: %w", item.destination, err)
 		}

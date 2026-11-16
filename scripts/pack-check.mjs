@@ -42,9 +42,17 @@ try {
   const mainPackage = readJson(path.join(packageDir, 'package.json'));
   const declaredVersion = fs.readFileSync(path.join(repoRoot, 'VERSION'), 'utf8').trim();
 
-  // The main package carries no runtime code and no JavaScript entrypoint.
-  if (mainPackage.main || mainPackage.bin) {
+  // The main package carries no runtime dependency, but it does declare the
+  // global command: the launcher bridges npm's bin link to the installed
+  // native binary.
+  if (mainPackage.main) {
     fail('The main package must not declare a JavaScript entrypoint.');
+  }
+  if (!mainPackage.bin?.sds || !mainPackage.bin?.['spec-driven-steroids']) {
+    fail('The main package must declare the sds and spec-driven-steroids bin commands.');
+  }
+  if (mainPackage.bin.sds !== 'bin/sds.cjs' || mainPackage.bin['spec-driven-steroids'] !== 'bin/sds.cjs') {
+    fail('The main package bin commands must point at the launcher bin/sds.cjs.');
   }
   if (mainPackage.dependencies) {
     fail('The main package must not declare a runtime dependency.');
@@ -52,14 +60,14 @@ try {
 
   const packResult = pack(packageDir, tempDir);
   const files = new Set(packResult.files.map((file) => file.path));
-  for (const required of ['package.json', 'README.md', 'LICENSE', 'CHANGELOG.md', 'bin/install.mjs']) {
+  for (const required of ['package.json', 'README.md', 'LICENSE', 'CHANGELOG.md', 'bin/install.mjs', 'bin/sds.cjs']) {
     if (!files.has(required)) {
       fail(`The published package is missing required file: ${required}`);
     }
   }
-  for (const forbidden of ['dist/cli/index.js', 'templates/universal/agents/spec-driven.agent.md']) {
+  for (const forbidden of ['dist/cli/index.js', 'templates/universal/agents/spec-driven.agent.md', 'bin/sds', 'bin/sds.exe']) {
     if (files.has(forbidden)) {
-      fail(`The published package still carries the implementation file: ${forbidden}`);
+      fail(`The published package must not carry the file: ${forbidden}.`);
     }
   }
 
@@ -159,6 +167,8 @@ try {
   };
 
   const installer = path.join(installedMain, 'bin', 'install.mjs');
+  fs.copyFileSync(path.join(packageDir, 'bin', 'sds.cjs'), path.join(installedMain, 'bin', 'sds.cjs'));
+  const launcher = path.join(installedMain, 'bin', 'sds.cjs');
   const runInstaller = () =>
     execFileSync(process.execPath, [installer], {
       cwd: installedMain,
@@ -207,6 +217,32 @@ try {
   const placedDigest = crypto.createHash('sha256').update(fs.readFileSync(placed)).digest('hex');
   if (placedDigest !== realDigest) {
     fail('The placed binary does not carry the published digest.');
+  }
+
+  // The launcher bridges npm's bin link to the placed native binary.
+  const launched = execFileSync(process.execPath, [launcher], {
+    cwd: installedMain,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+  if (!launched.includes('sds')) {
+    fail('The launcher did not run the placed binary.');
+  }
+
+  // Without a placed binary the launcher refuses instead of running nothing.
+  fs.rmSync(placed, { force: true });
+  let launcherRefused = false;
+  try {
+    execFileSync(process.execPath, [launcher], {
+      cwd: installedMain,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+  } catch {
+    launcherRefused = true;
+  }
+  if (!launcherRefused) {
+    fail('The launcher ran without an installed binary.');
   }
 
   console.log(

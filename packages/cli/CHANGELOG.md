@@ -1,5 +1,14 @@
 # spec-driven-steroids
 
+## 1.0.0-next.0
+
+### Major Changes
+
+- Native preview: the CLI is a single Go binary with no Node.js runtime, published under the npm `next` dist-tag as a GitHub prerelease. Install with `npm install -g spec-driven-steroids@next`. The `latest` tag stays on the TypeScript 0.23.0.
+- The stewardship knowledge graph is removed: no `sds stewardship` command, no `contextual-stewardship` skill, no `~/.agents/stewardship` rule graph. Grounding comes from repository evidence (`AGENTS.md`, `CONVENTIONS.md`, approved spec artifacts, existing code). A leftover rule graph is reported by `sds doctor` and removed manually; install manifests from 0.23.0 still resolve so `sds clean` removes the old installed skill.
+- The preview resolves the `templates-next` bundle (13 skills). The stable `templates-latest` bundle (14 skills) is untouched, so the TypeScript 0.23.0 keeps working.
+- The global `sds` command now works after `npm install -g`: a thin launcher bridges npm's bin link to the installed native binary. The Homebrew formula and the marketplace distribution tree are unchanged in this preview and follow at the stable promotion.
+
 ## 0.23.0
 
 ### Minor Changes

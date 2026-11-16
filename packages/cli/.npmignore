@@ -3,3 +3,7 @@ dist/
 *.js.map
 vitest.config.ts
 tsconfig.json
+# A developer-local binary installed by a workspace install must never ship:
+# the release pipeline stages the published binary before publishing.
+bin/sds
+bin/sds.exe

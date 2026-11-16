@@ -7,6 +7,11 @@ name: Publish Templates
 
 on:
   workflow_dispatch:
+    inputs:
+      channel:
+        description: 'Template channel to publish (templates-next for the native preview, templates-latest for stable)'
+        required: false
+        default: 'templates-next'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -28,7 +33,17 @@ jobs:
         with:
           node-version: 24
 
+      - name: Guard the stable channel
+        run: |
+          set -euo pipefail
+          CHANNEL="${{ inputs.channel }}"
+          if [ "${CHANNEL}" = "templates-latest" ]; then
+            echo "::warning::Republishing templates-latest overwrites the bundle the stable TypeScript CLI resolves. Only use this for the stable native release."
+          fi
+
       - name: Build template bundle assets
+        env:
+          TEMPLATE_CHANNEL: ${{ inputs.channel }}
         run: |
           node <<'NODE'
           const crypto = require('node:crypto');
@@ -38,6 +53,7 @@ jobs:
           // The bundle version derives from the declared version, which is
           // declared once in the VERSION file at the repository root.
           const version = fs.readFileSync('VERSION', 'utf8').trim();
+          const channel = process.env.TEMPLATE_CHANNEL || 'templates-next';
           const canonicalRoot = path.join('internal', 'assets', 'canonical');
           const outputDir = '.template-release';
 
@@ -65,7 +81,7 @@ jobs:
           const manifest = {
             schemaVersion: 1,
             version,
-            bundleUrl: 'https://github.com/' + process.env.GITHUB_REPOSITORY + '/releases/download/templates-latest/templates-bundle.json',
+            bundleUrl: 'https://github.com/' + process.env.GITHUB_REPOSITORY + '/releases/download/' + channel + '/templates-bundle.json',
             sha256,
             minCliVersion: version,
             publishedAt: new Date().toISOString()
@@ -80,11 +96,11 @@ jobs:
       - name: Publish template release assets
         uses: ncipollo/release-action@v1
         with:
-          tag: templates-latest
-          name: templates-latest
+          tag: ${{ inputs.channel }}
+          name: ${{ inputs.channel }}
           allowUpdates: true
           removeArtifacts: true
           artifactErrorsFailBuild: true
           replacesArtifacts: true
           artifacts: .template-release/templates-manifest.json,.template-release/templates-bundle.json
-          body: Latest published template bundle for runtime injection.
+          body: Published template bundle for runtime injection.

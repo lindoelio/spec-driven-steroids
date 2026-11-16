@@ -59,7 +59,7 @@ type Plan struct {
 
 // CanonicalTree returns the canonical artifact tree.
 //
-// The tree holds fourteen skill directories, one agent and two commands.
+// The tree holds thirteen skill directories, one agent and two commands.
 func CanonicalTree() ([]File, error) {
 	return CanonicalTreeFrom(assets.CanonicalFS())
 }
@@ -70,25 +70,37 @@ func CanonicalTree() ([]File, error) {
 // The source exposes the tree under the "universal" prefix a remote bundle
 // uses, so the prefix is stripped and the paths of the tree stay the same for
 // both sources.
+//
+// Only files the embedded canonical tree carries are returned. A remote bundle
+// may carry extra skills from another release line, and the CLI must install
+// exactly the skills it ships: the filter keeps a stale bundle from
+// reintroducing a removed skill.
 func CanonicalTreeFrom(source fs.FS) ([]File, error) {
 	if source == nil {
-		return CanonicalTree()
+		source = assets.CanonicalFS()
+	}
+	allowed, err := canonicalInventory()
+	if err != nil {
+		return nil, err
 	}
 	var files []File
-	err := fs.WalkDir(source, ".", func(path string, entry fs.DirEntry, err error) error {
+	err = fs.WalkDir(source, ".", func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 		if entry.IsDir() {
 			return nil
 		}
-		content, err := fs.ReadFile(source, path)
-		if err != nil {
-			return err
-		}
 		relative := strings.TrimPrefix(path, "universal/")
 		if relative == path {
 			relative = strings.TrimPrefix(path, "./")
+		}
+		if !allowed[relative] {
+			return nil
+		}
+		content, err := fs.ReadFile(source, path)
+		if err != nil {
+			return err
 		}
 		files = append(files, File{RelPath: relative, Content: content})
 		return nil
@@ -98,6 +110,30 @@ func CanonicalTreeFrom(source fs.FS) ([]File, error) {
 	}
 	sort.Slice(files, func(i, j int) bool { return files[i].RelPath < files[j].RelPath })
 	return files, nil
+}
+
+// canonicalInventory returns the relative paths the embedded canonical tree
+// carries.
+func canonicalInventory() (map[string]bool, error) {
+	inventory := map[string]bool{}
+	err := fs.WalkDir(assets.CanonicalFS(), ".", func(path string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		relative := strings.TrimPrefix(path, "universal/")
+		if relative == path {
+			relative = strings.TrimPrefix(path, "./")
+		}
+		inventory[relative] = true
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return inventory, nil
 }
 
 // CanonicalPath returns the path of a canonical file inside an artifact root.

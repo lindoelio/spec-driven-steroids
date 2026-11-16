@@ -72,10 +72,7 @@ const coverage = {
 
   'REQ-6.1': ['internal/validate/differential_test.go'],
   'REQ-6.2': ['internal/validate/differential_test.go'],
-  'REQ-6.3': ['internal/stewardship/'],
-  'REQ-6.4': ['internal/stewardship/'],
   'REQ-6.5': ['internal/validate/differential_test.go'],
-  'REQ-6.6': ['internal/stewardship/'],
 
   'REQ-7.1': ['internal/bundle/contract_test.go'],
   'REQ-7.2': ['internal/bundle/source_test.go'],
@@ -128,11 +125,22 @@ const commandSurface = [
   { command: 'uninstall', fixture: 'internal/testdata/fixtures/command-surface/help-uninstall.txt' },
   { command: 'templates', fixture: 'internal/testdata/fixtures/command-surface/help-templates.txt' },
   { command: 'validate', fixture: 'internal/testdata/fixtures/command-surface/help-validate.txt' },
-  { command: 'stewardship', fixture: 'internal/testdata/fixtures/command-surface/help-stewardship.txt' },
   { command: 'package', fixture: 'internal/testdata/fixtures/command-surface/help-package.txt' },
   { command: '--version', fixture: 'internal/testdata/fixtures/command-surface/version.txt' },
   { command: '--help', fixture: 'internal/testdata/fixtures/command-surface/help-root.txt' }
 ];
+
+/**
+ * The criteria the native preview deliberately drops. A superseded criterion
+ * carries the reason instead of evidence: the stewardship knowledge graph
+ * was removed, so its storage, locking and resolution contracts no longer
+ * exist.
+ */
+const superseded = {
+  'REQ-6.3': 'removed by .specs/changes/remove-stewardship/brief.md: the rule graph no longer exists',
+  'REQ-6.4': 'removed by .specs/changes/remove-stewardship/brief.md: the rule store lock no longer exists',
+  'REQ-6.6': 'removed by .specs/changes/remove-stewardship/brief.md: project-over-global rule resolution no longer exists'
+};
 
 const requirements = fs.readFileSync(path.join(specDir, 'requirements.md'), 'utf8');
 const criteria = [];
@@ -143,6 +151,11 @@ for (const match of requirements.matchAll(/^(\d+\.\d+)\s+(THE|WHEN|IF)\s/gm)) {
 const entries = [];
 const missing = [];
 for (const criterion of criteria) {
+  const reason = superseded[criterion];
+  if (reason !== undefined) {
+    entries.push({ criterion, coveredBy: [], superseded: reason });
+    continue;
+  }
   const coveredBy = coverage[criterion] ?? [];
   if (coveredBy.length === 0) {
     missing.push(criterion);
@@ -163,6 +176,7 @@ const manifest = {
   report: {
     criteria: entries.length,
     covered: entries.filter((entry) => entry.coveredBy.length > 0).length,
+    superseded: entries.filter((entry) => entry.superseded).map((entry) => entry.criterion),
     missing,
     absentEvidence: entries.filter((entry) => entry.absent).map((entry) => entry.criterion),
     absentFixtures
@@ -174,7 +188,8 @@ fs.writeFileSync(outFile, `${JSON.stringify(manifest, null, 2)}\n`);
 
 console.log(
   `completeness: ${manifest.report.covered}/${manifest.report.criteria} criteria covered, ` +
-    `${manifest.report.missing.length} missing, ${manifest.report.absentEvidence.length} with an absent evidence file, ` +
+    `${manifest.report.superseded.length} superseded, ${manifest.report.missing.length} missing, ` +
+    `${manifest.report.absentEvidence.length} with an absent evidence file, ` +
     `${manifest.report.absentFixtures.length} absent fixtures`
 );
 

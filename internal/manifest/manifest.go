@@ -320,7 +320,88 @@ func (s *Store) Resolve(scope, projectRoot, platform string, legacyNames []strin
 		}
 		return manifest, candidate.Name, true
 	}
+	// Filename keys are hashes of path strings, so a project reached through
+	// a symlink misses the recorded key. Fall back to matching the recorded
+	// root against the project, in resolved terms.
+	return s.resolveByRoot(scope, projectRoot, platform)
+}
+
+// resolveByRoot finds an installation by the root it records instead of by
+// its filename key. It only applies to the project scope, where the recorded
+// platform root sits inside the project directory.
+func (s *Store) resolveByRoot(scope, projectRoot, platform string) (*Manifest, string, bool) {
+	if scope != "project" || projectRoot == "" {
+		return nil, "", false
+	}
+	base, err := resolveLink(projectRoot)
+	if err != nil {
+		return nil, "", false
+	}
+	// The recorded root of a platform manifest is the platform directory, a
+	// sibling of the artifact root, so both are judged against the project
+	// directory that owns them.
+	projectDir := filepath.Dir(base)
+	manifests, err := s.List()
+	if err != nil {
+		return nil, "", false
+	}
+	for _, current := range manifests {
+		if current.Scope != scope {
+			continue
+		}
+		if platform == "" {
+			if current.Kind != KindCanonical {
+				continue
+			}
+		} else if current.Platform != platform || current.Kind == KindCanonical {
+			continue
+		}
+		root, err := resolveLink(current.Root)
+		if err != nil {
+			continue
+		}
+		if root != base && root != projectDir && !strings.HasPrefix(root, projectDir+string(os.PathSeparator)) {
+			continue
+		}
+		var name string
+		if current.Kind == KindCanonical {
+			name = CanonicalFileName(current.Scope, current.keyRoot())
+		} else {
+			name = PlatformFileName(current.Platform, current.Scope, current.keyRoot())
+		}
+		return current, name, true
+	}
 	return nil, "", false
+}
+
+// resolveLink resolves a path through symlinks, falling back to its absolute
+// form when it cannot be resolved. A path that does not exist yet is judged
+// by its deepest existing ancestor, so a missing directory does not defeat
+// the comparison.
+func resolveLink(path string) (string, error) {
+	if resolved, err := filepath.EvalSymlinks(path); err == nil {
+		return resolved, nil
+	}
+	absolute, err := filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
+	current := absolute
+	var tail []string
+	for {
+		if resolved, err := filepath.EvalSymlinks(current); err == nil {
+			for index := len(tail) - 1; index >= 0; index-- {
+				resolved = filepath.Join(resolved, tail[index])
+			}
+			return resolved, nil
+		}
+		parent := filepath.Dir(current)
+		if parent == current {
+			return absolute, nil
+		}
+		tail = append(tail, filepath.Base(current))
+		current = parent
+	}
 }
 
 // HashFile returns the SHA-256 digest of a file.

@@ -26,7 +26,7 @@ Follow the Context Preflight and Phase Gate protocols in the `spec-driven-shared
 When this skill begins execution, create a todo list containing the following items in `pending` state. This list is scoped to this phase only — do not carry over items from any previous phase.
 
 1. Read project guidelines
-2. Retrieve contextual memory (business)
+2. Review repository evidence for business rules and constraints
 3. Analyze user description and context
 4. Extract actors, actions, and constraints
 5. Write EARS requirements
@@ -178,15 +178,9 @@ If enough information is available, produce the full `requirements.md` content d
 
 If material ambiguity blocks a good requirements document, ask a short clarification first. Do not draft low-confidence requirements.
 
-## Contextual Stewardship Integration
+## Repository Evidence
 
-At the start of this phase, invoke the `contextual-stewardship` skill to retrieve established business and domain rules:
-
-```text
-Invoke: contextual-stewardship skill
-Action: retrieve
-Query: business
-```
+Ground business rules and domain constraints in the repository: read `AGENTS.md`, `CONVENTIONS.md`, existing requirements and design artifacts, and the relevant product code before writing.
 
 ## Things To Avoid
 

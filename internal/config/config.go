@@ -4,8 +4,8 @@
 // The artifact root is the platform-neutral location every managed artifact
 // lives in: `.agents` inside the working directory at project scope and
 // `.agents` under the home directory at user scope. The internal state —
-// install manifests, the template cache and the rule graph — lives elsewhere,
-// because it is bookkeeping rather than an injected artifact.
+// install manifests and the template cache — lives elsewhere, because it is
+// bookkeeping rather than an injected artifact.
 package config
 
 import (
@@ -193,15 +193,4 @@ func (r Resolver) CacheDir() string {
 		}
 		return filepath.Join(base, "spec-driven-steroids", "templates")
 	}
-}
-
-// StewardshipDir returns the base directory of the rule graph.
-//
-// The rule graph lives under the user artifact root, so that the whole
-// user-scoped state sits in one place.
-func (r Resolver) StewardshipDir() string {
-	if home := r.env("SDS_HOME"); home != "" {
-		return filepath.Join(home, "stewardship")
-	}
-	return filepath.Join(r.UserRoot(), "stewardship")
 }

@@ -11,9 +11,7 @@ Before invoking the phase-specific skill, you MUST collect and pass repository c
    - Use `Read` to understand existing patterns, naming conventions, and architecture
    - Context budget: do not perform broad code searches unless the request requires repository-specific behavior
 
-2. **Retrieve Contextual Memory**: Invoke the `contextual-stewardship` skill in `retrieve` or `inject <phase>` mode to retrieve relevant rules.
-
-3. **Inspect Existing Code Patterns**: For design and implementation phases, use `Glob`, `Grep`, and `Read` to understand targeted existing code patterns before proposing file placement, abstractions, naming, or tests.
+2. **Inspect Existing Code Patterns**: For design and implementation phases, use `Glob`, `Grep`, and `Read` to understand targeted existing code patterns before proposing file placement, abstractions, naming, or tests.
 
 ## Phase Gate Behavior
 
@@ -108,13 +106,12 @@ When a phase skill begins execution, it creates a todo list of work items. This 
 Create a todo list containing the following items in `pending` state:
 
 1. Read project guidelines
-2. Retrieve contextual memory
-3. Analyze/Design/Decompose based on phase
-4. Write artifact
-5. Run CLI validation
-6. Complete quality bar self-check
-7. Fix validation failures (if any)
-8. Declare verdict
+2. Analyze/Design/Decompose based on phase
+3. Write artifact
+4. Run CLI validation
+5. Complete quality bar self-check
+6. Fix validation failures (if any)
+7. Declare verdict
 
 ### Progress Rules
 

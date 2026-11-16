@@ -21,9 +21,10 @@ func repositoryRoot(t *testing.T) string {
 // completenessManifest is the recorded coverage of every acceptance criterion.
 type completenessManifest struct {
 	Criteria []struct {
-		Criterion string   `json:"criterion"`
-		CoveredBy []string `json:"coveredBy"`
-		Absent    []string `json:"absent"`
+		Criterion  string   `json:"criterion"`
+		CoveredBy  []string `json:"coveredBy"`
+		Absent     []string `json:"absent"`
+		Superseded string   `json:"superseded"`
 	} `json:"criteria"`
 	CommandSurface []struct {
 		Command string `json:"command"`
@@ -32,6 +33,7 @@ type completenessManifest struct {
 	Report struct {
 		Criteria       int      `json:"criteria"`
 		Covered        int      `json:"covered"`
+		Superseded     []string `json:"superseded"`
 		Missing        []string `json:"missing"`
 		AbsentEvidence []string `json:"absentEvidence"`
 		AbsentFixtures []string `json:"absentFixtures"`
@@ -61,8 +63,17 @@ func TestTheFixtureCompletenessManifestIsComplete(t *testing.T) {
 	if manifest.Report.Criteria != len(manifest.Criteria) {
 		t.Errorf("the manifest reports %d criteria but records %d", manifest.Report.Criteria, len(manifest.Criteria))
 	}
-	if manifest.Report.Covered != len(manifest.Criteria) {
-		t.Errorf("only %d of %d criteria are covered", manifest.Report.Covered, len(manifest.Criteria))
+	covered := 0
+	for _, entry := range manifest.Criteria {
+		if len(entry.CoveredBy) > 0 {
+			covered++
+		}
+	}
+	if manifest.Report.Covered != covered {
+		t.Errorf("the manifest reports %d covered criteria but %d carry evidence", manifest.Report.Covered, covered)
+	}
+	if covered+len(manifest.Report.Superseded) != len(manifest.Criteria) {
+		t.Errorf("only %d of %d criteria are covered or superseded", covered+len(manifest.Report.Superseded), len(manifest.Criteria))
 	}
 	if len(manifest.Report.Missing) > 0 {
 		t.Errorf("the manifest reports uncovered criteria: %v", manifest.Report.Missing)
@@ -75,6 +86,12 @@ func TestTheFixtureCompletenessManifestIsComplete(t *testing.T) {
 	}
 
 	for _, entry := range manifest.Criteria {
+		if entry.Superseded != "" {
+			if len(entry.CoveredBy) > 0 {
+				t.Errorf("the criterion %s is superseded but still points at evidence", entry.Criterion)
+			}
+			continue
+		}
 		if len(entry.CoveredBy) == 0 {
 			t.Errorf("the criterion %s points at no evidence", entry.Criterion)
 		}

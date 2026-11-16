@@ -109,17 +109,18 @@ func TestAgainstTheCapturedFixtures(t *testing.T) {
 			}
 
 			// A platform that reads the artifact root receives the canonical
-			// skills from the artifact root itself. Those entries are not
+			// tree from the artifact root itself. Those entries are not
 			// platform-side artifacts, so they are compared through the
 			// canonical tree instead.
-			canonicalSkills := map[string]bool{}
+			canonical := map[string]bool{}
 			for _, file := range plan.Canonical {
+				canonical["root/"+file.RelPath] = true
 				if strings.HasPrefix(file.RelPath, "skills/") {
-					canonicalSkills["skills/"+strings.TrimPrefix(file.RelPath, "skills/")] = true
+					canonical["skills/"+strings.TrimPrefix(file.RelPath, "skills/")] = true
 				}
 			}
 			if fixture.Native {
-				for key := range canonicalSkills {
+				for key := range canonical {
 					delete(expected, key)
 				}
 			}

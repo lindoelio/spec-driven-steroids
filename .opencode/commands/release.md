@@ -43,10 +43,10 @@ Follow `CONVENTIONS.md#maintainer-delivery`. For the sole maintainer's authorize
 3. Declare the target version.
    - Read `VERSION` at the repository root for the current version.
    - If the target version and changelog are already prepared, verify them and reuse that release commit; do not bump again.
-   - Run `node scripts/set-version.mjs <target-version>`.
+   - Run `node scripts/set-version.mjs <target-version>`. A version with a `-next.N` suffix ships the native preview: the pipeline publishes it under the npm `next` dist-tag, marks the GitHub release as a prerelease, publishes the `templates-next` bundle, and skips the Homebrew formula and the distribution tree. A plain version ships the stable channel.
    - The script writes `VERSION`, the embedded copy under `internal/version/`, and the version of every package manifest. It is the single write path for the declaration.
    - Verify that `VERSION`, the embedded copy, `package.json`, `packages/cli/package.json` and the six platform packages all equal the target version.
-   - Update `packages/cli/CHANGELOG.md` with the user-facing changes of this release.
+   - Update `packages/cli/CHANGELOG.md` with the user-facing changes of this release. A `-next.N` release notes the preview channel and the stewardship removal; the stable release notes the promotion.
 
 4. Check the release scope.
    - Confirm that the working tree holds only the intended release changes.
@@ -76,6 +76,7 @@ Follow `CONVENTIONS.md#maintainer-delivery`. For the sole maintainer's authorize
    - Confirm the remote tag resolves to the verified release commit.
    - Monitor `.github/workflows/publish.yml` and `.github/workflows/publish-templates.yml` to completion; investigate failures instead of stopping after dispatch.
    - Verify `spec-driven-steroids@X.Y.Z` in the npm registry and the matching template manifest. A successful upload may still be processing; report that state accurately and never republish or move the tag to work around propagation delay.
+   - For a `-next.N` tag, verify the npm `next` dist-tag (`npm view spec-driven-steroids dist-tags`), the `templates-next` release, and that `latest` still resolves the stable TypeScript package.
 
 ## Guardrails
 

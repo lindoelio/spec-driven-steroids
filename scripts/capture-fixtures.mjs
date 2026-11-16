@@ -11,7 +11,12 @@
  * paths the platform receives and the bytes of each one, plus the inventory of
  * the canonical tree.
  *
- * Usage: node scripts/capture-fixtures.mjs [--oracle <path>]
+ * Usage: node scripts/capture-fixtures.mjs [--oracle <path> | --native]
+ *
+ * The oracle mode captures through the TypeScript implementation. The native
+ * mode captures through the Go binary the repository builds, and is the mode
+ * for every capture after the TypeScript removal: the fixtures are the
+ * regression baseline of the native implementation.
  */
 import { execFileSync } from 'node:child_process';
 import crypto from 'node:crypto';
@@ -20,10 +25,12 @@ import os from 'node:os';
 import path from 'node:path';
 
 const root = process.cwd();
+const native = process.argv.includes('--native');
 const oracleArgument = process.argv.indexOf('--oracle');
 const oracle = oracleArgument === -1
   ? path.resolve(root, 'packages/cli/dist/cli/index.js')
   : path.resolve(root, process.argv[oracleArgument + 1]);
+const nativeBinary = path.resolve(root, 'dist', `sds${process.platform === 'win32' ? '.exe' : ''}`);
 const outDir = path.resolve(root, 'internal/testdata/fixtures/artifacts');
 
 /**
@@ -83,7 +90,11 @@ const PLATFORMS = [
   {
     id: 'github-vscode',
     scopes: {
-      global: { root: '.config/Code/User/prompts', skills: '.copilot/skills' },
+      // The global root follows the VS Code profile anchor, which is
+      // ~/Library/Application Support on macOS and ~/.config elsewhere. The
+      // fixture records the portable layout; the capture walks the
+      // platform-specific directory on macOS.
+      global: { root: '.config/Code/User/prompts', skills: '.copilot/skills', darwinRoot: 'Library/Application Support/Code/User/prompts' },
       project: { root: '.github', skills: '.github/skills' }
     }
   },
@@ -148,26 +159,39 @@ function capture(platform, scope, declaration) {
     XDG_CACHE_HOME: path.join(homeDir, '.cache')
   };
 
-  execFileSync('node', [
-    oracle,
-    'inject',
-    '--platform', platform,
-    '--scope', scope,
-    '--yes',
-    '--templates', 'bundled'
-  ], { cwd: workDir, env: environment, stdio: 'pipe' });
+  if (native) {
+    execFileSync(nativeBinary, [
+      'inject',
+      '--platform', platform,
+      '--scope', scope,
+      '--yes',
+      '--templates', 'bundled'
+    ], { cwd: workDir, env: environment, stdio: 'pipe' });
+  } else {
+    execFileSync('node', [
+      oracle,
+      'inject',
+      '--platform', platform,
+      '--scope', scope,
+      '--yes',
+      '--templates', 'bundled'
+    ], { cwd: workDir, env: environment, stdio: 'pipe' });
+  }
 
   const base = scope === 'global' ? homeDir : workDir;
   const files = [];
 
-  const rootPath = path.join(base, declaration.root);
+  // The walk follows the directory the platform actually wrote on this
+  // operating system. The recorded fixture keeps the portable layout.
+  const walkRoot = (process.platform === 'darwin' && declaration.darwinRoot) ? declaration.darwinRoot : declaration.root;
+  const rootPath = path.join(base, walkRoot);
   const skillsRootPath = path.join(base, declaration.skills);
   const skillsRelative = path.relative(rootPath, skillsRootPath);
   const skillsInsideRoot = !skillsRelative.startsWith('..') && skillsRelative !== '';
 
-  for (const [name, relative] of [['root', declaration.root], ['skills', declaration.skills]]) {
-    const rootPath = path.join(base, relative);
-    for (const file of walk(rootPath)) {
+  for (const [name, relative] of [['root', walkRoot], ['skills', declaration.skills]]) {
+    const dirPath = path.join(base, relative);
+    for (const file of walk(dirPath)) {
       const relativePath = file.relative.split(path.sep).join('/');
 
       // A file below the skills root belongs to the skills root, so that the
@@ -219,7 +243,12 @@ function captureCanonicalTree() {
   return { root: 'canonical', files };
 }
 
-if (!fs.existsSync(oracle)) {
+if (native) {
+  if (!fs.existsSync(nativeBinary)) {
+    console.error(`The native binary is not built: ${nativeBinary}. Run 'node scripts/build-go.mjs' first.`);
+    process.exit(1);
+  }
+} else if (!fs.existsSync(oracle)) {
   console.error(`The oracle is not built: ${oracle}`);
   process.exit(1);
 }

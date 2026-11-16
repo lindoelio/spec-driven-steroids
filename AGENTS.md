@@ -15,7 +15,7 @@ Read [ARCHITECTURE.md](ARCHITECTURE.md) for boundaries, [CONVENTIONS.md](CONVENT
 
 ## Command surface
 
-The `sds` binary exposes `inject`, `clean`, `doctor`, `repair`, `uninstall`, `templates`, `validate`, `stewardship`, and `package`, together with `--version` and `--help`. The command names, argument names, and exit codes match the previous release.
+The `sds` binary exposes `inject`, `clean`, `doctor`, `repair`, `uninstall`, `templates`, `validate`, and `package`, together with `--version` and `--help`. The command names, argument names, and exit codes match the previous release, except the removed `stewardship` command.
 
 ## Essential commands
 

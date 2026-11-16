@@ -20,7 +20,10 @@ It injects:
 - Platform-specific agents, commands, or workflows
 - Universal writing/implementation skills
 - CLI validation commands for spec structure and traceability
-- A knowledge graph for architectural decisions and business rules
+
+The CLI works from repository evidence: `AGENTS.md`, `CONVENTIONS.md`, the
+approved spec artifacts, and the existing code. It keeps no second memory
+besides the context the host environment already provides.
 
 ## Supported Platforms
 
@@ -45,7 +48,11 @@ MiniMax Code receives skills only. Project scope writes to `.minimax/skills`, th
 ## Installation
 
 ```bash
+# Stable release (TypeScript 0.23.0, unchanged)
 npm install -g spec-driven-steroids
+
+# Native preview (no stewardship knowledge graph)
+npm install -g spec-driven-steroids@next
 ```
 
 The CLI is a single native binary with no runtime dependency: it needs no Node.js runtime and ships no dependency tree. The npm package installs the binary that matches your operating system and architecture.
@@ -60,7 +67,7 @@ The CLI provides two command names:
 - `sds` (short alias - recommended)
 - `spec-driven-steroids` (full name)
 
-The command surface is `inject`, `clean`, `doctor`, `repair`, `uninstall`, `templates`, `validate`, `stewardship`, and `package`, together with `--version` and `--help`. The command names, argument names, and exit codes match the previous release.
+The command surface is `inject`, `clean`, `doctor`, `repair`, `uninstall`, `templates`, `validate`, and `package`, together with `--version` and `--help`. The command names, argument names, and exit codes match the previous release, except the removed `stewardship` command.
 
 ### Artifact Root
 
@@ -81,7 +88,7 @@ Both roots use the same internal layout, so a skill installed at user scope and 
 └── commands/<command-name>.md
 ```
 
-The user artifact root additionally holds the `stewardship/` subtree that keeps the rule graph. A project artifact shadows a user artifact of the same name. The CLI owns only the paths it records in an install manifest and never removes content it did not create.
+A project artifact shadows a user artifact of the same name. The CLI owns only the paths it records in an install manifest and never removes content it did not create.
 
 ### Inject Command
 
@@ -186,43 +193,6 @@ sds validate all --changed origin/main
 full history (`fetch-depth: 0`). When the ref resolves but no spec changed, it exits `0`
 with an empty result.
 
-### Stewardship Commands
-
-Manage a knowledge graph of architectural decisions, business rules, and workflow conventions extracted from spec files:
-
-```bash
-# Report available stewardship capabilities
-sds stewardship capabilities
-
-# Search for rules in the knowledge graph
-sds stewardship retrieve <query> --domain architecture [--scope <project-id>] [--global]
-
-# Persist a project-scoped rule by default
-sds stewardship store architecture --content "Use hexagonal architecture"
-
-# Persist a truly universal rule
-sds stewardship store workflow --content "Run typecheck before completion" --global
-
-# Extract decision candidates from a design.md or requirements.md
-sds stewardship extract .specs/changes/my-feature/design.md
-
-# Show rule provenance and version history
-sds stewardship trace <ruleId> [--scope <project-id>] [--global]
-
-# Retrieve context for a spec phase
-sds stewardship inject design [--scope <project-id>] [--global]
-
-# List, deprecate, archive, or move rules
-sds stewardship manage list
-sds stewardship manage deprecate --ruleId <ruleId> [--scope <project-id>] [--global]
-sds stewardship manage move --ruleId <ruleId> --scope <project-id>
-```
-
-Rules are project-scoped by default and only fall back to global rules during retrieval. Use `--global` only for memories that are safe across unrelated repositories.
-
-Retrieval and conflict detection use keyword overlap plus recency/confidence scoring. They are lexical, not embedding-based, so contradictions that share no vocabulary are not detected automatically. Phase injection returns all active rules in the phase's domains.
-
-
 ## Skills Injected
 
 The CLI injects these universal skills that work across all platforms:
@@ -243,7 +213,6 @@ The CLI injects these universal skills that work across all platforms:
 
 | Skill | Purpose |
 |-------|---------|
-| `contextual-stewardship` | Knowledge graph for architectural decisions |
 | `quality-grading` | Grade code/specs across 4 dimensions |
 | `code-review-hardening` | Structured code review with self-repair |
 | `universal-live-check` | Real-time validation framework |

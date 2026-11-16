@@ -8,8 +8,8 @@ import (
 func TestRequiredSkills(t *testing.T) {
 	skills := RequiredSkills()
 
-	if len(skills) != 14 {
-		t.Fatalf("skills = %d, want 14", len(skills))
+	if len(skills) != 13 {
+		t.Fatalf("skills = %d, want 13", len(skills))
 	}
 	if skills[0] != "spec-driven-planner" {
 		t.Fatalf("first skill = %q, want spec-driven-planner", skills[0])

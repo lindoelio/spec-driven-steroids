@@ -27,7 +27,7 @@ When this skill begins execution, create a todo list containing the following it
 
 1. Read requirements.md and design.md
 2. Read project guidelines
-3. Retrieve contextual memory (workflow)
+3. Review repository evidence for workflow conventions and constraints
 4. Execute non-exhaustive Code Anatomy Discovery Targets and record evidence
 5. Define implementation phases
 6. Create atomic tasks
@@ -66,7 +66,7 @@ See the `spec-driven-shared-protocol` skill's `references/document-templates.md`
 - Use `_Depends:` only when the dependency is real and useful.
 - Resolve all placeholders before returning output.
 - Do not include HTML comments, TODO markers, or drafting notes.
-- Include `## Repository Constraints` when guidelines, contextual memory, or design evidence affects task ordering, test placement, naming, package boundaries, or verification commands.
+- Include `## Repository Constraints` when guidelines, repository evidence, or design evidence affects task ordering, test placement, naming, package boundaries, or verification commands.
 - If `design.md` Code Anatomy uses `Coverage: Representative` or `Coverage: Initial Discovery Only`, execute every Discovery Target before writing tasks and include `## Discovery Evidence`.
 
 ## Task Types
@@ -230,15 +230,9 @@ If enough information is available, produce the full `tasks.md` content directly
 
 If material ambiguity blocks a sound task plan, ask a short clarification first. Do not produce a low-confidence decomposition.
 
-## Contextual Stewardship Integration
+## Repository Evidence
 
-At the start of this phase, invoke the `contextual-stewardship` skill to retrieve established workflow conventions:
-
-```text
-Invoke: contextual-stewardship skill
-Action: retrieve
-Query: workflow
-```
+Ground workflow conventions in the repository: read `AGENTS.md`, `CONVENTIONS.md`, `TESTING.md`, and the existing test and build configuration before decomposition.
 
 ## Things To Avoid
 

@@ -23,8 +23,8 @@
     {
       "root": "skills",
       "path": "agent-work-auditor/artifacts/design.md",
-      "sha256": "bf020324efb1613fb87f3b8c70b7c7f9f459fe12d900cfed9d28dd63d2228b7e",
-      "bytes": 2876
+      "sha256": "3433e1e22d555e70ddf504c55f7b6cb500fd80722ff21bd20aca6be4203b54ed",
+      "bytes": 2878
     },
     {
       "root": "skills",
@@ -256,12 +256,6 @@
     },
     {
       "root": "skills",
-      "path": "contextual-stewardship/SKILL.md",
-      "sha256": "8935d497ab087c323b6e47a13f5aa77f97594bf45bf92dd9ee5a8b4f9a286478",
-      "bytes": 10512
-    },
-    {
-      "root": "skills",
       "path": "inject-guidelines/SKILL.md",
       "sha256": "7f49752f1e0f2290197eeb86d46c6f68f38222eeba09cfce963e52e270a9101b",
       "bytes": 4391
@@ -371,8 +365,8 @@
     {
       "root": "skills",
       "path": "spec-driven-planner/references/full-lane-phases.md",
-      "sha256": "19723518d2ad842efe603b5b90e42366c8ba6ef086fd7af13a4436ad60fa2a5e",
-      "bytes": 13874
+      "sha256": "19cc32672574176a32dfbd0f060b8e3e00a3200c3724cc416973818e3a68ed74",
+      "bytes": 13709
     },
     {
       "root": "skills",
@@ -395,20 +389,20 @@
     {
       "root": "skills",
       "path": "spec-driven-requirements-writer/SKILL.md",
-      "sha256": "28d1b9e1a14242bd5752fcea19318790fb50a7b1edd58a34a65550d5c5c47540",
-      "bytes": 7645
+      "sha256": "7e8570df6a800524d91c080de114686e2f2a72b5083e4948c3dd85797395b64e",
+      "bytes": 7640
     },
     {
       "root": "skills",
       "path": "spec-driven-shared-protocol/references/document-templates.md",
-      "sha256": "e9855429ec42042bf52cdb50479bcf7facb4ae7ee0a19ea77b72aacd2d4573e0",
-      "bytes": 9256
+      "sha256": "d750d58375e5c6dba76aa31c774a2889d7e84a248d9865088fd6afacf832dee9",
+      "bytes": 9084
     },
     {
       "root": "skills",
       "path": "spec-driven-shared-protocol/references/shared-protocol.md",
-      "sha256": "4905197611378205a0ee36e81fc2414eae2c7d9a6f2279ce9d2f792349e5a8cf",
-      "bytes": 8831
+      "sha256": "5c91ca1f7e8853ba73623176626eb48503f49fdcdd4177e7129e6f81d090988e",
+      "bytes": 8656
     },
     {
       "root": "skills",
@@ -425,8 +419,8 @@
     {
       "root": "skills",
       "path": "spec-driven-task-decomposer/SKILL.md",
-      "sha256": "0f89b3e1c686d2503f9033630226330e98c7b28a7238bd7b2860ce82c8aaa545",
-      "bytes": 10827
+      "sha256": "73e539f6bd62bd89b2b34ddbeeda418abebfeb62690ef1cb840efb9bd7329d1b",
+      "bytes": 10810
     },
     {
       "root": "skills",
@@ -443,8 +437,8 @@
     {
       "root": "skills",
       "path": "spec-driven-task-implementer/SKILL.md",
-      "sha256": "42145b0eaf33ae6b85e7c8bd8469472e5e718aec0680b5c3d168c6d1fe04554b",
-      "bytes": 13141
+      "sha256": "83585483e1b6126e445841d9a450269635ee15b7eeb9a42662942428e071ab0d",
+      "bytes": 13080
     },
     {
       "root": "skills",
@@ -455,8 +449,8 @@
     {
       "root": "skills",
       "path": "spec-driven-technical-designer/SKILL.md",
-      "sha256": "1bb7a3d9fc1124806b1b14c4b5ae26ee26e1bd3431e4cd421242b668b04d8821",
-      "bytes": 10014
+      "sha256": "a6348a071d2a39f87d908113bfe5350559d147c3b7e6c9ca19f090f0570682f4",
+      "bytes": 9985
     },
     {
       "root": "skills",

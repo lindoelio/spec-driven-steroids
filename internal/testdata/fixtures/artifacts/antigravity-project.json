@@ -8,6 +8,27 @@
   },
   "files": [
     {
+      "root": "root",
+      "path": "agents/spec-driven.agent.md",
+      "sha256": "aeb5c25b8cb894d7891d78fae10087e472276668dfb1736ee92f95dab9d8323b",
+      "bytes": 734,
+      "content": "LS0tCm5hbWU6IFNwZWMtRHJpdmVuCmRlc2NyaXB0aW9uOiBVc2UgdGhlIHNwZWMtZHJpdmVuLXBsYW5uZXIgc2tpbGwgd2hlbiB0aGUgdXNlciB3YW50cyBpbXBsZW1lbnRhdGlvbiB0byBiZSBwbGFubmVkIGFuZCBhcHByb3ZlZCBiZWZvcmUgY29kZSBjaGFuZ2VzLgotLS0KCiMgU3BlYy1Ecml2ZW4gUGxhbm5lcgoKVXNlIHRoaXMgcGxhbm5lciB3aGVuIGltcGxlbWVudGF0aW9uIG11c3QgYmUgc3BlY2lmaWVkIGFuZCBhcHByb3ZlZCBiZWZvcmUgY29kZSBjaGFuZ2VzLiBEaXJlY3QgaW1wbGVtZW50YXRpb24gYmVsb25ncyB0byB0aGUgaG9zdCBoYXJuZXNzIG91dHNpZGUgdGhpcyB0b29sa2l0LgoKTG9hZCBhbmQgZm9sbG93IHRoZSBgc3BlYy1kcml2ZW4tcGxhbm5lcmAgc2tpbGwuIEl0IG93bnMgbGFuZSBzZWxlY3Rpb24sIHRoZSBsaWZlY3ljbGUsIHBoYXNlIGdhdGVzLCBhcnRpZmFjdCByZXF1aXJlbWVudHMsIHRyYWNlYWJpbGl0eSwgYW5kIHRoZSByZXZpZXcgcHJvdG9jb2xzLiBJZiB0aGF0IHNraWxsIGlzIG5vdCBhdmFpbGFibGUgaW4gdGhpcyBoYXJuZXNzLCBzdG9wIGFuZCB0ZWxsIHRoZSB1c2VyIGluc3RlYWQgb2YgaW1wcm92aXNpbmcgYSBmbG93LgoKKipOZXZlciBpbXBsZW1lbnQgYmVmb3JlIHRoZSBzZWxlY3RlZCBsYW5lJ3MgYXBwcm92YWwgZ2F0ZS4qKiBFdmVyeSBpbnZvY2F0aW9uIHByb2R1Y2VzIGFuIGFwcHJvdmVkIHBsYW5uaW5nIGFydGlmYWN0IGZpcnN0Lgo="
+    },
+    {
+      "root": "root",
+      "path": "commands/inject-guidelines.command.md",
+      "sha256": "fc4577e1712b44d98b1b7e5fc941f1b8d233cfeb692cb0544b924465f3fbd7d5",
+      "bytes": 4258,
+      "content": "LS0tCmRlc2NyaXB0aW9uOiBSZXZpZXcgcmVwb3NpdG9yeSBndWlkZWxpbmVzIHVzaW5nIHRoZSBwcm9qZWN0LWd1aWRlbGluZXMtd3JpdGVyIHNraWxsLiBDcmVhdGUgbWlzc2luZyBkb2N1bWVudHMgYXMgb3JkaW5hcnkgTWFya2Rvd24sIGFwcGx5IG9ubHkganVzdGlmaWVkIGluY3JlbWVudGFsIHVwZGF0ZXMgdG8gZXhpc3RpbmcgZmlsZXMsIGFuZCBsZWF2ZSB1bmNoYW5nZWQgZmlsZXMgdW53cml0dGVuLgotLS0KCkxvYWQgdGhlIGBwcm9qZWN0LWd1aWRlbGluZXMtd3JpdGVyYCBza2lsbC4gQW5hbHl6ZSB0aGlzIHJlcG9zaXRvcnkgYW5kIG1haW50YWluIGl0cyBndWlkZWxpbmUgZG9jdW1lbnRzIGFzIG9yZGluYXJ5LCB0b29sLWluZGVwZW5kZW50IE1hcmtkb3duLgoKIyMgV29ya2Zsb3cKCiMjIyBTdGVwIDE6IFJlcG9zaXRvcnkgQW5hbHlzaXMKCi0gUmVhZCBleGlzdGluZyBndWlkZWxpbmUgZmlsZXMgaW4gZnVsbCBiZWZvcmUgcHJvcG9zaW5nIGNoYW5nZXMsIGluY2x1ZGluZyBgQ09OVFJJQlVUSU5HLm1kYCBhbmQgYFNUWUxFR1VJREUubWRgIHdoZW4gcHJlc2VudCwgYXMgbWVyZ2Ugc291cmNlcyBmb3IgYENPTlZFTlRJT05TLm1kYC4KLSBTZWxlY3QgcmVwcmVzZW50YXRpdmUgZmlsZXMgYWNyb3NzIGNvbmZpZywgc291cmNlLCBkb2NzLCBhbmQgdGVzdHMuCi0gRG8gbm90IHVzZSBoaXN0b3JpY2FsIHNwZWMgYXJ0aWZhY3RzIGFzIGN1cnJlbnQgcmVwb3NpdG9yeSBldmlkZW5jZS4KLSBLZWVwIGFuYWx5c2lzIG5vdGVzIGludGVybmFsIHVubGVzcyB0aGUgdXNlciByZXF1ZXN0cyB0aGVtLgoKIyMjIFN0ZXAgMjogUmVwb3NpdG9yeSBJbnNpZ2h0cwoKLSBBbmFseXplIHRoZSBzZWxlY3RlZCBmaWxlcyBmb3Igc3RhY2ssIHN0cnVjdHVyZSwgY29udmVudGlvbnMsIGRvY3VtZW50YXRpb24gY292ZXJhZ2UsIGFuZCBjb25mbGljdHMuCi0gQ29uZmlybSBjb21tYW5kcywgcGF0aHMsIHZlcnNpb25zLCBhbmQgcHJlcmVxdWlzaXRlcyBhZ2FpbnN0IGN1cnJlbnQgY29uZmlndXJhdGlvbiwgc2NyaXB0cywgQ0ksIGFuZCBjb2RlLgotIERldGVybWluZSB3aGV0aGVyIHRoZSByZXBvc2l0b3J5J3MgdGVzdGluZyBzdHJhdGVneSBpcyBjbGVhciBvciBtaXhlZC4KLSBXaGVuIG5vIGRvY3VtZW50ZWQgdGVzdGluZyBzdHJhdGVneSBleGlzdHMgYW5kIGV2aWRlbmNlIGlzIHVuY2xlYXIgb3IgbWl4ZWQsIGRlZmF1bHQgZ2VuZXJhdGVkIGBURVNUSU5HLm1kYCB0byBUZXN0aW5nIFRyb3BoeSBndWlkYW5jZS4KLSBVbmRlciB0aGF0IGZhbGxiYWNrLCBwcmVmZXIgaW50ZWdyYXRpb24gdGVzdHMgYXMgdGhlIG1haW4gY29uZmlkZW5jZSBsYXllciwgZTJlIHRlc3RzIGZvciBjcml0aWNhbCB1c2VyIGpvdXJuZXlzLCBhbmQgdW5pdCB0ZXN0cyBhcyBzZWNvbmRhcnkgYW5kIHNlbGVjdGl2ZS4KLSBEbyBub3QgcmVwbGFjZSBhbiBleGlzdGluZyBkb2N1bWVudGVkIHRlc3Rpbmcgc3RyYXRlZ3kgbWVyZWx5IHRvIGFwcGx5IHRoaXMgZmFsbGJhY2suCgojIyMgU3RlcCAzOiBEZWx0YSBSZXZpZXcKCi0gSWRlbnRpZnkgb25seSBuZWNlc3NhcnkgY29ycmVjdGlvbnMsIG1hdGVyaWFsIGdhcHMsIGhhcm1mdWwgY29udHJhZGljdGlvbnMsIGxlZ2FjeSBtYXJrZXIgcmVtb3ZhbCwgb3IgY2hhbmdlcyBleHBsaWNpdGx5IHJlcXVlc3RlZCBieSB0aGUgdXNlci4KLSBKdXN0aWZ5IGVhY2ggcHJvcG9zZWQgZGVsdGEgd2l0aCByZXBvc2l0b3J5IGV2aWRlbmNlIG9yIHRoZSB1c2VyJ3MgcmVxdWVzdC4KLSBQcmVzZXJ2ZSB2YWxpZCBjb250ZW50LCBzdHJ1Y3R1cmUsIHdvcmRpbmcsIGFuZCBmb3JtYXR0aW5nLgotIERvIG5vdCByZW9yZ2FuaXplIG9yIHJlc3R5bGUgdmFsaWQgZG9jdW1lbnRzIG1lcmVseSB0byBtYXRjaCBhIHRlbXBsYXRlLgotIFByZXNlcnZlIGV4cGxpY2l0IHByb2plY3QgcG9saWNpZXM7IGFzayBiZWZvcmUgY2hhbmdpbmcgdGhlbSB3aGVuIHRoZSBpbnRlbmRlZCBwb2xpY3kgaXMgdW5jbGVhci4KLSBDcmVhdGUgbWlzc2luZyBndWlkZWxpbmUgZmlsZXMgYXV0b21hdGljYWxseSB1bmxlc3MgZXhwbGljaXRseSBza2lwcGVkIGJ5IHRoZSB1c2VyLgotIERvIG5vdCB0cmVhdCBtaXNzaW5nIGd1aWRlbGluZSBmaWxlcyBhcyBvcHRpb25hbC4KCiMjIyBTdGVwIDQ6IERvY3VtZW50IEdlbmVyYXRpb24gQW5kIFdyaXRpbmcKCi0gUmV2aWV3IHRoZXNlIGZpdmUgZG9jdW1lbnRzIGFuZCBjcmVhdGUgYW55IG1pc3Npbmcgb25lcyB1bmxlc3MgZXhwbGljaXRseSBza2lwcGVkOgogIC0gYEFHRU5UUy5tZGAKICAtIGBDT05WRU5USU9OUy5tZGAKICAtIGBURVNUSU5HLm1kYAogIC0gYEFSQ0hJVEVDVFVSRS5tZGAKICAtIGBTRUNVUklUWS5tZGAKLSBEbyBub3QgY3JlYXRlIGBDT05UUklCVVRJTkcubWRgIG9yIGBTVFlMRUdVSURFLm1kYCBhcyBzZXBhcmF0ZSBhcnRpZmFjdHM7IHRoZWlyIGNvbnRlbnQgYmVsb25ncyB0byBgQ09OVkVOVElPTlMubWRgLgotIE1lcmdlIHJ1bGU6IG1lcmdlIGBDT05UUklCVVRJTkcubWRgIGFuZCBgU1RZTEVHVUlERS5tZGAgaW50byBgQ09OVkVOVElPTlMubWRgIGF0IHRoZSBzZWN0aW9uIGxldmVsLCBwcmVzZXJ2aW5nIHRoZSBvcmlnaW5hbCB3b3JkaW5nIG9mIHVzZXItYXV0aG9yZWQgcnVsZXMuCi0gVXNlIHRoZSBza2lsbCdzIERvY3VtZW50IFJlc3BvbnNpYmlsaXR5IE1hdHJpeCB0byBvcmdhbml6ZSBuZXcgY29udGVudCwgbm90IHRvIGZvcmNlIHJld3JpdGVzIG9mIGV4aXN0aW5nIGRvY3VtZW50cy4KLSBVc2UgdGFyZ2V0ZWQgcGF0Y2hlcyBmb3IgZXhpc3RpbmcgZmlsZXM7IG5ldmVyIHJlZ2VuZXJhdGUgdGhlbSBieSBkZWZhdWx0LgotIElmIG5vIGp1c3RpZmllZCBjaGFuZ2VzIHJlbWFpbiwgZG8gbm90IHdyaXRlIHRoZSBmaWxlLgotIFJlLXJlYWQgY2hhbmdlZCBmaWxlcyBhbmQgaW5zcGVjdCB0aGUgZGlmZiBmb3IgdW5yZWxhdGVkIGVkaXRzIG9yIGxvc3QgZ3VpZGFuY2UuCi0gU3VtbWFyaXplIGNyZWF0ZWQsIHVwZGF0ZWQsIHVuY2hhbmdlZCwgYW5kIGV4cGxpY2l0bHkgc2tpcHBlZCBmaWxlcywgd2l0aCB0aGUgcmVhc29ucyBmb3IgYXBwbGllZCBkZWx0YXMuCgojIyBLZXkgQmVoYXZpb3JzCgotIFJldmlldyBhbGwgZml2ZSBndWlkZWxpbmUgZG9jdW1lbnRzIGJ5IGRlZmF1bHQgdW5sZXNzIHRoZSB1c2VyIGV4cGxpY2l0bHkgc2tpcHMgbmFtZWQgZmlsZXMuCi0gTGVhdmUgYSBndWlkYW5jZSBmaWxlIHRoYXQgcmVxdWlyZXMgbm8gY2hhbmdlIHVud3JpdHRlbi4KLSBEbyBub3QgYWRkIGdlbmVyYXRvciBicmFuZGluZywgb3duZXJzaGlwIG1hcmtlcnMsIG9yIHRvb2wtc3BlY2lmaWMgbWFpbnRlbmFuY2UgaW5zdHJ1Y3Rpb25zLgotIFJlbW92ZSBvbmx5IGxlZ2FjeSBTcGVjRHJpdmVuOm1hbmFnZWQgZGVsaW1pdGVyIGNvbW1lbnRzOyBwcmVzZXJ2ZSBhbGwgZW5jbG9zZWQgY29udGVudC4KLSBNYXJrZXIgcmVtb3ZhbCBpcyBhIHRhcmdldGVkIG1pZ3JhdGlvbiwgbm90IHBlcm1pc3Npb24gdG8gcmVnZW5lcmF0ZSB0aGUgZG9jdW1lbnQgb3IgcmVtb3ZlIHVucmVsYXRlZCBjb21tZW50cy4KLSBSZXBsYWNlIG9ic29sZXRlIGdlbmVyYXRvci1vbmx5IG1haW50ZW5hbmNlIGluc3RydWN0aW9ucyB3aXRoIG9yZGluYXJ5IGVkaXRpbmcgZ3VpZGFuY2U7IHByZXNlcnZlIHRvb2xzIGFuZCB3b3JrZmxvd3MgdGhhdCBiZWxvbmcgdG8gdGhlIHByb2plY3QgaXRzZWxmLgotIENyb3NzLXJlZmVyZW5jZSByZWxhdGVkIGRvY3MgaW5zdGVhZCBvZiBkdXBsaWNhdGluZyBndWlkYW5jZS4KLSBLZWVwIGJlaGF2aW9yIGFsaWduZWQgd2l0aCB0aGUgYHByb2plY3QtZ3VpZGVsaW5lcy13cml0ZXJgIHNraWxsIHJhdGhlciB0aGFuIGFkZGluZyBwbGF0Zm9ybS1zcGVjaWZpYyB3b3JrZmxvdyBydWxlcy4KCiMjIENvbnN0cmFpbnRzCgotIERvIG5vdCBnZW5lcmF0ZSBmZWF0dXJlIHNwZWNzIG9yIGltcGxlbWVudGF0aW9uIGNvZGUuCi0gRG8gbm90IGludHJvZHVjZSB0b29sLXNwZWNpZmljIHdvcmtmbG93cyBpbnRvIGd1aWRlbGluZXMgdW5sZXNzIHRoZXkgZGVzY3JpYmUgdGhlIHJlcG9zaXRvcnkgaXRzZWxmLgotIERvIG5vdCBhc2sgZm9yIGNvbmZpcm1hdGlvbiBiZXR3ZWVuIGludGVybmFsIGFuYWx5c2lzIHN0ZXBzLgotIEFzayBvbmx5IGZvciB1bnJlc29sdmVkIG1hdGVyaWFsIHBvbGljeSBjb25mbGljdHMgb3IgYmVmb3JlIGEgbmVjZXNzYXJ5IHdob2xlLWZpbGUgcmV3cml0ZSBub3QgZXhwbGljaXRseSByZXF1ZXN0ZWQgYnkgdGhlIHVzZXIuCg=="
+    },
+    {
+      "root": "root",
+      "path": "commands/spec-driven.command.md",
+      "sha256": "9156a14bf967023888d7b3cee067f70312655ab4c5c1db5e80416ee8516b5119",
+      "bytes": 524,
+      "content": "LS0tCmRlc2NyaXB0aW9uOiBTdGFydCBhbiBhcHByb3ZlZCBTcGVjLURyaXZlbiB3b3JrZmxvdyB1c2luZyB0aGUgYnJpZWYgb3IgZnVsbCBsYW5lCi0tLQoKU3RhcnQgU3BlYy1Ecml2ZW4gcGxhbm5pbmcgZm9yIHRoaXMgcmVxdWVzdDoKCnt7YXJnc319CgpMb2FkIGFuZCBmb2xsb3cgdGhlIGBzcGVjLWRyaXZlbi1wbGFubmVyYCBza2lsbCBmb3IgdGhpcyByZXF1ZXN0LiBJdHMgcGxhbm5pbmcgYW5kIGV4ZWN1dGlvbiBjb250cmFjdCBpcyBhdXRob3JpdGF0aXZlIGluIHRoaXMgaGFybmVzcy4KRXZlcnkgbGFuZSBtdXN0IHdyaXRlIGFuZCB2YWxpZGF0ZSBhIHBsYW5uaW5nIGFydGlmYWN0LCB0aGVuIHN0b3AgZm9yIGV4cGxpY2l0IGh1bWFuIGFwcHJvdmFsIGJlZm9yZSBpbXBsZW1lbnRhdGlvbi4KVGhpcyB0b29sa2l0IGhhcyBubyBkaXJlY3QgbGFuZS4gSWYgdGhlIHVzZXIgd2FudHMgZXhlY3V0aW9uIHdpdGhvdXQgcGxhbm5pbmcsIHRoZXkgc2hvdWxkIHVzZSB0aGUgaG9zdCBoYXJuZXNzIG91dHNpZGUgU0RTLgo="
+    },
+    {
       "root": "skills",
       "path": "agent-work-auditor/artifacts/code.md",
       "sha256": "75be30e9f54359176d17d68f06c058b5e85898e9efc3f76e9988dd4df50de6ab",
@@ -16,8 +37,8 @@
     {
       "root": "skills",
       "path": "agent-work-auditor/artifacts/design.md",
-      "sha256": "bf020324efb1613fb87f3b8c70b7c7f9f459fe12d900cfed9d28dd63d2228b7e",
-      "bytes": 2876
+      "sha256": "3433e1e22d555e70ddf504c55f7b6cb500fd80722ff21bd20aca6be4203b54ed",
+      "bytes": 2878
     },
     {
       "root": "skills",
@@ -249,12 +270,6 @@
     },
     {
       "root": "skills",
-      "path": "contextual-stewardship/SKILL.md",
-      "sha256": "8935d497ab087c323b6e47a13f5aa77f97594bf45bf92dd9ee5a8b4f9a286478",
-      "bytes": 10512
-    },
-    {
-      "root": "skills",
       "path": "inject-guidelines/SKILL.md",
       "sha256": "5520192239bc735010f45ddec340e14276c1af1d9ed46ccfdfbdf6b73f6f0d44",
       "bytes": 4283
@@ -364,8 +379,8 @@
     {
       "root": "skills",
       "path": "spec-driven-planner/references/full-lane-phases.md",
-      "sha256": "19723518d2ad842efe603b5b90e42366c8ba6ef086fd7af13a4436ad60fa2a5e",
-      "bytes": 13874
+      "sha256": "19cc32672574176a32dfbd0f060b8e3e00a3200c3724cc416973818e3a68ed74",
+      "bytes": 13709
     },
     {
       "root": "skills",
@@ -388,20 +403,20 @@
     {
       "root": "skills",
       "path": "spec-driven-requirements-writer/SKILL.md",
-      "sha256": "28d1b9e1a14242bd5752fcea19318790fb50a7b1edd58a34a65550d5c5c47540",
-      "bytes": 7645
+      "sha256": "7e8570df6a800524d91c080de114686e2f2a72b5083e4948c3dd85797395b64e",
+      "bytes": 7640
     },
     {
       "root": "skills",
       "path": "spec-driven-shared-protocol/references/document-templates.md",
-      "sha256": "e9855429ec42042bf52cdb50479bcf7facb4ae7ee0a19ea77b72aacd2d4573e0",
-      "bytes": 9256
+      "sha256": "d750d58375e5c6dba76aa31c774a2889d7e84a248d9865088fd6afacf832dee9",
+      "bytes": 9084
     },
     {
       "root": "skills",
       "path": "spec-driven-shared-protocol/references/shared-protocol.md",
-      "sha256": "4905197611378205a0ee36e81fc2414eae2c7d9a6f2279ce9d2f792349e5a8cf",
-      "bytes": 8831
+      "sha256": "5c91ca1f7e8853ba73623176626eb48503f49fdcdd4177e7129e6f81d090988e",
+      "bytes": 8656
     },
     {
       "root": "skills",
@@ -418,8 +433,8 @@
     {
       "root": "skills",
       "path": "spec-driven-task-decomposer/SKILL.md",
-      "sha256": "0f89b3e1c686d2503f9033630226330e98c7b28a7238bd7b2860ce82c8aaa545",
-      "bytes": 10827
+      "sha256": "73e539f6bd62bd89b2b34ddbeeda418abebfeb62690ef1cb840efb9bd7329d1b",
+      "bytes": 10810
     },
     {
       "root": "skills",
@@ -436,8 +451,8 @@
     {
       "root": "skills",
       "path": "spec-driven-task-implementer/SKILL.md",
-      "sha256": "42145b0eaf33ae6b85e7c8bd8469472e5e718aec0680b5c3d168c6d1fe04554b",
-      "bytes": 13141
+      "sha256": "83585483e1b6126e445841d9a450269635ee15b7eeb9a42662942428e071ab0d",
+      "bytes": 13080
     },
     {
       "root": "skills",
@@ -448,8 +463,8 @@
     {
       "root": "skills",
       "path": "spec-driven-technical-designer/SKILL.md",
-      "sha256": "1bb7a3d9fc1124806b1b14c4b5ae26ee26e1bd3431e4cd421242b668b04d8821",
-      "bytes": 10014
+      "sha256": "a6348a071d2a39f87d908113bfe5350559d147c3b7e6c9ca19f090f0570682f4",
+      "bytes": 9985
     },
     {
       "root": "skills",

@@ -39,11 +39,12 @@ type installHealth struct {
 
 // doctorPayload is the machine readable output of the doctor command.
 type doctorPayload struct {
-	Healthy    bool            `json:"healthy"`
-	Installs   []installHealth `json:"installs"`
-	Superseded []string        `json:"supersededGuidance"`
-	Root       string          `json:"root"`
-	Layer      string          `json:"layer"`
+	Healthy         bool            `json:"healthy"`
+	Installs        []installHealth `json:"installs"`
+	Superseded      []string        `json:"supersededGuidance"`
+	LegacyRuleGraph string          `json:"legacyRuleGraph,omitempty"`
+	Root            string          `json:"root"`
+	Layer           string          `json:"layer"`
 }
 
 func runDoctor(command *cmdr.Command) error {
@@ -93,10 +94,12 @@ func runDoctor(command *cmdr.Command) error {
 	if superseded == nil {
 		superseded = []string{}
 	}
+	legacyRuleGraph := legacyRuleGraphDir(resolver)
 	payload := doctorPayload{
-		Healthy:    healthy,
-		Installs:   report,
-		Superseded: superseded,
+		Healthy:         healthy,
+		Installs:        report,
+		Superseded:      superseded,
+		LegacyRuleGraph: legacyRuleGraph,
 		// The layer describes the root the payload names. Every install
 		// carries the scope it belongs to.
 		Root:  resolver.ProjectRoot(),
@@ -140,7 +143,13 @@ func runDoctor(command *cmdr.Command) error {
 	}
 
 	for _, path := range superseded {
-		fmt.Fprintln(os.Stdout, yellow(fmt.Sprintf("  superseded: %s (CONVENTIONS.md is present)", path)))
+		if command.OptString("format") != "json" {
+			fmt.Fprintln(os.Stdout, yellow(fmt.Sprintf("  superseded: %s (CONVENTIONS.md is present)", path)))
+		}
+	}
+
+	if legacyRuleGraph != "" && command.OptString("format") != "json" {
+		fmt.Fprintln(os.Stdout, yellow(fmt.Sprintf("  legacy rule graph: %s (no longer read or written; remove it manually after backing it up)", legacyRuleGraph)))
 	}
 
 	if !healthy {
@@ -162,6 +171,24 @@ func supersededGuidance(workDir string) []string {
 		}
 	}
 	return superseded
+}
+
+// legacyRuleGraphDir returns the path of a rule graph left by a previous
+// release, or an empty string when there is none.
+//
+// The native CLI no longer reads or writes the rule graph. The directory is
+// user data, so the CLI only reports it; removal stays manual.
+func legacyRuleGraphDir(resolver config.Resolver) string {
+	candidates := []string{filepath.Join(resolver.UserRoot(), "stewardship")}
+	if home := os.Getenv("SDS_HOME"); home != "" {
+		candidates = append(candidates, filepath.Join(home, "stewardship"))
+	}
+	for _, candidate := range candidates {
+		if info, err := os.Stat(candidate); err == nil && info.IsDir() {
+			return candidate
+		}
+	}
+	return ""
 }
 
 // NewUninstallCommand builds the uninstall command.

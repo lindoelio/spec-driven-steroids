@@ -48,7 +48,6 @@ Use these files in this order:
 2. `design.md` for architectural boundaries and file placement
 3. `tasks.md` for execution order and task scope
 4. project guideline files for local conventions
-5. contextual-stewardship rules for active project decisions
 
 If these inputs conflict, stop and resolve the conflict before continuing.
 

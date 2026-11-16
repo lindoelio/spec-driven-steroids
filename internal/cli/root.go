@@ -20,7 +20,6 @@ func NewProgram() *cmdr.Command {
 	program.Version(version.String())
 
 	program.AddCommand(NewValidateCommand())
-	program.AddCommand(NewStewardshipCommand())
 	program.AddCommand(NewDoctorCommand())
 	program.AddCommand(NewRepairCommand())
 	program.AddCommand(NewUninstallCommand())

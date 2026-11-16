@@ -126,22 +126,6 @@ func TestTheTemplateCacheOverrideNamesTheCacheDirectory(t *testing.T) {
 	}
 }
 
-func TestTheRuleGraphLivesUnderTheUserArtifactRoot(t *testing.T) {
-	resolver := testResolver()
-
-	if got := resolver.StewardshipDir(); got != filepath.Join("/home/user", ".agents", "stewardship") {
-		t.Errorf("the rule graph directory resolved to %q", got)
-	}
-}
-
-func TestTheRuleGraphHonoursTheHomeOverride(t *testing.T) {
-	resolver := Resolver{WorkDir: "/work", HomeDir: "/home/user", Env: map[string]string{"SDS_HOME": "/custom/home"}, OS: "linux"}
-
-	if got := resolver.StewardshipDir(); got != filepath.Join("/custom/home", "stewardship") {
-		t.Errorf("the rule graph directory resolved to %q", got)
-	}
-}
-
 func TestDefaultResolverReadsTheProcessEnvironment(t *testing.T) {
 	resolver := Default()
 	if resolver.OS != runtime.GOOS {

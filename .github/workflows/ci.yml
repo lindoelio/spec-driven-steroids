@@ -77,6 +77,22 @@ jobs:
       - name: Run the test suite
         run: go test ./...
 
+  test-macos:
+    name: Test on macOS
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Run the test suite
+        run: go test ./...
+
   vet:
     name: Vet
     runs-on: ubuntu-latest
@@ -243,6 +259,11 @@ jobs:
           WORK="$(mktemp -d)"
           cd "$WORK"
           "$BINARY" inject --platform claudecode --scope project --yes --templates bundled
+          INJECTED="$(find . -type f | wc -l | tr -d ' ')"
+          if [ "$INJECTED" = "0" ]; then
+            echo "The injection wrote no file." >&2
+            exit 1
+          fi
           "$BINARY" doctor
           "$BINARY" clean --project --platform claudecode --yes
           "$BINARY" clean --project --yes
@@ -293,6 +314,8 @@ jobs:
           try {
             & $binary inject --platform claudecode --scope project --yes --templates bundled
             if ($LASTEXITCODE -ne 0) { throw "the injection failed with $LASTEXITCODE" }
+            $injected = @(Get-ChildItem -Path $work -Recurse -File).Count
+            if ($injected -eq 0) { throw "the injection wrote no file" }
             & $binary doctor
             if ($LASTEXITCODE -ne 0) { throw "the doctor failed with $LASTEXITCODE" }
             & $binary clean --project --platform claudecode --yes
@@ -306,3 +329,8 @@ jobs:
             Pop-Location
             Remove-Item -Path $work -Recurse -Force -ErrorAction SilentlyContinue
           }
+
+      - name: Run the Windows-covered tests
+        shell: pwsh
+        run: |
+          go test ./internal/lockfile/... ./internal/proc/... ./internal/cli/...

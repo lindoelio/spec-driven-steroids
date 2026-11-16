@@ -270,15 +270,13 @@
     },
     {
       "criterion": "REQ-6.3",
-      "coveredBy": [
-        "internal/stewardship/"
-      ]
+      "coveredBy": [],
+      "superseded": "removed by .specs/changes/remove-stewardship/brief.md: the rule graph no longer exists"
     },
     {
       "criterion": "REQ-6.4",
-      "coveredBy": [
-        "internal/stewardship/"
-      ]
+      "coveredBy": [],
+      "superseded": "removed by .specs/changes/remove-stewardship/brief.md: the rule store lock no longer exists"
     },
     {
       "criterion": "REQ-6.5",
@@ -288,9 +286,8 @@
     },
     {
       "criterion": "REQ-6.6",
-      "coveredBy": [
-        "internal/stewardship/"
-      ]
+      "coveredBy": [],
+      "superseded": "removed by .specs/changes/remove-stewardship/brief.md: project-over-global rule resolution no longer exists"
     },
     {
       "criterion": "REQ-7.1",
@@ -521,10 +518,6 @@
       "fixture": "internal/testdata/fixtures/command-surface/help-validate.txt"
     },
     {
-      "command": "stewardship",
-      "fixture": "internal/testdata/fixtures/command-surface/help-stewardship.txt"
-    },
-    {
       "command": "package",
       "fixture": "internal/testdata/fixtures/command-surface/help-package.txt"
     },
@@ -539,7 +532,12 @@
   ],
   "report": {
     "criteria": 81,
-    "covered": 81,
+    "covered": 78,
+    "superseded": [
+      "REQ-6.3",
+      "REQ-6.4",
+      "REQ-6.6"
+    ],
     "missing": [],
     "absentEvidence": [],
     "absentFixtures": []

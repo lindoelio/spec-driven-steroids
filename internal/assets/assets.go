@@ -12,7 +12,7 @@ import (
 	"io/fs"
 )
 
-// Canonical holds the live canonical artifact tree: fourteen skill
+// Canonical holds the live canonical artifact tree: thirteen skill
 // directories, one agent and two commands.
 //
 //go:embed canonical
