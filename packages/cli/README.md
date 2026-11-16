@@ -53,11 +53,11 @@ npm install -g spec-driven-steroids
 ```
 
 The native preview has no npm line yet. Download the binary for your platform
-from the GitHub prerelease, verify it against `checksums.txt`, and put it on
-your `PATH`:
+from the newest `v1.0.0-next.N` prerelease on the Releases page, verify it
+against `checksums.txt`, and put it on your `PATH`:
 
 ```bash
-VERSION=1.0.0-next.1
+VERSION=1.0.0-next.2
 OS=darwin   # linux, or windows with the .exe suffix
 ARCH=arm64  # amd64
 TAG="v${VERSION}"
