@@ -261,7 +261,9 @@ func readGolden(t *testing.T, name string) string {
 	if err != nil {
 		t.Fatalf("read golden %s: %v", name, err)
 	}
-	return string(data)
+	// A Windows checkout can turn the captured LF fixture into CRLF; the
+	// renderer always writes LF.
+	return strings.ReplaceAll(string(data), "\r\n", "\n")
 }
 
 // TestHelpMatchesGolden renders the help of every command of the fixture tree

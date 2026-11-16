@@ -38,10 +38,11 @@ func TestTheCommandSurfaceMatchesTheCapturedContract(t *testing.T) {
 
 	for _, test := range cases {
 		t.Run(test.fixture, func(t *testing.T) {
-			expected, err := os.ReadFile(filepath.Join(fixtureDirectory, test.fixture))
+			raw, err := os.ReadFile(filepath.Join(fixtureDirectory, test.fixture))
 			if err != nil {
 				t.Fatalf("the captured fixture is not available: %v", err)
 			}
+			expected := normalizeFixture(string(raw))
 			program := NewProgram()
 			var written strings.Builder
 			program.SetOut(&written)
@@ -52,7 +53,7 @@ func TestTheCommandSurfaceMatchesTheCapturedContract(t *testing.T) {
 			if err := program.Parse(arguments); err != nil {
 				t.Fatalf("parse: %v", err)
 			}
-			if written.String() != string(expected) {
+			if written.String() != expected {
 				t.Errorf("the help output differs:\n--- expected ---\n%s\n--- actual ---\n%s", expected, written.String())
 			}
 		})
@@ -66,18 +67,20 @@ func TestTheRootHelpKeepsThePreviousCommands(t *testing.T) {
 	program := NewProgram()
 	help := program.HelpString()
 
-	current, err := os.ReadFile(filepath.Join(fixtureDirectory, "help-root-current.txt"))
+	currentRaw, err := os.ReadFile(filepath.Join(fixtureDirectory, "help-root-current.txt"))
 	if err != nil {
 		t.Fatalf("the captured fixture is not available: %v", err)
 	}
-	if help != string(current) {
+	current := normalizeFixture(string(currentRaw))
+	if help != current {
 		t.Errorf("the root help differs:\n--- expected ---\n%s\n--- actual ---\n%s", current, help)
 	}
 
-	previous, err := os.ReadFile(filepath.Join(fixtureDirectory, "help-root.txt"))
+	previousRaw, err := os.ReadFile(filepath.Join(fixtureDirectory, "help-root.txt"))
 	if err != nil {
 		t.Fatalf("the captured fixture is not available: %v", err)
 	}
+	previous := normalizeFixture(string(previousRaw))
 
 	// The commands are compared line by line: a word that only appears in a
 	// description does not prove that the command is listed.
@@ -94,7 +97,7 @@ func TestTheRootHelpKeepsThePreviousCommands(t *testing.T) {
 		listed[name] = true
 	}
 
-	for _, line := range strings.Split(string(previous), "\n") {
+	for _, line := range strings.Split(previous, "\n") {
 		trimmed := strings.TrimSpace(line)
 		if !strings.HasPrefix(trimmed, "  ") || strings.HasPrefix(trimmed, "   ") {
 			continue
@@ -160,18 +163,25 @@ func TestTheCapturedFailuresMatchTheContract(t *testing.T) {
 
 	for _, test := range cases {
 		t.Run(test.fixture, func(t *testing.T) {
-			expected, err := os.ReadFile(filepath.Join(fixtureDirectory, test.fixture))
+			raw, err := os.ReadFile(filepath.Join(fixtureDirectory, test.fixture))
 			if err != nil {
 				t.Fatalf("the captured fixture is not available: %v", err)
 			}
+			expected := normalizeFixture(string(raw))
 
 			output, code := runCapturing(test.arguments)
 			actual := fmt.Sprintf("%sexit=%d\n", output, code)
-			if actual != string(expected) {
+			if actual != expected {
 				t.Errorf("the output differs:\n--- expected ---\n%s\n--- actual ---\n%s", expected, actual)
 			}
 		})
 	}
+}
+
+// normalizeFixture removes the CRLF a Windows checkout can introduce into a
+// captured text fixture.
+func normalizeFixture(text string) string {
+	return strings.ReplaceAll(text, "\r\n", "\n")
 }
 
 // runCapturing runs the command with both streams captured and returns what

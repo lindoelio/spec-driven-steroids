@@ -1,0 +1,4 @@
+# Text files are normalized to LF in the repository. The captured fixtures
+# are compared byte for byte, so they must stay LF even on a Windows checkout.
+* text=auto
+internal/testdata/fixtures/** text eol=lf
