@@ -1,6 +1,6 @@
 {
-    "name": "@spec-driven-steroids/linux-x64",
-    "version": "1.0.0-next.1",
+    "name": "@lindoelio/sds-linux-x64",
+    "version": "1.0.0-next.2",
     "description": "The Spec-Driven Steroids release binary for Linux on x64.",
     "license": "MIT",
     "author": "Lindoélio Lázaro <lindoelio@gmail.com>",

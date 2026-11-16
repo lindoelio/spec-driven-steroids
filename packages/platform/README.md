@@ -11,20 +11,21 @@ These packages are published to the npm registry by the release pipeline
 
 ## Naming convention
 
-The package name is `@spec-driven-steroids/<npm-os>-<npm-cpu>`, where the two
-suffixes are npm's own values for the operating system and the architecture:
+The package name is `@lindoelio/sds-<npm-os>-<npm-cpu>`, where the scope is
+the publisher and the two suffixes are npm's own values for the operating
+system and the architecture:
 
 | Go build target | npm `os` | npm `cpu` | Package |
 | --- | --- | --- | --- |
-| `linux/amd64` | `linux` | `x64` | `@spec-driven-steroids/linux-x64` |
-| `linux/arm64` | `linux` | `arm64` | `@spec-driven-steroids/linux-arm64` |
-| `darwin/amd64` | `darwin` | `x64` | `@spec-driven-steroids/darwin-x64` |
-| `darwin/arm64` | `darwin` | `arm64` | `@spec-driven-steroids/darwin-arm64` |
-| `windows/amd64` | `win32` | `x64` | `@spec-driven-steroids/win32-x64` |
-| `windows/arm64` | `win32` | `arm64` | `@spec-driven-steroids/win32-arm64` |
+| `linux/amd64` | `linux` | `x64` | `@lindoelio/sds-linux-x64` |
+| `linux/arm64` | `linux` | `arm64` | `@lindoelio/sds-linux-arm64` |
+| `darwin/amd64` | `darwin` | `x64` | `@lindoelio/sds-darwin-x64` |
+| `darwin/arm64` | `darwin` | `arm64` | `@lindoelio/sds-darwin-arm64` |
+| `windows/amd64` | `win32` | `x64` | `@lindoelio/sds-win32-x64` |
+| `windows/arm64` | `win32` | `arm64` | `@lindoelio/sds-win32-arm64` |
 
 The suffix is therefore the host identity npm itself reports: a host resolves
-its package as `@spec-driven-steroids/${process.platform}-${process.arch}`.
+its package as `@lindoelio/sds-${process.platform}-${process.arch}`.
 Go names the same pairs differently (`amd64` is `x64`, `windows` is `win32`),
 so the release pipeline maps the build targets onto this table explicitly.
 

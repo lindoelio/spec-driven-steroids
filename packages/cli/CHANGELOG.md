@@ -1,5 +1,12 @@
 # spec-driven-steroids
 
+## 1.0.0-next.2
+
+### Patch Changes
+
+- Publish the platform packages under the `@lindoelio` scope, so the preview no longer depends on an npm organisation.
+- Remove the unused Vitest configuration left by the TypeScript tree.
+
 ## 1.0.0-next.1
 
 ### Patch Changes

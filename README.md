@@ -71,8 +71,9 @@ sds --version
 ```
 
 Windows publishes `sds-windows-<arch>.exe` and verifies the checksum with
-`Get-FileHash`. The npm `@next` line follows once the npm account is ready;
-the GitHub prerelease is the preview channel until then.
+`Get-FileHash`. The npm `@next` line follows once a token with publish rights
+for the `@lindoelio` scope is configured; the GitHub prerelease is the preview
+channel until then.
 
 The CLI is a single native binary with no runtime dependency: the binary needs no Node.js runtime and ships no dependency tree. The npm package installs the binary that matches your operating system and architecture through a thin Node launcher; the launcher is the only JavaScript that runs, and the binary does the work.
 

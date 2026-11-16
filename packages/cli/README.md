@@ -71,8 +71,9 @@ sds --version
 ```
 
 Windows publishes `sds-windows-<arch>.exe` and verifies the checksum with
-`Get-FileHash`. The npm `@next` line follows once the npm account is ready;
-the GitHub prerelease is the preview channel until then.
+`Get-FileHash`. The npm `@next` line follows once a token with publish rights
+for the `@lindoelio` scope is configured; the GitHub prerelease is the preview
+channel until then.
 
 The CLI is a single native binary with no runtime dependency: the binary needs no Node.js runtime and ships no dependency tree. The npm package installs the binary that matches your operating system and architecture through a thin Node launcher; the launcher is the only JavaScript that runs, and the binary does the work.
 
@@ -98,12 +99,12 @@ own: the registry is the only transport.
 
 | Platform package | Binary inside the package |
 |-------------------|---------------------------|
-| `@spec-driven-steroids/linux-x64` | `bin/sds` |
-| `@spec-driven-steroids/linux-arm64` | `bin/sds` |
-| `@spec-driven-steroids/darwin-x64` | `bin/sds` |
-| `@spec-driven-steroids/darwin-arm64` | `bin/sds` |
-| `@spec-driven-steroids/win32-x64` | `bin/sds.exe` |
-| `@spec-driven-steroids/win32-arm64` | `bin/sds.exe` |
+| `@lindoelio/sds-linux-x64` | `bin/sds` |
+| `@lindoelio/sds-linux-arm64` | `bin/sds` |
+| `@lindoelio/sds-darwin-x64` | `bin/sds` |
+| `@lindoelio/sds-darwin-arm64` | `bin/sds` |
+| `@lindoelio/sds-win32-x64` | `bin/sds.exe` |
+| `@lindoelio/sds-win32-arm64` | `bin/sds.exe` |
 
 The package name is the host identity npm reports, so the platform package
 your host resolves is:
@@ -120,17 +121,17 @@ anything. The binary still reaches your machine inside the platform package the
 registry resolved, at:
 
 ```text
-node_modules/@spec-driven-steroids/<platform>-<arch>/bin/sds
+node_modules/@lindoelio/sds-<platform>-<arch>/bin/sds
 ```
 
 Link it yourself with the package name your host resolves:
 
 ```bash
 # Linux and macOS
-npm link @spec-driven-steroids/linux-x64
+npm link @lindoelio/sds-linux-x64
 
 # Windows
-npm link @spec-driven-steroids/win32-x64
+npm link @lindoelio/sds-win32-x64
 ```
 
 `npm link` creates the symlink in the global npm bin directory, so `sds` and
@@ -138,7 +139,7 @@ npm link @spec-driven-steroids/win32-x64
 same link can be created by hand:
 
 ```bash
-ln -sf "$(npm root)/@spec-driven-steroids/linux-x64/bin/sds" "$(npm prefix -g)/bin/sds"
+ln -sf "$(npm root)/@lindoelio/sds-linux-x64/bin/sds" "$(npm prefix -g)/bin/sds"
 ```
 
 ## CLI Usage

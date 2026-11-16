@@ -193,7 +193,7 @@ on each of them, and checks the shape of the published packages.
 ## The npm channel
 
 - **Main package**: `spec-driven-steroids` on https://www.npmjs.com/package/spec-driven-steroids
-- **Platform packages**: `@spec-driven-steroids/<npm-os>-<npm-cpu>` on https://www.npmjs.com
+- **Platform packages**: `@lindoelio/sds-<npm-os>-<npm-cpu>` on https://www.npmjs.com
 
 The main package carries the installer and a thin Node launcher; the CLI
 itself is the native binary. It declares the platform packages as optional
@@ -203,12 +203,12 @@ architecture it applies to in npm's own vocabulary:
 
 | Platform package | `os` | `cpu` |
 | --- | --- | --- |
-| `@spec-driven-steroids/linux-x64` | `linux` | `x64` |
-| `@spec-driven-steroids/linux-arm64` | `linux` | `arm64` |
-| `@spec-driven-steroids/darwin-x64` | `darwin` | `x64` |
-| `@spec-driven-steroids/darwin-arm64` | `darwin` | `arm64` |
-| `@spec-driven-steroids/win32-x64` | `win32` | `x64` |
-| `@spec-driven-steroids/win32-arm64` | `win32` | `arm64` |
+| `@lindoelio/sds-linux-x64` | `linux` | `x64` |
+| `@lindoelio/sds-linux-arm64` | `linux` | `arm64` |
+| `@lindoelio/sds-darwin-x64` | `darwin` | `x64` |
+| `@lindoelio/sds-darwin-arm64` | `darwin` | `arm64` |
+| `@lindoelio/sds-win32-x64` | `win32` | `x64` |
+| `@lindoelio/sds-win32-arm64` | `win32` | `arm64` |
 
 The installer of the main package copies the binary out of the platform package
 the registry resolved, verifies it against the digest published with that
@@ -227,6 +227,20 @@ A release needs a version that the registry has never seen. The version
 implementation carries a higher version. The workflow refuses to publish when
 the declared version is already on the registry with a different shape, because
 the registry does not let a published version change.
+
+The scope belongs to the publisher account (`@lindoelio`), so npm publication
+needs no organisation: the account that owns the scope can publish both the
+main package and the platform packages. Two repository settings gate the npm
+jobs, and both are needed before the first npm publication:
+
+- the `NODE_AUTH_TOKEN` secret, holding a token with publish rights for
+  `spec-driven-steroids` and the `@lindoelio` scope;
+- the `PUBLISH_NPM` variable, set to `true`.
+
+With either one absent, a release publishes the GitHub binaries and the
+template bundle and skips npm; re-running the release workflow for the same tag
+publishes the npm packages without a new tag, because the release and template
+steps overwrite their own assets.
 
 See [the installer documentation](../packages/cli/README.md#installing-the-binary-manually) for
 the manual path, used when the installation scripts are disabled.

@@ -1,6 +1,6 @@
 {
     "name": "spec-driven-steroids",
-    "version": "1.0.0-next.1",
+    "version": "1.0.0-next.2",
     "description": "Inject Spec-Driven workflow into your favorite AI Agents. Rigorous. Simple. Frictionless.",
     "type": "module",
     "files": [
@@ -18,12 +18,12 @@
         "install": "node bin/install.mjs"
     },
     "optionalDependencies": {
-        "@spec-driven-steroids/linux-x64": "workspace:*",
-        "@spec-driven-steroids/linux-arm64": "workspace:*",
-        "@spec-driven-steroids/darwin-x64": "workspace:*",
-        "@spec-driven-steroids/darwin-arm64": "workspace:*",
-        "@spec-driven-steroids/win32-x64": "workspace:*",
-        "@spec-driven-steroids/win32-arm64": "workspace:*"
+        "@lindoelio/sds-linux-x64": "workspace:*",
+        "@lindoelio/sds-linux-arm64": "workspace:*",
+        "@lindoelio/sds-darwin-x64": "workspace:*",
+        "@lindoelio/sds-darwin-arm64": "workspace:*",
+        "@lindoelio/sds-win32-x64": "workspace:*",
+        "@lindoelio/sds-win32-arm64": "workspace:*"
     },
     "devDependencies": {},
     "repository": {

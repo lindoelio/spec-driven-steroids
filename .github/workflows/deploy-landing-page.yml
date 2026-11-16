@@ -45,7 +45,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm --filter @spec-driven-steroids/landing-page build
+        run: pnpm --filter @lindoelio/sds-landing-page build
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

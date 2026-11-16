@@ -282,7 +282,7 @@ jobs:
   # them as optional dependencies: a main package published first would
   # resolve to a platform package that does not exist yet.
   npm-platform:
-    name: Publish @spec-driven-steroids/${{ matrix.platform }}
+    name: Publish @lindoelio/sds-${{ matrix.platform }}
     if: ${{ vars.PUBLISH_NPM == 'true' }}
     needs: [verify, release]
     runs-on: ubuntu-latest
@@ -395,9 +395,9 @@ jobs:
           DIST_TAG: ${{ needs.verify.outputs.dist_tag }}
         run: |
           set -euo pipefail
-          PUBLISHED="$(npm view "@spec-driven-steroids/${{ matrix.platform }}@${VERSION}" version 2>/dev/null || true)"
+          PUBLISHED="$(npm view "@lindoelio/sds-${{ matrix.platform }}@${VERSION}" version 2>/dev/null || true)"
           if [ "${PUBLISHED}" = "${VERSION}" ]; then
-            echo "@spec-driven-steroids/${{ matrix.platform }}@${PUBLISHED} is already published."
+            echo "@lindoelio/sds-${{ matrix.platform }}@${PUBLISHED} is already published."
             exit 0
           fi
           npm publish --tag "${DIST_TAG}" --provenance --access public
@@ -433,17 +433,17 @@ jobs:
           for PLATFORM in linux-x64 linux-arm64 darwin-x64 darwin-arm64 win32-x64 win32-arm64; do
             PUBLISHED=""
             for ATTEMPT in $(seq 1 10); do
-              PUBLISHED="$(npm view "@spec-driven-steroids/${PLATFORM}@${VERSION}" version 2>/dev/null || true)"
+              PUBLISHED="$(npm view "@lindoelio/sds-${PLATFORM}@${VERSION}" version 2>/dev/null || true)"
               if [ "${PUBLISHED}" = "${VERSION}" ]; then
                 break
               fi
               sleep 6
             done
             if [ "${PUBLISHED}" != "${VERSION}" ]; then
-              echo "::error::@spec-driven-steroids/${PLATFORM}@${VERSION} is not published. The main package is published after the platform packages it declares, so the release stops here."
+              echo "::error::@lindoelio/sds-${PLATFORM}@${VERSION} is not published. The main package is published after the platform packages it declares, so the release stops here."
               exit 1
             fi
-            echo "@spec-driven-steroids/${PLATFORM}@${PUBLISHED} is published."
+            echo "@lindoelio/sds-${PLATFORM}@${PUBLISHED} is published."
           done
 
       - name: Prepare the main package

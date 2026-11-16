@@ -20,7 +20,7 @@ const binary = join(packageRoot, 'bin', process.platform === 'win32' ? 'sds.exe'
 if (!existsSync(binary)) {
   console.error('spec-driven-steroids: the native binary is not installed at ' + binary + '.');
   console.error('spec-driven-steroids: reinstall with install scripts enabled, or link the binary from the resolved platform package:');
-  console.error('spec-driven-steroids:   npm link @spec-driven-steroids/<platform>-<arch>');
+  console.error('spec-driven-steroids:   npm link @lindoelio/sds-<platform>-<arch>');
   process.exit(1);
 }
 

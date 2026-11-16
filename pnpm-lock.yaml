@@ -14,22 +14,22 @@ importers:
 
   packages/cli:
     optionalDependencies:
-      '@spec-driven-steroids/darwin-arm64':
+      '@lindoelio/sds-darwin-arm64':
         specifier: workspace:*
         version: link:../platform/darwin-arm64
-      '@spec-driven-steroids/darwin-x64':
+      '@lindoelio/sds-darwin-x64':
         specifier: workspace:*
         version: link:../platform/darwin-x64
-      '@spec-driven-steroids/linux-arm64':
+      '@lindoelio/sds-linux-arm64':
         specifier: workspace:*
         version: link:../platform/linux-arm64
-      '@spec-driven-steroids/linux-x64':
+      '@lindoelio/sds-linux-x64':
         specifier: workspace:*
         version: link:../platform/linux-x64
-      '@spec-driven-steroids/win32-arm64':
+      '@lindoelio/sds-win32-arm64':
         specifier: workspace:*
         version: link:../platform/win32-arm64
-      '@spec-driven-steroids/win32-x64':
+      '@lindoelio/sds-win32-x64':
         specifier: workspace:*
         version: link:../platform/win32-x64
 
