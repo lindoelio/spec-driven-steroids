@@ -40,6 +40,13 @@ neither line can strand the other: the stable CLI keeps resolving the
 14-skill `templates-latest`, the preview resolves the 13-skill
 `templates-next`.
 
+The npm jobs are gated by the `PUBLISH_NPM` repository variable. When it is
+unset or `false`, a release publishes the GitHub binaries and the template
+bundle and skips npm; the assets are the preview channel. Set it to `true`
+and re-run the release workflow once the npm account owns the
+`spec-driven-steroids` scope and the `NODE_AUTH_TOKEN` secret is in place, and
+the same tag publishes the npm packages.
+
 Rollback is additive: removing the `next` dist-tag unpublishes the preview
 from the tag without touching `latest`, and the `templates-next` release can
 be deleted or repointed without affecting `templates-latest`.

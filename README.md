@@ -55,6 +55,9 @@ npm install -g spec-driven-steroids
 npm install -g spec-driven-steroids@next
 ```
 
+The preview binaries are attached to the GitHub prerelease `v1.0.0-next.N`
+first; the npm `@next` line follows once the npm account is ready.
+
 The CLI is a single native binary with no runtime dependency: the binary needs no Node.js runtime and ships no dependency tree. The npm package installs the binary that matches your operating system and architecture through a thin Node launcher; the launcher is the only JavaScript that runs, and the binary does the work.
 
 Requirements:

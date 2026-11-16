@@ -283,6 +283,7 @@ jobs:
   # resolve to a platform package that does not exist yet.
   npm-platform:
     name: Publish @spec-driven-steroids/${{ matrix.platform }}
+    if: ${{ vars.PUBLISH_NPM == 'true' }}
     needs: [verify, release]
     runs-on: ubuntu-latest
 
@@ -404,6 +405,7 @@ jobs:
   # The main package is published after every platform package it declares.
   npm-main:
     name: Publish the main package
+    if: ${{ vars.PUBLISH_NPM == 'true' }}
     needs: [verify, release, npm-platform]
     runs-on: ubuntu-latest
 
