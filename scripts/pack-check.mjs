@@ -2,12 +2,12 @@
 /**
  * Checks the published package.
  *
- * The main package carries no JavaScript entrypoint: it holds the installer,
- * and the binary comes from the platform package the registry resolved for
- * the host. The check therefore verifies three things: the shape of the main
- * package, the shape of every platform package, and the trust boundary of the
- * installer — a matching digest places the binary, a mismatching digest
- * refuses it.
+ * The main package carries the installer and a thin launcher; the CLI is the
+ * native binary, and it comes from the platform package the registry resolved
+ * for the host. The check therefore verifies three things: the shape of the
+ * main package, the shape of every platform package, and the trust boundary
+ * of the installer — a matching digest places the binary, a mismatching
+ * digest refuses it.
  */
 import { execFileSync } from 'node:child_process';
 import crypto from 'node:crypto';
@@ -155,6 +155,8 @@ try {
   }
 
   const hostManifest = readJson(path.join(hostPackage, 'package.json'));
+  const binaryName = process.platform === 'win32' ? 'sds.exe' : 'sds';
+  const placed = path.join(installedMain, 'bin', binaryName);
   const binaryContent = Buffer.from('#!/bin/sh\necho "sds"\n');
   const realDigest = crypto.createHash('sha256').update(binaryContent).digest('hex');
 
@@ -163,7 +165,7 @@ try {
     fs.rmSync(target, { recursive: true, force: true });
     fs.mkdirSync(path.join(target, 'bin'), { recursive: true });
     fs.writeFileSync(path.join(target, 'package.json'), JSON.stringify({ ...hostManifest, sha256: digest }, null, 2));
-    fs.writeFileSync(path.join(target, 'bin', 'sds'), binaryContent, { mode: 0o755 });
+    fs.writeFileSync(path.join(target, 'bin', binaryName), binaryContent, { mode: 0o755 });
   };
 
   const installer = path.join(installedMain, 'bin', 'install.mjs');
@@ -187,7 +189,7 @@ try {
   if (!refused) {
     fail('The installer accepted a binary whose digest does not match.');
   }
-  if (fs.existsSync(path.join(installedMain, 'bin', 'sds'))) {
+  if (fs.existsSync(placed)) {
     fail('The installer placed a binary whose digest does not match.');
   }
 
@@ -203,14 +205,13 @@ try {
   if (!placeholderRefused) {
     fail('The installer accepted the placeholder digest.');
   }
-  if (fs.existsSync(path.join(installedMain, 'bin', 'sds'))) {
+  if (fs.existsSync(placed)) {
     fail('The installer placed a binary under the placeholder digest.');
   }
 
   // A matching digest places the binary.
   placePlatformPackage(realDigest);
   runInstaller();
-  const placed = path.join(installedMain, 'bin', 'sds');
   if (!fs.existsSync(placed)) {
     fail('The installer did not place the binary.');
   }
@@ -219,14 +220,18 @@ try {
     fail('The placed binary does not carry the published digest.');
   }
 
-  // The launcher bridges npm's bin link to the placed native binary.
-  const launched = execFileSync(process.execPath, [launcher], {
-    cwd: installedMain,
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe']
-  });
-  if (!launched.includes('sds')) {
-    fail('The launcher did not run the placed binary.');
+  // The launcher bridges npm's bin link to the placed native binary. The
+  // fixture binary is a shell script, so the exec path only runs where the
+  // shell script is executable; the digest checks above cover Windows.
+  if (process.platform !== 'win32') {
+    const launched = execFileSync(process.execPath, [launcher], {
+      cwd: installedMain,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+    if (!launched.includes('sds')) {
+      fail('The launcher did not run the placed binary.');
+    }
   }
 
   // Without a placed binary the launcher refuses instead of running nothing.

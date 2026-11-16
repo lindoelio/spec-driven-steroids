@@ -157,7 +157,7 @@ func TestValidateReportsAnUnreadableTree(t *testing.T) {
 	}
 }
 
-func TestRenderRejectsATreeItCannotValidate(t *testing.T) {
+func TestRenderReplacesAPreExistingSymlink(t *testing.T) {
 	outDir := filepath.Join(t.TempDir(), "distribution")
 	options := testOptions(outDir)
 
@@ -169,9 +169,12 @@ func TestRenderRejectsATreeItCannotValidate(t *testing.T) {
 		t.Skipf("the platform does not support symbolic links: %v", err)
 	}
 
-	if _, err := Render(options); err == nil {
-		t.Fatal("the run accepted a tree that holds a symbolic link")
-	} else if !strings.Contains(err.Error(), "symbolic link") {
-		t.Errorf("the error %q does not name the symbolic link", err)
+	// The render validates the tree it is about to write, so an entry left
+	// outside that tree is replaced rather than followed or validated.
+	if _, err := Render(options); err != nil {
+		t.Fatalf("the render failed on a pre-existing entry: %v", err)
+	}
+	if info, err := os.Lstat(link); err == nil && info.Mode()&os.ModeSymlink != 0 {
+		t.Error("the render kept the pre-existing symbolic link")
 	}
 }

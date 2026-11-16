@@ -31,8 +31,11 @@ func terminalWidth(file *os.File) int {
 // IsTerminal reports whether the file is a terminal.
 //
 // A character device alone is not enough: /dev/null is one, and a process
-// reading from it is not interactive. The window-size query only succeeds on
-// a real terminal.
+// reading from it is not interactive. The terminal attributes query only
+// succeeds on a real terminal.
 func IsTerminal(file *os.File) bool {
-	return terminalWidth(file) > 0
+	if file == nil {
+		return false
+	}
+	return terminalIsTerminal(file)
 }

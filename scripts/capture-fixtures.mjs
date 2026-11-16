@@ -94,7 +94,7 @@ const PLATFORMS = [
       // ~/Library/Application Support on macOS and ~/.config elsewhere. The
       // fixture records the portable layout; the capture walks the
       // platform-specific directory on macOS.
-      global: { root: '.config/Code/User/prompts', skills: '.copilot/skills', darwinRoot: 'Library/Application Support/Code/User/prompts' },
+      global: { root: '.config/Code/User/prompts', skills: '.copilot/skills', darwinRoot: 'Library/Application Support/Code/User/prompts', win32Root: 'AppData/Roaming/Code/User/prompts' },
       project: { root: '.github', skills: '.github/skills' }
     }
   },
@@ -158,6 +158,24 @@ function capture(platform, scope, declaration) {
     XDG_CONFIG_HOME: path.join(homeDir, '.config'),
     XDG_CACHE_HOME: path.join(homeDir, '.cache')
   };
+  if (process.platform === 'win32') {
+    // The Windows anchors read APPDATA, LOCALAPPDATA and USERPROFILE, not
+    // HOME, so the capture points them at the temporary home as well.
+    environment.APPDATA = path.join(homeDir, 'AppData', 'Roaming');
+    environment.LOCALAPPDATA = path.join(homeDir, 'AppData', 'Local');
+    environment.USERPROFILE = homeDir;
+  }
+  // The isolation must not depend on the developer's shell: a service or a
+  // shell profile can point these at a real installation.
+  for (const name of [
+    'SDS_CONFIG_DIR',
+    'SDS_TEMPLATE_CACHE_DIR',
+    'SDS_HOME',
+    'SDS_TEMPLATE_SOURCE',
+    'SPEC_DRIVEN_USE_BUNDLED_TEMPLATES'
+  ]) {
+    delete environment[name];
+  }
 
   if (native) {
     execFileSync(nativeBinary, [
@@ -183,7 +201,11 @@ function capture(platform, scope, declaration) {
 
   // The walk follows the directory the platform actually wrote on this
   // operating system. The recorded fixture keeps the portable layout.
-  const walkRoot = (process.platform === 'darwin' && declaration.darwinRoot) ? declaration.darwinRoot : declaration.root;
+  const walkRoot = process.platform === 'darwin' && declaration.darwinRoot
+    ? declaration.darwinRoot
+    : process.platform === 'win32' && declaration.win32Root
+      ? declaration.win32Root
+      : declaration.root;
   const rootPath = path.join(base, walkRoot);
   const skillsRootPath = path.join(base, declaration.skills);
   const skillsRelative = path.relative(rootPath, skillsRootPath);

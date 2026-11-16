@@ -171,6 +171,9 @@ func validatePortable(outDir string) []string {
 	}
 	if strings.TrimSpace(stringField(object, "name")) == "" {
 		violations = append(violations, violation(portableMarketplace, "%s declares no name", PortableManifestPath))
+	} else if name := stringField(object, "name"); !validPackageName(name) {
+		violations = append(violations, violation(portableMarketplace,
+			"%s declares the name %q, which the schema does not allow", PortableManifestPath, name))
 	}
 	if strings.TrimSpace(stringField(object, "description")) == "" {
 		violations = append(violations, violation(portableMarketplace, "%s declares no description", PortableManifestPath))

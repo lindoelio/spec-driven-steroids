@@ -360,7 +360,14 @@ func (s *Store) resolveByRoot(scope, projectRoot, platform string) (*Manifest, s
 		if err != nil {
 			continue
 		}
-		if root != base && root != projectDir && !strings.HasPrefix(root, projectDir+string(os.PathSeparator)) {
+		// The artifact root itself, or a platform root that is a direct child
+		// of the project directory, belongs to this project. Anything deeper
+		// is a nested project and must never be cleaned from the parent.
+		if current.Kind == KindCanonical {
+			if root != base {
+				continue
+			}
+		} else if root != base && filepath.Dir(root) != projectDir {
 			continue
 		}
 		var name string

@@ -369,7 +369,7 @@ func runRepair(command *cmdr.Command) error {
 		}
 		if !dryRun {
 			for _, artifact := range plan.Platform {
-				if err := writeFile(artifact.Path, artifact.Content); err != nil {
+				if err := writeFile(artifact.Path, artifact.Content, resolver); err != nil {
 					repaired = append(repaired, repairEntry{Platform: current.Platform, Scope: current.Scope, Files: 0, OK: false, Error: err.Error()})
 					continue
 				}

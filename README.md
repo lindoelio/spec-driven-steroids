@@ -55,7 +55,7 @@ npm install -g spec-driven-steroids
 npm install -g spec-driven-steroids@next
 ```
 
-The CLI is a single native binary with no runtime dependency: it needs no Node.js runtime and ships no dependency tree. The npm package installs the binary that matches your operating system and architecture.
+The CLI is a single native binary with no runtime dependency: the binary needs no Node.js runtime and ships no dependency tree. The npm package installs the binary that matches your operating system and architecture through a thin Node launcher; the launcher is the only JavaScript that runs, and the binary does the work.
 
 Requirements:
 - A supported operating system and architecture: Linux, macOS, or Windows on x64 or arm64
@@ -317,7 +317,8 @@ internal/                  # Go packages, one per subsystem
 packages/
 ├── cli/                    # Main CLI package
 │   ├── bin/install.mjs     # Installer that verifies the platform digest
-│   └── package.json        # Main package, no JavaScript entrypoint
+│   ├── bin/sds.cjs         # Thin launcher that starts the native binary
+│   └── package.json        # Main package with the installer and the launcher
 ├── platform/<os>-<cpu>/   # Release packages, one binary and its digest each
 └── landing-page/           # Documentation site
 ```

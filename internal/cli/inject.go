@@ -200,13 +200,13 @@ func runInject(command *cmdr.Command) error {
 		}
 
 		if !dryRun {
-			if err := writeCanonicalTree(plan, artifactRoot); err != nil {
+			if err := writeCanonicalTree(plan, artifactRoot, resolver); err != nil {
 				return err
 			}
 			canonicalWritten[effectiveScope] = true
 
 			for _, artifact := range plan.Platform {
-				if err := writeFile(artifact.Path, artifact.Content); err != nil {
+				if err := writeFile(artifact.Path, artifact.Content, resolver); err != nil {
 					return err
 				}
 			}
@@ -418,9 +418,9 @@ func selectScope(command *cmdr.Command, registry *descriptor.Registry, platforms
 }
 
 // writeCanonicalTree writes the canonical artifacts into the artifact root.
-func writeCanonicalTree(plan *emit.Plan, artifactRoot string) error {
+func writeCanonicalTree(plan *emit.Plan, artifactRoot string, resolver config.Resolver) error {
 	for _, file := range plan.Canonical {
-		if err := writeFile(emit.CanonicalPath(artifactRoot, file.RelPath), file.Content); err != nil {
+		if err := writeFile(emit.CanonicalPath(artifactRoot, file.RelPath), file.Content, resolver); err != nil {
 			return err
 		}
 	}
@@ -433,8 +433,8 @@ func writeCanonicalTree(plan *emit.Plan, artifactRoot string) error {
 // project or the home tree, is refused: following it would write outside the
 // roots the CLI owns. Links above those trees (the OS mounts) are not ours
 // to judge.
-func writeFile(path string, content []byte) error {
-	if err := refuseSymlink(path, config.Default()); err != nil {
+func writeFile(path string, content []byte, resolver config.Resolver) error {
+	if err := refuseSymlink(path, resolver); err != nil {
 		return err
 	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
@@ -445,16 +445,19 @@ func writeFile(path string, content []byte) error {
 
 // refuseSymlink reports a destination that would write through a symbolic
 // link inside a managed tree.
+//
+// The walk is lexical on purpose: a platform root that is itself a symlink to
+// a directory outside the project still has to be refused, and resolving the
+// path first would hide that link.
 func refuseSymlink(path string, resolver config.Resolver) error {
 	if info, err := os.Lstat(path); err == nil && info.Mode()&os.ModeSymlink != 0 {
 		return fmt.Errorf("refuse to write through the symbolic link %s", path)
 	}
-	resolved, err := resolveExisting(path)
-	if err != nil {
-		return nil
-	}
-	for _, root := range managedRoots(resolver) {
-		rel, err := filepath.Rel(root, resolved)
+	for _, root := range []string{resolver.WorkDir, resolver.Home()} {
+		if root == "" {
+			continue
+		}
+		rel, err := filepath.Rel(root, path)
 		if err != nil || rel == "." || rel == ".." || strings.HasPrefix(rel, ".."+string(os.PathSeparator)) {
 			continue
 		}
@@ -468,50 +471,6 @@ func refuseSymlink(path string, resolver config.Resolver) error {
 		}
 	}
 	return nil
-}
-
-// resolveExisting resolves the deepest existing ancestor of a path and
-// rejoins the remainder, so a destination that does not exist yet is still
-// judged in resolved terms.
-func resolveExisting(path string) (string, error) {
-	absolute, err := filepath.Abs(path)
-	if err != nil {
-		return "", err
-	}
-	current := absolute
-	var tail []string
-	for {
-		resolved, err := filepath.EvalSymlinks(current)
-		if err == nil {
-			for index := len(tail) - 1; index >= 0; index-- {
-				resolved = filepath.Join(resolved, tail[index])
-			}
-			return resolved, nil
-		}
-		parent := filepath.Dir(current)
-		if parent == current {
-			return "", err
-		}
-		tail = append(tail, filepath.Base(current))
-		current = parent
-	}
-}
-
-// managedRoots returns the resolved project and home directories the CLI
-// writes into.
-func managedRoots(resolver config.Resolver) []string {
-	var roots []string
-	for _, root := range []string{resolver.WorkDir, resolver.Home()} {
-		if root == "" {
-			continue
-		}
-		if resolved, err := filepath.EvalSymlinks(root); err == nil {
-			roots = append(roots, resolved)
-		} else if absolute, err := filepath.Abs(root); err == nil {
-			roots = append(roots, absolute)
-		}
-	}
-	return roots
 }
 
 // recordManifests writes the canonical and the platform manifests.

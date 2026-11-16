@@ -55,7 +55,7 @@ npm install -g spec-driven-steroids
 npm install -g spec-driven-steroids@next
 ```
 
-The CLI is a single native binary with no runtime dependency: it needs no Node.js runtime and ships no dependency tree. The npm package installs the binary that matches your operating system and architecture.
+The CLI is a single native binary with no runtime dependency: the binary needs no Node.js runtime and ships no dependency tree. The npm package installs the binary that matches your operating system and architecture through a thin Node launcher; the launcher is the only JavaScript that runs, and the binary does the work.
 
 Requirements:
 - A supported operating system and architecture: Linux, macOS, or Windows on x64 or arm64
@@ -66,10 +66,11 @@ The CLI provides two command names:
 
 ### How the npm package installs the binary
 
-The npm package is a main package with no JavaScript entrypoint. It declares the
-platform packages as optional dependencies, and the registry resolves exactly
-one of them for your host, because each platform package declares the
-operating system and the architecture it applies to in npm's own vocabulary.
+The npm package is a main package that ships the installer and a thin
+launcher; it has no JavaScript CLI entrypoint. It declares the platform
+packages as optional dependencies, and the registry resolves exactly one of
+them for your host, because each platform package declares the operating
+system and the architecture it applies to in npm's own vocabulary.
 
 The installer copies the binary out of the platform package the registry
 resolved, verifies it against the digest published with that package, and
@@ -374,7 +375,7 @@ README.md
 LICENSE
 ```
 
-The npm package resolves exactly one platform package for your operating system and architecture and installs the binary it ships, verified against the digest published with that package. The binary needs no Node.js runtime.
+The npm package resolves exactly one platform package for your operating system and architecture and installs the binary it ships, verified against the digest published with that package. The binary needs no Node.js runtime; the launcher needs the Node already present for npm.
 
 ## Links
 

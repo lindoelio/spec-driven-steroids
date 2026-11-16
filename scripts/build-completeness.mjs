@@ -127,7 +127,7 @@ const commandSurface = [
   { command: 'validate', fixture: 'internal/testdata/fixtures/command-surface/help-validate.txt' },
   { command: 'package', fixture: 'internal/testdata/fixtures/command-surface/help-package.txt' },
   { command: '--version', fixture: 'internal/testdata/fixtures/command-surface/version.txt' },
-  { command: '--help', fixture: 'internal/testdata/fixtures/command-surface/help-root.txt' }
+  { command: '--help', fixture: 'internal/testdata/fixtures/command-surface/help-root-current.txt' }
 ];
 
 /**

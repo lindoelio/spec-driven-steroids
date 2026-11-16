@@ -527,7 +527,7 @@
     },
     {
       "command": "--help",
-      "fixture": "internal/testdata/fixtures/command-surface/help-root.txt"
+      "fixture": "internal/testdata/fixtures/command-surface/help-root-current.txt"
     }
   ],
   "report": {

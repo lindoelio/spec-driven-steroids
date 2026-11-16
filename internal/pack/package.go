@@ -39,9 +39,22 @@ const SchemaIdentifier = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.
 // outside these patterns would escape the package subtree path or break a
 // vendor schema, so the tree is rejected before anything is written.
 var (
-	packageNamePattern  = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*$`)
+	packageNameShape    = regexp.MustCompile(`^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$`)
 	packageOwnerPattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]*$`)
 )
+
+// validPackageName reports whether a name satisfies the Agent Plugins name
+// schema: lowercase, alphanumeric with '.' or '-' separators, at most 64
+// characters, and never a doubled separator.
+func validPackageName(name string) bool {
+	if len(name) == 0 || len(name) > 64 {
+		return false
+	}
+	if strings.Contains(name, "--") || strings.Contains(name, "..") {
+		return false
+	}
+	return packageNameShape.MatchString(name)
+}
 
 // Options configures a packaging run.
 type Options struct {
@@ -84,10 +97,10 @@ type Result struct {
 // Render renders the portable package, the vendor manifests, the catalogs and
 // the distribution tree.
 //
-// The tree is written below Options.OutDir and validated against the layout
-// every consuming marketplace expects; a tree that violates a layout is
-// reported as an error and the violation of each rule is named. A dry run
-// computes the tree and reports it without writing anything.
+// The tree is written to a staging directory and validated against the layout
+// every consuming marketplace expects before it reaches Options.OutDir, so a
+// tree that violates a layout never leaves a partial package behind. A dry
+// run validates the computed tree and writes nothing to Options.OutDir.
 func Render(options Options) (Result, error) {
 	if strings.TrimSpace(options.OutDir) == "" {
 		return Result{}, errors.New("pack: the output directory is required")
@@ -111,23 +124,80 @@ func Render(options Options) (Result, error) {
 	}
 
 	if options.DryRun {
+		if err := validateTree(tree); err != nil {
+			return result, err
+		}
 		return result, nil
 	}
 
-	if err := tree.write(options.OutDir); err != nil {
+	parent := filepath.Dir(options.OutDir)
+	if err := os.MkdirAll(parent, 0o755); err != nil {
+		return result, fmt.Errorf("pack: create the output parent: %w", err)
+	}
+	staging, err := os.MkdirTemp(parent, ".sds-package-")
+	if err != nil {
+		return result, fmt.Errorf("pack: create the staging directory: %w", err)
+	}
+	defer os.RemoveAll(staging)
+
+	if err := tree.write(staging); err != nil {
+		return result, err
+	}
+	if err := validateTree(tree); err != nil {
 		return result, err
 	}
 
-	violations, err := Validate(options.OutDir)
-	if err != nil {
+	if err := mergeTree(staging, options.OutDir); err != nil {
 		return result, err
-	}
-	if len(violations) > 0 {
-		return result, fmt.Errorf("pack: the distribution tree violates %d marketplace rules: %s",
-			len(violations), strings.Join(violations, "; "))
 	}
 
 	return result, nil
+}
+
+// validateTree writes the planned tree to a temporary directory and validates
+// it, so the vendor rules run against the exact bytes the release would ship.
+func validateTree(tree *tree) error {
+	staging, err := os.MkdirTemp("", "sds-package-validate-")
+	if err != nil {
+		return fmt.Errorf("pack: create the validation directory: %w", err)
+	}
+	defer os.RemoveAll(staging)
+
+	if err := tree.write(staging); err != nil {
+		return err
+	}
+	violations, err := Validate(staging)
+	if err != nil {
+		return err
+	}
+	if len(violations) > 0 {
+		return fmt.Errorf("pack: the distribution tree violates %d marketplace rules: %s",
+			len(violations), strings.Join(violations, "; "))
+	}
+	return nil
+}
+
+// mergeTree moves the staged entries into the output directory, replacing an
+// entry of the same name.
+func mergeTree(staging, outDir string) error {
+	if err := os.MkdirAll(outDir, 0o755); err != nil {
+		return fmt.Errorf("pack: create the output directory: %w", err)
+	}
+	entries, err := os.ReadDir(staging)
+	if err != nil {
+		return fmt.Errorf("pack: read the staging directory: %w", err)
+	}
+	for _, entry := range entries {
+		source := filepath.Join(staging, entry.Name())
+		target := filepath.Join(outDir, entry.Name())
+		if err := os.RemoveAll(target); err != nil {
+			return fmt.Errorf("pack: replace %s: %w", target, err)
+		}
+		if err := os.Rename(source, target); err != nil {
+			return fmt.Errorf("pack: place %s: %w", target, err)
+		}
+	}
+	return nil
 }
 
 // packageMeta is the identity every manifest and catalog is derived from.
@@ -187,8 +257,8 @@ func buildMeta(options Options) (packageMeta, error) {
 		}
 	}
 
-	if !packageNamePattern.MatchString(meta.name) {
-		return packageMeta{}, fmt.Errorf("pack: the package name %q must start with a letter or digit and hold only letters, digits, '.', '_' and '-'", meta.name)
+	if !validPackageName(meta.name) {
+		return packageMeta{}, fmt.Errorf("pack: the package name %q must be a lowercase name of at most 64 characters with no '--' or '..'", meta.name)
 	}
 	if !packageOwnerPattern.MatchString(meta.owner) {
 		return packageMeta{}, fmt.Errorf("pack: the owner %q must start with a letter or digit and hold only letters, digits, '.', '_' and '-'", meta.owner)

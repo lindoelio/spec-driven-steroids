@@ -2,11 +2,11 @@
 /**
  * The installer of the main npm package.
  *
- * The main package ships no JavaScript entrypoint. It carries this installer
- * and nothing else that runs: the binary comes from the platform package the
- * registry resolved for the host, the installer copies that binary out of the
- * package, verifies it against the digest published with the package, and
- * places it only when the digest matches.
+ * The main package ships this installer and a thin launcher; the CLI is the
+ * native binary. The binary comes from the platform package the registry
+ * resolved for the host, the installer copies that binary out of the package,
+ * verifies it against the digest published with the package, and places it
+ * only when the digest matches.
  *
  * The installer performs no network access of its own. It reads the package
  * the registry already placed on disk and writes to the file system; there is

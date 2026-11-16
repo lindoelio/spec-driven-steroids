@@ -188,10 +188,11 @@ on each of them, and checks the shape of the published packages.
 - **Main package**: `spec-driven-steroids` on https://www.npmjs.com/package/spec-driven-steroids
 - **Platform packages**: `@spec-driven-steroids/<npm-os>-<npm-cpu>` on https://www.npmjs.com
 
-The main package carries no JavaScript entrypoint. It declares the platform
-packages as optional dependencies, and the registry resolves exactly one of
-them for the host, because each platform package declares the operating system
-and the architecture it applies to in npm's own vocabulary:
+The main package carries the installer and a thin Node launcher; the CLI
+itself is the native binary. It declares the platform packages as optional
+dependencies, and the registry resolves exactly one of them for the host,
+because each platform package declares the operating system and the
+architecture it applies to in npm's own vocabulary:
 
 | Platform package | `os` | `cpu` |
 | --- | --- | --- |

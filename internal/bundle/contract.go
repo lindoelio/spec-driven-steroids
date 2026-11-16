@@ -62,10 +62,9 @@ const (
 	SemverPattern = `^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$`
 )
 
-// DefaultManifestChannel is the release tag the remote template manifest is
-// read from. The release pipeline stamps DefaultManifestURL per channel, so
-// the stable CLI keeps resolving templates-latest while the native preview
-// resolves templates-next.
+// The release pipeline stamps DefaultManifestURL per channel, so the stable
+// CLI keeps resolving templates-latest while the native preview resolves
+// templates-next.
 var (
 	// DefaultManifestURL is the manifest the remote source reads.
 	DefaultManifestURL = "https://github.com/lindoelio/spec-driven-steroids/releases/download/templates-latest/templates-manifest.json"

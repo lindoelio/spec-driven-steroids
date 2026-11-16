@@ -1,12 +1,8 @@
-//go:build !unix
+//go:build !unix && !windows
 
 package cmdr
 
-import (
-	"os"
-	"runtime"
-	"syscall"
-)
+import "os"
 
 // terminalWidth returns the number of columns of the terminal behind the
 // file, or zero when the file is not a terminal.
@@ -19,13 +15,9 @@ func terminalWidth(file *os.File) int {
 
 // IsTerminal reports whether the file is a terminal.
 //
-// A character device alone is not enough: NUL is one, and a process reading
-// from it is not interactive. On Windows the console mode query only succeeds
-// on a real console; elsewhere nothing is a terminal.
+// A character device alone is not enough: the null device is one, and a
+// process reading from it is not interactive. This platform reports no
+// terminal, so it is never interactive.
 func IsTerminal(file *os.File) bool {
-	if file == nil || runtime.GOOS != "windows" {
-		return false
-	}
-	var mode uint32
-	return syscall.GetConsoleMode(syscall.Handle(file.Fd()), &mode) == nil
+	return false
 }
