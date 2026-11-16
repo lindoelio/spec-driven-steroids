@@ -35,7 +35,7 @@ func TestTheInjectedArtifactsAreRegularFilesInsideTheDeclaredRoots(t *testing.T)
 	program.SetOut(&written)
 	program.SetErr(&written)
 
-	if err := program.Parse([]string{"inject", "--platform", "claudecode", "--scope", "project", "--yes"}); err != nil {
+	if err := program.Parse([]string{"inject", "--platform", "claudecode", "--scope", "project", "--yes", "--templates", "bundled"}); err != nil {
 		t.Fatalf("parse: %v", err)
 	}
 

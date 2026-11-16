@@ -324,6 +324,9 @@ func validatePluginManifest(outDir, marketplace, manifestPath string, rules mani
 		} else if strings.TrimSpace(stringField(interfaceObject, "displayName")) == "" {
 			violations = append(violations, violation(marketplace, "%s declares no interface display name", manifestPath))
 		}
+		if ok && strings.TrimSpace(stringField(interfaceObject, "defaultPrompt")) == "" && strings.TrimSpace(stringField(interfaceObject, "default_prompt")) == "" {
+			violations = append(violations, violation(marketplace, "%s declares no interface default prompt", manifestPath))
+		}
 	}
 
 	return violations

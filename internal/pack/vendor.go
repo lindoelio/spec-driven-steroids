@@ -132,6 +132,8 @@ type codexInterface struct {
 	Category string `json:"category"`
 	// Capabilities are the capabilities the package offers.
 	Capabilities []string `json:"capabilities"`
+	// DefaultPrompt is the starter prompt a Codex client shows.
+	DefaultPrompt string `json:"defaultPrompt"`
 }
 
 // miniMaxManifest is the MiniMax Code plugin manifest of the official
@@ -246,6 +248,7 @@ func codexManifestJSON(meta packageMeta) ([]byte, error) {
 			DeveloperName:    meta.author,
 			Category:         meta.category,
 			Capabilities:     capabilities,
+			DefaultPrompt:    "Start a spec-driven change in this project",
 		},
 	}
 	if meta.hasMCP() {

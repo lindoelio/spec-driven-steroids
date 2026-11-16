@@ -283,7 +283,7 @@ func runInject(command *cmdr.Command) error {
 		}
 		fmt.Fprintln(os.Stdout, string(raw))
 	} else {
-		renderInjectionSummary(results, payload.TemplateSource, payload.Scope)
+		renderInjectionSummary(results, payload.TemplateSource, payload.Scope, dryRun)
 		if dryRun {
 			for _, result := range results {
 				for _, file := range result.Files {
@@ -589,7 +589,7 @@ func summarizeScope(results []injectionResult) string {
 }
 
 // renderInjectionSummary prints the human readable outcome.
-func renderInjectionSummary(results []injectionResult, source templateSourcePayload, scopeLabel string) {
+func renderInjectionSummary(results []injectionResult, source templateSourcePayload, scopeLabel string, dryRun bool) {
 	ok := 0
 	for _, result := range results {
 		if result.OK {
@@ -628,7 +628,13 @@ func renderInjectionSummary(results []injectionResult, source templateSourcePayl
 		if total == 1 {
 			label = "platform"
 		}
-		fmt.Fprintln(os.Stdout, bold(fmt.Sprintf("%d %s configured (%s)", total, label, scopeLabel)))
+		if dryRun {
+			fmt.Fprintln(os.Stdout, bold(fmt.Sprintf("Would configure %d %s (%s)", total, label, scopeLabel)))
+		} else {
+			fmt.Fprintln(os.Stdout, bold(fmt.Sprintf("%d %s configured (%s)", total, label, scopeLabel)))
+		}
+	} else if dryRun {
+		fmt.Fprintln(os.Stdout, bold(fmt.Sprintf("Would configure %d/%d platforms (%s)", ok, total, scopeLabel)))
 	} else {
 		fmt.Fprintln(os.Stdout, bold(fmt.Sprintf("%d/%d platforms configured (%s)", ok, total, scopeLabel)))
 	}

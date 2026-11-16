@@ -156,7 +156,7 @@ func TestCodexManifestCarriesTheListingInterface(t *testing.T) {
 	if !ok {
 		t.Fatalf("the Codex manifest declares the interface %v", object["interface"])
 	}
-	for _, field := range []string{"displayName", "shortDescription", "longDescription", "developerName", "category"} {
+	for _, field := range []string{"displayName", "shortDescription", "longDescription", "developerName", "category", "defaultPrompt"} {
 		if value, _ := iface[field].(string); strings.TrimSpace(value) == "" {
 			t.Errorf("the Codex manifest declares no interface %s", field)
 		}

@@ -277,9 +277,17 @@ func runUninstall(command *cmdr.Command) error {
 		}
 		fmt.Fprintln(os.Stdout, string(raw))
 	} else {
-		fmt.Fprintln(os.Stdout, green(fmt.Sprintf("Removed %d file(s) from %d install(s).", len(result.Removed), len(selected))))
+		if dryRun {
+			fmt.Fprintln(os.Stdout, green(fmt.Sprintf("Would remove %d file(s) from %d install(s).", len(result.Removed), len(selected))))
+		} else {
+			fmt.Fprintln(os.Stdout, green(fmt.Sprintf("Removed %d file(s) from %d install(s).", len(result.Removed), len(selected))))
+		}
 		if len(result.Skipped) > 0 {
-			fmt.Fprintln(os.Stdout, yellow(fmt.Sprintf("Skipped %d modified file(s). Use --force to remove them.", len(result.Skipped))))
+			if dryRun {
+				fmt.Fprintln(os.Stdout, yellow(fmt.Sprintf("Would skip %d modified file(s). Use --force to remove them.", len(result.Skipped))))
+			} else {
+				fmt.Fprintln(os.Stdout, yellow(fmt.Sprintf("Skipped %d modified file(s). Use --force to remove them.", len(result.Skipped))))
+			}
 		}
 	}
 
@@ -397,7 +405,11 @@ func runRepair(command *cmdr.Command) error {
 			if !entry.OK {
 				status = red("FAIL")
 			}
-			fmt.Fprintf(os.Stdout, "%s %s (%s) %d file(s)\n", status, entry.Platform, entry.Scope, entry.Files)
+			if dryRun {
+				fmt.Fprintf(os.Stdout, "%s %s (%s) would write %d file(s)\n", status, entry.Platform, entry.Scope, entry.Files)
+			} else {
+				fmt.Fprintf(os.Stdout, "%s %s (%s) %d file(s)\n", status, entry.Platform, entry.Scope, entry.Files)
+			}
 			if entry.Error != "" {
 				fmt.Fprintln(os.Stdout, red("  "+entry.Error))
 			}
