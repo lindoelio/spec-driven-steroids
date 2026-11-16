@@ -57,7 +57,7 @@ The Go implementation replaced a TypeScript CLI. Before the TypeScript tree was 
 
 A change that alters observable behavior has to update the matching fixture in the same commit. A test that regenerates the fixture it compares against proves nothing: the fixtures are inputs, never outputs.
 
-The validator replay is self-contained, so it runs without the previous implementation present. The live differential harnesses skip when the oracle is absent.
+The validator replay is self-contained, so it runs without the previous implementation present. The live corpus check skips when the repository spec (`.specs/`, gitignored) is absent; the golden replay still runs. The live differential harnesses skip when the oracle is absent.
 
 ## Isolate side effects
 

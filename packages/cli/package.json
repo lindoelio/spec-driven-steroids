@@ -1,6 +1,6 @@
 {
     "name": "spec-driven-steroids",
-    "version": "1.0.0-next.0",
+    "version": "1.0.0-next.1",
     "description": "Inject Spec-Driven workflow into your favorite AI Agents. Rigorous. Simple. Frictionless.",
     "type": "module",
     "files": [

@@ -1,6 +1,6 @@
 {
     "name": "@spec-driven-steroids/darwin-x64",
-    "version": "1.0.0-next.0",
+    "version": "1.0.0-next.1",
     "description": "The Spec-Driven Steroids release binary for macOS on x64.",
     "license": "MIT",
     "author": "Lindoélio Lázaro <lindoelio@gmail.com>",

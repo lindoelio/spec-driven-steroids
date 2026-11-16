@@ -405,6 +405,14 @@ func relativeWorkspacePath(t *testing.T, workspace string, directory string) str
 func TestTheLiveCorpusCoversTheCapturedFixture(t *testing.T) {
 	root := repositoryRoot(t)
 
+	// The repository spec is gitignored, so a clean checkout and CI do not
+	// carry it. The golden fixture is self-contained; only the live corpus
+	// comparison needs the spec.
+	specDir := filepath.Join(root, ".specs", "changes", "go-rewrite-universal-agents")
+	if _, err := os.Stat(specDir); err != nil {
+		t.Skipf("the repository spec is not present (it is gitignored): %v", err)
+	}
+
 	cases, missing := buildCorpus(t, root)
 	live := map[string]bool{}
 	for _, testCase := range cases {

@@ -1,5 +1,11 @@
 # spec-driven-steroids
 
+## 1.0.0-next.1
+
+### Patch Changes
+
+- Skip the live validator corpus check when the gitignored `.specs` directory is absent, so the suite passes on a clean checkout and in CI.
+
 ## 1.0.0-next.0
 
 ### Major Changes
